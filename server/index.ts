@@ -126,10 +126,10 @@ async function verifyAllFiles() {
                 await fs.access(path.resolve(base, file.id + ".mp3"));
             } catch (e) {
                 // can't access file for whatever reason.
+                const toRemove = changes.get(row.id) ?? JSON.parse(JSON.stringify(row.doc));
                 if (!changes.has(row.id)) {
-                    changes.set(row.id, JSON.parse(JSON.stringify(row.doc)));
+                    changes.set(row.id, toRemove);
                 }
-                const toRemove = changes.get(row.id)!;
                 const idx = toRemove.files.findIndex((f: File) => f.id === file.id);
                 toRemove.files.splice(idx, 1);
                 changes.set(row.id, toRemove);
@@ -138,8 +138,8 @@ async function verifyAllFiles() {
         }
     }
 
-    for (const id of changes.keys()) {
-        await db.put(changes.get(id)!);
+    for (const change of changes.values()) {
+        await db.put(change);
     }
 }
 

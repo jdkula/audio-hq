@@ -1,7 +1,6 @@
 import Workspace, { StoredWorkspace, WorkspaceState } from "./Workspace";
 import PouchDB from "pouchdb";
 import { useState, useEffect } from "react";
-import AudioGraph from "./AudioGraph";
 import axios from "axios";
 
 export default class WorkspaceAdapter {
@@ -93,8 +92,12 @@ export function useWorkspace(workspaceName: string): [Workspace, (state: StateUp
     };
 
     if (typeof window === "undefined") {
-        console.warn("RETURNING DEFAULT WORKSPACE");
-        return [defaultWorkspace, () => {}];
+        return [
+            defaultWorkspace,
+            () => {
+                throw new Error("setWorkspace called server-side");
+            },
+        ];
     }
 
     const [workspace, setWorkspace] = useState<Workspace>(defaultWorkspace);

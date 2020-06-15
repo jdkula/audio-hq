@@ -31,7 +31,9 @@ export default class AudioSet {
     }
 
     get duration(): number {
-        return this.pairs[0].audioNode.buffer!.duration;
+        const duration = this.pairs[0].audioNode.buffer?.duration;
+        if (!duration) throw new Error("Could not get duration!");
+        return duration;
     }
 
     get playedTime(): number | null {
@@ -182,23 +184,23 @@ export default class AudioSet {
         }
     }
 
-    start(when?: number, offset?: number) {
+    start(when?: number, offset?: number): void {
         for (const pair of this.pairs) {
             pair.start(when, offset);
         }
     }
 
-    async pause() {
+    async pause(): Promise<void> {
         this._paused = true;
         await this.context.suspend();
     }
 
-    async resume() {
+    async resume(): Promise<void> {
         this._paused = false;
         await this.context.resume();
     }
 
-    close() {
+    close(): void {
         this.context.close();
     }
 

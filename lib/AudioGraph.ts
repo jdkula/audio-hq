@@ -1,6 +1,6 @@
 import React from "react";
 import AudioSet from "./AudioSet";
-import Workspace, { Audio as WSAudio, File, AudioSet as WSAudioSet, WorkspaceState } from "./Workspace";
+import Workspace from "./Workspace";
 import { StateUpdate } from "./WorkspaceAdapter";
 
 interface Main {
@@ -28,7 +28,7 @@ export default class AudioGraph {
     private _ambient: Ambient;
     private _sfx: SFX;
 
-    constructor(private readonly workspace: Workspace, private _setState: (s: StateUpdate) => void) {
+    constructor(private _setState: (s: StateUpdate) => void) {
         const mainContext = new AudioContext();
         this._main = {
             context: mainContext,
@@ -51,7 +51,8 @@ export default class AudioGraph {
         };
     }
 
-    get main() {
+    get main(): { resume: () => void; pause: () => void } {
+        // TODO: Refine
         return {
             resume: () => {
                 this._setState((state) => {
@@ -87,9 +88,11 @@ export default class AudioGraph {
         };
     }
 
-    playAmbient(audio: WSAudio) {}
+    playAmbient(): void {
+        // TODO: Add ambient music!
+    }
 
-    async playMain(blobs: Iterable<Blob>) {
+    async playMain(blobs: Iterable<Blob>): Promise<void> {
         const startPaused = this._main.set === null || this._main.set.paused;
 
         // if (file.type === "audioset") {
@@ -114,11 +117,15 @@ export default class AudioGraph {
         for (let i = 0; i < this._main.set.pairs.length; i++) {
             newSet.fadeIn(i);
         }
+
+        // TODO: Sync this via websockets!
     }
 
-    playSfx(audio: WSAudio) {}
+    playSfx(): void {
+        // TODO: Play sound fx!
+    }
 
-    close() {
+    close(): void {
         this._main.context.close();
         this._ambient.context.close();
         this._sfx.context.close();
@@ -131,7 +138,7 @@ export default class AudioGraph {
             this._instance?.close();
         }
         if (!this._instance) {
-            this._instance = new AudioGraph(workspace, setState);
+            this._instance = new AudioGraph(setState);
             this._instanceWs = workspace.name;
         }
 

@@ -6,7 +6,7 @@ const useStyles = makeStyles({
     },
 });
 
-export default function SoundFX(props: {}) {
+export default function SoundFX(): React.ReactElement {
     const classes = useStyles();
 
     return <div className={classes.sfx}>Sound FX</div>;

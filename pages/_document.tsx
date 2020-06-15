@@ -1,10 +1,10 @@
-import Document, { Html, Head, Main, NextScript, DocumentContext } from "next/document";
+import Document, { Html, Head, Main, NextScript, DocumentContext, DocumentInitialProps } from "next/document";
 import { ServerStyleSheets } from "@material-ui/core/styles";
 import * as React from "react";
 
 // from https://github.com/mui-org/material-ui/blob/master/examples/nextjs/pages/_document.js
 export default class MyDocument extends Document {
-    static async getInitialProps(ctx: DocumentContext) {
+    static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
         const sheets = new ServerStyleSheets();
         const originalRenderPage = ctx.renderPage;
 
@@ -21,7 +21,7 @@ export default class MyDocument extends Document {
         };
     }
 
-    render() {
+    render(): React.ReactElement {
         return (
             <Html>
                 <Head>

@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import Router from "next/router";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
     container: {
         display: "grid",
         gridTemplateColumns: "20% 60% 20%",
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Home() {
+export default function Home(): React.ReactElement {
     const classes = useStyles();
 
     const [text, setText] = useState("");

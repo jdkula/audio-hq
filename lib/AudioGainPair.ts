@@ -10,7 +10,7 @@ export default class AudioGainPair {
         this.audioNode.connect(this.gainNode);
     }
 
-    start(when?: number, offset?: number, duration?: number) {
+    start(when?: number, offset?: number, duration?: number): void {
         this._startTime = this.context.currentTime;
         this.audioNode.start(when, offset, duration);
     }

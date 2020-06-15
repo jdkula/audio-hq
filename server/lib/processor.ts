@@ -1,13 +1,14 @@
 import fs from "promise-fs";
-import { ReadStream } from "fs";
 import path from "path";
 import ytdl from "youtube-dl";
 
 import { uuid as uuidv4 } from "uuidv4";
 import ffmpeg from "fluent-ffmpeg";
 
-// Type definitions for ytdl are bad... this exists!
-(ytdl as unknown).setYtdlBinary("/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl");
+// Type definitions for ytdl are bad... this exists! (gotta love the double-disable...)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-expect-error
+ytdl.setYtdlBinary("/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl");
 
 export async function download(url: string): Promise<string> {
     const basedir = path.join(process.cwd(), "storage");
@@ -28,7 +29,7 @@ export async function download(url: string): Promise<string> {
             url,
             ["-x", "--audio-format", "mp3", "--audio-quality", "3", "-o", outPath],
             { cwd: basedir },
-            async (err: any, output: string[]) => {
+            async (err: string, output: string[]) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -60,7 +61,7 @@ export async function convert(input: string): Promise<string> {
             .on("error", async (err) => {
                 reject(err);
             })
-            .on("end", async (done) => {
+            .on("end", async () => {
                 await fs.unlink(input);
                 resolve(outPath);
             })

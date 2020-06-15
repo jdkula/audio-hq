@@ -1,7 +1,7 @@
-import { makeStyles, FilledInput, Button } from "@material-ui/core";
-import { useContext, createRef, useState } from "react";
-import { WorkspaceContext } from "~/pages/workspace/[id]/host";
+import { makeStyles, Button } from "@material-ui/core";
+import { createRef, FormEvent } from "react";
 import AudioGraph from "~/lib/AudioGraph";
+import PropTypes from "prop-types";
 
 const useStyles = makeStyles({
     nowplaying: {
@@ -9,19 +9,18 @@ const useStyles = makeStyles({
     },
 });
 
-export default function NowPlaying(props: { graph: AudioGraph }) {
-    const classes = useStyles();
-    const workspace = useContext(WorkspaceContext);
+const propTypes = {
+    graph: PropTypes.instanceOf(AudioGraph).isRequired,
+};
 
+export default function NowPlaying(props: PropTypes.InferProps<typeof propTypes>): React.ReactElement {
+    const classes = useStyles();
     const fileinput = createRef<HTMLInputElement>();
 
-    const [files, setFiles] = useState([]);
-
-    const onFile = (e: any) => {
-        const files = e.target.files;
+    const onFile = (e: FormEvent<HTMLInputElement>) => {
+        const files = (e.target as HTMLInputElement)?.files;
         if (!files) return;
 
-        setFiles(files);
         props.graph.playMain(files);
     };
 
@@ -35,3 +34,5 @@ export default function NowPlaying(props: { graph: AudioGraph }) {
         </div>
     );
 }
+
+NowPlaying.propTypes = propTypes;

@@ -1,6 +1,6 @@
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
-import { makeStyles, Container, AppBar, Toolbar, Typography } from "@material-ui/core";
+import { useEffect, useState } from "react";
+import { makeStyles } from "@material-ui/core";
 import Header from "~/components/host/Header";
 import NowPlaying from "~/components/host/NowPlaying";
 import Explorer from "~/components/host/Explorer";
@@ -15,7 +15,7 @@ import { GetServerSideProps } from "next";
 
 export const WorkspaceContext = React.createContext<Workspace | null>(null);
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
     container: {
         display: "grid",
         gridTemplateColumns: "50% 30% 20%",
@@ -52,7 +52,7 @@ const propTypes = {
     workspace: PropTypes.string.isRequired,
 };
 
-export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTypes>) {
+export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTypes>): React.ReactElement {
     const classes = useStyles();
 
     const [workspace, setWorkspaceState] = useWorkspace(props.workspace);
@@ -62,7 +62,7 @@ export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTyp
     const adapter = new WorkspaceAdapter(props.workspace);
 
     useEffect(() => {
-        const graph = new AudioGraph(workspace, setWorkspaceState);
+        const graph = new AudioGraph(setWorkspaceState);
         setGraph(graph);
         return () => graph.close();
     }, []);
