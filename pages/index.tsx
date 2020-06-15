@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Button from '@material-ui/core/Button';
 
 export default function Home() {
   return (
@@ -14,7 +15,10 @@ export default function Home() {
         </h1>
 
         <p className="description">
-          Get started by editing <code>pages/index.js</code>
+          Get started by editing <code>pages/index.js</code>.
+          <Button variant="contained" color="primary">
+            Hello World
+          </Button>
         </p>
 
         <div className="grid">
