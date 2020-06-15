@@ -3,14 +3,13 @@ import { ReadStream } from "fs";
 import path from "path";
 import ytdl from "youtube-dl";
 
-import {uuid as uuidv4} from "uuidv4";
+import { uuid as uuidv4 } from "uuidv4";
 import ffmpeg from "fluent-ffmpeg";
 
 //@ts-ignore
-ytdl.setYtdlBinary('/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl')
+ytdl.setYtdlBinary("/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl");
 
-export async function download(url: string): Promise<Buffer> {
-
+export async function download(url: string): Promise<string> {
     const basedir = path.join(process.cwd(), "processor");
 
     try {
@@ -24,19 +23,24 @@ export async function download(url: string): Promise<Buffer> {
     const outPath = path.join(basedir, uuid + ".%(ext)s");
     const realOut = path.join(basedir, uuid + ".mp3");
 
-    return new Promise<Buffer>((resolve, reject) => {
-        ytdl.exec(url, ['-x', '--audio-format', 'mp3', '--audio-quality', '320k', '-k', '-o', outPath], {cwd: basedir}, async (err, out) => {
-            if (err) {
-                reject(err);
-            } else {
-                console.log(out);
-                resolve(fs.readFile(realOut));
-            }
-        });
+    return new Promise<string>((resolve, reject) => {
+        ytdl.exec(
+            url,
+            ["-x", "--audio-format", "mp3", "--audio-quality", "3", "-o", outPath],
+            { cwd: basedir },
+            async (err, output) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    output.forEach(s => console.log(s));
+                    resolve(realOut);
+                }
+            },
+        );
     });
 }
 
-export async function convert(input: Buffer | ReadStream): Promise<Buffer> {
+export async function convert(input: Buffer | ReadStream): Promise<string> {
     const basedir = path.join(process.cwd(), "processor");
 
     try {
@@ -52,17 +56,17 @@ export async function convert(input: Buffer | ReadStream): Promise<Buffer> {
 
     const outPath = path.join(basedir, uuid + ".mp3");
 
-    return new Promise<Buffer>((resolve, reject) =>{
+    return new Promise<string>((resolve, reject) => {
         ffmpeg(inPath)
             .noVideo()
-            .audioBitrate('320k')
-            .on('error', async (err) => {
+            .audioQuality(3)
+            .on("error", async (err) => {
                 reject(err);
             })
-            .on('end', async (done) => {
-                resolve(fs.readFile(outPath));
+            .on("end", async (done) => {
+                await fs.unlink(inPath);
+                resolve(outPath);
             })
-            .save(outPath)
+            .save(outPath);
     });
-
 }
