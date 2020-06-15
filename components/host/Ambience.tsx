@@ -6,7 +6,7 @@ const useStyles = makeStyles({
     }
 });
 
-export default function Ambience(props) {
+export default function Ambience(props: {}) {
     const classes = useStyles();
 
     return <div className={classes.ambience}>Ambience</div>;

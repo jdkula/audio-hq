@@ -1,6 +1,7 @@
 import React from "react";
 import AudioSet from "./AudioSet";
 import Workspace, { Audio as WSAudio, File, AudioSet as WSAudioSet, WorkspaceState } from "./Workspace";
+import { StateUpdate } from "./WorkspaceAdapter";
 
 interface Main {
     context: AudioContext;
@@ -27,7 +28,7 @@ export default class AudioGraph {
     private _ambient: Ambient;
     private _sfx: SFX;
 
-    constructor(private readonly workspace: Workspace, private _setWorkspace: (workspace: Workspace) => any) {
+    constructor(private readonly workspace: Workspace, private _setState: (s: StateUpdate) => void) {
         const mainContext = new AudioContext();
         this._main = {
             context: mainContext,
@@ -50,23 +51,51 @@ export default class AudioGraph {
         };
     }
 
-    get main(): AudioSet | null {
-        return this._main.set;
+    get main() {
+        return {
+            resume: () => {
+                this._setState((state) => {
+                    console.log("Setting state", state);
+                    const ret = {
+                        ...state,
+                        playing:
+                            state.playing === null
+                                ? null
+                                : {
+                                      ...state.playing,
+                                      paused: false,
+                                  },
+                    };
+                    console.log("to", ret);
+                    return ret;
+                });
+                this._main.set?.resume();
+            },
+            pause: () => {
+                this._setState((state) => ({
+                    ...state,
+                    playing:
+                        state.playing === null
+                            ? null
+                            : {
+                                  ...state.playing,
+                                  paused: true,
+                              },
+                }));
+                this._main.set?.pause();
+            },
+        };
     }
 
-    playAmbient(audio: WSAudio) {
-        
-    }
+    playAmbient(audio: WSAudio) {}
 
-    async playMain(file: File) {
-        const files = [];
+    async playMain(files: FileList) {
+        const startPaused = this._main.set === null || this._main.set.paused;
 
-        const startPaused = this.main === null || this.main.paused;
-
-        if (file.type === "audioset") {
-            const baseset = file as WSAudioSet;
-            baseset.fileIds;
-        }
+        // if (file.type === "audioset") {
+        //     const baseset = file as WSAudioSet;
+        //     baseset.fileIds;
+        // }
 
         this._main.context.close();
         const newContext = new AudioContext();
@@ -82,12 +111,12 @@ export default class AudioGraph {
         this._main.gain.connect(this._main.context.destination);
 
         newSet.start();
-        newSet.fadeIn(0);
+        for (let i = 0; i < files.length; i++) {
+            newSet.fadeIn(i);
+        }
     }
 
-    playSfx(audio: WSAudio) {
-            
-    }
+    playSfx(audio: WSAudio) {}
 
     close() {
         this._main.context.close();
@@ -97,12 +126,12 @@ export default class AudioGraph {
         AudioGraph._instanceWs = null;
     }
 
-    static graph(workspace: Workspace, setWorkspace: (workspace: Workspace) => any): AudioGraph {
+    static graph(workspace: Workspace, setState: (s: StateUpdate) => void): AudioGraph {
         if (this._instanceWs !== workspace.name) {
             this._instance?.close();
         }
         if (!this._instance) {
-            this._instance = new AudioGraph(workspace, setWorkspace);
+            this._instance = new AudioGraph(workspace, setState);
             this._instanceWs = workspace.name;
         }
 
@@ -110,4 +139,4 @@ export default class AudioGraph {
     }
 }
 
-export const AudioGraphContext = React.createContext(new AudioGraph());
+export const AudioGraphContext = React.createContext<AudioGraph | null>(null);

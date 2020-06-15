@@ -8,7 +8,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export default function Header(props) {
+export default function Header(props: {}) {
     const classes = useStyles();
     const workspace = useContext(WorkspaceContext);
 

@@ -1,20 +1,20 @@
-import Workspace, { StoredWorkspace } from "./Workspace";
+import Workspace, { StoredWorkspace, WorkspaceState } from "./Workspace";
 import PouchDB from "pouchdb";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AudioGraph from "./AudioGraph";
 
 export default class WorkspaceAdapter {
     private readonly db: PouchDB.Database;
     private readonly onChange: (() => void)[] = [];
 
-    constructor(private readonly _workspace: Workspace) {
-        this.db = new PouchDB(_workspace.name);
+    constructor(private readonly _workspace: string) {
+        this.db = new PouchDB(_workspace);
 
         this.db
-            .sync("http://admin:admin@localhost:5984/workspaces", {
+            .sync("http://admin:admin@localhost:5984/workspace", {
                 live: true,
                 retry: true,
-                doc_ids: [_workspace.name],
+                doc_ids: [_workspace],
             })
             .on("change", () => {
                 for (const f of this.onChange) {
@@ -26,9 +26,17 @@ export default class WorkspaceAdapter {
     }
 
     async workspace(): Promise<StoredWorkspace> {
-        const ws = await this.db.get<StoredWorkspace>(this._workspace.name);
+        try {
+            return await this.db.get<StoredWorkspace>(this._workspace);
+        } catch (e) {
+            await this.db.put<StoredWorkspace>({
+                files: [],
+                name: this._workspace,
+                _id: this._workspace,
+            });
 
-        return ws;
+            return await this.db.get<StoredWorkspace>(this._workspace);
+        }
     }
 
     addOnChangeHandler(onChange: () => void): void {
@@ -43,8 +51,10 @@ export default class WorkspaceAdapter {
     }
 }
 
-export function useWorkspace(workspaceName: string): Workspace {
-    const [workspace, setWorkspace] = useState<Workspace>({
+export type StateUpdate = Partial<WorkspaceState> | ((ws: WorkspaceState) => WorkspaceState);
+
+export function useWorkspace(workspaceName: string): [Workspace, (state: StateUpdate) => void] {
+    const defaultWorkspace = {
         name: workspaceName,
         files: [],
         state: {
@@ -55,27 +65,53 @@ export function useWorkspace(workspaceName: string): Workspace {
             suggestions: [],
             users: [],
         },
-    });
+    };
 
-    const [adapter] = useState<WorkspaceAdapter>(new WorkspaceAdapter(workspace));
+    if (typeof window === "undefined") {
+        console.warn("RETURNING DEFAULT WORKSPACE");
+        return [defaultWorkspace, () => {}];
+    }
 
-    adapter.addOnChangeHandler(async () => {
-        setWorkspace({
-            state: workspace.state,
-            ...(await adapter.workspace()),
+    const [workspace, setWorkspace] = useState<Workspace>(defaultWorkspace);
+
+    const adapter = new WorkspaceAdapter(workspace.name);
+
+    useEffect(() => {
+        adapter.addOnChangeHandler(async () => {
+            const ws = await adapter.workspace();
+            setWorkspace((oldWorkspace) => ({
+                state: oldWorkspace.state,
+                ...ws,
+            }));
         });
-    });
 
-    adapter.workspace().then((ws) => {
-        setWorkspace({
-            state: workspace.state,
-            ...ws,
+        adapter.workspace().then((ws) => {
+            setWorkspace((oldWorkspace) => ({
+                state: oldWorkspace.state,
+                ...ws,
+            }));
         });
-    });
+    }, []);
 
-    const graph = AudioGraph.graph(workspace, setWorkspace);
+    function setState(state: StateUpdate) {
+        setWorkspace((oldWorkspace) => {
+            let newState: WorkspaceState;
+            if (typeof state === "function") {
+                newState = state(oldWorkspace.state);
+            } else {
+                newState = Object.assign(oldWorkspace.state, state);
+            }
+
+            const newWs = {
+                ...oldWorkspace,
+                state: newState,
+            };
+
+            setWorkspace(newWs);
+        });
+    }
 
     // TODO: deal with updating state when playing stuff from nowPlaying!!
 
-    return [workspace, graph];
+    return [workspace, setState];
 }

@@ -9,7 +9,9 @@ import SoundFX from "~/components/host/SoundFX";
 import CurrentUsers from "~/components/host/CurrentUsers";
 import Workspace from "~/lib/Workspace";
 import PropTypes from "prop-types";
-import WorkspaceAdapter from "~/lib/WorkspaceAdapter";
+import WorkspaceAdapter, { useWorkspace } from "~/lib/WorkspaceAdapter";
+import AudioGraph from "~/lib/AudioGraph";
+import { GetServerSideProps } from "next";
 
 export const WorkspaceContext = React.createContext<Workspace | null>(null);
 
@@ -53,13 +55,21 @@ const propTypes = {
 export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTypes>) {
     const classes = useStyles();
 
-    const workspace = useWorkspace();
+    const [workspace, setWorkspaceState] = useWorkspace(props.workspace);
+
+    const [graph, setGraph] = useState<AudioGraph | null>(null);
+
+    useEffect(() => {
+        const graph = new AudioGraph(workspace, setWorkspaceState);
+        setGraph(graph);
+        return () => graph.close();
+    }, []);
 
     return (
         <WorkspaceContext.Provider value={workspace}>
             <div className={classes.container}>
                 <Header />
-                <NowPlaying />
+                {graph && <NowPlaying graph={graph} />}
                 <Explorer />
                 <Ambience />
                 <SoundFX />
@@ -71,10 +81,10 @@ export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTyp
 
 WorkspaceHost.propTypes = propTypes;
 
-export function getServerSideProps(context) {
+export const getServerSideProps: GetServerSideProps = async (context) => {
     return {
         props: {
             workspace: context.query.id,
         },
     };
-}
+};

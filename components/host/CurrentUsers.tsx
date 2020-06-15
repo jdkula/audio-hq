@@ -6,7 +6,7 @@ const useStyles = makeStyles({
     }
 });
 
-export default function CurrentUsers(props) {
+export default function CurrentUsers(props: {}) {
     const classes = useStyles();
 
     return <div className={classes.users}>Current Users</div>;
