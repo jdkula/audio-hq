@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import Router from "next/router";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     container: {
         display: "grid",
         gridTemplateColumns: "20% 60% 20%",
@@ -77,10 +77,20 @@ export default function Home() {
                         className={classes.input}
                         label="Workspace Name"
                     />
-                    <Button className={classes.host} variant="contained" color="secondary" onClick={() => go(`/workspace/${text}/host`)}>
+                    <Button
+                        className={classes.host}
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => go(`/workspace/${text}/host`)}
+                    >
                         Host
                     </Button>
-                    <Button className={classes.join} variant="contained" color="primary" onClick={() => go(`/workspace/${text}`)}>
+                    <Button
+                        className={classes.join}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => go(`/workspace/${text}`)}
+                    >
                         Join
                     </Button>
                 </div>

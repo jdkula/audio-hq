@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "jsx": "preserve",
     "baseUrl": ".",
+    "downlevelIteration": true,
     "paths": {
       "~/*": ["./*"]
     },

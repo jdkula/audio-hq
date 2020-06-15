@@ -2,13 +2,16 @@ import Workspace, { StoredWorkspace, WorkspaceState } from "./Workspace";
 import PouchDB from "pouchdb";
 import { useState, useEffect } from "react";
 import AudioGraph from "./AudioGraph";
+import axios from "axios";
 
 export default class WorkspaceAdapter {
     private readonly db: PouchDB.Database;
+    private readonly cache: PouchDB.Database;
     private readonly onChange: (() => void)[] = [];
 
     constructor(private readonly _workspace: string) {
-        this.db = new PouchDB(_workspace);
+        this.db = new PouchDB("workspace");
+        this.cache = new PouchDB("cache");
 
         this.db
             .sync("http://admin:admin@localhost:5984/workspace", {
@@ -23,6 +26,28 @@ export default class WorkspaceAdapter {
                     }
                 }
             });
+    }
+
+    async getSong(id: string): Promise<Blob> {
+        try {
+            const data = await this.cache.getAttachment(id, "file");
+            return data as Blob; // client only.
+        } catch (e) {
+            const resp = await axios.get("http://localhost:3001/download/" + id, {
+                responseType: "arraybuffer",
+            });
+            const blob = new Blob([resp.data]);
+            await this.cache.put({
+                _id: id,
+                _attachments: {
+                    file: {
+                        content_type: "audio/mp3",
+                        data: blob,
+                    },
+                },
+            });
+            return blob;
+        }
     }
 
     async workspace(): Promise<StoredWorkspace> {
@@ -107,7 +132,7 @@ export function useWorkspace(workspaceName: string): [Workspace, (state: StateUp
                 state: newState,
             };
 
-            setWorkspace(newWs);
+            return newWs;
         });
     }
 

@@ -2,8 +2,8 @@ import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles({
     sfx: {
-        gridArea: "sfx"
-    }
+        gridArea: "sfx",
+    },
 });
 
 export default function SoundFX(props: {}) {

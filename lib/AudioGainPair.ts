@@ -16,7 +16,7 @@ export default class AudioGainPair {
     }
 
     get playedTime(): number | null {
-        if(this._startTime === null) return null;
+        if (this._startTime === null) return null;
 
         return this.context.currentTime - this._startTime;
     }
@@ -29,4 +29,3 @@ export default class AudioGainPair {
         return this.gainNode.context;
     }
 }
-

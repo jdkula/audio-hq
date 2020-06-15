@@ -1,31 +1,29 @@
 import AudioGainPair from "./AudioGainPair";
 
-async function getAudioFromFile(ctx: AudioContext, file: File, loop: boolean = true): Promise<AudioBufferSourceNode> {
-    return new Promise(resolve => {
-        let reader = new FileReader();
+async function getAudioFromBlob(ctx: AudioContext, blob: Blob, loop = true): Promise<AudioBufferSourceNode> {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
         reader.onload = async () => {
-            if (!reader.result) throw Error("Couldn't read file " + file);
+            if (!reader.result) throw Error("Couldn't read file " + blob);
 
-            let data = await ctx.decodeAudioData(reader.result as ArrayBuffer);
-            resolve(new AudioBufferSourceNode(ctx, {buffer: data, loop}));
+            const data = await ctx.decodeAudioData(reader.result as ArrayBuffer);
+            resolve(new AudioBufferSourceNode(ctx, { buffer: data, loop }));
         };
 
-        reader.readAsArrayBuffer(file);
-    })
+        reader.readAsArrayBuffer(blob);
+    });
 }
 
 export default class AudioSet {
     balance: boolean;
 
-    readonly files: string[];
     readonly pairs: AudioGainPair[];
     readonly defaultFade: number;
 
-    private _paused: boolean = false;
+    private _paused = false;
     private readonly _selected: Set<number>;
 
-    constructor(private readonly context: AudioContext, files = [], pairs = [], defaultFade = 1.875, balance = false) {
-        this.files = files;
+    constructor(private readonly context: AudioContext, pairs = [], defaultFade = 1.875, balance = false) {
         this.pairs = pairs;
         this._selected = new Set();
         this.balance = balance;
@@ -33,7 +31,7 @@ export default class AudioSet {
     }
 
     get duration(): number {
-        return this.pairs[0].audioNode.buffer!!.duration;
+        return this.pairs[0].audioNode.buffer!.duration;
     }
 
     get playedTime(): number | null {
@@ -41,20 +39,20 @@ export default class AudioSet {
     }
 
     get currentSelected(): Iterable<number> {
-        let out = new Set<number>();
-        for (let sel of this._selected) {
+        const out = new Set<number>();
+        for (const sel of this._selected) {
             out.add(sel);
         }
         return out;
     }
 
     set currentSelected(values: Iterable<number>) {
-        for (let selected of this.currentSelected) {
+        for (const selected of this.currentSelected) {
             this.cutOut(selected);
         }
 
         if (!values) return;
-        for (let value of values) {
+        for (const value of values) {
             this.cutIn(value);
         }
     }
@@ -81,9 +79,9 @@ export default class AudioSet {
 
     doBalance(fadeTime: number | null = null): void {
         if (this.balance) {
-            let vol = this.getNextVolume(this.numEnabled);
-            for (let id of this._selected) {
-                let pair = this.pairs[id];
+            const vol = this.getNextVolume(this.numEnabled);
+            for (const id of this._selected) {
+                const pair = this.pairs[id];
                 if (fadeTime !== null) {
                     pair.gain.setValueAtTime(pair.gain.value, pair.context.currentTime);
                     pair.gain.cancelScheduledValues(pair.context.currentTime + 0.001);
@@ -96,7 +94,7 @@ export default class AudioSet {
     }
 
     cutTo(next: number): void {
-        for (let id of this.currentSelected) {
+        for (const id of this.currentSelected) {
             this.cutOut(id);
         }
         this.cutIn(next);
@@ -104,19 +102,19 @@ export default class AudioSet {
 
     cutIn(id?: number, when?: number): void {
         if (id === undefined) {
-            for (let id of this.currentSelected) {
+            for (const id of this.currentSelected) {
                 this.cutOut(id, when);
             }
             return;
         }
 
-        let pair = this.pairs[id];
+        const pair = this.pairs[id];
 
         if (when === undefined) {
             when = pair.context.currentTime;
         }
 
-        let vol = this.getNextVolume(this.numEnabled + 1);
+        const vol = this.getNextVolume(this.numEnabled + 1);
         pair.gain.setValueAtTime(vol, when);
 
         this._selected.add(id);
@@ -124,13 +122,13 @@ export default class AudioSet {
 
     cutOut(id?: number, when?: number): void {
         if (id === undefined) {
-            for (let id of this.currentSelected) {
+            for (const id of this.currentSelected) {
                 this.cutOut(id, when);
             }
             return;
         }
 
-        let pair = this.pairs[id];
+        const pair = this.pairs[id];
         if (when === undefined) {
             when = pair.context.currentTime;
         }
@@ -140,7 +138,7 @@ export default class AudioSet {
     }
 
     fadeTo(next: number, fadeTime: number = this.defaultFade): void {
-        for (let id of this.currentSelected) {
+        for (const id of this.currentSelected) {
             this.fadeOut(id, undefined, fadeTime);
         }
 
@@ -149,7 +147,7 @@ export default class AudioSet {
 
     fadeIn(id: number, when?: number, fadeTime: number = this.defaultFade): void {
         if (!this.isPlaying(id)) {
-            let pair = this.pairs[id];
+            const pair = this.pairs[id];
 
             if (when === undefined) {
                 when = pair.context.currentTime;
@@ -164,14 +162,14 @@ export default class AudioSet {
 
     fadeOut(id?: number, when?: number, fadeTime: number = this.defaultFade): void {
         if (id === undefined) {
-            for (let id of this.currentSelected) {
+            for (const id of this.currentSelected) {
                 this.fadeOut(id, when, fadeTime);
             }
             return;
         }
 
         if (this.isPlaying(id)) {
-            let pair = this.pairs[id];
+            const pair = this.pairs[id];
 
             if (when === undefined) {
                 when = pair.context.currentTime;
@@ -185,7 +183,7 @@ export default class AudioSet {
     }
 
     start(when?: number, offset?: number) {
-        for (let pair of this.pairs) {
+        for (const pair of this.pairs) {
             pair.start(when, offset);
         }
     }
@@ -208,22 +206,27 @@ export default class AudioSet {
         return this._paused;
     }
 
-    static async fromFileList(ctx: AudioContext, fileList: FileList, defaultFade: number = 1.875, balance: boolean = false, output: AudioNode = ctx.destination): Promise<AudioSet> {
-        let aset = new AudioSet(ctx, [], [], defaultFade, balance);
-        let processing = [];
+    static async fromBlobs(
+        ctx: AudioContext,
+        blobList: Iterable<Blob>,
+        defaultFade = 1.875,
+        balance = false,
+        output: AudioNode = ctx.destination,
+    ): Promise<AudioSet> {
+        const aset = new AudioSet(ctx, [], defaultFade, balance);
+        const processing = [];
 
-        for (let file of fileList) {
-            aset.files.push(file.name);
-            processing.push(getAudioFromFile(ctx, file));
+        for (const blob of blobList) {
+            processing.push(getAudioFromBlob(ctx, blob));
         }
 
-        let sources = await Promise.all(processing);
+        const sources = await Promise.all(processing);
 
-        for (let source of sources) {
+        for (const source of sources) {
             aset.pairs.push(new AudioGainPair(ctx, source));
         }
 
-        for (let pair of aset.pairs) {
+        for (const pair of aset.pairs) {
             pair.gainNode.connect(output);
             pair.gain.setValueAtTime(0, ctx.currentTime);
         }

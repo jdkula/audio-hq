@@ -4,30 +4,33 @@ import { WorkspaceContext } from "~/pages/workspace/[id]/host";
 
 const useStyles = makeStyles({
     explorer: {
-        gridArea: "explorer"
-    }
+        gridArea: "explorer",
+    },
 });
 
-const propTypes = {
+const propTypes = {};
 
-}
-
-export default function Explorer(props: {}) {
+export default function Explorer(props: { setSong: any }) {
     const classes = useStyles();
 
     const workspace = useContext(WorkspaceContext);
 
-    const doPlay = (fileId) => {
+    const doPlay = (fileId: string) => {
         return () => {
-            // TODO: Communicate to <Host /> that we're playing something new.
+            props.setSong(fileId);
         };
     };
-    
-    const fileButtons = workspace?.files.map(file => <Button onClick={doPlay(file.id)} key={file.id}>{file.name}</Button>)
 
-    return <div className={classes.explorer}>
-        {fileButtons}
-        Explorer!
-    </div>;
+    const fileButtons = workspace?.files.map((file) => (
+        <Button onClick={doPlay(file.id)} key={file.id}>
+            {file.name}
+        </Button>
+    ));
+
+    return (
+        <div className={classes.explorer}>
+            {fileButtons}
+            Explorer!
+        </div>
+    );
 }
-

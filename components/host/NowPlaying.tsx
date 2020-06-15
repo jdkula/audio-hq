@@ -28,7 +28,9 @@ export default function NowPlaying(props: { graph: AudioGraph }) {
     return (
         <div className={classes.nowplaying}>
             <input type="file" multiple ref={fileinput} onInput={onFile} />
-            <Button variant="outlined" onClick={() => props.graph.main.resume()}>Play</Button>
+            <Button variant="outlined" onClick={() => props.graph.main.resume()}>
+                Play
+            </Button>
             Now Playing!
         </div>
     );

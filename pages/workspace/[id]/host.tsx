@@ -15,7 +15,7 @@ import { GetServerSideProps } from "next";
 
 export const WorkspaceContext = React.createContext<Workspace | null>(null);
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     container: {
         display: "grid",
         gridTemplateColumns: "50% 30% 20%",
@@ -59,18 +59,25 @@ export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTyp
 
     const [graph, setGraph] = useState<AudioGraph | null>(null);
 
+    const adapter = new WorkspaceAdapter(props.workspace);
+
     useEffect(() => {
         const graph = new AudioGraph(workspace, setWorkspaceState);
         setGraph(graph);
         return () => graph.close();
     }, []);
 
+    const setSong = async (id: string) => {
+        const blob = await adapter.getSong(id);
+        graph?.playMain([blob]);
+    };
+
     return (
         <WorkspaceContext.Provider value={workspace}>
             <div className={classes.container}>
                 <Header />
                 {graph && <NowPlaying graph={graph} />}
-                <Explorer />
+                <Explorer setSong={setSong} />
                 <Ambience />
                 <SoundFX />
                 <CurrentUsers />

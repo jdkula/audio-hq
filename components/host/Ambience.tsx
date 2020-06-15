@@ -2,8 +2,8 @@ import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles({
     ambience: {
-        gridArea: "ambience"
-    }
+        gridArea: "ambience",
+    },
 });
 
 export default function Ambience(props: {}) {

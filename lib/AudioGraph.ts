@@ -89,7 +89,7 @@ export default class AudioGraph {
 
     playAmbient(audio: WSAudio) {}
 
-    async playMain(files: FileList) {
+    async playMain(blobs: Iterable<Blob>) {
         const startPaused = this._main.set === null || this._main.set.paused;
 
         // if (file.type === "audioset") {
@@ -100,7 +100,7 @@ export default class AudioGraph {
         this._main.context.close();
         const newContext = new AudioContext();
         const newGain = newContext.createGain();
-        const newSet = await AudioSet.fromFileList(newContext, files, 1.875, false, newGain);
+        const newSet = await AudioSet.fromBlobs(newContext, blobs, 1.875, false, newGain);
 
         this._main.context = newContext;
         if (startPaused) {
@@ -111,7 +111,7 @@ export default class AudioGraph {
         this._main.gain.connect(this._main.context.destination);
 
         newSet.start();
-        for (let i = 0; i < files.length; i++) {
+        for (let i = 0; i < this._main.set.pairs.length; i++) {
             newSet.fadeIn(i);
         }
     }
