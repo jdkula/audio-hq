@@ -4,7 +4,7 @@ export default class AudioGainPair {
 
     private _startTime: number | null = null;
 
-    constructor(ctx: AudioContext, audioBufferSourceNode: AudioBufferSourceNode) {
+    constructor(ctx: BaseAudioContext, audioBufferSourceNode: AudioBufferSourceNode) {
         this.gainNode = ctx.createGain();
         this.audioNode = audioBufferSourceNode;
         this.audioNode.connect(this.gainNode);

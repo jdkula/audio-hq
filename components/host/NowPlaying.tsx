@@ -1,7 +1,9 @@
 import { makeStyles, Button } from "@material-ui/core";
 import { createRef, FormEvent } from "react";
 import AudioGraph from "~/lib/AudioGraph";
-import PropTypes from "prop-types";
+import WorkspaceAdapter from "~/lib/WorkspaceAdapter";
+
+import { functionalComponent } from "~/lib/Utility";
 
 const useStyles = makeStyles({
     nowplaying: {
@@ -9,30 +11,29 @@ const useStyles = makeStyles({
     },
 });
 
-const propTypes = {
-    graph: PropTypes.instanceOf(AudioGraph).isRequired,
-};
+export default functionalComponent(
+    (PropTypes) => ({
+        adapter: PropTypes.instanceOf(WorkspaceAdapter).isRequired,
+    }),
+    (props) => {
+        const classes = useStyles();
+        const fileinput = createRef<HTMLInputElement>();
 
-export default function NowPlaying(props: PropTypes.InferProps<typeof propTypes>): React.ReactElement {
-    const classes = useStyles();
-    const fileinput = createRef<HTMLInputElement>();
+        const onFile = (e: FormEvent<HTMLInputElement>) => {
+            const files = (e.target as HTMLInputElement)?.files;
+            if (!files) return;
 
-    const onFile = (e: FormEvent<HTMLInputElement>) => {
-        const files = (e.target as HTMLInputElement)?.files;
-        if (!files) return;
+            // can't anymore...
+        };
 
-        props.graph.playMain(files);
-    };
-
-    return (
-        <div className={classes.nowplaying}>
-            <input type="file" multiple ref={fileinput} onInput={onFile} />
-            <Button variant="outlined" onClick={() => props.graph.main.resume()}>
-                Play
-            </Button>
-            Now Playing!
-        </div>
-    );
-}
-
-NowPlaying.propTypes = propTypes;
+        return (
+            <div className={classes.nowplaying}>
+                <input type="file" multiple ref={fileinput} onInput={onFile} />
+                <Button variant="outlined" onClick={() => props.adapter.updateMain({paused: false})}>
+                    Play
+                </Button>
+                Now Playing!
+            </div>
+        );
+    },
+);

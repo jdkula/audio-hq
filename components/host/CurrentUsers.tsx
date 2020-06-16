@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/core";
+import { functionalComponent, noProps } from "~/lib/Utility";
 
 const useStyles = makeStyles({
     users: {
@@ -6,8 +7,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function CurrentUsers(): React.ReactElement {
+export default functionalComponent(noProps, () => {
     const classes = useStyles();
 
     return <div className={classes.users}>Current Users</div>;
-}
+});

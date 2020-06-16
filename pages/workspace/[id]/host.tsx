@@ -12,6 +12,7 @@ import PropTypes from "prop-types";
 import WorkspaceAdapter, { useWorkspace } from "~/lib/WorkspaceAdapter";
 import AudioGraph from "~/lib/AudioGraph";
 import { GetServerSideProps } from "next";
+import { functionalComponent } from "~/lib/Utility";
 
 export const WorkspaceContext = React.createContext<Workspace | null>(null);
 
@@ -48,45 +49,44 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-const propTypes = {
-    workspace: PropTypes.string.isRequired,
-};
+export default functionalComponent(
+    (PropTypes) => ({
+        workspace: PropTypes.string.isRequired,
+    }),
+    (props) => {
+        const classes = useStyles();
 
-export default function WorkspaceHost(props: PropTypes.InferProps<typeof propTypes>): React.ReactElement {
-    const classes = useStyles();
+        const [workspace, setWorkspace] = useWorkspace(props.workspace);
 
-    const [workspace, setWorkspaceState] = useWorkspace(props.workspace);
+        const [adapter, setAdapter] = useState<WorkspaceAdapter | null>(null);
 
-    const [graph, setGraph] = useState<AudioGraph | null>(null);
+        useEffect(() => {
+            const adapter = WorkspaceAdapter.instance(props.workspace, setWorkspace);
+            setAdapter(adapter);
+            return () => adapter.close();
+        }, []);
 
-    const adapter = new WorkspaceAdapter(props.workspace);
+        const setSong = async (id: string) => {
+            adapter?.updateMain({
+                id,
+                fileId: null,
+            });
+        };
 
-    useEffect(() => {
-        const graph = new AudioGraph(setWorkspaceState);
-        setGraph(graph);
-        return () => graph.close();
-    }, []);
-
-    const setSong = async (id: string) => {
-        const blob = await adapter.getSong(id);
-        graph?.playMain([blob]);
-    };
-
-    return (
-        <WorkspaceContext.Provider value={workspace}>
-            <div className={classes.container}>
-                <Header />
-                {graph && <NowPlaying graph={graph} />}
-                <Explorer setSong={setSong} />
-                <Ambience />
-                <SoundFX />
-                <CurrentUsers />
-            </div>
-        </WorkspaceContext.Provider>
-    );
-}
-
-WorkspaceHost.propTypes = propTypes;
+        return (
+            <WorkspaceContext.Provider value={workspace}>
+                <div className={classes.container}>
+                    <Header />
+                    {adapter && <NowPlaying adapter={adapter} />}
+                    <Explorer setSong={setSong} />
+                    <Ambience />
+                    <SoundFX />
+                    <CurrentUsers />
+                </div>
+            </WorkspaceContext.Provider>
+        );
+    },
+);
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     return {

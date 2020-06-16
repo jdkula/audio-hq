@@ -1,6 +1,7 @@
 import { makeStyles, AppBar, Toolbar, Typography } from "@material-ui/core";
 import { WorkspaceContext } from "~/pages/workspace/[id]/host";
 import { useContext } from "react";
+import { functionalComponent, noProps } from "~/lib/Utility";
 
 const useStyles = makeStyles(() => ({
     header: {
@@ -8,7 +9,7 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-export default function Header(): React.ReactElement {
+export default functionalComponent(noProps, () => {
     const classes = useStyles();
     const workspace = useContext(WorkspaceContext);
 
@@ -19,4 +20,4 @@ export default function Header(): React.ReactElement {
             </Toolbar>
         </AppBar>
     );
-}
+});

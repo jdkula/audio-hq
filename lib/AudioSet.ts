@@ -1,6 +1,7 @@
 import AudioGainPair from "./AudioGainPair";
+import { Player } from "./Player";
 
-async function getAudioFromBlob(ctx: AudioContext, blob: Blob, loop = true): Promise<AudioBufferSourceNode> {
+async function getAudioFromBlob(ctx: BaseAudioContext, blob: Blob, loop = true): Promise<AudioBufferSourceNode> {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = async () => {
@@ -14,30 +15,78 @@ async function getAudioFromBlob(ctx: AudioContext, blob: Blob, loop = true): Pro
     });
 }
 
-export default class AudioSet {
+export default class AudioSet implements Player {
     balance: boolean;
-
-    readonly pairs: AudioGainPair[];
     readonly defaultFade: number;
 
-    private _paused = false;
-    private readonly _selected: Set<number>;
+    private _pairs: AudioGainPair[] = [];
 
-    constructor(private readonly context: AudioContext, pairs = [], defaultFade = 1.875, balance = false) {
-        this.pairs = pairs;
+    private _paused = false;
+    private _blobs: Blob[] = [];
+    private _selected: Set<number>;
+
+    private _volume = 1;
+
+    constructor(blobs: Blob[] = [], defaultFade = 1.875, balance = false) {
+        this._blobs = blobs;
         this._selected = new Set();
         this.balance = balance;
         this.defaultFade = defaultFade;
     }
 
+    get size(): number {
+        return this._pairs.length;
+    }
+
+    reset(): void {
+        // assumes new audiocontext/old audio context was closed.
+        this._pairs = [];
+        this._selected = new Set();
+    }
+
+    async connect(node: AudioNode): Promise<void> {
+        const processing = [];
+
+        for (const blob of this._blobs) {
+            processing.push(getAudioFromBlob(node.context, blob));
+        }
+
+        const sources = await Promise.all(processing);
+
+        for (const source of sources) {
+            const pair = new AudioGainPair(node.context, source);
+            pair.gainNode.connect(node);
+            this._pairs.push(pair);
+        }
+
+        for (const pair of this._pairs) {
+            pair.gain.setValueAtTime(0, node.context.currentTime);
+        }
+
+        this.start();
+    }
+
     get duration(): number {
-        const duration = this.pairs[0].audioNode.buffer?.duration;
+        const duration = this._pairs[0].audioNode.buffer?.duration;
         if (!duration) throw new Error("Could not get duration!");
         return duration;
     }
 
-    get playedTime(): number | null {
-        return this.pairs[0].playedTime;
+    seek(to?: number): number {
+        // TODO: ability to seek TO a time.
+        const now = this._pairs[0].playedTime;
+        if (!now) throw new Error("Couldn't get seek value from AudioSet!");
+
+        return now;
+    }
+
+    volume(vol?: number): number {
+        if (vol !== undefined) {
+            this._volume = vol;
+            this.doBalance();
+        }
+
+        return this._volume;
     }
 
     get currentSelected(): Iterable<number> {
@@ -60,7 +109,7 @@ export default class AudioSet {
     }
 
     get numOptions(): number {
-        return this.pairs.length;
+        return this._pairs.length;
     }
 
     get numEnabled(): number {
@@ -73,17 +122,17 @@ export default class AudioSet {
 
     getNextVolume(num: number): number {
         if (!this.balance) {
-            return 1;
+            return this._volume;
         }
         if (num === 0) return 0;
-        return 1 / num;
+        return this._volume / num;
     }
 
     doBalance(fadeTime: number | null = null): void {
         if (this.balance) {
             const vol = this.getNextVolume(this.numEnabled);
             for (const id of this._selected) {
-                const pair = this.pairs[id];
+                const pair = this._pairs[id];
                 if (fadeTime !== null) {
                     pair.gain.setValueAtTime(pair.gain.value, pair.context.currentTime);
                     pair.gain.cancelScheduledValues(pair.context.currentTime + 0.001);
@@ -110,7 +159,7 @@ export default class AudioSet {
             return;
         }
 
-        const pair = this.pairs[id];
+        const pair = this._pairs[id];
 
         if (when === undefined) {
             when = pair.context.currentTime;
@@ -130,7 +179,7 @@ export default class AudioSet {
             return;
         }
 
-        const pair = this.pairs[id];
+        const pair = this._pairs[id];
         if (when === undefined) {
             when = pair.context.currentTime;
         }
@@ -149,7 +198,7 @@ export default class AudioSet {
 
     fadeIn(id: number, when?: number, fadeTime: number = this.defaultFade): void {
         if (!this.isPlaying(id)) {
-            const pair = this.pairs[id];
+            const pair = this._pairs[id];
 
             if (when === undefined) {
                 when = pair.context.currentTime;
@@ -171,7 +220,7 @@ export default class AudioSet {
         }
 
         if (this.isPlaying(id)) {
-            const pair = this.pairs[id];
+            const pair = this._pairs[id];
 
             if (when === undefined) {
                 when = pair.context.currentTime;
@@ -185,54 +234,26 @@ export default class AudioSet {
     }
 
     start(when?: number, offset?: number): void {
-        for (const pair of this.pairs) {
+        for (const pair of this._pairs) {
             pair.start(when, offset);
         }
     }
 
     async pause(): Promise<void> {
         this._paused = true;
-        await this.context.suspend();
+        // relies completely on context, can't pause here.
     }
 
-    async resume(): Promise<void> {
+    async play(): Promise<void> {
         this._paused = false;
-        await this.context.resume();
+        // relies completely on context, can't pause here.
     }
 
     close(): void {
-        this.context.close();
+        // nothing to do.
     }
 
     get paused(): boolean {
         return this._paused;
-    }
-
-    static async fromBlobs(
-        ctx: AudioContext,
-        blobList: Iterable<Blob>,
-        defaultFade = 1.875,
-        balance = false,
-        output: AudioNode = ctx.destination,
-    ): Promise<AudioSet> {
-        const aset = new AudioSet(ctx, [], defaultFade, balance);
-        const processing = [];
-
-        for (const blob of blobList) {
-            processing.push(getAudioFromBlob(ctx, blob));
-        }
-
-        const sources = await Promise.all(processing);
-
-        for (const source of sources) {
-            aset.pairs.push(new AudioGainPair(ctx, source));
-        }
-
-        for (const pair of aset.pairs) {
-            pair.gainNode.connect(output);
-            pair.gain.setValueAtTime(0, ctx.currentTime);
-        }
-
-        return aset;
     }
 }
