@@ -7,7 +7,7 @@ import cors from "cors";
 
 import path from "path";
 
-import { StoredWorkspace, File } from "../../lib/Workspace";
+import { Workspace, File } from "../../lib/Workspace";
 
 import Multer from "multer";
 
@@ -45,7 +45,7 @@ app.post("/:ws/download", async (req, res) => {
 
     let doc;
     try {
-        doc = await db.get<StoredWorkspace>(ws);
+        doc = await db.get<Workspace>(ws);
         doc.files.push(file);
     } catch (e) {
         doc = {
@@ -75,7 +75,7 @@ app.post("/:ws/import", multer.single("upload"), async (req, res) => {
 
     let doc;
     try {
-        doc = await db.get<StoredWorkspace>(ws);
+        doc = await db.get<Workspace>(ws);
         doc.files.push(wsfile);
     } catch (e) {
         doc = {
@@ -110,12 +110,12 @@ app.get("/download/:id", (req, res) => {
 });
 
 async function verifyAllFiles() {
-    const allWorkspaces = await db.allDocs<StoredWorkspace>({
+    const allWorkspaces = await db.allDocs<Workspace>({
         include_docs: true,
     });
 
     const base = path.resolve(process.cwd(), "storage");
-    const changes = new Map<string, PouchDB.Core.ExistingDocument<StoredWorkspace>>();
+    const changes = new Map<string, PouchDB.Core.ExistingDocument<Workspace>>();
 
     for (const row of allWorkspaces.rows) {
         if (!row.doc) {

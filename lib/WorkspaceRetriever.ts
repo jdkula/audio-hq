@@ -1,47 +1,39 @@
-import { StoredWorkspace } from './Workspace';
+import { Workspace } from './Workspace';
 import PouchDB from 'pouchdb';
 import axios from 'axios';
+import Pusher from 'pusher-js';
+import Axios from 'axios';
+
 export class WorkspaceRetriever {
-    private readonly db: PouchDB.Database;
+    private readonly pusher: Pusher;
     private readonly cache: PouchDB.Database;
     private readonly onChange: (() => void)[] = [];
 
     constructor(private readonly _workspaceId: string) {
-        this.db = new PouchDB('workspace');
+        this.pusher = new Pusher('84babc6c05f24b3af609', {
+            cluster: 'us3',
+        });
+
         this.cache = new PouchDB('cache');
 
-        this.db
-            .sync('http://admin:admin@localhost:5984/workspace', {
-                live: true,
-                retry: true,
-                doc_ids: [_workspaceId],
-            })
-            .on('change', () => {
-                for (const f of this.onChange) {
-                    if (f && typeof f === 'function') {
-                        f();
-                    }
+        const channel = this.pusher.subscribe(_workspaceId);
+
+        channel.bind('change', () => {
+            for (const f of this.onChange) {
+                if (f && typeof f === 'function') {
+                    f();
                 }
-            });
+            }
+        });
     }
 
     close(): void {
-        this.db.close();
+        this.pusher.disconnect();
         this.cache.close();
     }
 
-    async workspace(): Promise<StoredWorkspace> {
-        try {
-            return await this.db.get<StoredWorkspace>(this._workspaceId);
-        } catch (e) {
-            await this.db.put<StoredWorkspace>({
-                files: [],
-                name: this._workspaceId,
-                _id: this._workspaceId,
-            });
-
-            return await this.db.get<StoredWorkspace>(this._workspaceId);
-        }
+    async workspace(): Promise<Workspace> {
+        return (await Axios.get('/api/' + this._workspaceId)).data;
     }
 
     async song(id: string): Promise<Blob> {
@@ -49,7 +41,7 @@ export class WorkspaceRetriever {
             const data = await this.cache.getAttachment(id, 'file');
             return data as Blob; // client only.
         } catch (e) {
-            const resp = await axios.get('http://localhost:3001/download/' + id, {
+            const resp = await axios.get('/api/files/' + id, {
                 responseType: 'arraybuffer',
             });
             const blob = new Blob([resp.data]);

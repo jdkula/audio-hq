@@ -1,5 +1,6 @@
-type ID = string;
+import type { ObjectId } from 'mongodb';
 
+type ID = ObjectId;
 export interface File {
     name: string;
     path: string;
@@ -45,12 +46,9 @@ export interface WorkspaceState {
     suggestions: Suggestion[];
     users: PlayerState[];
 }
-
-export interface StoredWorkspace {
+export interface Workspace {
+    _id: string;
     name: string;
     files: File[];
-}
-
-export interface Workspace extends StoredWorkspace {
     state: WorkspaceState;
 }
