@@ -1,30 +1,13 @@
-import PropTypes from "prop-types";
-
-export type Update<T> = Partial<T> | ((old: T) => T);
-
-export function applyUpdate<T>(old: T, update: Update<T>): T {
+export function applyUpdate<T>(old: T, update: Partial<T>, def: T): T {
     let newT: T;
-    if (typeof update === "function") {
-        newT = update(old);
+    if (old === null) {
+        const copy = Object.assign({}, def); // can't say "= null" here; type error.
+        newT = Object.assign(copy, update);
+    } else if (update === null) {
+        newT = update; // can't say "= null" here; type error.
     } else {
-        newT = Object.assign(old ?? {}, update);
+        newT = Object.assign(old, update);
     }
 
     return newT;
-}
-
-export function noProps(): undefined {
-    return undefined;
-}
-
-export function props<PT>(props: PT): () => PT {
-    return () => props;
-}
-
-export function functionalComponent<PT>(
-    getPropTypes: (propTypes: typeof PropTypes) => PT,
-    component: React.FunctionComponent<PropTypes.InferProps<PT>>,
-): React.FunctionComponent<PropTypes.InferProps<PT>> {
-    component.propTypes = getPropTypes(PropTypes);
-    return component;
 }

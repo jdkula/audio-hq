@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core";
-import { noProps, functionalComponent } from "~/lib/Utility";
+import { FunctionComponent } from "react";
 
 const useStyles = makeStyles({
     ambience: {
@@ -7,8 +7,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default functionalComponent(noProps, () => {
+export const Ambience: FunctionComponent = () => {
     const classes = useStyles();
 
     return <div className={classes.ambience}>Ambience</div>;
-});
+};

@@ -1,4 +1,4 @@
-export default class AudioGainPair {
+export class AudioGainPair {
     readonly gainNode: GainNode;
     readonly audioNode: AudioBufferSourceNode;
 
@@ -13,6 +13,10 @@ export default class AudioGainPair {
     start(when?: number, offset?: number, duration?: number): void {
         this._startTime = this.context.currentTime;
         this.audioNode.start(when, offset, duration);
+    }
+
+    stop(when?: number): void {
+        this.audioNode.stop(when);
     }
 
     get playedTime(): number | null {

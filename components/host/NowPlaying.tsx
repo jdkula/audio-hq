@@ -1,9 +1,11 @@
 import { makeStyles, Button } from "@material-ui/core";
-import { createRef, FormEvent } from "react";
-import AudioGraph from "~/lib/AudioGraph";
-import WorkspaceAdapter from "~/lib/WorkspaceAdapter";
+import { createRef, FormEvent, useEffect, useState, FunctionComponent, useContext } from "react";
+import { WorkspaceAdapter } from "~/lib/WorkspaceAdapter";
 
-import { functionalComponent } from "~/lib/Utility";
+import { AudioControls } from "./AudioControls";
+import { Workspace } from "~/lib/Workspace";
+import { WorkspaceContext } from "~/pages/workspace/[id]/host";
+import { Seeker } from "../Seeker";
 
 const useStyles = makeStyles({
     nowplaying: {
@@ -11,29 +13,37 @@ const useStyles = makeStyles({
     },
 });
 
-export default functionalComponent(
-    (PropTypes) => ({
-        adapter: PropTypes.instanceOf(WorkspaceAdapter).isRequired,
-    }),
-    (props) => {
-        const classes = useStyles();
-        const fileinput = createRef<HTMLInputElement>();
+export const NowPlaying: FunctionComponent<{
+    adapter: WorkspaceAdapter;
+}> = (props) => {
+    const classes = useStyles();
 
-        const onFile = (e: FormEvent<HTMLInputElement>) => {
-            const files = (e.target as HTMLInputElement)?.files;
-            if (!files) return;
+    const workspace = useContext(WorkspaceContext);
 
-            // can't anymore...
-        };
+    const updateSeek = (to: number) => {
+        props.adapter.updateMain({
+            timestamp: to,
+        });
+        // TODO: On mouse up, actually send update.
+    };
 
-        return (
-            <div className={classes.nowplaying}>
-                <input type="file" multiple ref={fileinput} onInput={onFile} />
-                <Button variant="outlined" onClick={() => props.adapter.updateMain({paused: false})}>
-                    Play
-                </Button>
-                Now Playing!
-            </div>
-        );
-    },
-);
+    const updateVol = (to: number) => {
+        props.adapter.updateMain({
+            volume: to,
+        });
+    }
+
+    return (
+        <div className={classes.nowplaying}>
+            <Seeker value={workspace?.state.playing?.volume ?? 0} min={0} max={1} step={0.01} onSeek={updateVol} live />
+            <AudioControls
+                adapter={props.adapter}
+                state={workspace?.state.playing ?? undefined}
+                onPause={() => props.adapter.updateMain({ paused: true })}
+                onPlay={() => props.adapter.updateMain({ paused: false })}
+                onSeek={updateSeek}
+            />
+            <Button onClick={() => props.adapter.graph.main.player(0)?.seek(200)}>Seek Test</Button>
+        </div>
+    );
+};

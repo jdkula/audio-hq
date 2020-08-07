@@ -4,22 +4,22 @@ export interface File {
     name: string;
     path: string;
     id: ID;
-    type: "audioset" | "audio";
+    type: 'audioset' | 'audio';
 }
 
 export interface Audio extends File {
-    type: "audio";
+    type: 'audio';
 }
 
 export interface AudioSet extends File {
-    type: "audioset";
+    type: 'audioset';
     fileIds: ID[];
 }
 
 export interface PlayState {
     id: ID;
     fileId: ID | null;
-    timestamp: number;
+    timestamp: number | null;
     volume: number;
     paused: boolean;
 }
@@ -29,7 +29,7 @@ export interface Suggestion {
     file: File;
 }
 
-export type Status = "playing" | "buffering";
+export type Status = 'playing' | 'buffering';
 
 export interface PlayerState {
     name: string;
@@ -51,6 +51,6 @@ export interface StoredWorkspace {
     files: File[];
 }
 
-export default interface Workspace extends StoredWorkspace {
+export interface Workspace extends StoredWorkspace {
     state: WorkspaceState;
 }

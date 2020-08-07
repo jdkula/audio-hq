@@ -1,20 +1,16 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FunctionComponent, createContext } from "react";
 import { makeStyles } from "@material-ui/core";
-import Header from "~/components/host/Header";
-import NowPlaying from "~/components/host/NowPlaying";
-import Explorer from "~/components/host/Explorer";
-import Ambience from "~/components/host/Ambience";
-import SoundFX from "~/components/host/SoundFX";
-import CurrentUsers from "~/components/host/CurrentUsers";
-import Workspace from "~/lib/Workspace";
-import PropTypes from "prop-types";
-import WorkspaceAdapter, { useWorkspace } from "~/lib/WorkspaceAdapter";
-import AudioGraph from "~/lib/AudioGraph";
+import { Header } from "~/components/host/Header";
+import { NowPlaying } from "~/components/host/NowPlaying";
+import { Explorer } from "~/components/host/Explorer";
+import { Ambience } from "~/components/host/Ambience";
+import { SoundFX } from "~/components/host/SoundFX";
+import { CurrentUsers } from "~/components/host/CurrentUsers";
+import { Workspace } from "~/lib/Workspace";
+import { WorkspaceAdapter, useWorkspace } from "~/lib/WorkspaceAdapter";
 import { GetServerSideProps } from "next";
-import { functionalComponent } from "~/lib/Utility";
 
-export const WorkspaceContext = React.createContext<Workspace | null>(null);
+export const WorkspaceContext = createContext<Workspace | null>(null);
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -49,44 +45,47 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-export default functionalComponent(
-    (PropTypes) => ({
-        workspace: PropTypes.string.isRequired,
-    }),
-    (props) => {
-        const classes = useStyles();
+const Host: FunctionComponent<{
+    workspace: string;
+}> = (props) => {
+    const classes = useStyles();
 
-        const [workspace, setWorkspace] = useWorkspace(props.workspace);
+    const [workspace, setWorkspace] = useWorkspace(props.workspace);
 
-        const [adapter, setAdapter] = useState<WorkspaceAdapter | null>(null);
+    const [adapter, setAdapter] = useState<WorkspaceAdapter | null>(null);
 
-        useEffect(() => {
-            const adapter = WorkspaceAdapter.instance(props.workspace, setWorkspace);
-            setAdapter(adapter);
-            return () => adapter.close();
-        }, []);
+    useEffect(() => {
+        const adapter = WorkspaceAdapter.instance(props.workspace, setWorkspace);
+        setAdapter(adapter);
+        // return () => {
+        //     adapter.close();
+        // };
+    }, []);
 
-        const setSong = async (id: string) => {
-            adapter?.updateMain({
-                id,
-                fileId: null,
-            });
-        };
+    const setSong = async (id: string) => {
+        await adapter?.updateMain({
+            id,
+            fileId: null,
+            paused: true,
+            timestamp: null,
+            volume: 1,
+        });
+    };
 
-        return (
-            <WorkspaceContext.Provider value={workspace}>
-                <div className={classes.container}>
-                    <Header />
-                    {adapter && <NowPlaying adapter={adapter} />}
-                    <Explorer setSong={setSong} />
-                    <Ambience />
-                    <SoundFX />
-                    <CurrentUsers />
-                </div>
-            </WorkspaceContext.Provider>
-        );
-    },
-);
+    return (
+        <WorkspaceContext.Provider value={workspace}>
+            <div className={classes.container}>
+                <Header />
+                {adapter && <NowPlaying adapter={adapter} />}
+                <Explorer setSong={setSong} />
+                <Ambience />
+                <SoundFX />
+                <CurrentUsers />
+            </div>
+        </WorkspaceContext.Provider>
+    );
+};
+export default Host;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     return {

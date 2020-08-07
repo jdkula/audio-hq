@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core";
-import { functionalComponent, noProps } from "~/lib/Utility";
+import { FunctionComponent } from "react";
 
 const useStyles = makeStyles({
     sfx: {
@@ -7,8 +7,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default functionalComponent(noProps, () => {
+export const SoundFX: FunctionComponent = () => {
     const classes = useStyles();
 
     return <div className={classes.sfx}>Sound FX</div>;
-});
+};

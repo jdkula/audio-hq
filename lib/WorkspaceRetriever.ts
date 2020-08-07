@@ -1,24 +1,24 @@
-import { StoredWorkspace } from "./Workspace";
-import PouchDB from "pouchdb";
-import axios from "axios";
-export default class WorkspaceRetriever {
+import { StoredWorkspace } from './Workspace';
+import PouchDB from 'pouchdb';
+import axios from 'axios';
+export class WorkspaceRetriever {
     private readonly db: PouchDB.Database;
     private readonly cache: PouchDB.Database;
     private readonly onChange: (() => void)[] = [];
 
     constructor(private readonly _workspaceId: string) {
-        this.db = new PouchDB("workspace");
-        this.cache = new PouchDB("cache");
+        this.db = new PouchDB('workspace');
+        this.cache = new PouchDB('cache');
 
         this.db
-            .sync("http://admin:admin@localhost:5984/workspace", {
+            .sync('http://admin:admin@localhost:5984/workspace', {
                 live: true,
                 retry: true,
                 doc_ids: [_workspaceId],
             })
-            .on("change", () => {
+            .on('change', () => {
                 for (const f of this.onChange) {
-                    if (f && typeof f === "function") {
+                    if (f && typeof f === 'function') {
                         f();
                     }
                 }
@@ -46,18 +46,18 @@ export default class WorkspaceRetriever {
 
     async song(id: string): Promise<Blob> {
         try {
-            const data = await this.cache.getAttachment(id, "file");
+            const data = await this.cache.getAttachment(id, 'file');
             return data as Blob; // client only.
         } catch (e) {
-            const resp = await axios.get("http://localhost:3001/download/" + id, {
-                responseType: "arraybuffer",
+            const resp = await axios.get('http://localhost:3001/download/' + id, {
+                responseType: 'arraybuffer',
             });
             const blob = new Blob([resp.data]);
             await this.cache.put({
                 _id: id,
                 _attachments: {
                     file: {
-                        content_type: "audio/mp3",
+                        content_type: 'audio/mp3',
                         data: blob,
                     },
                 },

@@ -1,9 +1,8 @@
-import React from "react";
-import AudioSet from "./AudioSet";
-import Workspace, { PlayState } from "./Workspace";
-import { StateUpdate } from "./WorkspaceAdapter";
-import { Player } from "./Player";
-import WorkspaceRetriever from "./WorkspaceRetriever";
+import { AudioSet } from './AudioSet';
+import { PlayState } from './Workspace';
+import { Player } from './Player';
+import { WorkspaceRetriever } from './WorkspaceRetriever';
+import { applyUpdate } from './Utility';
 
 interface Main {
     context: AudioContext;
@@ -28,11 +27,17 @@ class AudioElementAdapter implements Player {
 
     pause(): void {}
 
-    seek(to?: number): number {}
+    seek(to?: number): number {
+        return 0;
+    }
 
-    volume(vol?: number): number {}
+    volume(vol?: number): number {
+        return 0;
+    }
 
-    get duration(): number {}
+    get duration(): number {
+        return 0;
+    }
 
     async connect(node: AudioNode): Promise<void> {}
 
@@ -40,13 +45,17 @@ class AudioElementAdapter implements Player {
 }
 
 class AudioEngine<T extends Player> {
-    private _context: AudioContext = new AudioContext();
-    private _mainGain: GainNode = this._context.createGain();
-    private _volume: number = 1;
-    private _paused: boolean = true;
+    private _context: AudioContext;
+    private _mainGain: GainNode;
+    private _volume = 1;
+    private _paused = true;
     private readonly _players: T[] = [];
     constructor(players: T | T[] = []) {
+        window.AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+
+        this._context = new AudioContext();
         this._context.suspend();
+        this._mainGain = this._context.createGain();
 
         this._mainGain.connect(this._context.destination);
 
@@ -59,6 +68,10 @@ class AudioEngine<T extends Player> {
         }
     }
 
+    get context(): AudioContext {
+        return this._context;
+    }
+
     get paused() {
         return this._paused;
     }
@@ -67,13 +80,17 @@ class AudioEngine<T extends Player> {
         return this._players[id] ?? null;
     }
 
-    addPlayer(player: T): T {
+    async addPlayer(player: T): Promise<T> {
         this._players.push(player);
-        player.connect(this._mainGain);
+        await player.connect(this._mainGain);
+        if (this.paused) {
+            this._context.suspend();
+        }
         return player;
     }
 
     playAll(): void {
+        this._paused = false;
         this._context.resume();
         for (const player of this._players) {
             player.play();
@@ -81,6 +98,7 @@ class AudioEngine<T extends Player> {
     }
 
     pauseAll(): void {
+        this._paused = true;
         this._context.suspend();
         for (const player of this._players) {
             player.pause();
@@ -115,9 +133,9 @@ class AudioEngine<T extends Player> {
     }
 }
 
-export default class AudioGraph {
+export class AudioGraph {
     private static _instance: AudioGraph | null = null;
-    private _main: AudioEngine<AudioSet> = new AudioEngine();
+    public readonly main: AudioEngine<AudioSet> = new AudioEngine();
     private _mainState: PlayState | null = null;
     private _ambient: AudioEngine<AudioElementAdapter> = new AudioEngine();
     private _sfx: AudioEngine<AudioElementAdapter> = new AudioEngine();
@@ -128,15 +146,17 @@ export default class AudioGraph {
         // TODO: Add ambient music!
     }
 
-    async playMain(playState: PlayState | null, retriever: WorkspaceRetriever, force = false): Promise<void> {
+    async playMain(playState: Partial<PlayState | null>, retriever: WorkspaceRetriever, force = false): Promise<void> {
         // TODO: Reconcile, e.g. only pause or play.
 
-        if (!force && playState !== null && playState.id === this._mainState?.id) {
+        // const newState = applyUpdate(this._mainState, playState);
+
+        if (!force && playState !== null && (!playState.id || playState.id === this._mainState?.id)) {
             if (playState.paused) {
-                this._main.pauseAll();
+                this.main.pauseAll();
             } else {
-                this._main.playAll();
-                const aset = this._main.player(0);
+                this.main.playAll();
+                const aset = this.main.player(0);
                 if (aset) {
                     for (let i = 0; i < aset.size; i++) {
                         aset.fadeIn(i);
@@ -144,27 +164,52 @@ export default class AudioGraph {
                 }
             }
 
+            if (playState.timestamp) {
+                this.main.player(0)?.seek(playState.timestamp);
+            }
+
+            this.main.masterVolume(playState.volume);
+
+            this._mainState = JSON.parse(JSON.stringify(playState));
             // TODO: Timestamp, volume.
             return;
         }
 
-        this._main.reset();
+        this.main.reset();
 
         if (!playState) return; // nothing to play.
 
-        const blob = await retriever.song(playState.id);
-
-        this._main.addPlayer(new AudioSet([blob]));
-
-        if (!this._main.paused || !playState.paused) {
-            this._main.playAll();
-            const aset = this._main.player(0);
+        if (!this.main.paused || !playState.paused) {
+            this.main.playAll();
+            const aset = this.main.player(0);
             if (aset) {
                 for (let i = 0; i < aset.size; i++) {
                     aset.fadeIn(i);
                 }
             }
         }
+
+        const id = playState.id ?? this._mainState?.id;
+
+        if (!id) {
+            return;
+        }
+
+        const blob = await retriever.song(id);
+
+        await this.main.addPlayer(await AudioSet.audioSet(this.main.context, [blob]));
+
+        if (!this.main.paused || !playState.paused) {
+            this.main.playAll();
+            const aset = this.main.player(0);
+            if (aset) {
+                for (let i = 0; i < aset.size; i++) {
+                    aset.fadeIn(i);
+                }
+            }
+        }
+
+        this._mainState = JSON.parse(JSON.stringify(playState));
 
         // if (file.type === "audioset") {
         //     const baseset = file as WSAudioSet;
@@ -179,7 +224,7 @@ export default class AudioGraph {
     }
 
     close(): void {
-        this._main.close();
+        this.main.close();
         this._ambient.close();
         this._sfx.close();
         AudioGraph._instance = null;

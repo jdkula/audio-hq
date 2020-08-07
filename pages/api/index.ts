@@ -1,13 +1,13 @@
 import express from "express";
 import bodyParser from "body-parser";
 import PouchDB from "pouchdb";
-import { convert, download } from "./lib/processor";
+import { convert, download } from "../../lib/processor";
 import fs from "promise-fs";
 import cors from "cors";
 
 import path from "path";
 
-import { StoredWorkspace, File } from "./../lib/Workspace";
+import { StoredWorkspace, File } from "../../lib/Workspace";
 
 import Multer from "multer";
 
@@ -17,7 +17,7 @@ const app = express();
 
 const multer = Multer({
     storage: Multer.diskStorage({
-        destination: path.resolve(process.cwd(), "download"),
+        destination: path.resolve("/tmp/audio-hq"),
     }),
 });
 
