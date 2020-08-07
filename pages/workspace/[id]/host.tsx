@@ -1,47 +1,48 @@
-import { useEffect, useState, FunctionComponent, createContext } from "react";
-import { makeStyles } from "@material-ui/core";
-import { Header } from "~/components/host/Header";
-import { NowPlaying } from "~/components/host/NowPlaying";
-import { Explorer } from "~/components/host/Explorer";
-import { Ambience } from "~/components/host/Ambience";
-import { SoundFX } from "~/components/host/SoundFX";
-import { CurrentUsers } from "~/components/host/CurrentUsers";
-import { Workspace } from "~/lib/Workspace";
-import { WorkspaceAdapter, useWorkspace } from "~/lib/WorkspaceAdapter";
-import { GetServerSideProps } from "next";
+import { useEffect, useState, FunctionComponent, createContext } from 'react';
+import { makeStyles } from '@material-ui/core';
+import { Header } from '~/components/host/Header';
+import { NowPlaying } from '~/components/host/NowPlaying';
+import { Explorer } from '~/components/host/Explorer';
+import { Ambience } from '~/components/host/Ambience';
+import { SoundFX } from '~/components/host/SoundFX';
+import { CurrentUsers } from '~/components/host/CurrentUsers';
+import { Workspace } from '~/lib/Workspace';
+import { WorkspaceAdapter, useWorkspace } from '~/lib/WorkspaceAdapter_old';
+import { GetServerSideProps } from 'next';
+import useWorkspaceAdaptor from '~/lib/useWorkspaceAdaptor';
 
 export const WorkspaceContext = createContext<Workspace | null>(null);
 
 const useStyles = makeStyles(() => ({
     container: {
-        display: "grid",
-        gridTemplateColumns: "50% 30% 20%",
-        gridTemplateRows: "65px 40% auto 40%",
+        display: 'grid',
+        gridTemplateColumns: '50% 30% 20%',
+        gridTemplateRows: '65px 40% auto 40%',
         gridTemplateAreas: `
             "header     header   header  "
             "nowplaying explorer explorer"
             "ambience   explorer explorer"
             "ambience   sfx      users   "
         `,
-        minHeight: "100vh",
+        minHeight: '100vh',
     },
     header: {
-        gridArea: "header",
+        gridArea: 'header',
     },
     nowplaying: {
-        gridArea: "nowplaying",
+        gridArea: 'nowplaying',
     },
     explorer: {
-        gridArea: "explorer",
+        gridArea: 'explorer',
     },
     ambience: {
-        gridArea: "ambience",
+        gridArea: 'ambience',
     },
     sfx: {
-        gridArea: "sfx",
+        gridArea: 'sfx',
     },
     users: {
-        gridArea: "users",
+        gridArea: 'users',
     },
 }));
 
@@ -50,33 +51,26 @@ const Host: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const [workspace, setWorkspace] = useWorkspace(props.workspace);
-
-    const [adapter, setAdapter] = useState<WorkspaceAdapter | null>(null);
-
-    useEffect(() => {
-        const adapter = WorkspaceAdapter.instance(props.workspace, setWorkspace);
-        setAdapter(adapter);
-        // return () => {
-        //     adapter.close();
-        // };
-    }, []);
+    const adaptor = useWorkspaceAdaptor(props.workspace);
 
     const setSong = async (id: string) => {
-        await adapter?.updateMain({
-            id,
-            fileId: null,
-            paused: true,
-            timestamp: null,
-            volume: 1,
-        });
+        adaptor.updateMain({ id: id });
     };
 
+    if (adaptor.state === null) return null;
+
     return (
-        <WorkspaceContext.Provider value={workspace}>
+        <WorkspaceContext.Provider value={{ name: props.workspace, files: adaptor.files, state: adaptor.state }}>
             <div className={classes.container}>
                 <Header />
-                {adapter && <NowPlaying adapter={adapter} />}
+                {adaptor && (
+                    <NowPlaying
+                        seek={(to) => adaptor.updateMain({ timestamp: to })}
+                        setState={(to) => adaptor.updateMain({ paused: !to })}
+                        state={adaptor.state}
+                        volume={(to) => adaptor.updateMain({ volume: to })}
+                    />
+                )}
                 <Explorer setSong={setSong} />
                 <Ambience />
                 <SoundFX />

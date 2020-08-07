@@ -1,4 +1,4 @@
-import { Workspace } from './Workspace';
+import { Workspace, WorkspaceState, File } from './Workspace';
 import PouchDB from 'pouchdb';
 import axios from 'axios';
 import Pusher from 'pusher-js';
@@ -28,12 +28,21 @@ export class WorkspaceRetriever {
     }
 
     close(): void {
+        throw new Error('Closing Retriever!!!');
         this.pusher.disconnect();
         this.cache.close();
     }
 
     async workspace(): Promise<Workspace> {
         return (await Axios.get('/api/' + this._workspaceId)).data;
+    }
+
+    async files(): Promise<File[]> {
+        return (await Axios.get('/api/' + this._workspaceId + '/files')).data;
+    }
+
+    async state(): Promise<WorkspaceState> {
+        return (await Axios.get('/api/' + this._workspaceId + '/state')).data;
     }
 
     async song(id: string): Promise<Blob> {

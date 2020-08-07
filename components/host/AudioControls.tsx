@@ -1,7 +1,6 @@
 import { PlayState } from "~/lib/Workspace";
 import { FunctionComponent, FormEvent, useState, useEffect } from "react";
 import { Button } from "@material-ui/core";
-import { WorkspaceAdapter } from "~/lib/WorkspaceAdapter";
 import { Seeker } from "../Seeker";
 
 function toTimestamp(seconds: number): string {
@@ -12,15 +11,14 @@ function toTimestamp(seconds: number): string {
 }
 
 export const AudioControls: FunctionComponent<{
-    adapter: WorkspaceAdapter;
     state?: PlayState;
     onPlay?: () => void;
     onPause?: () => void;
     onSeek?: (to: number) => void;
 }> = (props) => {
-    const { adapter, state, onPlay, onPause, onSeek } = props;
+    const { state, onPlay, onPause, onSeek } = props;
 
-    const duration = adapter.mainDuration;
+    const duration = 120;
 
     if (!state) {
         return <div>Waiting for Audio to Load</div>;

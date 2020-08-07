@@ -1,18 +1,16 @@
 import { NextApiHandler } from 'next';
-import path from 'path';
 import { download } from '~/lib/processor';
 import { File, Workspace } from '~/lib/Workspace';
 import { findOrCreateWorkspace } from '.';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { mongofiles } from '~/lib/db';
 import fs from 'fs';
-import { ObjectId } from 'mongodb';
 
 export async function addFile(filepath: string, filename: string, workspaceId: string): Promise<Workspace> {
     const upload = (await mongofiles).openUploadStream(filename);
 
     const file: File = {
-        id: upload.id as ObjectId,
+        id: upload.id as string, // upload.id here is an ObjectId!! but it's serialized later as a string.
         name: filename,
         path: '/',
         type: 'audio',

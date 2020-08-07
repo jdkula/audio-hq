@@ -1,12 +1,10 @@
 import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { Workspace } from '~/lib/Workspace';
+import { Workspace, WorkspaceState, File } from '~/lib/Workspace';
 import { FindAndModifyWriteOpResultObject } from 'mongodb';
 
-export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
-    const workspace: FindAndModifyWriteOpResultObject<Workspace & { _id: any }> = await (
-        await mongoworkspaces
-    ).findOneAndUpdate(
+async function findOrCreateWorkspaceFiles(workspaceId: string): Promise<File[]> {
+    const workspace: FindAndModifyWriteOpResultObject<Workspace> = await (await mongoworkspaces).findOneAndUpdate(
         { _id: workspaceId },
         {
             $setOnInsert: {
@@ -25,16 +23,17 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
         {
             returnOriginal: false,
             upsert: true,
+            projection: {
+                files: true,
+            },
         },
     );
 
-    delete workspace.value?._id;
-
-    return workspace.value!;
+    return workspace.value!.files;
 }
 
 const get: NextApiHandler = async (req, res) => {
-    res.json(await findOrCreateWorkspace(req.query.ws as string));
+    res.json(await findOrCreateWorkspaceFiles(req.query.ws as string));
 };
 
 const post: NextApiHandler = async (req, res) => {};

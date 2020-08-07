@@ -35,7 +35,7 @@ async function delFile(id: string): Promise<void> {
         },
     ]);
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         files.delete(fid, (err) => {
             if (err) reject(err);
             else resolve();

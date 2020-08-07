@@ -1,12 +1,5 @@
 import { NextApiHandler } from 'next';
-import path from 'path';
-import { download, convert } from '~/lib/processor';
-import { File, Workspace } from '~/lib/Workspace';
-import { findOrCreateWorkspace } from '.';
-import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { mongofiles } from '~/lib/db';
-import fs from 'fs';
-import { ObjectId } from 'mongodb';
+import { convert } from '~/lib/processor';
 import formidable from 'formidable';
 import { addFile } from './import';
 

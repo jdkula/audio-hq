@@ -301,6 +301,7 @@ export class AudioSet implements Player {
     }
 
     close(): void {
+        throw new Error('Closing AudioSet!!!');
         // nothing to do.
     }
 

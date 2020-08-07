@@ -3,6 +3,7 @@ import { PlayState } from './Workspace';
 import { Player } from './Player';
 import { WorkspaceRetriever } from './WorkspaceRetriever';
 import { applyUpdate } from './Utility';
+import { useState, useEffect } from 'react';
 
 interface Main {
     context: AudioContext;
@@ -175,7 +176,7 @@ export class AudioGraph {
             return;
         }
 
-        this.main.reset();
+        await this.main.reset();
 
         if (!playState) return; // nothing to play.
 
@@ -238,3 +239,13 @@ export class AudioGraph {
         return this._instance;
     }
 }
+
+export const useAudioGraph = (): AudioGraph | null => {
+    const [graph, setGraph] = useState<AudioGraph | null>(null);
+    useEffect(() => {
+        setGraph(AudioGraph.graph());
+        return () => graph?.close();
+    }, []);
+
+    return graph;
+};
