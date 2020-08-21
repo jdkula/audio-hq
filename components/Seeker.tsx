@@ -40,6 +40,7 @@ export const Seeker: FunctionComponent<{
             max={(max * 100).toString()}
             step={(step * 100).toString()}
             onInput={handleSeek}
+            onChange={() => {}}
             onMouseUp={finishSeek}
             onTouchEnd={finishSeek}
         />

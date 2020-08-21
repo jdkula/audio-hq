@@ -50,6 +50,20 @@ const useWorkspaceAdaptor = (workspaceId: string): WorkspaceHookResult => {
         })();
     }, [workspaceId]);
 
+    const resolve = async (update: WorkspaceUpdate) => {
+        if ((window as any).__WORKING) return;
+        if (!retriever.current || !workspaceState) return;
+        (window as any).__WORKING = true;
+
+        await graph?.resolve(update, retriever.current);
+
+        const copy = { ...workspaceState };
+        copy.playing = updatePlayState(update.playing, copy.playing);
+
+        setState(copy);
+        (window as any).__WORKING = false;
+    };
+
     return {
         graph,
         workspace:
@@ -64,19 +78,7 @@ const useWorkspaceAdaptor = (workspaceId: string): WorkspaceHookResult => {
             files: filesLoading,
             workspace: workspaceLoading,
         },
-        resolve: async (update) => {
-            if ((window as any).__WORKING) return;
-            if (!retriever.current || !workspaceState) return;
-            (window as any).__WORKING = true;
-
-            await graph?.resolve(update, retriever.current);
-
-            const copy = { ...workspaceState };
-            copy.playing = updatePlayState(update.playing, copy.playing);
-
-            setState(copy);
-            (window as any).__WORKING = false;
-        },
+        resolve,
     };
 };
 
