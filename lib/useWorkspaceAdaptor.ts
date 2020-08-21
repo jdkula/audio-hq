@@ -1,17 +1,17 @@
 import { useAudioGraph, AudioGraph } from './AudioGraph';
 import { useState, useRef, useEffect } from 'react';
-import { Workspace, PlayState } from './Workspace';
+import { Workspace, PlayState, WorkspaceState, WorkspaceUpdate, updatePlayState } from './Workspace';
 import { WorkspaceRetriever } from './WorkspaceRetriever';
+import { AudioSet } from './AudioSet';
 
 interface WorkspaceHookResult {
     graph: AudioGraph | null;
-    files: Workspace['files'];
-    state: Workspace['state'] | null;
+    workspace: Workspace | null;
     loading: {
         files: LoadingDetail[];
         workspace: boolean;
     };
-    updateMain: (playState: Partial<PlayState | null>) => void | Promise<void>;
+    resolve: (update: WorkspaceUpdate) => Promise<void>;
 }
 
 enum LoadingState {
@@ -35,6 +35,8 @@ const useWorkspaceAdaptor = (workspaceId: string): WorkspaceHookResult => {
 
     const retriever = useRef<WorkspaceRetriever>();
 
+    const updateTimeHandler = useRef<number | null>(null);
+
     useEffect(() => {
         setWorkspaceLoading(true);
         retriever.current = new WorkspaceRetriever(workspaceId);
@@ -50,39 +52,30 @@ const useWorkspaceAdaptor = (workspaceId: string): WorkspaceHookResult => {
 
     return {
         graph,
-        files: workspaceFiles,
-        state: workspaceState,
+        workspace:
+            workspaceState === null
+                ? null
+                : {
+                      files: workspaceFiles,
+                      state: workspaceState,
+                      name: workspaceId,
+                  },
         loading: {
             files: filesLoading,
             workspace: workspaceLoading,
         },
-        updateMain: async (state) => {
-            if (!retriever.current || workspaceLoading || !graph || !workspaceState) return;
+        resolve: async (update) => {
+            if ((window as any).__WORKING) return;
+            if (!retriever.current || !workspaceState) return;
+            (window as any).__WORKING = true;
 
-            const nowPlaying: PlayState =
-                state === null
-                    ? null
-                    : workspaceState.playing === null && !state.id
-                    ? null
-                    : workspaceState.playing === null
-                    ? {
-                          fileId: null,
-                          id: state.id,
-                          paused: true,
-                          timestamp: 0,
-                          volume: 0,
-                      }
-                    : {
-                          ...workspaceState.playing,
-                          ...state,
-                      };
+            await graph?.resolve(update, retriever.current);
 
-            setState({
-                ...workspaceState,
-                playing: nowPlaying,
-            });
+            const copy = { ...workspaceState };
+            copy.playing = updatePlayState(update.playing, copy.playing);
 
-            await graph.playMain(state, retriever.current);
+            setState(copy);
+            (window as any).__WORKING = false;
         },
     };
 };

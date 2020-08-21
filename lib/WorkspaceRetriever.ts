@@ -45,10 +45,11 @@ export class WorkspaceRetriever {
         return (await Axios.get('/api/' + this._workspaceId + '/state')).data;
     }
 
-    async song(id: string): Promise<Blob> {
+    async song(id: string): Promise<Blob[]> {
+        // TODO: audio sets
         try {
             const data = await this.cache.getAttachment(id, 'file');
-            return data as Blob; // client only.
+            return [data as Blob]; // client only.
         } catch (e) {
             const resp = await axios.get('/api/files/' + id, {
                 responseType: 'arraybuffer',
@@ -63,7 +64,7 @@ export class WorkspaceRetriever {
                     },
                 },
             });
-            return blob;
+            return [blob];
         }
     }
 

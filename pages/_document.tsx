@@ -1,6 +1,6 @@
-import Document, { Html, Head, Main, NextScript, DocumentContext, DocumentInitialProps } from "next/document";
-import { ServerStyleSheets } from "@material-ui/core/styles";
-import * as React from "react";
+import Document, { Html, Head, Main, NextScript, DocumentContext, DocumentInitialProps } from 'next/document';
+import { ServerStyleSheets } from '@material-ui/core/styles';
+import * as React from 'react';
 
 // from https://github.com/mui-org/material-ui/blob/master/examples/nextjs/pages/_document.js
 export default class MyDocument extends Document {

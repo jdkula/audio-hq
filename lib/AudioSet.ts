@@ -1,5 +1,4 @@
 import { AudioGainPair } from './AudioGainPair';
-import { Player } from './Player';
 
 async function blobToBuffer(ctx: BaseAudioContext, blob: Blob): Promise<AudioBuffer> {
     return new Promise((resolve, reject) => {
@@ -22,13 +21,25 @@ async function blobToBuffer(ctx: BaseAudioContext, blob: Blob): Promise<AudioBuf
     });
 }
 
-export class AudioSet implements Player {
+async function blobsToBuffers(ctx: BaseAudioContext, ...blobs: Blob[]): Promise<AudioBuffer[]> {
+    const processing = [];
+
+    for (const blob of blobs) {
+        processing.push(blobToBuffer(ctx, blob));
+    }
+
+    const buffers = await Promise.all(processing);
+
+    return buffers;
+}
+
+export class AudioSet {
     balance: boolean;
-    readonly defaultFade: number;
+    defaultFade: number;
 
     private _pairs: AudioGainPair[] = [];
 
-    private _paused = false;
+    private _pauseTime: number | null = null;
     private _buffers: AudioBuffer[] = [];
     private _selected: Set<number>;
 
@@ -36,49 +47,42 @@ export class AudioSet implements Player {
 
     private _output: AudioNode | null = null;
 
-    private _startTime = 0;
+    private _startTime: number | null = null;
 
-    constructor(buffers: AudioBuffer[] = [], defaultFade = 1.875, balance = false) {
-        this._buffers = buffers;
+    constructor(defaultFade = 1.875, balance = false) {
+        this._buffers = [];
         this._selected = new Set();
         this.balance = balance;
         this.defaultFade = defaultFade;
-    }
-
-    static async audioSet(
-        context: BaseAudioContext,
-        blobs: Blob[] = [],
-        defaultFade = 1.875,
-        balance = false,
-    ): Promise<AudioSet> {
-        const processing = [];
-
-        for (const blob of blobs) {
-            processing.push(blobToBuffer(context, blob));
-        }
-
-        const buffers = await Promise.all(processing);
-
-        return new AudioSet(buffers, defaultFade, balance);
     }
 
     get size(): number {
         return this._pairs.length;
     }
 
-    reset(): void {
-        // assumes new audiocontext/old audio context was closed.
+    reset(): void;
+    async reset(node?: AudioNode, blobs?: Blob[]): Promise<void>;
+    async reset(node?: AudioNode, blobs?: Blob[]): Promise<void> {
+        if (Array.isArray(blobs) && !node) {
+            throw Error('Must provide new node if giving new blobs');
+        } else if (Array.isArray(blobs) && node) {
+            this._output = node;
+            this._buffers = await blobsToBuffers(node.context, ...blobs);
+            this._startTime = null;
+            this._pauseTime = null;
+            console.log('Got buffers');
+        }
+
+        if (!this._output) return;
+
+        console.log('Stopping...');
+        this.stop();
+
         this._pairs = [];
-        this._selected = new Set();
-    }
 
-    async connect(node: AudioNode, when?: number, offset?: number): Promise<void> {
-        this._output = node;
+        const context = this._output.context;
 
-        this._pairs = [];
-
-        const context = node.context;
-
+        console.log('Linking');
         for (const buffer of this._buffers) {
             const source = context.createBufferSource();
             source.buffer = buffer;
@@ -87,9 +91,21 @@ export class AudioSet implements Player {
         }
 
         for (const pair of this._pairs) {
-            pair.gainNode.connect(node);
-            pair.gain.setValueAtTime(0, node.context.currentTime);
+            pair.gainNode.connect(this._output);
+            pair.gain.setValueAtTime(0, context.currentTime);
         }
+
+        if (this._pairs.length > 0) {
+            this._selected.add(0);
+        }
+
+        console.log(this);
+    }
+
+    async connect(node: AudioNode, when?: number, offset?: number): Promise<void> {
+        this._output = node;
+
+        this.reset();
 
         this.start(when, offset);
     }
@@ -101,16 +117,23 @@ export class AudioSet implements Player {
 
     get playedTime(): number {
         if (this.duration === 0) return 0;
-        return ((this._output?.context.currentTime ?? 0) - this._startTime) % this.duration;
+        if (!this._startTime) return 0;
+        return ((this._pauseTime ?? this._output?.context.currentTime ?? 0) - this._startTime) % this.duration;
     }
 
+    // to: number of seconds into the song.
     seek(to?: number): number {
         // TODO: ability to seek TO a time.
         const now = this.playedTime;
 
+        if (this._pauseTime !== null && to !== undefined) {
+            this._pauseTime = to;
+            return now;
+        }
+
         if (to !== undefined && this._output) {
-            this.stop();
-            this.connect(this._output, undefined, to);
+            this.reset();
+            this.start(undefined, to);
             this.cutIn();
         }
 
@@ -278,26 +301,40 @@ export class AudioSet implements Player {
     }
 
     start(when?: number, offset?: number): void {
+        this._pauseTime = null;
         this._startTime = (this._output?.context.currentTime ?? 0) + (when ?? 0) - (offset ?? 0);
+        this.cutIn();
         for (const pair of this._pairs) {
             pair.start(when, offset);
         }
     }
 
-    stop(when?: number): void {
+    stop(): void {
         for (const pair of this._pairs) {
-            pair.stop(when);
+            pair.stop();
         }
+        this._pairs = [];
+        this._selected.clear();
     }
 
     async pause(): Promise<void> {
-        this._paused = true;
+        this._pauseTime = this.playedTime;
+        this.stop();
         // relies completely on context, can't pause here.
     }
 
-    async play(): Promise<void> {
-        this._paused = false;
-        // relies completely on context, can't pause here.
+    play(): void {
+        if (this._pauseTime === null || this._startTime === null) {
+            this.reset();
+            this.start();
+            return;
+        }
+
+        this.reset();
+        this.cutIn();
+        this.start(undefined, Math.max(this._pauseTime, 0));
+        this._startTime += this._pauseTime;
+        this._pauseTime = null;
     }
 
     close(): void {
@@ -306,6 +343,6 @@ export class AudioSet implements Player {
     }
 
     get paused(): boolean {
-        return this._paused;
+        return this._pauseTime !== null;
     }
 }

@@ -7,7 +7,6 @@ import { Ambience } from '~/components/host/Ambience';
 import { SoundFX } from '~/components/host/SoundFX';
 import { CurrentUsers } from '~/components/host/CurrentUsers';
 import { Workspace } from '~/lib/Workspace';
-import { WorkspaceAdapter, useWorkspace } from '~/lib/WorkspaceAdapter_old';
 import { GetServerSideProps } from 'next';
 import useWorkspaceAdaptor from '~/lib/useWorkspaceAdaptor';
 
@@ -51,26 +50,24 @@ const Host: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const adaptor = useWorkspaceAdaptor(props.workspace);
+    const { workspace, resolve } = useWorkspaceAdaptor(props.workspace);
 
     const setSong = async (id: string) => {
-        adaptor.updateMain({ id: id });
+        resolve({ playing: { id, startTimestamp: Date.now(), pauseTime: Date.now() } });
     };
 
-    if (adaptor.state === null) return null;
+    if (!workspace?.state) return null;
 
     return (
-        <WorkspaceContext.Provider value={{ name: props.workspace, files: adaptor.files, state: adaptor.state }}>
+        <WorkspaceContext.Provider value={{ name: props.workspace, files: workspace.files, state: workspace.state }}>
             <div className={classes.container}>
                 <Header />
-                {adaptor && (
-                    <NowPlaying
-                        seek={(to) => adaptor.updateMain({ timestamp: to })}
-                        setState={(to) => adaptor.updateMain({ paused: !to })}
-                        state={adaptor.state}
-                        volume={(to) => adaptor.updateMain({ volume: to })}
-                    />
-                )}
+                <NowPlaying
+                    seek={(to) => resolve({ playing: { startTimestamp: Date.now() - to * 1000 } })}
+                    setState={(playing) => resolve({ playing: { pauseTime: playing ? null : Date.now() } })}
+                    state={workspace.state}
+                    volume={(to) => resolve({ playing: { volume: to } })}
+                />
                 <Explorer setSong={setSong} />
                 <Ambience />
                 <SoundFX />

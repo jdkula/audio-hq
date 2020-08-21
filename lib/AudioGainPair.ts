@@ -15,8 +15,14 @@ export class AudioGainPair {
         this.audioNode.start(when, offset, duration);
     }
 
-    stop(when?: number): void {
-        this.audioNode.stop(when);
+    stop(): void {
+        try {
+            this.audioNode.stop();
+        } catch (e) {
+            console.warn('Tried to stop AudioGainPair before it was started');
+        }
+        this.audioNode.disconnect();
+        this.gainNode.disconnect();
     }
 
     get playedTime(): number | null {
