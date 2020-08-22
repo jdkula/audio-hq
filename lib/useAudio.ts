@@ -22,27 +22,51 @@ const useAudio = (state: PlayState): AudioInfo => {
     const [hasInteracted, setHasInteracted] = useState(true);
 
     useEffect(() => {
-        return () => audio.current.pause();
+        return () => {
+            audio.current.onloadedmetadata = null;
+            audio.current.oncanplaythrough = null;
+            audio.current.ontimeupdate = null;
+            audio.current.pause();
+        };
     }, []);
+
+    const onInteract = useCallback(() => {
+        audio.current.play().then(() => audio.current.pause());
+        window.requestAnimationFrame(() => {
+            setHasInteracted(true);
+        });
+    }, [audio.current, setHasInteracted]);
+
+    useEffect(() => {
+        if (hasInteracted) {
+            document.removeEventListener('keyup', onInteract);
+            document.removeEventListener('mouseup', onInteract);
+            document.removeEventListener('touchend', onInteract);
+        }
+    }, [hasInteracted]);
 
     useEffect(() => {
         audio.current.preload = 'auto';
 
-        audio.current.addEventListener('loadedmetadata', () => {
+        audio.current.onloadedmetadata = () => {
             setDuration(audio.current.duration);
-        });
+        };
 
-        audio.current.addEventListener('canplaythrough', () => {
+        audio.current.oncanplaythrough = () => {
             setLoading(false);
-        });
+        };
 
-        audio.current.addEventListener('timeupdate', () => {
+        audio.current.ontimeupdate = () => {
             setTime(audio.current.currentTime);
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
             if (audio.current.currentTime > audio.current.duration - 0.44) {
                 audio.current.currentTime = 0;
             }
-        });
+        };
+
+        document.addEventListener('keyup', onInteract);
+        document.addEventListener('mouseup', onInteract);
+        document.addEventListener('touchend', onInteract);
     }, [audio.current]);
 
     useEffect(() => {
@@ -67,34 +91,19 @@ const useAudio = (state: PlayState): AudioInfo => {
         }
     }, [state.startTimestamp, state.pauseTime, loading, hasInteracted]);
 
-    const onInteract = useCallback(() => {
-        window.requestAnimationFrame(() => {
-            setHasInteracted(true);
-        });
-    }, [setHasInteracted]);
-
     useEffect(() => {
         if (!loading && hasInteracted) {
             setPaused(state.pauseTime !== null || !hasInteracted);
             if (state.pauseTime === null) {
-                audio.current.play().catch(() => {
+                audio.current.play().catch((err) => {
                     setHasInteracted(false);
                     setPaused(true);
-                    document.addEventListener('keyup', onInteract);
-                    document.addEventListener('mouseup', onInteract);
                 });
             } else {
                 audio.current.pause();
             }
         }
     }, [state.pauseTime, loading, hasInteracted]);
-
-    useEffect(() => {
-        if (hasInteracted) {
-            document.removeEventListener('keyup', onInteract);
-            document.removeEventListener('mouseup', onInteract);
-        }
-    }, [hasInteracted]);
 
     return {
         duration,

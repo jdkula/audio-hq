@@ -33,8 +33,6 @@ export const AudioControls: FunctionComponent<{
         return <div>Waiting for Audio to Load</div>;
     }
 
-    console.log('Paused', paused);
-
     return (
         <div>
             {paused ? (
