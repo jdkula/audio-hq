@@ -24,6 +24,8 @@ export interface PlayState {
     pauseTime: number | null;
 }
 
+export type PlayStateResolver = (update: PlayStateUpdate) => void;
+
 export interface Suggestion {
     from: string;
     file: File;
@@ -74,6 +76,8 @@ export interface WorkspaceUpdate {
     delSuggestion?: ID;
     delUser?: string;
 }
+
+export type WorkspaceResolver = (update: WorkspaceUpdate) => Promise<void>;
 
 export function updatePlayState(
     update: PlayStateUpdate | null | undefined,

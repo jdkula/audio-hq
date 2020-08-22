@@ -36,7 +36,10 @@ const get: NextApiHandler = async (req, res) => {
     res.json(await findOrCreateWorkspaceState(req.query.ws as string));
 };
 
-const post: NextApiHandler = async (req, res) => {};
+const post: NextApiHandler = async (req, res) => {
+    await (await mongoworkspaces).update({ _id: req.query.ws }, { $set: { state: req.body } });
+    await get(req, res);
+};
 
 const WorkspaceEndpoint: NextApiHandler = async (req, res) => {
     if (req.method === 'POST') {

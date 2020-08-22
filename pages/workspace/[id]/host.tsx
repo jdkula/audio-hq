@@ -6,11 +6,11 @@ import { Explorer } from '~/components/host/Explorer';
 import { Ambience } from '~/components/host/Ambience';
 import { SoundFX } from '~/components/host/SoundFX';
 import { CurrentUsers } from '~/components/host/CurrentUsers';
-import { Workspace } from '~/lib/Workspace';
+import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
-import useWorkspaceAdaptor from '~/lib/useWorkspaceAdaptor';
+import useWorkspace from '~/lib/useWorkspace';
 
-export const WorkspaceContext = createContext<Workspace | null>(null);
+export const WorkspaceContext = createContext<(Workspace & { resolver: WorkspaceResolver }) | null>(null);
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -50,24 +50,47 @@ const Host: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const { workspace, resolve } = useWorkspaceAdaptor(props.workspace);
+    const { workspace, resolve } = useWorkspace(props.workspace);
 
     const setSong = async (id: string) => {
         resolve({ playing: { id, startTimestamp: Date.now(), pauseTime: Date.now() } });
     };
 
+    useEffect(() => {
+        if (navigator.mediaSession) {
+            navigator.mediaSession.metadata = new MediaMetadata({ title: props.workspace });
+        }
+    }, [workspace]);
+
+    useEffect(() => {
+        if (navigator.mediaSession) {
+            navigator.mediaSession.setActionHandler('pause', () => {
+                // resolve({ playing: { volume: 0 } });
+            });
+            navigator.mediaSession.setActionHandler('stop', () => {
+                // resolve({ playing: { volume: 0 } });
+            });
+
+            navigator.mediaSession.setActionHandler('play', () => {
+                resolve({ playing: { pauseTime: null } });
+            });
+            navigator.mediaSession.setActionHandler('previoustrack', () => {
+                resolve({ playing: { startTimestamp: Date.now(), pauseTime: null } });
+            });
+        }
+    }, [resolve]);
+
     if (!workspace?.state) return null;
 
     return (
-        <WorkspaceContext.Provider value={{ name: props.workspace, files: workspace.files, state: workspace.state }}>
+        <WorkspaceContext.Provider
+            value={{ name: props.workspace, files: workspace.files, state: workspace.state, resolver: resolve }}
+        >
             <div className={classes.container}>
                 <Header />
-                <NowPlaying
-                    seek={(to) => resolve({ playing: { startTimestamp: Date.now() - to * 1000 } })}
-                    setState={(playing) => resolve({ playing: { pauseTime: playing ? null : Date.now() } })}
-                    state={workspace.state}
-                    volume={(to) => resolve({ playing: { volume: to } })}
-                />
+                {workspace.state.playing && (
+                    <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
+                )}
                 <Explorer setSong={setSong} />
                 <Ambience />
                 <SoundFX />

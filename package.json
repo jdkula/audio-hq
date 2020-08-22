@@ -16,6 +16,7 @@
     "@material-ui/icons": "^4.9.1",
     "@types/formidable": "^1.0.31",
     "@types/mongodb": "^3.5.25",
+    "@types/wicg-mediasession": "^1.1.0",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -34,7 +35,7 @@
     "react-dom": "16.13.1",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
-    "swr": "^0.3.0",
+    "swr": "^0.3.1",
     "uuidv4": "^6.0.8",
     "webpack": "^4.43.0",
     "youtube-dl": "^3.0.2"

@@ -1,8 +1,9 @@
-import { PlayState } from '~/lib/Workspace';
+import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, FormEvent, useState, useEffect, useRef, useContext } from 'react';
 import { Button } from '@material-ui/core';
 import { Seeker } from '../Seeker';
 import { WorkspaceContext } from '~/pages/workspace/[id]/host';
+import useAudio from '~/lib/useAudio';
 
 function toTimestamp(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
@@ -12,64 +13,51 @@ function toTimestamp(seconds: number): string {
 }
 
 export const AudioControls: FunctionComponent<{
-    state?: PlayState;
-    onPlay?: () => void;
-    onPause?: () => void;
-    onSeek?: (to: number) => void;
-}> = (props) => {
-    const { state, onPlay, onPause, onSeek } = props;
+    state: PlayState;
+    resolver: PlayStateResolver;
+}> = ({ state, resolver }) => {
+    const { duration, paused, time, volume } = useAudio(state);
 
     const ws = useContext(WorkspaceContext);
 
-    const duration = ws?.files.find((f) => f.id === state?.id)?.length ?? 0.01;
-
-    const handle = useRef<number | null>(null);
-
-    const [timestamp, setTimestamp] = useState(0);
     const [seekTimestamp, setSeekTimestamp] = useState<number | null>(null);
 
     const finishSeek = (to: number) => {
-        onSeek?.(to);
+        resolver({
+            startTimestamp: Date.now() - to * 1000,
+        });
         setSeekTimestamp(null);
     };
-
-    useEffect(() => {
-        if (!state) return;
-        handle.current = window.setInterval(() => {
-            setTimestamp((((state.pauseTime ?? Date.now()) - state.startTimestamp) / 1000) % duration);
-        }, 500);
-        setTimestamp((((state.pauseTime ?? Date.now()) - state.startTimestamp) / 1000) % duration);
-        return () => {
-            if (!handle.current) return;
-            window.clearInterval(handle.current);
-        };
-    }, [state, duration]);
 
     if (!state) {
         return <div>Waiting for Audio to Load</div>;
     }
 
+    console.log('Paused', paused);
+
     return (
         <div>
-            {state.pauseTime !== null ? (
-                <Button variant="outlined" onClick={() => onPlay?.()}>
+            {paused ? (
+                <Button variant="outlined" onClick={() => resolver({ pauseTime: null })}>
                     Play
                 </Button>
             ) : (
-                <Button variant="outlined" onClick={() => onPause?.()}>
+                <Button variant="outlined" onClick={() => resolver({ pauseTime: Date.now() })}>
                     Pause
                 </Button>
             )}
 
+            <Seeker value={volume ?? 0} min={0} max={1} step={0.01} onSeek={(v) => resolver({ volume: v })} live />
+
             <Seeker
-                value={seekTimestamp ?? timestamp}
+                value={seekTimestamp ?? time}
                 min={0}
                 max={duration}
                 step={1}
                 onSeek={finishSeek}
                 onInterimSeek={(v) => setSeekTimestamp(v)}
             />
-            {toTimestamp(seekTimestamp ?? timestamp)}
+            {toTimestamp(seekTimestamp ?? time)}
         </div>
     );
 };
