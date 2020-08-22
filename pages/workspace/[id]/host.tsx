@@ -1,5 +1,4 @@
-import { useEffect, useState, FunctionComponent, createContext } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { useEffect, FunctionComponent, createContext } from 'react';
 import { Header } from '~/components/host/Header';
 import { NowPlaying } from '~/components/host/NowPlaying';
 import { Explorer } from '~/components/host/Explorer';
@@ -9,47 +8,25 @@ import { CurrentUsers } from '~/components/host/CurrentUsers';
 import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
+import styled from 'styled-components';
 
 export const WorkspaceContext = createContext<(Workspace & { resolver: WorkspaceResolver }) | null>(null);
 
-const useStyles = makeStyles(() => ({
-    container: {
-        display: 'grid',
-        gridTemplateColumns: '50% 30% 20%',
-        gridTemplateRows: '65px 40% auto 40%',
-        gridTemplateAreas: `
-            "header     header   header  "
-            "nowplaying explorer explorer"
-            "ambience   explorer explorer"
-            "ambience   sfx      users   "
-        `,
-        minHeight: '100vh',
-    },
-    header: {
-        gridArea: 'header',
-    },
-    nowplaying: {
-        gridArea: 'nowplaying',
-    },
-    explorer: {
-        gridArea: 'explorer',
-    },
-    ambience: {
-        gridArea: 'ambience',
-    },
-    sfx: {
-        gridArea: 'sfx',
-    },
-    users: {
-        gridArea: 'users',
-    },
-}));
+const Container = styled.div`
+    display: grid;
+    grid-template-columns: 50% 30% 20%;
+    grid-template-rows: 65px 40% auto 40%;
+    grid-template-areas:
+        'header     header   header  '
+        'nowplaying explorer explorer'
+        'ambience   explorer explorer'
+        'ambience   sfx      users   ';
+    min-height: 100vh;
+`;
 
 const Host: FunctionComponent<{
     workspace: string;
 }> = (props) => {
-    const classes = useStyles();
-
     const { workspace, resolve } = useWorkspace(props.workspace);
 
     const setSong = async (id: string) => {
@@ -86,7 +63,7 @@ const Host: FunctionComponent<{
         <WorkspaceContext.Provider
             value={{ name: props.workspace, files: workspace.files, state: workspace.state, resolver: resolve }}
         >
-            <div className={classes.container}>
+            <Container>
                 <Header />
                 {workspace.state.playing && (
                     <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
@@ -95,7 +72,7 @@ const Host: FunctionComponent<{
                 <Ambience />
                 <SoundFX />
                 <CurrentUsers />
-            </div>
+            </Container>
         </WorkspaceContext.Provider>
     );
 };

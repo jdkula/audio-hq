@@ -1,7 +1,7 @@
 import { NextApiHandler } from 'next';
 import { download } from '~/lib/processor';
 import { File, Workspace } from '~/lib/Workspace';
-import { findOrCreateWorkspace } from '.';
+import { findOrCreateWorkspace } from '../[ws]';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { getAudioDurationInSeconds } from 'get-audio-duration';
 import { mongofiles } from '~/lib/db';
@@ -52,7 +52,7 @@ const Import: NextApiHandler = async (req, res) => {
     }
 
     const filepath = await download(req.body.url);
-    const ws = await addFile(filepath, req.body.name, req.query.ws as string);
+    const ws = await addFile(filepath, req.body.name, req.body.ws);
 
     res.status(200).send({ done: true, path: filepath, ws });
 };

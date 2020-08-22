@@ -7,12 +7,14 @@ interface AudioInfo {
     volume: number;
     time: number;
     paused: boolean;
+    loading: boolean;
+    blocked: boolean;
 }
 
-const useAudio = (state: PlayState): AudioInfo => {
+const useAudio = (state: PlayState | null, loop = true): AudioInfo => {
     const audio = useRef(new Audio());
 
-    const [volumeValue, setVolume] = useState(state.volume);
+    const [volumeValue, setVolume] = useState(0);
     const [timeValue, setTime] = useState(0); // calculate later
     const [duration, setDuration] = useState(0); // calculaate later
     const [paused, setPaused] = useState(true);
@@ -20,6 +22,7 @@ const useAudio = (state: PlayState): AudioInfo => {
     const [loading, setLoading] = useState(true);
 
     const [hasInteracted, setHasInteracted] = useState(true);
+    const [blocked, setIsBlocked] = useState(false);
 
     useEffect(() => {
         return () => {
@@ -33,6 +36,7 @@ const useAudio = (state: PlayState): AudioInfo => {
     const onInteract = useCallback(() => {
         audio.current.play().then(() => audio.current.pause());
         window.requestAnimationFrame(() => {
+            setIsBlocked(false);
             setHasInteracted(true);
         });
     }, [audio.current, setHasInteracted]);
@@ -56,18 +60,32 @@ const useAudio = (state: PlayState): AudioInfo => {
             setLoading(false);
         };
 
-        audio.current.ontimeupdate = () => {
-            setTime(audio.current.currentTime);
-            // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
-            if (audio.current.currentTime > audio.current.duration - 0.44) {
-                audio.current.currentTime = 0;
-            }
-        };
-
         document.addEventListener('keyup', onInteract);
         document.addEventListener('mouseup', onInteract);
         document.addEventListener('touchend', onInteract);
+
+        audio.current
+            .play()
+            .then(() => (state?.pauseTime ?? 0) !== null && audio.current.pause())
+            .catch((err) => {
+                console.warn(err);
+                setHasInteracted(false);
+                setIsBlocked(true);
+                setPaused(true);
+            });
     }, [audio.current]);
+
+    useEffect(() => {
+        audio.current.ontimeupdate = () => {
+            setTime(audio.current.currentTime);
+            // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
+            if (loop && audio.current.currentTime > audio.current.duration - 0.44) {
+                audio.current.currentTime = 0;
+            }
+        };
+    }, [audio.current, loop]);
+
+    if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked: blocked };
 
     useEffect(() => {
         setLoading(true);
@@ -95,10 +113,7 @@ const useAudio = (state: PlayState): AudioInfo => {
         if (!loading && hasInteracted) {
             setPaused(state.pauseTime !== null || !hasInteracted);
             if (state.pauseTime === null) {
-                audio.current.play().catch((err) => {
-                    setHasInteracted(false);
-                    setPaused(true);
-                });
+                audio.current.play().catch((err) => console.warn(err));
             } else {
                 audio.current.pause();
             }
@@ -110,6 +125,8 @@ const useAudio = (state: PlayState): AudioInfo => {
         paused,
         time: timeValue,
         volume: volumeValue,
+        loading,
+        blocked,
     };
 };
 

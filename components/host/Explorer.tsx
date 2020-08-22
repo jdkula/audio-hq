@@ -22,7 +22,7 @@ export const Explorer: FunctionComponent<{
     };
 
     const fileButtons = workspace?.files.map((file) => (
-        <Button onClick={doPlay((file.id as unknown) as string)} key={(file.id as unknown) as string}>
+        <Button onClick={doPlay(file.id)} key={file.id}>
             {file.name}
         </Button>
     ));

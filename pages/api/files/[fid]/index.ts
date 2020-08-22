@@ -2,18 +2,33 @@ import { NextApiHandler } from 'next';
 import { mongofiles } from '~/lib/db';
 import { ObjectId, GridFSBucketReadStream } from 'mongodb';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
+import { File, Workspace } from '~/lib/Workspace';
 
-async function getFile(id: string): Promise<GridFSBucketReadStream> {
-    const fs = await mongofiles;
+async function getFileMetadata(id: string): Promise<File | null> {
+    return await (await mongoworkspaces)
+        .findOne<Workspace>({ files: { $elemMatch: { id } } })
+        .then((f) => f?.files.find((f) => f.id === id) ?? null);
+}
 
-    return new Promise<GridFSBucketReadStream>((resolve, reject) => {
-        const downloadStream = fs.openDownloadStream(new ObjectId(id));
-        downloadStream.on('error', (e) => reject(e));
-        downloadStream.on('file', () => {
-            resolve(downloadStream);
-        });
-        downloadStream.resume();
-    });
+async function updateFile(id: string, info: Partial<File>): Promise<File | null> {
+    delete info.id;
+    delete info.length;
+    delete info.type;
+
+    const result = await (await mongoworkspaces).bulkWrite([
+        {
+            updateOne: {
+                filter: { files: { $elemMatch: { id } } },
+                update: {
+                    $set: {
+                        'files.$': info,
+                    },
+                },
+            },
+        },
+    ]);
+
+    return await getFileMetadata(id);
 }
 
 async function delFile(id: string): Promise<void> {
@@ -22,7 +37,7 @@ async function delFile(id: string): Promise<void> {
     const fid = new ObjectId(id);
     await workspaces.bulkWrite([
         {
-            updateMany: {
+            updateOne: {
                 filter: { files: { $elemMatch: { id: fid } } },
                 update: {
                     $pull: {
@@ -50,9 +65,7 @@ const get: NextApiHandler = async (req, res) => {
     }
 
     try {
-        const downloadStream = await getFile(req.query.fid as string);
-        res.setHeader('Content-Type', 'audio/mp3');
-        res.status(200).send(downloadStream);
+        res.json(await getFileMetadata(req.query.fid as string));
     } catch (e) {
         res.status(404).end('Not found.');
     }
@@ -74,6 +87,20 @@ const del: NextApiHandler = async (req, res) => {
     res.status(204).send('Deleted.');
 };
 
+const put: NextApiHandler = async (req, res) => {
+    if (!req.query.fid || req.method !== 'PUT') {
+        res.status(400).send('Invalid URL.');
+        return;
+    }
+
+    try {
+        res.json(await updateFile(req.query.fid as string, req.body));
+    } catch (e) {
+        res.status(404).end('Not found.');
+        return;
+    }
+};
+
 const Files: NextApiHandler = async (req, res) => {
     if (req.method === 'DELETE') {
         return await del(req, res);
@@ -81,6 +108,10 @@ const Files: NextApiHandler = async (req, res) => {
 
     if (req.method === 'GET') {
         return await get(req, res);
+    }
+
+    if (req.method === 'PUT') {
+        return await put(req, res);
     }
 };
 

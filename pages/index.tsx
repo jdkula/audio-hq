@@ -1,58 +1,45 @@
-import Head from "next/head";
-import Button from "@material-ui/core/Button";
-import { makeStyles } from "@material-ui/core/styles";
-import { Container, Typography } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import { useState } from "react";
+import Head from 'next/head';
+import Button from '@material-ui/core/Button';
+import { makeStyles } from '@material-ui/core/styles';
+import { Container, Typography } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
+import { useState } from 'react';
 
-import Router from "next/router";
+import Router from 'next/router';
+import styled from 'styled-components';
 
-const useStyles = makeStyles(() => ({
-    container: {
-        display: "grid",
-        gridTemplateColumns: "20% 60% 20%",
-        gridTemplateRows: "30% 70%",
-        gridTemplateAreas: `
-            "logo logo   logo"
-            ".    portal ."
-        `,
-        minHeight: "100vh",
-        padding: "15%",
-    },
-    logo: {
-        gridArea: "logo",
-        textAlign: "center",
-    },
-    portal: {
-        gridArea: "portal",
-        display: "grid",
-        gridTemplateColumns: "50% 50%",
-        gridTemplateRows: "30% 30% 40%",
-        gridTemplateAreas: `
-            "input input"
-            "host  join "
-            ".     ."
-        `,
-        padding: "25% 10%",
-        columnGap: "20px",
-        rowGap: "10px",
-    },
-    input: {
-        gridArea: "input",
-        height: "100%",
-    },
-    host: {
-        gridArea: "host",
-    },
-    join: {
-        gridArea: "join",
-    },
-}));
+const InnerContainer = styled.main`
+    display: grid;
+    grid-template-columns: 20% 60% 20%;
+    grid-template-rows: 30% 70%;
+    grid-template-areas:
+        'logo logo logo'
+        '. portal .';
+    min-height: 100vh;
+    padding: 15%;
+`;
+
+const Logo = styled.div`
+    grid-area: logo;
+    text-align: center;
+`;
+
+const Portal = styled.div`
+    grid-area: portal;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-template-rows: 30% 30% 40%;
+    grid-template-areas:
+        'input input'
+        'host  join '
+        '.     .';
+    padding: 25% 10%;
+    column-gap: 20px;
+    row-gap: 10px;
+`;
 
 export default function Home(): React.ReactElement {
-    const classes = useStyles();
-
-    const [text, setText] = useState("");
+    const [text, setText] = useState('');
 
     function go(location: string) {
         Router.push(location);
@@ -65,20 +52,20 @@ export default function Home(): React.ReactElement {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <main className={classes.container}>
-                <div className={classes.logo}>
+            <InnerContainer>
+                <Logo>
                     <Typography variant="h1">Audio HQ</Typography>
-                </div>
-                <div className={classes.portal}>
+                </Logo>
+                <Portal>
                     <TextField
+                        style={{ gridArea: 'input' }}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         variant="outlined"
-                        className={classes.input}
                         label="Workspace Name"
                     />
                     <Button
-                        className={classes.host}
+                        style={{ gridArea: 'host' }}
                         variant="contained"
                         color="secondary"
                         onClick={() => go(`/workspace/${text}/host`)}
@@ -86,15 +73,15 @@ export default function Home(): React.ReactElement {
                         Host
                     </Button>
                     <Button
-                        className={classes.join}
+                        style={{ gridArea: 'join' }}
                         variant="contained"
                         color="primary"
                         onClick={() => go(`/workspace/${text}`)}
                     >
                         Join
                     </Button>
-                </div>
-            </main>
+                </Portal>
+            </InnerContainer>
         </Container>
     );
 }

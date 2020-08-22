@@ -21,7 +21,7 @@ const Convert: NextApiHandler = async (req, res) => {
         const out = await convert(file.path);
         const name = fields.name as string;
 
-        const ws: string = req.query.ws as string;
+        const ws: string = fields.workspace as string;
 
         const workspace = await addFile(out, name, ws);
 

@@ -32,20 +32,8 @@ async function findOrCreateWorkspaceFiles(workspaceId: string): Promise<File[]> 
     return workspace.value!.files;
 }
 
-const get: NextApiHandler = async (req, res) => {
-    res.json(await findOrCreateWorkspaceFiles(req.query.ws as string));
-};
-
-const post: NextApiHandler = async (req, res) => {};
-
 const WorkspaceEndpoint: NextApiHandler = async (req, res) => {
-    if (req.method === 'POST') {
-        await post(req, res);
-    }
-
-    if (req.method === 'GET') {
-        await get(req, res);
-    }
+    res.json(await findOrCreateWorkspaceFiles(req.query.ws as string));
 };
 
 export default WorkspaceEndpoint;

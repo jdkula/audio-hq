@@ -16,7 +16,7 @@ export const AudioControls: FunctionComponent<{
     state: PlayState;
     resolver: PlayStateResolver;
 }> = ({ state, resolver }) => {
-    const { duration, paused, time, volume } = useAudio(state);
+    const { duration, paused, time, volume, loading, blocked } = useAudio(state);
 
     const ws = useContext(WorkspaceContext);
 
@@ -35,6 +35,8 @@ export const AudioControls: FunctionComponent<{
 
     return (
         <div>
+            {loading && 'Content is loading...'}
+            {blocked && 'Please click on the page to enable playing.'}
             {paused ? (
                 <Button variant="outlined" onClick={() => resolver({ pauseTime: null })}>
                     Play
