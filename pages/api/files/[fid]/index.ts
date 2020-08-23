@@ -6,8 +6,8 @@ import { File, Workspace } from '~/lib/Workspace';
 
 async function getFileMetadata(id: string): Promise<File | null> {
     return await (await mongoworkspaces)
-        .findOne<Workspace>({ files: { $elemMatch: { id } } })
-        .then((f) => f?.files.find((f) => f.id === id) ?? null);
+        .findOne<Workspace>({ files: { $elemMatch: { id: new ObjectId(id) } } })
+        .then((f) => f?.files.find((other) => ((other.id as unknown) as ObjectID).toHexString() === id) ?? null);
 }
 
 async function updateFile(id: string, info: Partial<File>): Promise<File | null> {
@@ -65,7 +65,9 @@ const get: NextApiHandler = async (req, res) => {
     }
 
     try {
-        res.json(await getFileMetadata(req.query.fid as string));
+        const meta = await getFileMetadata(req.query.fid as string);
+        if (!meta) throw new Error('not found');
+        res.json(meta);
     } catch (e) {
         res.status(404).end('Not found.');
     }

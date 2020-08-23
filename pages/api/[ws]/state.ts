@@ -37,7 +37,7 @@ const get: NextApiHandler = async (req, res) => {
 };
 
 const post: NextApiHandler = async (req, res) => {
-    await (await mongoworkspaces).update({ _id: req.query.ws }, { $set: { state: req.body } });
+    await (await mongoworkspaces).updateOne({ _id: req.query.ws }, { $set: { state: req.body } });
     await get(req, res);
 };
 

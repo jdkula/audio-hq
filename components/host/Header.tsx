@@ -1,5 +1,5 @@
 import { makeStyles, AppBar, Toolbar, Typography } from "@material-ui/core";
-import { WorkspaceContext } from "~/pages/workspace/[id]/host";
+import { WorkspaceContext } from "~/pages/[id]/host";
 import { useContext, FunctionComponent } from "react";
 
 const useStyles = makeStyles(() => ({

@@ -1,6 +1,6 @@
 import { makeStyles, Button } from '@material-ui/core';
 import { useContext, FunctionComponent } from 'react';
-import { WorkspaceContext } from '~/pages/workspace/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]/host';
 
 const useStyles = makeStyles({
     explorer: {

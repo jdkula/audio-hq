@@ -1,7 +1,6 @@
 import { NextApiHandler } from 'next';
-import { convert } from '~/lib/processor';
+import { convert, processFile } from '~/lib/processor';
 import formidable from 'formidable';
-import { addFile } from './import';
 
 const Convert: NextApiHandler = async (req, res) => {
     const form = new formidable.IncomingForm();
@@ -18,14 +17,13 @@ const Convert: NextApiHandler = async (req, res) => {
 
     for (const filename of Object.keys(files)) {
         const file = files[filename];
-        const out = await convert(file.path);
         const name = fields.name as string;
 
         const ws: string = fields.workspace as string;
 
-        const workspace = await addFile(out, name, ws);
+        const job = await processFile(name, ws, (id) => convert(file.path, id));
 
-        res.status(200).send({ done: true, path: file.path, ws: workspace });
+        res.status(200).send(job);
         return;
     }
 };

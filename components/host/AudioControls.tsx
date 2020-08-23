@@ -2,7 +2,7 @@ import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, FormEvent, useState, useEffect, useRef, useContext } from 'react';
 import { Button } from '@material-ui/core';
 import { Seeker } from '../Seeker';
-import { WorkspaceContext } from '~/pages/workspace/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]/host';
 import useAudio from '~/lib/useAudio';
 
 function toTimestamp(seconds: number): string {
