@@ -13,13 +13,20 @@ import { File } from './Workspace';
 
 const kBaseDir = '/tmp/audio-hq/storage';
 
+try {
+    fs.mkdirSync('/tmp/audio-hq');
+} catch (e) {
+    // do nothing;
+}
+
 // Type definitions for ytdl are bad... this exists! (gotta love the double-disable...)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-expect-error
 ytdl.setYtdlBinary('/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl');
 
-interface Job {
+export interface Job {
     jobId: ObjectID;
+    name: string;
     status: 'started' | 'error' | 'done';
     progress: number | null;
     errorInfo?: string;
@@ -33,7 +40,7 @@ if (!g.__PROC_CACHE) {
 }
 
 export function getJobStatus(id: string): Job | null {
-    return g.__PROC_CACHE?.get(id) ?? [...(g.__PROC_CACHE as any)];
+    return g.__PROC_CACHE?.get(id) ?? null;
 }
 
 export async function addFile(
@@ -63,7 +70,7 @@ export async function addFile(
             },
         },
     );
-    
+
     await new Promise((resolve, reject) => {
         fs.createReadStream(filepath)
             .pipe(upload)
@@ -85,6 +92,7 @@ export function processFile(name: string, workspace: string, filePath: (id: Obje
         jobId: id,
         progress: 0,
         status: 'started',
+        name: name,
     };
 
     (async () => {
@@ -145,6 +153,7 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
     }
 
     const uuid = uuidv4();
+    const sid = id?.toHexString();
 
     const outPath = path.join(basedir, uuid + '.mp3');
 
@@ -160,8 +169,8 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
                 resolve(outPath);
             })
             .on('progress', (info) => {
-                if (id && g.__PROC_CACHE?.get(id)?.progress) {
-                    g.__PROC_CACHE.get(id)!.progress = info.percent;
+                if (sid && g.__PROC_CACHE?.get(sid)) {
+                    g.__PROC_CACHE.get(sid)!.progress = info.percent;
                 }
             })
             .save(outPath);

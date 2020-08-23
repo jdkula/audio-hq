@@ -1,6 +1,6 @@
 import { NextApiHandler } from 'next';
 import { mongofiles } from '~/lib/db';
-import { ObjectId, GridFSBucketReadStream } from 'mongodb';
+import { ObjectId, GridFSBucketReadStream, ObjectID } from 'mongodb';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { File, Workspace } from '~/lib/Workspace';
 

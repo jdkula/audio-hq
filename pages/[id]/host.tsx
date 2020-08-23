@@ -9,6 +9,7 @@ import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
+import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 
 export const WorkspaceContext = createContext<(Workspace & { resolver: WorkspaceResolver }) | null>(null);
 
@@ -28,6 +29,7 @@ const Host: FunctionComponent<{
     workspace: string;
 }> = (props) => {
     const { workspace, resolve } = useWorkspace(props.workspace);
+    const fileManager = useFileManager();
 
     const setSong = async (id: string) => {
         resolve({ playing: { id, startTimestamp: Date.now(), pauseTime: Date.now() } });
@@ -60,19 +62,22 @@ const Host: FunctionComponent<{
     if (!workspace?.state) return null;
 
     return (
-        <WorkspaceContext.Provider
-            value={{ name: props.workspace, files: workspace.files, state: workspace.state, resolver: resolve }}
-        >
-            <Container>
-                <Header />
-                {workspace.state.playing && (
-                    <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
-                )}
-                <Explorer setSong={setSong} />
-                <Ambience />
-                <SoundFX />
-                <CurrentUsers />
-            </Container>
+        <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
+            <FileManagerContext.Provider value={fileManager}>
+                <Container>
+                    <Header />
+                    {workspace.state.playing && (
+                        <NowPlaying
+                            resolver={(update) => resolve({ playing: update })}
+                            state={workspace.state.playing}
+                        />
+                    )}
+                    <Explorer setSong={setSong} />
+                    <Ambience />
+                    <SoundFX />
+                    <CurrentUsers />
+                </Container>
+            </FileManagerContext.Provider>
         </WorkspaceContext.Provider>
     );
 };

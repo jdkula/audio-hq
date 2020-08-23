@@ -1,6 +1,6 @@
 import { PlayState } from './Workspace';
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { WorkspaceRetriever } from './WorkspaceRetriever';
+import { useRef, useState, useEffect, useCallback, useContext } from 'react';
+import { FileManagerContext } from './useFileManager';
 
 interface AudioInfo {
     duration: number;
@@ -11,7 +11,14 @@ interface AudioInfo {
     blocked: boolean;
 }
 
-const useAudio = (state: PlayState | null, loop = true): AudioInfo => {
+interface Options {
+    loop?: boolean;
+    overrideVolume?: number;
+}
+
+const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
+    loop = loop ?? true;
+    const fileManager = useContext(FileManagerContext);
     const audio = useRef(new Audio());
 
     const [volumeValue, setVolume] = useState(0);
@@ -39,7 +46,7 @@ const useAudio = (state: PlayState | null, loop = true): AudioInfo => {
             setIsBlocked(false);
             setHasInteracted(true);
         });
-    }, [audio.current, setHasInteracted]);
+    }, [audio.current]);
 
     useEffect(() => {
         if (hasInteracted) {
@@ -89,7 +96,7 @@ const useAudio = (state: PlayState | null, loop = true): AudioInfo => {
 
     useEffect(() => {
         setLoading(true);
-        WorkspaceRetriever.song(state.id).then(([blob]) => {
+        fileManager.song(state.id).then(([blob]) => {
             audio.current.src = URL.createObjectURL(blob);
         });
     }, [state.id]);

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { Workspace, WorkspaceUpdate, updatePlayState, File, WorkspaceState, WorkspaceResolver } from './Workspace';
-import { WorkspaceRetriever } from './WorkspaceRetriever';
 import Axios from 'axios';
 import useSWR from 'swr';
 
