@@ -70,6 +70,17 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
 
     const progress = Math.ceil((downloadJob?.progress ?? 0) * 100);
 
+    const download = async () => {
+        let url;
+        if (cached) {
+            const [blob] = await fileManager.song(file.id);
+            url = URL.createObjectURL(blob);
+        } else {
+            url = `/api/files/${file.id}/download`;
+        }
+        window.open(url, '_blank', 'norel noreferrer');
+    };
+
     return (
         <Draggable draggableId={file.id} index={index}>
             {(provided, snapshot) => (
@@ -87,11 +98,7 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
                             <IconButton onClick={onPlay}>
                                 <PlayArrow />
                             </IconButton>
-                            <IconButton
-                                onClick={() =>
-                                    window.open(`/api/files/${file.id}/download`, '_blank', 'norel noreferrer')
-                                }
-                            >
+                            <IconButton onClick={download}>
                                 <DownloadIcon />
                             </IconButton>
                             <IconButton onClick={onDelete}>
