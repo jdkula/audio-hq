@@ -1,15 +1,15 @@
 import { Workspace, WorkspaceState, File as WSFile } from './Workspace';
 import PouchDB from 'pouchdb';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import Pusher from 'pusher-js';
 import Axios from 'axios';
-import { createContext, useState, useRef, useEffect } from 'react';
+import { createContext, useState, useRef, useEffect, MutableRefObject } from 'react';
 import type { Job } from './processor';
 import { Set } from 'immutable';
 import { mutate } from 'swr';
 
 interface FileManager {
-    song: (id: string) => Promise<Blob[]>;
+    song: (id: string, onCacheRetrieve: (song: Blob) => void) => string;
     reset: () => Promise<void>;
     import: (workspaceId: string, name: string, url: string) => Promise<Job>;
     upload: (workspaceId: string, name: string, file: File) => Promise<Job>;
@@ -47,6 +47,8 @@ async function waitForJob(id: string, workspaceId?: string, onUpdate?: (j: Job) 
 const useFileManager = (): FileManager => {
     const cache = useRef(new PouchDB('cache'));
 
+    const fetchCallbacks: MutableRefObject<Map<string, Set<(song: Blob) => void>>> = useRef(new Map());
+
     const [cached, setCached] = useState<Set<string>>(Set());
     const [fetching, setFetching] = useState<Set<Job>>(Set());
     const [working, setWorking] = useState<Set<Job>>(Set());
@@ -67,38 +69,50 @@ const useFileManager = (): FileManager => {
         );
     };
 
-    const song = async (id: string, name?: string): Promise<Blob[]> => {
+    const song = (id: string, onCacheRetrieve: (song: Blob) => void): string => {
         // TODO: audio sets
-        try {
-            const data = await cache.current.getAttachment(id, 'file');
-            setCached((cached) => cached.add(id));
-            return [data as Blob]; // client only.
-        } catch (e) {
-            setFetching((fetching) =>
-                fetching.add({ jobId: id as any, name: name ?? 'Loading...', progress: 0, status: 'downloading' }),
-            );
-            const resp = await axios.get(`/api/files/${id}/download`, {
-                responseType: 'blob',
-                onDownloadProgress: (progress) => {
-                    updateFetching(id, progress.loaded / progress.total);
-                },
-            });
-            setFetching((fetching) =>
-                fetching.add({ jobId: id as any, name: name ?? 'Loading...', progress: 0, status: 'done' }),
-            );
-            await cache.current.put({
-                _id: id,
-                _attachments: {
-                    file: {
-                        content_type: 'audio/mp3',
-                        data: resp.data,
+        const url = `/api/files/${id}/download`;
+        const inflight = fetchCallbacks.current.has(id);
+        fetchCallbacks.current.set(id, (fetchCallbacks.current.get(id) ?? Set()).add(onCacheRetrieve));
+
+        if (inflight) return url;
+
+        cache.current
+            .getAttachment(id, 'file')
+            .then((data) => {
+                setCached((cached) => cached.add(id));
+                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(data as Blob));
+                fetchCallbacks.current.delete(id);
+            })
+            .catch(async () => {
+                setFetching((fetching) =>
+                    fetching.add({ jobId: id as any, name: 'Loading...', progress: 0, status: 'downloading' }),
+                );
+                const resp = await axios.get(url, {
+                    responseType: 'blob',
+                    onDownloadProgress: (progress) => {
+                        updateFetching(id, progress.loaded / progress.total);
                     },
-                },
+                });
+                setFetching((fetching) =>
+                    fetching.add({ jobId: id as any, name: name ?? 'Loading...', progress: 0, status: 'done' }),
+                );
+                await cache.current.put({
+                    _id: id,
+                    _attachments: {
+                        file: {
+                            content_type: 'audio/mp3',
+                            data: resp.data,
+                        },
+                    },
+                });
+                setCached((cached) => cached.add(id));
+                setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
+                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(resp.data as Blob));
+                fetchCallbacks.current.delete(id);
             });
-            setCached((cached) => cached.add(id));
-            setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
-            return [resp.data];
-        }
+
+        return url;
     };
 
     const updateJob = (job: Job) => {
@@ -109,7 +123,7 @@ const useFileManager = (): FileManager => {
 
     const imp = async (workspaceId: string, name: string, url: string) => {
         const res = await axios.post('/api/files/import', { workspace: workspaceId, name: name, url: url });
-        setWorking(working.add(res.data));
+        setWorking((working) => working.add(res.data));
         waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
             setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
         );
@@ -121,12 +135,24 @@ const useFileManager = (): FileManager => {
         formdata.append('workspace', workspaceId);
         formdata.append('upload', file);
         formdata.append('name', name);
-        const res = await axios.post('/api/files/convert', formdata);
-        setWorking(working.add(res.data));
-        waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
-            setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
-        );
-        return res.data;
+        setWorking((working) => working.add({ jobId: name, name, progress: 0, status: 'uploading' }));
+        try {
+            const res = await axios.post('/api/files/convert', formdata, {
+                onUploadProgress: (progress) =>
+                    setWorking((working) =>
+                        working.map((v) =>
+                            v.jobId === name ? { ...v, progress: progress.loaded / progress.total } : v,
+                        ),
+                    ),
+            });
+            setWorking((working) => working.add(res.data));
+            waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
+                setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
+            );
+            return res.data;
+        } finally {
+            setWorking((working) => working.filterNot((v) => v.jobId === name));
+        }
     };
 
     const del = async (id: string, workspaceId?: string) => {

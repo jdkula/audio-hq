@@ -44,27 +44,34 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     const onInteract = useCallback(() => {
         console.log('onInteract called');
-        audio.current.play().then(() => {
-            console.log('onInteract -> play() -> then called');
-            (state?.pauseTime ?? 0) !== null && audio.current.pause();
-            setIsBlocked(false);
-            setHasInteracted(true);
-        });
+        audio.current
+            .play()
+            .then(() => {
+                console.log('onInteract -> play() -> then called');
+                (state?.pauseTime ?? 0) !== null && audio.current.pause();
+                setIsBlocked(false);
+                setHasInteracted(true);
+            })
+            .catch((e) => console.warn(e));
     }, [audio.current]);
 
     useEffect(() => {
         console.log('Interaction gate called');
-        if (blocked) {
+        if (!blocked) {
             document.removeEventListener('keyup', onInteract);
             document.removeEventListener('mouseup', onInteract);
             document.removeEventListener('touchend', onInteract);
         }
-    }, [!blocked]);
+    }, [blocked]);
 
     useEffect(() => {
         console.log('Audio setup called');
 
         audio.current.preload = 'auto';
+
+        audio.current.onloadstart = () => {
+            setLoading(true);
+        };
 
         audio.current.onloadedmetadata = () => {
             setDuration(audio.current.duration);
@@ -86,7 +93,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current
                 .play()
                 .then(() => {
-                    (state?.pauseTime ?? 0) !== null && audio.current.pause();
+                    typeof state?.pauseTime === 'number' && audio.current.pause();
                     setIsBlocked(false);
                 })
                 .catch((err) => {
@@ -113,13 +120,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     useEffect(() => {
         console.log('Song getter called');
-        if (audio.current.src) {
+        if (audio.current.src?.includes('blob')) {
             URL.revokeObjectURL(audio.current.src);
         }
         audio.current.src = '';
         setLoading(true);
-        fileManager.song(state.id).then(([blob]) => {
-            audio.current.src = URL.createObjectURL(blob);
+        audio.current.src = fileManager.song(state.id, (cached) => {
+            audio.current.src = URL.createObjectURL(cached);
         });
     }, [state.id]);
 

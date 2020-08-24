@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "graphql": "graphql-codegen --config codegen.yml",
     "build:server": "webpack && nodemon --inspect ./dist/server.js",
     "watch:server": "webpack -w & nodemon --inspect ./dist/server.js",

@@ -27,9 +27,9 @@ try {
 ytdl.setYtdlBinary('/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl');
 
 export interface Job {
-    jobId: ObjectID;
+    jobId: ObjectID | string;
     name: string;
-    status: 'started' | 'downloading' | 'converting' | 'error' | 'done';
+    status: 'started' | 'downloading' | 'converting' | 'uploading' | 'error' | 'done';
     progress: number | null;
     errorInfo?: string;
     result?: string;
