@@ -18,7 +18,7 @@ async function updateFile(id: string, info: Partial<File>): Promise<File | null>
     const set: any = {};
 
     for (const key of Object.keys(info)) {
-        set[`files.$.${key}`] = info[key];
+        set[`files.$.${key}`] = (info as any)[key];
     }
 
     const result = await (await mongoworkspaces).bulkWrite([

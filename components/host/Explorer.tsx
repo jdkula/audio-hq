@@ -71,14 +71,14 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
     const progress = Math.ceil((downloadJob?.progress ?? 0) * 100);
 
     const download = async () => {
-        let url;
         if (cached) {
-            const [blob] = await fileManager.song(file.id);
-            url = URL.createObjectURL(blob);
+            fileManager.song(file.id, (blob) => {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank', 'norel noreferrer');
+            });
         } else {
-            url = `/api/files/${file.id}/download`;
+            window.open(`/api/files/${file.id}/download`, '_blank', 'norel noreferrer');
         }
-        window.open(url, '_blank', 'norel noreferrer');
     };
 
     return (
