@@ -24,7 +24,9 @@ try {
 // Type definitions for ytdl are bad... this exists! (gotta love the double-disable...)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-expect-error
-ytdl.setYtdlBinary('/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl');
+const ytdlPath = ytdl.getYtdlBinary();
+ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
+ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
 export interface Job {
     jobId: ObjectID | string;
@@ -133,13 +135,9 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
     }
 
     return new Promise<string>((resolve, reject) => {
-        const ytdl = spawn(
-            '/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl',
-            ['-x', '-f', 'bestaudio', '-o', outPath, url],
-            {
-                cwd: basedir,
-            },
-        );
+        const ytdl = spawn(ytdlPath, ['-x', '-f', 'bestaudio', '-o', outPath, url], {
+            cwd: basedir,
+        });
 
         ytdl.stdout.on('data', (data: string) => {
             console.log('ytdl stdout: ' + data);
@@ -191,7 +189,7 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
     }
 
     return new Promise<string>((resolve, reject) => {
-        ffmpeg(input)
+        ffmpeg(input, { niceness: 20 })
             .noVideo()
             .audioQuality(3)
             .on('error', async (err) => {
