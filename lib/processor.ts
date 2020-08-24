@@ -25,7 +25,8 @@ try {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-expect-error
 const ytdlPath = ytdl.getYtdlBinary();
-ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
 export interface Job {
@@ -135,7 +136,7 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
     }
 
     return new Promise<string>((resolve, reject) => {
-        const ytdl = spawn(ytdlPath, ['-x', '-f', 'bestaudio', '-o', outPath, url], {
+        const ytdl = spawn(ytdlPath, ['--ffmpeg-location', ffmpegPath, '-x', '-f', 'bestaudio', '-o', outPath, url], {
             cwd: basedir,
         });
 
