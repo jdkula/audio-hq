@@ -16,7 +16,11 @@ export const AudioControls: FunctionComponent<{
     state: PlayState;
     resolver: PlayStateResolver;
 }> = ({ state, resolver }) => {
-    const { duration, paused, time, volume, loading, blocked } = useAudio(state);
+    const [tempVolume, setTempVolume] = useState<number | null>(null);
+
+    const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
+        overrideVolume: tempVolume ?? undefined,
+    });
 
     const ws = useContext(WorkspaceContext);
 
@@ -42,12 +46,19 @@ export const AudioControls: FunctionComponent<{
                     Play
                 </Button>
             ) : (
-                <Button variant="outlined" onClick={() => resolver({ pauseTime: Date.now() })}>
+                <Button variant="outlined" onClick={() => resolver({ pauseTime: Date.now(), timePlayed: time })}>
                     Pause
                 </Button>
             )}
 
-            <Seeker value={volume ?? 0} min={0} max={1} step={0.01} onSeek={(v) => resolver({ volume: v })} live />
+            <Seeker
+                value={volume ?? 0}
+                min={0}
+                max={1}
+                step={0.01}
+                onSeek={(v) => resolver({ volume: v })}
+                onInterimSeek={(v) => setTempVolume(v)}
+            />
 
             <Seeker
                 value={seekTimestamp ?? time}

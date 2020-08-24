@@ -11,6 +11,8 @@ import { findOrCreateWorkspace } from '~/pages/api/[ws]';
 import mongoworkspaces from './db/mongoworkspaces';
 import { File } from './Workspace';
 
+import { spawn } from 'child_process';
+
 const kBaseDir = '/tmp/audio-hq/storage';
 
 try {
@@ -27,7 +29,7 @@ ytdl.setYtdlBinary('/Library/Frameworks/Python.framework/Versions/3.8/bin/youtub
 export interface Job {
     jobId: ObjectID;
     name: string;
-    status: 'started' | 'error' | 'done';
+    status: 'started' | 'downloading' | 'converting' | 'error' | 'done';
     progress: number | null;
     errorInfo?: string;
     result?: string;
@@ -55,7 +57,7 @@ export async function addFile(
     const file: File = {
         id: (id as unknown) as string, // upload.id here is an ObjectId!! but it's serialized later as a string.
         name: filename,
-        path: '/',
+        path: [],
         type: 'audio',
         length: duration,
     };
@@ -124,22 +126,49 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
     const uuid = uuidv4();
 
     const outPath = path.join(basedir, uuid + '.%(ext)s');
-    const realOut = path.join(basedir, uuid + '.mp3');
+
+    const sid = id?.toHexString();
+    if (sid && g.__PROC_CACHE?.get(sid)) {
+        g.__PROC_CACHE.get(sid)!.status = 'downloading';
+    }
 
     return new Promise<string>((resolve, reject) => {
-        ytdl.exec(
-            url,
-            ['-x', '--audio-format', 'mp3', '--audio-quality', '3', '-o', outPath],
-            { cwd: basedir },
-            async (err: string, output: string[]) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    output.forEach((s) => console.log(s));
-                    resolve(realOut);
-                }
+        const ytdl = spawn(
+            '/Library/Frameworks/Python.framework/Versions/3.8/bin/youtube-dl',
+            ['-x', '-f', 'bestaudio', '-o', outPath, url],
+            {
+                cwd: basedir,
             },
         );
+
+        ytdl.stdout.on('data', (data: string) => {
+            console.log('ytdl stdout: ' + data);
+            const foundPercent = data.toString().match(/\[download\]\s*(\d+\.\d+)%/);
+            if (sid && g.__PROC_CACHE?.get(sid) && foundPercent?.[1]) {
+                g.__PROC_CACHE.get(sid)!.progress = parseFloat(foundPercent[1]) / 100;
+            }
+        });
+
+        ytdl.stderr.on('data', (data) => {
+            console.log('ytdl stderr: ' + data);
+        });
+
+        ytdl.on('close', (code, signal) => {
+            if (code !== 0) {
+                reject(code);
+            } else {
+                fs.readdir(basedir)
+                    .then((files) => files.find((f) => f.startsWith(uuid)))
+                    .then((file) => {
+                        if (!file) return null;
+                        else return convert(path.join(basedir, file), id);
+                    })
+                    .then((converted) => {
+                        if (!converted) reject('Conversion failed');
+                        else resolve(converted);
+                    });
+            }
+        });
     });
 }
 
@@ -157,6 +186,10 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
 
     const outPath = path.join(basedir, uuid + '.mp3');
 
+    if (sid && g.__PROC_CACHE?.get(sid)) {
+        g.__PROC_CACHE.get(sid)!.status = 'converting';
+    }
+
     return new Promise<string>((resolve, reject) => {
         ffmpeg(input)
             .noVideo()
@@ -170,7 +203,7 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
             })
             .on('progress', (info) => {
                 if (sid && g.__PROC_CACHE?.get(sid)) {
-                    g.__PROC_CACHE.get(sid)!.progress = info.percent;
+                    g.__PROC_CACHE.get(sid)!.progress = info.percent / 100;
                 }
             })
             .save(outPath);

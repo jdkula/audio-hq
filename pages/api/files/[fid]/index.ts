@@ -15,14 +15,18 @@ async function updateFile(id: string, info: Partial<File>): Promise<File | null>
     delete info.length;
     delete info.type;
 
+    const set: any = {};
+
+    for (const key of Object.keys(info)) {
+        set[`files.$.${key}`] = info[key];
+    }
+
     const result = await (await mongoworkspaces).bulkWrite([
         {
             updateOne: {
-                filter: { files: { $elemMatch: { id } } },
+                filter: { files: { $elemMatch: { id: new ObjectId(id) } } },
                 update: {
-                    $set: {
-                        'files.$': info,
-                    },
+                    $set: set,
                 },
             },
         },

@@ -23,7 +23,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     const [volumeValue, setVolume] = useState(0);
     const [timeValue, setTime] = useState(0); // calculate later
-    const [duration, setDuration] = useState(0); // calculaate later
+    const [duration, setDuration] = useState(0); // calculate later
     const [paused, setPaused] = useState(true);
 
     const [loading, setLoading] = useState(true);
@@ -32,7 +32,9 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     const [blocked, setIsBlocked] = useState(false);
 
     useEffect(() => {
+        console.log('onMount effect ran');
         return () => {
+            console.log('onDismount effect ran');
             audio.current.onloadedmetadata = null;
             audio.current.oncanplaythrough = null;
             audio.current.ontimeupdate = null;
@@ -41,22 +43,27 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, []);
 
     const onInteract = useCallback(() => {
-        audio.current.play().then(() => audio.current.pause());
-        window.requestAnimationFrame(() => {
+        console.log('onInteract called');
+        audio.current.play().then(() => {
+            console.log('onInteract -> play() -> then called');
+            (state?.pauseTime ?? 0) !== null && audio.current.pause();
             setIsBlocked(false);
             setHasInteracted(true);
         });
     }, [audio.current]);
 
     useEffect(() => {
-        if (hasInteracted) {
+        console.log('Interaction gate called');
+        if (blocked) {
             document.removeEventListener('keyup', onInteract);
             document.removeEventListener('mouseup', onInteract);
             document.removeEventListener('touchend', onInteract);
         }
-    }, [hasInteracted]);
+    }, [!blocked]);
 
     useEffect(() => {
+        console.log('Audio setup called');
+
         audio.current.preload = 'auto';
 
         audio.current.onloadedmetadata = () => {
@@ -70,19 +77,29 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         document.addEventListener('keyup', onInteract);
         document.addEventListener('mouseup', onInteract);
         document.addEventListener('touchend', onInteract);
-
-        audio.current
-            .play()
-            .then(() => (state?.pauseTime ?? 0) !== null && audio.current.pause())
-            .catch((err) => {
-                console.warn(err);
-                setHasInteracted(false);
-                setIsBlocked(true);
-                setPaused(true);
-            });
     }, [audio.current]);
 
     useEffect(() => {
+        console.log('Audio block checker called', loading);
+        if (!loading) {
+            setIsBlocked(true);
+            audio.current
+                .play()
+                .then(() => {
+                    (state?.pauseTime ?? 0) !== null && audio.current.pause();
+                    setIsBlocked(false);
+                })
+                .catch((err) => {
+                    console.warn(err);
+                    setHasInteracted(false);
+                    setIsBlocked(true);
+                    setPaused(true);
+                });
+        }
+    }, [loading]);
+
+    useEffect(() => {
+        console.log('AudioTimeUpdate setter called');
         audio.current.ontimeupdate = () => {
             setTime(audio.current.currentTime);
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
@@ -95,6 +112,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked: blocked };
 
     useEffect(() => {
+        console.log('Song getter called');
+        if (audio.current.src) {
+            URL.revokeObjectURL(audio.current.src);
+        }
+        audio.current.src = '';
         setLoading(true);
         fileManager.song(state.id).then(([blob]) => {
             audio.current.src = URL.createObjectURL(blob);
@@ -102,22 +124,33 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, [state.id]);
 
     useEffect(() => {
+        console.log('Volume setter called');
+
         if (!loading) {
-            audio.current.volume = state.volume;
-            setVolume(state.volume);
+            audio.current.volume = overrideVolume ?? state.volume;
+            setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, loading]);
+    }, [state.volume, loading, overrideVolume]);
 
     useEffect(() => {
+        console.log('Seeker called');
+
         if (!loading) {
-            const destinationSeek = ((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000);
+            let destinationSeek;
+            if (state.startTimestamp) {
+                destinationSeek = ((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000);
+            } else {
+                destinationSeek = 0;
+            }
             audio.current.currentTime = destinationSeek / 1000;
             setTime(destinationSeek / 1000);
         }
     }, [state.startTimestamp, state.pauseTime, loading, hasInteracted]);
 
     useEffect(() => {
-        if (!loading && hasInteracted) {
+        console.log('Play/pauser called');
+
+        if (!loading && !blocked) {
             setPaused(state.pauseTime !== null || !hasInteracted);
             if (state.pauseTime === null) {
                 audio.current.play().catch((err) => console.warn(err));
@@ -125,7 +158,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                 audio.current.pause();
             }
         }
-    }, [state.pauseTime, loading, hasInteracted]);
+    }, [state.pauseTime, loading, blocked]);
 
     return {
         duration,

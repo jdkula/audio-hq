@@ -1,11 +1,5 @@
 import { NextApiHandler } from 'next';
 import { download, processFile } from '~/lib/processor';
-import { File, Workspace } from '~/lib/Workspace';
-import { findOrCreateWorkspace } from '../[ws]';
-import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { getAudioDurationInSeconds } from 'get-audio-duration';
-import { mongofiles } from '~/lib/db';
-import fs from 'fs';
 
 const Import: NextApiHandler = async (req, res) => {
     if (!req.body.url || !req.body.name) {
@@ -13,7 +7,7 @@ const Import: NextApiHandler = async (req, res) => {
         return;
     }
 
-    const job = processFile(req.body.name, req.body.workspace, () => download(req.body.url));
+    const job = processFile(req.body.name, req.body.workspace, (id) => download(req.body.url, id));
 
     res.status(200).send(job);
 };

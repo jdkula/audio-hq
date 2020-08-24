@@ -11,7 +11,7 @@ import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 
-export const WorkspaceContext = createContext<(Workspace & { resolver: WorkspaceResolver }) | null>(null);
+export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
 
 const Container = styled.div`
     display: grid;
@@ -32,7 +32,7 @@ const Host: FunctionComponent<{
     const fileManager = useFileManager();
 
     const setSong = async (id: string) => {
-        resolve({ playing: { id, startTimestamp: Date.now(), pauseTime: Date.now() } });
+        resolve({ playing: { id, startTimestamp: Date.now() } });
     };
 
     useEffect(() => {

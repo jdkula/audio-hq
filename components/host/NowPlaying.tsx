@@ -21,6 +21,7 @@ export const NowPlaying: FunctionComponent<{
         <div className={classes.nowplaying}>
             <AudioControls state={state} resolver={resolver} />
             <Button onClick={() => resolver({ startTimestamp: Date.now() - 200000 })}>Seek Test</Button>
+            <Button onClick={() => resolver(null)}>Stop</Button>
         </div>
     );
 };

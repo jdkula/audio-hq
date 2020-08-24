@@ -1,7 +1,7 @@
 type ID = string;
 export interface File {
     name: string;
-    path: string;
+    path: string[];
     id: ID;
     type: 'audioset' | 'audio';
     length: number;
@@ -19,12 +19,12 @@ export interface AudioSet extends File {
 export interface PlayState {
     id: ID;
     fileId: ID;
-    startTimestamp: number;
+    startTimestamp: number | null;
     volume: number;
     pauseTime: number | null;
 }
 
-export type PlayStateResolver = (update: PlayStateUpdate) => void;
+export type PlayStateResolver = (update: PlayStateUpdate | null) => void;
 
 export interface Suggestion {
     from: string;
@@ -61,9 +61,10 @@ export interface PlayerStateUpdate {
 export interface PlayStateUpdate {
     id?: ID;
     fileId?: ID;
-    startTimestamp?: number;
+    startTimestamp?: number | null;
     volume?: number;
     pauseTime?: number | null;
+    timePlayed?: number;
 }
 
 export interface WorkspaceUpdate {
@@ -105,14 +106,26 @@ export function updatePlayState(
         if (update.pauseTime === null) {
             if (original?.pauseTime) {
                 const difference = Date.now() - original.pauseTime;
-                copy.startTimestamp += difference;
+                if (copy.startTimestamp !== null) {
+                    copy.startTimestamp += difference;
+                } else {
+                    console.warn('Resuming without start... starting at beginning.');
+                }
             }
 
             copy.pauseTime = null;
         } else if (update.pauseTime !== undefined) {
             copy.pauseTime = update.pauseTime;
+            if (copy.startTimestamp === null) {
+                if (update.timePlayed === undefined) {
+                    console.warn('Pausing without start time... assuming pausing at beginning.');
+                    copy.startTimestamp = update.pauseTime;
+                } else {
+                    copy.startTimestamp = update.pauseTime - update.timePlayed * 1000;
+                }
+            }
         }
-        if (typeof update.startTimestamp === 'number') {
+        if (update.startTimestamp !== undefined) {
             copy.startTimestamp = update.startTimestamp;
         }
         if (typeof update.volume === 'number') {

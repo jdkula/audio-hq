@@ -19,7 +19,7 @@ interface FileManager {
     working: Set<Job>;
 }
 
-async function waitForJob(id: string, workspaceId?: string): Promise<WSFile> {
+async function waitForJob(id: string, workspaceId?: string, onUpdate?: (j: Job) => void): Promise<WSFile> {
     let handle: number | null = null;
     let fetching = false;
     return new Promise((resolve, reject) => {
@@ -27,6 +27,7 @@ async function waitForJob(id: string, workspaceId?: string): Promise<WSFile> {
             if (fetching) return;
             fetching = true;
             const res = await Axios.get(`/api/jobs/${id}`);
+            if (res.data) onUpdate?.(res.data);
             if ((res.data as Job).status === 'done') {
                 if (workspaceId) mutate(`/api/${workspaceId}/files`);
 
@@ -60,16 +61,31 @@ const useFileManager = (): FileManager => {
         setCached(Set());
     };
 
-    const song = async (id: string): Promise<Blob[]> => {
+    const updateFetching = (id: string, progress: number) => {
+        setFetching((fetching) =>
+            fetching.map((v) => (((v.jobId as unknown) as string) === id ? { ...v, progress } : v)),
+        );
+    };
+
+    const song = async (id: string, name?: string): Promise<Blob[]> => {
         // TODO: audio sets
         try {
             const data = await cache.current.getAttachment(id, 'file');
-            setCached(cached.add(id));
+            setCached((cached) => cached.add(id));
             return [data as Blob]; // client only.
         } catch (e) {
+            setFetching((fetching) =>
+                fetching.add({ jobId: id as any, name: name ?? 'Loading...', progress: 0, status: 'downloading' }),
+            );
             const resp = await axios.get(`/api/files/${id}/download`, {
                 responseType: 'blob',
+                onDownloadProgress: (progress) => {
+                    updateFetching(id, progress.loaded / progress.total);
+                },
             });
+            setFetching((fetching) =>
+                fetching.add({ jobId: id as any, name: name ?? 'Loading...', progress: 0, status: 'done' }),
+            );
             await cache.current.put({
                 _id: id,
                 _attachments: {
@@ -79,16 +95,23 @@ const useFileManager = (): FileManager => {
                     },
                 },
             });
-            setCached(cached.add(id));
+            setCached((cached) => cached.add(id));
+            setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
             return [resp.data];
         }
+    };
+
+    const updateJob = (job: Job) => {
+        setWorking((working) =>
+            working.map((other) => (other.jobId === job.jobId ? job : other)).sortBy((v) => v.name),
+        );
     };
 
     const imp = async (workspaceId: string, name: string, url: string) => {
         const res = await axios.post('/api/files/import', { workspace: workspaceId, name: name, url: url });
         setWorking(working.add(res.data));
-        waitForJob(res.data.jobId, workspaceId).then(({ id }) =>
-            setWorking(working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
+        waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
+            setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
         );
         return res.data;
     };
@@ -100,8 +123,8 @@ const useFileManager = (): FileManager => {
         formdata.append('name', name);
         const res = await axios.post('/api/files/convert', formdata);
         setWorking(working.add(res.data));
-        waitForJob(res.data.id, workspaceId).then(({ id }) =>
-            setWorking(working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
+        waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
+            setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
         );
         return res.data;
     };
