@@ -196,6 +196,11 @@ const AddFileDialog: FC<DialogProps> = (props) => {
     );
 };
 
+const ExplorerContainer = styled.div`
+    grid-area: explorer;
+    border: 1px solid black;
+`;
+
 export const Explorer: FunctionComponent<{
     setSong: (id: string) => void;
 }> = (props) => {
@@ -280,7 +285,7 @@ export const Explorer: FunctionComponent<{
     });
 
     return (
-        <div style={{ gridArea: 'explorer' }}>
+        <ExplorerContainer>
             <Paper square variant="elevation" color="primary">
                 <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
             </Paper>
@@ -303,6 +308,6 @@ export const Explorer: FunctionComponent<{
             <Button variant="outlined" color="primary" onClick={() => setAdding(true)}>
                 Add
             </Button>
-        </div>
+        </ExplorerContainer>
     );
 };

@@ -1,21 +1,24 @@
 import { FunctionComponent, useState, ChangeEvent } from 'react';
+import { Slider, SliderProps } from '@material-ui/core';
 
-export const Seeker: FunctionComponent<{
-    onSeek: (value: number) => void;
-    onInterimSeek?: (value: number | null) => void;
-    value: number;
-    min: number;
-    max: number;
-    step: number;
-    live?: boolean;
-}> = ({ value: inputValue, min, max, step, onSeek, live, onInterimSeek }) => {
+export const Seeker: FunctionComponent<
+    {
+        onSeek: (value: number) => void;
+        onInterimSeek?: (value: number | null) => void;
+        value: number;
+        min: number;
+        max: number;
+        step: number;
+        live?: boolean;
+    } & SliderProps
+> = ({ value: inputValue, min, max, step, onSeek, live, onInterimSeek, ...rest }) => {
     const [seekValue, setSeekValue] = useState<number | null>(null);
 
     const value = seekValue ?? inputValue;
 
-    const handleSeek = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleSeek = (e: any, newValue: number | number[]) => {
         console.log('Seeking...');
-        const val = parseInt((e.target as HTMLInputElement).value);
+        const val = newValue as number;
         setSeekValue(val / 100);
         onInterimSeek?.(val / 100);
         if (live) {
@@ -33,16 +36,15 @@ export const Seeker: FunctionComponent<{
     };
 
     return (
-        <input
-            type="range"
-            value={(value * 100).toString()}
-            min={(min * 100).toString()}
-            max={(max * 100).toString()}
-            step={(step * 100).toString()}
-            onInput={handleSeek}
-            onChange={() => {}}
+        <Slider
+            value={value * 100}
+            min={min * 100}
+            max={max * 100}
+            step={step * 100}
+            onChange={handleSeek}
             onMouseUp={finishSeek}
             onTouchEnd={finishSeek}
+            {...rest}
         />
     );
 };

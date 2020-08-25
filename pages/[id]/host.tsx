@@ -21,8 +21,18 @@ const Container = styled.div`
         'header     header   header  '
         'nowplaying explorer explorer'
         'ambience   explorer explorer'
-        'ambience   sfx      users   ';
+        'ambience   explorer explorer';
     min-height: 100vh;
+
+    ${({ theme }) => theme.breakpoints.down('xs')} {
+        grid-template-columns: 100%;
+        grid-template-rows: 65px 20% 40% auto;
+        grid-template-areas:
+            'header'
+            'nowplaying'
+            'explorer'
+            'ambience';
+    }
 `;
 
 const Host: FunctionComponent<{
@@ -66,16 +76,11 @@ const Host: FunctionComponent<{
             <FileManagerContext.Provider value={fileManager}>
                 <Container>
                     <Header />
-                    {workspace.state.playing && (
-                        <NowPlaying
-                            resolver={(update) => resolve({ playing: update })}
-                            state={workspace.state.playing}
-                        />
-                    )}
+                    <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
                     <Explorer setSong={setSong} />
                     <Ambience />
-                    <SoundFX />
-                    <CurrentUsers />
+                    {/* <SoundFX /> */}
+                    {/* <CurrentUsers /> */}
                 </Container>
             </FileManagerContext.Provider>
         </WorkspaceContext.Provider>
