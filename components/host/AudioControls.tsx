@@ -10,11 +10,19 @@ import PauseIcon from '@material-ui/icons/Pause';
 import StopIcon from '@material-ui/icons/Stop';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 
-function toTimestamp(seconds: number): string {
+export function toTimestamp(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
     const minutes = Math.floor(seconds / 60);
-    const partialSeconds = Math.floor(seconds % 60);
+    seconds %= 60;
 
-    return `${minutes}:${partialSeconds.toFixed(0).padStart(2, '0')}`;
+    const secondsPadded = seconds.toFixed(0).padStart(2, '0');
+    const minutesPadded = minutes.toFixed(0).padStart(2, '0');
+    if (hours) {
+        return `${hours}:${minutesPadded}:${secondsPadded}`;
+    } else {
+        return `${minutes}:${secondsPadded}`;
+    }
 }
 
 const AudioControlsContainer = styled.div`

@@ -1,4 +1,4 @@
-import { IconButton } from '@material-ui/core';
+import { Box, CircularProgress, CircularProgressProps, IconButton, Paper, Typography } from '@material-ui/core';
 import React, { FC, useContext } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { FileManagerContext } from '~/lib/useFileManager';
@@ -7,19 +7,57 @@ import styled from 'styled-components';
 
 import PlayArrow from '@material-ui/icons/PlayArrow';
 import DeleteForever from '@material-ui/icons/DeleteForever';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import DownloadIcon from '@material-ui/icons/CloudDownload';
+import SaveIcon from '@material-ui/icons/Save';
+import { toTimestamp } from './AudioControls';
 
-const FileContainer = styled.div`
+const FileContainer = styled(Paper).attrs({})`
     display: grid;
     grid-template-columns: 2fr 1fr min-content;
     grid-template-rows: auto;
+    margin: 0.5rem 1rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.25rem;
+    transition: background-color 0.25s;
+
+    &:hover {
+        background-color: #eee;
+    }
 `;
 
 const StatusContainer = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
+`;
+
+const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = (props) =>
+    props.value ? (
+        <Box position="relative" display="inline-flex">
+            <CircularProgress variant="static" {...props} />
+            <Box
+                top={0}
+                left={0}
+                bottom={0}
+                right={0}
+                position="absolute"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+            >
+                <Typography variant="caption" component="div" color="textSecondary">{`${Math.round(
+                    props.value,
+                )}%`}</Typography>
+            </Box>
+        </Box>
+    ) : (
+        <CircularProgress {...props} />
+    );
+
+const CircularProgressVisibleBackground = styled(CircularProgressWithLabel)`
+    & .circle {
+        color: #ddd;
+    }
 `;
 
 const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; index: number }> = ({
@@ -36,14 +74,17 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
     const progress = Math.ceil((downloadJob?.progress ?? 0) * 100);
 
     const download = async () => {
-        if (cached) {
-            fileManager.song(file.id, (blob) => {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank', 'norel noreferrer');
-            });
-        } else {
-            window.open(`/api/files/${file.id}/download`, '_blank', 'norel noreferrer');
-        }
+        fileManager.song(file.id, (blob) => {
+            // const url = URL.createObjectURL(blob);
+            // window.open(url, '_blank', 'norel noreferrer');
+        });
+    };
+
+    const save = async () => {
+        fileManager.song(file.id, (blob) => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank', 'norel noreferrer');
+        });
     };
 
     return (
@@ -57,14 +98,28 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
                             </IconButton>
                             <span>{file.name}</span>
                         </div>
-                        <div>
-                            {cached && <span>Cached</span>}
-                            {downloadJob && <span>Downloading... {progress}%</span>}
-                        </div>
+                        <div>{toTimestamp(file.length)}</div>
                         <StatusContainer>
-                            <IconButton onClick={download}>
-                                <DownloadIcon />
-                            </IconButton>
+                            {downloadJob &&
+                                (downloadJob.progress ? (
+                                    <CircularProgressVisibleBackground
+                                        variant="static"
+                                        value={downloadJob.progress * 100}
+                                    />
+                                ) : (
+                                    <CircularProgressVisibleBackground />
+                                ))}
+                            {cached && (
+                                <IconButton onClick={save}>
+                                    <SaveIcon />
+                                </IconButton>
+                            )}
+                            {!downloadJob && !cached && (
+                                <IconButton onClick={download}>
+                                    <DownloadIcon />
+                                </IconButton>
+                            )}
+
                             <IconButton onClick={onDelete}>
                                 <DeleteForever />
                             </IconButton>

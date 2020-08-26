@@ -90,13 +90,17 @@ const useFileManager = (workspaceId: string): FileManager => {
                     },
                 });
                 setFetching((fetching) =>
-                    fetching.add({
-                        jobId: id as any,
-                        name: name ?? 'Loading...',
-                        progress: 0,
-                        status: 'done',
-                        workspace: workspaceId,
-                    }),
+                    fetching.map((v) =>
+                        v.jobId === id
+                            ? {
+                                  jobId: id as any,
+                                  name: name ?? 'Loading...',
+                                  progress: null,
+                                  status: 'saving',
+                                  workspace: workspaceId,
+                              }
+                            : v,
+                    ),
                 );
                 await cache.current.put({
                     _id: id,
@@ -166,7 +170,6 @@ const useFileManager = (workspaceId: string): FileManager => {
     };
 
     const update = async (id: string, update: Partial<WSFile & Reorderable>) => {
-        console.log('Called update...');
         mutate(
             `/api/${workspaceId}/files`,
             (files: WSFile[]) => {
