@@ -114,6 +114,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     useEffect(() => {
         console.log('AudioTimeUpdate setter called');
+        audio.current.loop = loop ?? true;
         audio.current.ontimeupdate = () => {
             // setTime(audio.current.currentTime);
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
