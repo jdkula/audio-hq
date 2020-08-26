@@ -38,17 +38,20 @@ export const Explorer: FunctionComponent<{
         };
     };
 
-    const fileButtons = workspace?.files
-        .filter((file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v))
-        .map((file, i) => (
-            <FileEntry
-                file={file}
-                index={i}
-                onPlay={doPlay(file.id)}
-                onDelete={() => fileManager.delete(file.id)}
-                key={file.id}
-            />
-        ));
+    const currentFiles =
+        workspace?.files.filter(
+            (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
+        ) ?? [];
+
+    const fileButtons = currentFiles.map((file, i) => (
+        <FileEntry
+            file={file}
+            index={i}
+            onPlay={doPlay(file.id)}
+            onDelete={() => fileManager.delete(file.id)}
+            key={file.id}
+        />
+    ));
 
     const folders = Set(
         workspace.files
@@ -69,12 +72,15 @@ export const Explorer: FunctionComponent<{
             if (!srcFile) throw new Error('rip');
 
             if (result.combine?.droppableId === '___current___') {
-                if (!result.combine) return;
                 const destFile = workspace?.files.find((file) => file.id === result.combine?.draggableId);
 
                 if (!destFile) throw new Error('rip');
 
                 setCombining([srcFile, destFile]);
+            } else if (result.destination?.droppableId === '___current___') {
+                const targetId = currentFiles[result.destination.index]?.id;
+                const reorder = targetId ? { before: targetId } : { after: currentFiles[currentFiles.length - 1].id };
+                fileManager.update(srcFile.id, { reorder });
             } else {
                 if (!result.destination || result.destination.droppableId === '___current___') return;
                 // folder

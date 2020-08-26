@@ -5,6 +5,7 @@ import { Set } from 'immutable';
 import { mutate } from 'swr';
 import type { Job } from './jobs';
 import { useJobs } from './useWorkspace';
+import { File as WSFile, Reorderable } from './Workspace';
 
 interface FileManager {
     song: (id: string, onCacheRetrieve: (song: Blob) => void) => string;
@@ -12,6 +13,7 @@ interface FileManager {
     import: (name: string, url: string) => Promise<Job>;
     upload: (name: string, file: File) => Promise<Job>;
     delete: (id: string) => Promise<void>;
+    update: (id: string, update: Partial<WSFile & Reorderable>) => Promise<void>;
     cached: Set<string>;
     fetching: Set<Job>;
     working: Set<Job>;
@@ -163,6 +165,33 @@ const useFileManager = (workspaceId: string): FileManager => {
         mutate(`/api/${workspaceId}/files`);
     };
 
+    const update = async (id: string, update: Partial<WSFile & Reorderable>) => {
+        console.log('Called update...');
+        mutate(
+            `/api/${workspaceId}/files`,
+            (files: WSFile[]) => {
+                files = files.map((file) => (file.id !== id ? file : { ...file, ...update }));
+                if (update.reorder) {
+                    const target = update.reorder.before || update.reorder.after;
+
+                    let insertIndex = files.findIndex((file) => file.id === target);
+                    const removeIndex = files.findIndex((file) => file.id === id);
+
+                    if (insertIndex === -1 || removeIndex === -1) return files;
+                    if (update.reorder.after) insertIndex++;
+
+                    const file = files[removeIndex];
+                    files.splice(removeIndex, 1);
+                    files.splice(insertIndex, 0, file);
+                }
+                return files;
+            },
+            false,
+        );
+        await Axios.put(`/api/files/${id}`, update);
+        mutate(`/api/${workspaceId}/files`);
+    };
+
     return {
         cached,
         fetching,
@@ -171,6 +200,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         reset,
         song,
         upload,
+        update,
         working: working.concat(jobs),
     };
 };

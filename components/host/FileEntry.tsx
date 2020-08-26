@@ -52,7 +52,9 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
                 <div {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
                     <FileContainer>
                         <div>
-                            <MusicNoteIcon />
+                            <IconButton onClick={onPlay}>
+                                <PlayArrow />
+                            </IconButton>
                             <span>{file.name}</span>
                         </div>
                         <div>
@@ -60,9 +62,6 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
                             {downloadJob && <span>Downloading... {progress}%</span>}
                         </div>
                         <StatusContainer>
-                            <IconButton onClick={onPlay}>
-                                <PlayArrow />
-                            </IconButton>
                             <IconButton onClick={download}>
                                 <DownloadIcon />
                             </IconButton>
