@@ -54,11 +54,13 @@ const useFileManager = (workspaceId: string): FileManager => {
         );
     };
 
-    const song = (id: string, onCacheRetrieve: (song: Blob) => void): string => {
+    const song = (id: string, onCacheRetrieve?: (song: Blob) => void): string => {
         // TODO: audio sets
         const url = `/api/files/${id}/download`;
         const inflight = fetchCallbacks.current.has(id);
-        fetchCallbacks.current.set(id, (fetchCallbacks.current.get(id) ?? Set()).add(onCacheRetrieve));
+        if (onCacheRetrieve) {
+            fetchCallbacks.current.set(id, (fetchCallbacks.current.get(id) ?? Set()).add(onCacheRetrieve));
+        }
 
         if (inflight) return url;
 

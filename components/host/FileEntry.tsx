@@ -19,6 +19,8 @@ const FileContainer = styled(Paper).attrs({})`
     border-radius: 9999px;
     padding: 0.25rem 0.25rem;
     transition: background-color 0.25s;
+    align-content: center;
+    align-items: center;
 
     &:hover {
         background-color: #eee;
@@ -71,13 +73,8 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
     const cached = fileManager.cached.has(file.id);
     const downloadJob = fileManager.fetching.find((job) => ((job.jobId as unknown) as string) === file.id);
 
-    const progress = Math.ceil((downloadJob?.progress ?? 0) * 100);
-
     const download = async () => {
-        fileManager.song(file.id, (blob) => {
-            // const url = URL.createObjectURL(blob);
-            // window.open(url, '_blank', 'norel noreferrer');
-        });
+        fileManager.song(file.id);
     };
 
     const save = async () => {
@@ -96,9 +93,13 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
                             <IconButton onClick={onPlay}>
                                 <PlayArrow />
                             </IconButton>
-                            <span>{file.name}</span>
+                            <Typography variant="body1" component="span">
+                                {file.name}
+                            </Typography>
                         </div>
-                        <div>{toTimestamp(file.length)}</div>
+                        <Box textAlign="right" px={2}>
+                            <Typography variant="body1">{toTimestamp(file.length)}</Typography>
+                        </Box>
                         <StatusContainer>
                             {downloadJob &&
                                 (downloadJob.progress ? (

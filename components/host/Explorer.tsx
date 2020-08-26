@@ -1,9 +1,10 @@
-import { Button, Breadcrumbs, Paper } from '@material-ui/core';
+import { Button, Breadcrumbs, Paper, Fab, Box } from '@material-ui/core';
 import React, { useContext, FunctionComponent, useState, useCallback } from 'react';
 import { WorkspaceContext } from '~/pages/[id]/host';
 import { File as WSFile } from '~/lib/Workspace';
 
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import AddIcon from '@material-ui/icons/Add';
 
 import { FileManagerContext } from '~/lib/useFileManager';
 import { DragDropContext, DropResult, Droppable } from 'react-beautiful-dnd';
@@ -128,9 +129,12 @@ export const Explorer: FunctionComponent<{
                 </Droppable>
                 {jobNotes}
             </DragDropContext>
-            <Button variant="outlined" color="primary" onClick={() => setAdding(true)}>
-                Add
-            </Button>
+            <Box position="absolute" right="4rem" bottom="4rem">
+                <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
+                    <AddIcon />
+                    Add A Song
+                </Fab>
+            </Box>
         </ExplorerContainer>
     );
 };
