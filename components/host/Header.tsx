@@ -2,6 +2,7 @@ import { makeStyles, AppBar, Toolbar, Typography, Box, Button } from '@material-
 import { WorkspaceContext } from '~/pages/[id]/host';
 import { useContext, FunctionComponent } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
+import Head from 'next/head';
 
 const useStyles = makeStyles(() => ({
     header: {
@@ -16,10 +17,16 @@ export const Header: FunctionComponent = () => {
 
     return (
         <AppBar position="relative" className={classes.header}>
+            <Head>
+                <title>Audio HQ – {workspace ? workspace.name : 'Loading...'} – Host View</title>
+            </Head>
             <Toolbar>
-                <Box display="flex" width="100%">
-                    <Box flexGrow="1">
-                        <Typography variant="h6">{workspace ? workspace.name : 'Workspace Name'}</Typography>
+                <Box display="flex" width="100%" alignItems="center">
+                    <Box flexGrow="1" display="flex" alignItems="center">
+                        <Typography variant="h4">Audio HQ – {workspace ? workspace.name : 'Loading...'}</Typography>
+                        <Box px={4}>
+                            <Typography variant="subtitle1">Host View</Typography>
+                        </Box>
                     </Box>
                     <Box color="#bbb">
                         <Button variant="outlined" color="inherit" onClick={() => fileManager.reset()}>

@@ -47,7 +47,7 @@ const Host: FunctionComponent<{
 
     useEffect(() => {
         if (navigator.mediaSession) {
-            navigator.mediaSession.metadata = new MediaMetadata({ title: props.workspace });
+            navigator.mediaSession.metadata = new MediaMetadata({ title: props.workspace, artist: 'Audio HQ' });
         }
     }, [workspace]);
 

@@ -8,7 +8,7 @@ import { useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
 
 interface FileManager {
-    song: (id: string, onCacheRetrieve: (song: Blob) => void) => string;
+    song: (id: string, onCacheRetrieve?: (song: Blob) => void) => string;
     reset: () => Promise<void>;
     import: (name: string, url: string) => Promise<Job>;
     upload: (name: string, file: File) => Promise<Job>;
