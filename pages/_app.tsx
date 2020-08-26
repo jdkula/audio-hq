@@ -12,6 +12,7 @@ import Head from 'next/head';
 import { ReactElement, useEffect } from 'react';
 import { createMuiTheme, ThemeProvider as MuiThemeProvider, CssBaseline, StylesProvider } from '@material-ui/core';
 import { ThemeProvider } from 'styled-components';
+import { RecoilRoot } from 'recoil';
 
 const theme = createMuiTheme({
     typography: {
@@ -35,7 +36,9 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
                             `}</style>
                         </Head>
                         <CssBaseline />
-                        <Component {...pageProps} />
+                        <RecoilRoot>
+                            <Component {...pageProps} />
+                        </RecoilRoot>
                     </ThemeProvider>
                 </MuiThemeProvider>
             </StylesProvider>

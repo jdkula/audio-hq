@@ -1,4 +1,4 @@
-import { useEffect, FunctionComponent, createContext } from 'react';
+import { useEffect, FunctionComponent, createContext, useRef } from 'react';
 import { Header } from '~/components/host/Header';
 import { NowPlaying } from '~/components/host/NowPlaying';
 import { Explorer } from '~/components/host/Explorer';
@@ -10,8 +10,14 @@ import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
+import { atom, RecoilRoot, useRecoilState } from 'recoil';
 
 export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
+
+export const globalVolumeAtom = atom({
+    key: 'globalVolume',
+    default: 1,
+});
 
 const Container = styled.div`
     display: grid;
@@ -40,6 +46,8 @@ const Host: FunctionComponent<{
 }> = (props) => {
     const { workspace, resolve } = useWorkspace(props.workspace);
     const fileManager = useFileManager(props.workspace);
+    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+    const previousVolumeValue = useRef<number | null>(null);
 
     const setSong = async (id: string) => {
         resolve({ playing: { id, startTimestamp: Date.now() } });
@@ -54,20 +62,23 @@ const Host: FunctionComponent<{
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.setActionHandler('pause', () => {
-                // resolve({ playing: { volume: 0 } });
+                previousVolumeValue.current = globalVolume;
+                setGlobalVolume(0);
             });
             navigator.mediaSession.setActionHandler('stop', () => {
-                // resolve({ playing: { volume: 0 } });
+                resolve({ playing: null });
             });
 
             navigator.mediaSession.setActionHandler('play', () => {
-                resolve({ playing: { pauseTime: null } });
+                if (globalVolume === 0) {
+                    setGlobalVolume(previousVolumeValue.current ?? 1);
+                }
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 resolve({ playing: { startTimestamp: Date.now(), pauseTime: null } });
             });
         }
-    }, [resolve]);
+    }, [resolve, globalVolume, setGlobalVolume]);
 
     if (!workspace?.state) return null;
 

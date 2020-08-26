@@ -1,6 +1,8 @@
 import { PlayState } from './Workspace';
 import { useRef, useState, useEffect, useCallback, useContext } from 'react';
 import { FileManagerContext } from './useFileManager';
+import { useRecoilState } from 'recoil';
+import { globalVolumeAtom } from '~/pages/[id]/host';
 
 interface AudioInfo {
     duration: number;
@@ -19,6 +21,7 @@ interface Options {
 const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
     loop = loop ?? true;
     const fileManager = useContext(FileManagerContext);
+    const [globalVolume] = useRecoilState(globalVolumeAtom);
     const audio = useRef(new Audio());
 
     const [volumeValue, setVolume] = useState(0);
@@ -30,6 +33,10 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     const [hasInteracted, setHasInteracted] = useState(true);
     const [blocked, setIsBlocked] = useState(false);
+
+    const handle = useRef<number | null>(null);
+
+    const shadowPaused = globalVolume === 0;
 
     useEffect(() => {
         console.log('onMount effect ran');
@@ -108,7 +115,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     useEffect(() => {
         console.log('AudioTimeUpdate setter called');
         audio.current.ontimeupdate = () => {
-            setTime(audio.current.currentTime);
+            // setTime(audio.current.currentTime);
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
             if (loop && audio.current.currentTime > audio.current.duration - 0.44) {
                 audio.current.currentTime = 0;
@@ -117,6 +124,24 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, [audio.current, loop]);
 
     if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked: blocked };
+
+    useEffect(() => {
+        handle.current = window.setInterval(() => {
+            let currentTime;
+            if (state.startTimestamp) {
+                currentTime = (((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000)) / 1000;
+            } else {
+                currentTime = audio.current.currentTime;
+            }
+
+            setTime(currentTime);
+        }, 500);
+
+        return () => {
+            if (handle.current) window.clearInterval(handle.current);
+            handle.current = null;
+        };
+    }, [state.startTimestamp, state.pauseTime, audio.current, duration]);
 
     useEffect(() => {
         console.log('Song getter called');
@@ -134,10 +159,10 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         console.log('Volume setter called');
 
         if (!loading) {
-            audio.current.volume = overrideVolume ?? state.volume;
+            audio.current.volume = (overrideVolume ?? state.volume) * globalVolume;
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, loading, overrideVolume]);
+    }, [state.volume, loading, overrideVolume, globalVolume]);
 
     useEffect(() => {
         console.log('Seeker called');
@@ -166,6 +191,21 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             }
         }
     }, [state.pauseTime, loading, blocked]);
+
+    // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
+    useEffect(() => {
+        if (shadowPaused) {
+            audio.current.pause();
+        } else {
+            if (!loading && !blocked && !paused) {
+                if (state.startTimestamp) {
+                    audio.current.currentTime =
+                        (((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000)) / 1000;
+                }
+                audio.current.play();
+            }
+        }
+    }, [shadowPaused]);
 
     return {
         duration,
