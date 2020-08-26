@@ -3,6 +3,7 @@ import { mongofiles } from '~/lib/db';
 import { ObjectId, GridFSBucketReadStream, ObjectID } from 'mongodb';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { File, Workspace } from '~/lib/Workspace';
+import { AppFS } from '~/lib/filesystems/FileSystem';
 
 async function getFileMetadata(id: string): Promise<File | null> {
     return await (await mongoworkspaces)
@@ -37,16 +38,14 @@ async function updateFile(id: string, info: Partial<File>): Promise<File | null>
 
 async function delFile(id: string): Promise<void> {
     const workspaces = await mongoworkspaces;
-    const files = await mongofiles;
-    const fid = new ObjectId(id);
     await workspaces.bulkWrite([
         {
             updateOne: {
-                filter: { files: { $elemMatch: { id: fid } } },
+                filter: { files: { $elemMatch: { id: id } } },
                 update: {
                     $pull: {
                         files: {
-                            id: fid,
+                            id: id,
                         },
                     } as any, // needed for some reason... the pull query works.
                 },
@@ -54,12 +53,7 @@ async function delFile(id: string): Promise<void> {
         },
     ]);
 
-    return new Promise((resolve, reject) => {
-        files.delete(fid, (err) => {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
+    await AppFS.delete(id);
 }
 
 const get: NextApiHandler = async (req, res) => {

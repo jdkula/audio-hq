@@ -4,9 +4,9 @@ import axios, { AxiosResponse } from 'axios';
 import Pusher from 'pusher-js';
 import Axios from 'axios';
 import { createContext, useState, useRef, useEffect, MutableRefObject } from 'react';
-import type { Job } from './processor';
 import { Set } from 'immutable';
 import { mutate } from 'swr';
+import type { Job } from './jobs';
 
 interface FileManager {
     song: (id: string, onCacheRetrieve: (song: Blob) => void) => string;
@@ -92,6 +92,9 @@ const useFileManager = (): FileManager => {
                     responseType: 'blob',
                     onDownloadProgress: (progress) => {
                         updateFetching(id, progress.loaded / progress.total);
+                    },
+                    headers: {
+                        Accept: 'audio/mp3',
                     },
                 });
                 setFetching((fetching) =>

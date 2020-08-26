@@ -1,8 +1,8 @@
 import { NextApiHandler } from 'next';
-import { getJobStatus } from '~/lib/processor';
+import Jobs from '~/lib/jobs';
 
 const GetJob: NextApiHandler = async (req, res) => {
-    res.json(getJobStatus(req.query.jobid as string));
+    res.json(Jobs.get(req.query.jobid as string));
 };
 
 export default GetJob;

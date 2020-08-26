@@ -4,7 +4,7 @@ import ytdl from 'youtube-dl';
 
 import { uuid as uuidv4 } from 'uuidv4';
 import ffmpeg from 'fluent-ffmpeg';
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { mongofiles } from './db';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { findOrCreateWorkspace } from '~/pages/api/[ws]';
@@ -12,6 +12,10 @@ import mongoworkspaces from './db/mongoworkspaces';
 import { File } from './Workspace';
 
 import { spawn } from 'child_process';
+import Jobs, { Job } from './jobs';
+import FileSystem, { AppFS } from './filesystems/FileSystem';
+import MongoDBFileSystem from './filesystems/MongoDBFileSystem';
+import RealFSFileSystem from './filesystems/RealFSFileSystem';
 
 const kBaseDir = '/tmp/audio-hq/storage';
 
@@ -29,36 +33,11 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
-export interface Job {
-    jobId: ObjectID | string;
-    name: string;
-    status: 'started' | 'downloading' | 'converting' | 'uploading' | 'error' | 'done';
-    progress: number | null;
-    errorInfo?: string;
-    result?: string;
-}
-
-const g = global as { __PROC_CACHE?: Map<string, Job> };
-
-if (!g.__PROC_CACHE) {
-    g.__PROC_CACHE = new Map();
-}
-
-export function getJobStatus(id: string): Job | null {
-    return g.__PROC_CACHE?.get(id) ?? null;
-}
-
-export async function addFile(
-    id: ObjectID,
-    filepath: string,
-    filename: string,
-    workspaceId: string,
-): Promise<ObjectID> {
-    const upload = (await mongofiles).openUploadStreamWithId(id, filename);
+export async function addFile(id: string, filepath: string, filename: string, workspaceId: string): Promise<string> {
     const duration = await getAudioDurationInSeconds(filepath);
 
     const file: File = {
-        id: (id as unknown) as string, // upload.id here is an ObjectId!! but it's serialized later as a string.
+        id,
         name: filename,
         path: [],
         type: 'audio',
@@ -76,22 +55,15 @@ export async function addFile(
         },
     );
 
-    await new Promise((resolve, reject) => {
-        fs.createReadStream(filepath)
-            .pipe(upload)
-            .on('error', (error: any) => {
-                if (error) reject(error);
-            })
-            .on('finish', () => {
-                resolve();
-            });
-    });
+    Jobs.set(id, (job) => ({ ...job, status: 'saving' }));
+
+    await AppFS.write(filepath, id, (progress) => progress && Jobs.set(id, (job) => ({ ...job, progress })));
 
     return id;
 }
 
-export function processFile(name: string, workspace: string, filePath: (id: ObjectID) => Promise<string>): Job {
-    const id = new ObjectID();
+export function processFile(name: string, workspace: string, filePath: (id: string) => Promise<string>): Job {
+    const id = new ObjectId().toHexString();
 
     const job: Job = {
         jobId: id,
@@ -105,19 +77,19 @@ export function processFile(name: string, workspace: string, filePath: (id: Obje
             const filepath = await filePath(id);
             await addFile(id, filepath, name, workspace);
             job.status = 'done';
-            job.result = id.toHexString();
+            job.result = id;
         } catch (e) {
             job.status = 'error';
             job.errorInfo = e.toString();
         }
     })();
 
-    g.__PROC_CACHE!.set(id.toHexString(), job);
+    Jobs.set(id, job);
 
     return job;
 }
 
-export async function download(url: string, id?: ObjectID): Promise<string> {
+export async function download(url: string, id?: string): Promise<string> {
     const basedir = kBaseDir;
 
     try {
@@ -130,10 +102,7 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
 
     const outPath = path.join(basedir, uuid + '.%(ext)s');
 
-    const sid = id?.toHexString();
-    if (sid && g.__PROC_CACHE?.get(sid)) {
-        g.__PROC_CACHE.get(sid)!.status = 'downloading';
-    }
+    id && Jobs.set(id, (job) => ({ ...job, status: 'downloading' }));
 
     return new Promise<string>((resolve, reject) => {
         const ytdl = spawn(ytdlPath, ['--ffmpeg-location', ffmpegPath, '-x', '-f', 'bestaudio', '-o', outPath, url], {
@@ -143,8 +112,8 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
         ytdl.stdout.on('data', (data: string) => {
             console.log('ytdl stdout: ' + data);
             const foundPercent = data.toString().match(/\[download\]\s*(\d+\.\d+)%/);
-            if (sid && g.__PROC_CACHE?.get(sid) && foundPercent?.[1]) {
-                g.__PROC_CACHE.get(sid)!.progress = parseFloat(foundPercent[1]) / 100;
+            if (id && foundPercent?.[1]) {
+                Jobs.set(id, (job) => ({ ...job, progress: parseFloat(foundPercent[1]) / 100 }));
             }
         });
 
@@ -171,7 +140,7 @@ export async function download(url: string, id?: ObjectID): Promise<string> {
     });
 }
 
-export async function convert(input: string, id?: ObjectID): Promise<string> {
+export async function convert(input: string, id?: string): Promise<string> {
     const basedir = kBaseDir;
 
     try {
@@ -181,13 +150,10 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
     }
 
     const uuid = uuidv4();
-    const sid = id?.toHexString();
 
     const outPath = path.join(basedir, uuid + '.mp3');
 
-    if (sid && g.__PROC_CACHE?.get(sid)) {
-        g.__PROC_CACHE.get(sid)!.status = 'converting';
-    }
+    id && Jobs.set(id, (job) => ({ ...job, status: 'converting' }));
 
     return new Promise<string>((resolve, reject) => {
         ffmpeg(input, { niceness: 20 })
@@ -201,9 +167,7 @@ export async function convert(input: string, id?: ObjectID): Promise<string> {
                 resolve(outPath);
             })
             .on('progress', (info) => {
-                if (sid && g.__PROC_CACHE?.get(sid)) {
-                    g.__PROC_CACHE.get(sid)!.progress = info.percent / 100;
-                }
+                id && Jobs.set(id, (job) => ({ ...job, progress: info.percent / 100 }));
             })
             .save(outPath);
     });
