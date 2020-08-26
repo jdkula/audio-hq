@@ -1,8 +1,7 @@
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
-import { FunctionComponent, FormEvent, useState, useEffect, useRef, useContext } from 'react';
-import { Button, Typography, IconButton, Popover } from '@material-ui/core';
+import { FunctionComponent, useState } from 'react';
+import { IconButton, Popover } from '@material-ui/core';
 import { Seeker } from '../Seeker';
-import { WorkspaceContext } from '~/pages/[id]/host';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
 
@@ -20,6 +19,7 @@ function toTimestamp(seconds: number): string {
 
 const AudioControlsContainer = styled.div`
     display: flex;
+    min-width: 400px;
 `;
 
 export const AudioControls: FunctionComponent<{
@@ -32,8 +32,6 @@ export const AudioControls: FunctionComponent<{
     const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
         overrideVolume: tempVolume ?? undefined,
     });
-
-    const ws = useContext(WorkspaceContext);
 
     const [seekTimestamp, setSeekTimestamp] = useState<number | null>(null);
 

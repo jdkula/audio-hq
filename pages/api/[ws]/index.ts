@@ -1,10 +1,11 @@
 import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { Workspace } from '~/lib/Workspace';
+import { StoredWorkspace, Workspace } from '~/lib/Workspace';
 import { FindAndModifyWriteOpResultObject } from 'mongodb';
+import Jobs from '~/lib/jobs';
 
 export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
-    const workspace: FindAndModifyWriteOpResultObject<Workspace & { _id: any }> = await (
+    const workspace: FindAndModifyWriteOpResultObject<StoredWorkspace & { _id: any }> = await (
         await mongoworkspaces
     ).findOneAndUpdate(
         { _id: workspaceId },
@@ -20,7 +21,7 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
                     suggestions: [],
                     users: [],
                 },
-            } as Omit<Workspace, '_id'>,
+            } as Omit<StoredWorkspace, '_id'>,
         },
         {
             returnOriginal: false,
@@ -30,20 +31,14 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
 
     delete workspace.value?._id;
 
-    return workspace.value!;
+    return { ...workspace.value!, jobs: Jobs.ofWorkspace(workspaceId) };
 }
 
 const get: NextApiHandler = async (req, res) => {
     res.json(await findOrCreateWorkspace(req.query.ws as string));
 };
 
-const post: NextApiHandler = async (req, res) => {};
-
 const WorkspaceEndpoint: NextApiHandler = async (req, res) => {
-    if (req.method === 'POST') {
-        await post(req, res);
-    }
-
     if (req.method === 'GET') {
         await get(req, res);
     }

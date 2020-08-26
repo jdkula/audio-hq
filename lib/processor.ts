@@ -5,7 +5,6 @@ import ytdl from 'youtube-dl';
 import { uuid as uuidv4 } from 'uuidv4';
 import ffmpeg from 'fluent-ffmpeg';
 import { ObjectId } from 'mongodb';
-import { mongofiles } from './db';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { findOrCreateWorkspace } from '~/pages/api/[ws]';
 import mongoworkspaces from './db/mongoworkspaces';
@@ -13,9 +12,7 @@ import { File } from './Workspace';
 
 import { spawn } from 'child_process';
 import Jobs, { Job } from './jobs';
-import FileSystem, { AppFS } from './filesystems/FileSystem';
-import MongoDBFileSystem from './filesystems/MongoDBFileSystem';
-import RealFSFileSystem from './filesystems/RealFSFileSystem';
+import { AppFS } from './filesystems/FileSystem';
 
 const kBaseDir = '/tmp/audio-hq/storage';
 
@@ -46,15 +43,6 @@ export async function addFile(id: string, filepath: string, filename: string, wo
 
     await findOrCreateWorkspace(workspaceId);
 
-    const res = await (await mongoworkspaces).updateOne(
-        { _id: workspaceId },
-        {
-            $push: {
-                files: file,
-            },
-        },
-    );
-
     Jobs.set(id, (job) => ({ ...job, status: 'saving' }));
 
     await AppFS.write(filepath, id, (progress) => progress && Jobs.set(id, (job) => ({ ...job, progress })));
@@ -70,6 +58,7 @@ export function processFile(name: string, workspace: string, filePath: (id: stri
         progress: 0,
         status: 'started',
         name: name,
+        workspace: workspace,
     };
 
     (async () => {
@@ -119,7 +108,7 @@ export async function download(url: string, id?: string): Promise<string> {
             console.log('ytdl stderr: ' + data);
         });
 
-        ytdl.on('close', (code, signal) => {
+        ytdl.on('close', (code) => {
             if (code !== 0) {
                 reject(code);
             } else {

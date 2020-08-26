@@ -1,10 +1,10 @@
-import { makeStyles, AppBar, Toolbar, Typography } from "@material-ui/core";
-import { WorkspaceContext } from "~/pages/[id]/host";
-import { useContext, FunctionComponent } from "react";
+import { makeStyles, AppBar, Toolbar, Typography } from '@material-ui/core';
+import { WorkspaceContext } from '~/pages/[id]/host';
+import { useContext, FunctionComponent } from 'react';
 
 const useStyles = makeStyles(() => ({
     header: {
-        gridArea: "header",
+        gridArea: 'header',
     },
 }));
 
@@ -15,7 +15,7 @@ export const Header: FunctionComponent = () => {
     return (
         <AppBar position="relative" className={classes.header}>
             <Toolbar>
-                <Typography variant="h6">{workspace ? workspace.name : "Workspace Name"}</Typography>
+                <Typography variant="h6">{workspace ? workspace.name : 'Workspace Name'}</Typography>
             </Toolbar>
         </AppBar>
     );

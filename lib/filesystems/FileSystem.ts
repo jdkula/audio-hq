@@ -1,5 +1,4 @@
 import { Readable } from 'stream';
-import RealFSFileSystem from './RealFSFileSystem';
 import S3FileSystem from './S3FileSystem';
 
 export interface ReadableInfo {

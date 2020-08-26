@@ -3,8 +3,8 @@ import { Header } from '~/components/host/Header';
 import { NowPlaying } from '~/components/host/NowPlaying';
 import { Explorer } from '~/components/host/Explorer';
 import { Ambience } from '~/components/host/Ambience';
-import { SoundFX } from '~/components/host/SoundFX';
-import { CurrentUsers } from '~/components/host/CurrentUsers';
+// import { SoundFX } from '~/components/host/SoundFX';
+// import { CurrentUsers } from '~/components/host/CurrentUsers';
 import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
@@ -39,7 +39,7 @@ const Host: FunctionComponent<{
     workspace: string;
 }> = (props) => {
     const { workspace, resolve } = useWorkspace(props.workspace);
-    const fileManager = useFileManager();
+    const fileManager = useFileManager(props.workspace);
 
     const setSong = async (id: string) => {
         resolve({ playing: { id, startTimestamp: Date.now() } });

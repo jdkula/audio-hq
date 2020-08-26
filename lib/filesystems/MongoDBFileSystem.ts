@@ -3,8 +3,6 @@ import { mongofiles } from '../db';
 import { ObjectId } from 'mongodb';
 
 import fs from 'promise-fs';
-import Jobs from '../jobs';
-import { Readable } from 'stream';
 
 export default class MongoDBFileSystem implements FileSystem {
     async read(id: string): Promise<FileInfo> {

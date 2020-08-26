@@ -18,7 +18,6 @@ const NowPlayingContainer = styled.div`
     align-items: center;
     justify-content: center;
     align-content: center;
-    
 `;
 
 export const NowPlaying: FunctionComponent<{

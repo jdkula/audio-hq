@@ -1,9 +1,9 @@
-import { makeStyles } from "@material-ui/core";
-import { FunctionComponent } from "react";
+import { makeStyles } from '@material-ui/core';
+import { FunctionComponent } from 'react';
 
 const useStyles = makeStyles({
     ambience: {
-        gridArea: "ambience",
+        gridArea: 'ambience',
     },
 });
 

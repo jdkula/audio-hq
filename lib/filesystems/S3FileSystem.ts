@@ -1,19 +1,14 @@
 import FileSystem, { FileInfo } from './FileSystem';
-import { mongofiles } from '../db';
-import { ObjectId } from 'mongodb';
 
 import fs from 'promise-fs';
-import path from 'path';
-import Jobs from '../jobs';
-import { Readable } from 'stream';
 
-import aws from 'aws-sdk';
+import AWS from 'aws-sdk';
 
 const defaultParams = {
     Bucket: process.env.S3_BUCKET_NAME!,
 };
 
-const S3 = new aws.S3({
+const S3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
@@ -32,7 +27,7 @@ export default class S3FileSystem implements FileSystem {
                     ...defaultParams,
                     Key: id,
                 },
-                (err, data) => {
+                (err) => {
                     if (err) reject(err);
                     else resolve();
                 },
@@ -47,7 +42,7 @@ export default class S3FileSystem implements FileSystem {
     ): Promise<void> {
         const size = (await fs.stat(filepath)).size;
 
-        const upload = new aws.S3.ManagedUpload({
+        const upload = new AWS.S3.ManagedUpload({
             params: {
                 ...defaultParams,
                 Key: id,

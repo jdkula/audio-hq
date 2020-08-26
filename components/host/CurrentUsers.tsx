@@ -1,9 +1,9 @@
-import { makeStyles } from "@material-ui/core";
-import { FunctionComponent } from "react";
+import { makeStyles } from '@material-ui/core';
+import { FunctionComponent } from 'react';
 
 const useStyles = makeStyles({
     users: {
-        gridArea: "users",
+        gridArea: 'users',
     },
 });
 

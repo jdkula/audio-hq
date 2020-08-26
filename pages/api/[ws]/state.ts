@@ -1,39 +1,9 @@
 import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { Workspace, WorkspaceState } from '~/lib/Workspace';
-import { FindAndModifyWriteOpResultObject } from 'mongodb';
-
-async function findOrCreateWorkspaceState(workspaceId: string): Promise<WorkspaceState> {
-    const workspace: FindAndModifyWriteOpResultObject<Workspace> = await (await mongoworkspaces).findOneAndUpdate(
-        { _id: workspaceId },
-        {
-            $setOnInsert: {
-                files: [],
-                name: workspaceId,
-                state: {
-                    ambience: [],
-                    live: false,
-                    playing: null,
-                    queued: null,
-                    suggestions: [],
-                    users: [],
-                },
-            } as Omit<Workspace, '_id'>,
-        },
-        {
-            returnOriginal: false,
-            upsert: true,
-            projection: {
-                state: true,
-            },
-        },
-    );
-
-    return workspace.value!.state;
-}
+import { findOrCreateWorkspace } from '.';
 
 const get: NextApiHandler = async (req, res) => {
-    res.json(await findOrCreateWorkspaceState(req.query.ws as string));
+    res.json((await findOrCreateWorkspace(req.query.ws as string)).state);
 };
 
 const post: NextApiHandler = async (req, res) => {

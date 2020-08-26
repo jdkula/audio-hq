@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Workspace, WorkspaceUpdate, updatePlayState, File, WorkspaceState, WorkspaceResolver } from './Workspace';
 import Axios from 'axios';
 import useSWR from 'swr';
+import type { Job } from './jobs';
 
 interface WorkspaceHookResult {
     workspace: Workspace | null;
@@ -26,7 +27,7 @@ interface LoadingDetail {
 
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
-const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => {} } => {
+const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void } => {
     const { data, mutate } = useSWR<Workspace['files']>(`/api/${workspaceId}/files`, fetcher);
 
     // TODO: Pusher.
@@ -50,12 +51,18 @@ const useWorkspaceState = (
     return { state: data ?? null, mutateState };
 };
 
-const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
-    const { files, changeFiles } = useFiles(workspaceId);
-    const { state, mutateState } = useWorkspaceState(workspaceId);
+export const useJobs = (workspaceId: string): { jobs: Job[]; mutateJobs: (jobs?: Job[]) => void } => {
+    const jobs = useSWR<Workspace['jobs']>(`/api/${workspaceId}/jobs`, fetcher, { refreshInterval: 500 });
+    return { jobs: jobs.data ?? [], mutateJobs: jobs.mutate };
+};
 
-    const [filesLoading, setFilesLoading] = useState<LoadingDetail[]>([]);
-    const [workspaceLoading, setWorkspaceLoading] = useState(true);
+const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
+    const { files } = useFiles(workspaceId);
+    const { state, mutateState } = useWorkspaceState(workspaceId);
+    const { jobs } = useJobs(workspaceId);
+
+    const [filesLoading] = useState<LoadingDetail[]>([]);
+    const [workspaceLoading] = useState(true);
 
     const resolve = async (update: WorkspaceUpdate) => {
         if (state === null) return;
@@ -74,6 +81,7 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
                       files: files,
                       state: state,
                       name: workspaceId,
+                      jobs: jobs,
                   },
         loading: {
             files: filesLoading,

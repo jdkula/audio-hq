@@ -1,11 +1,7 @@
 import FileSystem, { FileInfo } from './FileSystem';
-import { mongofiles } from '../db';
-import { ObjectId } from 'mongodb';
 
 import fs from 'promise-fs';
 import path from 'path';
-import Jobs from '../jobs';
-import { Readable } from 'stream';
 
 export default class RealFSFileSystem implements FileSystem {
     private _root: string;

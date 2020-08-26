@@ -1,3 +1,5 @@
+import type { Job } from './jobs';
+
 type ID = string;
 export interface File {
     name: string;
@@ -5,6 +7,13 @@ export interface File {
     id: ID;
     type: 'audioset' | 'audio';
     length: number;
+}
+
+export interface Reorderable {
+    reorder: {
+        after?: string;
+        before?: string;
+    };
 }
 
 export interface Audio extends File {
@@ -46,10 +55,14 @@ export interface WorkspaceState {
     users: PlayerState[];
 }
 
-export interface Workspace {
+export interface StoredWorkspace {
     name: string;
     files: File[];
     state: WorkspaceState;
+}
+
+export interface Workspace extends StoredWorkspace {
+    jobs: Job[];
 }
 
 export interface PlayerStateUpdate {

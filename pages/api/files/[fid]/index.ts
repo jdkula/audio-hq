@@ -1,8 +1,6 @@
 import { NextApiHandler } from 'next';
-import { mongofiles } from '~/lib/db';
-import { ObjectId, GridFSBucketReadStream, ObjectID } from 'mongodb';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { File, Workspace } from '~/lib/Workspace';
+import { File, Reorderable, StoredWorkspace, Workspace } from '~/lib/Workspace';
 import { AppFS } from '~/lib/filesystems/FileSystem';
 
 async function getFileMetadata(id: string): Promise<File | null> {
@@ -11,7 +9,38 @@ async function getFileMetadata(id: string): Promise<File | null> {
         .then((f) => f?.files.find((other) => other.id === id) ?? null);
 }
 
-async function updateFile(id: string, info: Partial<File>): Promise<File | null> {
+async function getWorkspaceWithFile(id: string): Promise<StoredWorkspace | null> {
+    return await (await mongoworkspaces).findOne({ files: { $elemMatch: { id } } });
+}
+
+async function reorder(id: string, { reorder }: Reorderable) {
+    const ws = await getWorkspaceWithFile(id);
+    if (!ws) return;
+
+    const target = reorder.before || reorder.after;
+
+    let insertIndex = ws.files.findIndex((file) => file.id === target);
+    const removeIndex = ws.files.findIndex((file) => file.id === id);
+
+    if (insertIndex === -1 || removeIndex === -1) return;
+    if (reorder.after) insertIndex++;
+
+    const file = ws.files[removeIndex];
+
+    await (await mongoworkspaces).bulkWrite([
+        //@ts-expect-error
+        { updateOne: { filter: { _id: ws.name }, update: { $pull: { files: { id } } } } },
+        {
+            updateOne: {
+                filter: { _id: ws.name },
+                //@ts-expect-error
+                update: { $push: { files: { $each: [file], $position: insertIndex } } },
+            },
+        },
+    ]);
+}
+
+async function updateFile(id: string, info: Partial<File & Reorderable>): Promise<File | null> {
     delete info.id;
     delete info.length;
     delete info.type;
@@ -22,16 +51,20 @@ async function updateFile(id: string, info: Partial<File>): Promise<File | null>
         set[`files.$.${key}`] = (info as any)[key];
     }
 
-    const result = await (await mongoworkspaces).bulkWrite([
+    await (await mongoworkspaces).bulkWrite([
         {
             updateOne: {
-                filter: { files: { $elemMatch: { id: new ObjectId(id) } } },
+                filter: { files: { $elemMatch: { id } } },
                 update: {
                     $set: set,
                 },
             },
         },
     ]);
+
+    if (info.reorder) {
+        await reorder(id, info as Reorderable);
+    }
 
     return await getFileMetadata(id);
 }

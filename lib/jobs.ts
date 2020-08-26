@@ -29,11 +29,21 @@ export default class Jobs {
     static has(id: string): boolean {
         return g.__PROC_CACHE?.has(id) ?? false;
     }
+
+    static ofWorkspace(id: string): Job[] {
+        const jobs: Job[] = [];
+        for (const job of g.__PROC_CACHE?.values() ?? []) {
+            if (job.workspace === id) jobs.push(job);
+        }
+
+        return jobs;
+    }
 }
 
 export interface Job {
     jobId: string;
     name: string;
+    workspace: string;
     status: 'started' | 'downloading' | 'converting' | 'uploading' | 'saving' | 'error' | 'done';
     progress: number | null;
     errorInfo?: string;
