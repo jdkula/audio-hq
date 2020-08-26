@@ -7,8 +7,8 @@ import { AppFS } from '~/lib/filesystems/FileSystem';
 
 async function getFileMetadata(id: string): Promise<File | null> {
     return await (await mongoworkspaces)
-        .findOne<Workspace>({ files: { $elemMatch: { id: new ObjectId(id) } } })
-        .then((f) => f?.files.find((other) => ((other.id as unknown) as ObjectID).toHexString() === id) ?? null);
+        .findOne<Workspace>({ files: { $elemMatch: { id } } })
+        .then((f) => f?.files.find((other) => other.id === id) ?? null);
 }
 
 async function updateFile(id: string, info: Partial<File>): Promise<File | null> {

@@ -76,11 +76,9 @@ export function processFile(name: string, workspace: string, filePath: (id: stri
         try {
             const filepath = await filePath(id);
             await addFile(id, filepath, name, workspace);
-            job.status = 'done';
-            job.result = id;
+            Jobs.set(id, (job) => ({ ...job, status: 'done', result: id }));
         } catch (e) {
-            job.status = 'error';
-            job.errorInfo = e.toString();
+            Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: e.toString() }));
         }
     })();
 
@@ -156,7 +154,7 @@ export async function convert(input: string, id?: string): Promise<string> {
     id && Jobs.set(id, (job) => ({ ...job, status: 'converting' }));
 
     return new Promise<string>((resolve, reject) => {
-        ffmpeg(input, { niceness: 20 })
+        ffmpeg(input, { niceness: 0 })
             .noVideo()
             .audioQuality(3)
             .on('error', async (err) => {

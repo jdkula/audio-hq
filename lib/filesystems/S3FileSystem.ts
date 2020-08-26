@@ -58,7 +58,7 @@ export default class S3FileSystem implements FileSystem {
             },
         });
 
-        upload.on('httpUploadProgress', (progress) => onProgress?.(progress.loaded / size));
+        upload.on('httpUploadProgress', (progress) => onProgress?.(progress.loaded / (progress.total ?? size)));
 
         await upload.promise();
     }
