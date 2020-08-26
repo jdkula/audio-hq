@@ -31,6 +31,15 @@ const useFileManager = (workspaceId: string): FileManager => {
         cache.current.allDocs().then((docs) => setCached(Set(docs.rows.map((row) => row.id))));
     }, [cache.current]);
 
+    useEffect(() => {
+        Promise.all(jobs.filter((j) => j.status === 'done').map((j) => Axios.delete(`/api/jobs/${j.jobId}`))).then(
+            () => {
+                mutate(`/api/${workspaceId}/files`);
+                mutate(`/api/${workspaceId}/jobs`);
+            },
+        );
+    }, [jobs]);
+
     const reset = async () => {
         await cache.current.destroy();
         cache.current = new PouchDB('cache');
@@ -107,6 +116,7 @@ const useFileManager = (workspaceId: string): FileManager => {
 
     const imp = async (name: string, url: string) => {
         const res = await Axios.post('/api/files/import', { workspace: workspaceId, name: name, url: url });
+        mutate(`/api/${workspaceId}/jobs`);
         // waitForJob(res.data.jobId, workspaceId).then(({ id }) =>
         //     setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
         // );
@@ -130,6 +140,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                         ),
                     ),
             });
+            mutate(`/api/${workspaceId}/jobs`);
             // setWorking((working) => working.add(res.data));
             // waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
             //     setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),

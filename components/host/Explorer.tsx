@@ -15,6 +15,7 @@ import AddFileDialog from './AddFileDialog';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './FolderAddDialog';
 import Folder from './FolderEntry';
+import JobEntry from './JobEntry';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -56,9 +57,7 @@ export const Explorer: FunctionComponent<{
     ).map((foldername) => <Folder name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />);
 
     const jobNotes = fileManager.working.map((j) => (
-        <div key={(j.jobId as unknown) as string}>
-            {j.name} - {j.status} - {Math.floor((j.progress ?? 0) * 1000) / 10}%
-        </div>
+        <JobEntry job={j} key={j.jobId} onCanceled={() => mutate(`/api/${workspace.name}/jobs`)} />
     ));
 
     const handleDrag = useCallback(

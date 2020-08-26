@@ -47,6 +47,8 @@ export async function addFile(id: string, filepath: string, filename: string, wo
 
     await AppFS.write(filepath, id, (progress) => progress && Jobs.set(id, (job) => ({ ...job, progress })));
 
+    await (await mongoworkspaces).updateOne({ _id: workspaceId }, { $push: { files: file } });
+
     return id;
 }
 
