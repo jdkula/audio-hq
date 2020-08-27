@@ -71,7 +71,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const subfiles = () =>
         workspace.files.filter(
             (file) =>
-                file.path.length >= fullPath.length && file.path.every((pathElement, i) => pathElement === fullPath[i]),
+                file.path.length >= fullPath.length && fullPath.every((pathElement, i) => pathElement === file.path[i]),
         );
 
     const onRename = () => {
