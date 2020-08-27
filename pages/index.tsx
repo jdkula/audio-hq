@@ -6,37 +6,48 @@ import TextField from '@material-ui/core/TextField';
 import { KeyboardEvent, useState } from 'react';
 
 import { useRouter } from 'next/router';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { listen } from 'socket.io';
+
+const GlobalFull = createGlobalStyle`
+    html {
+        height: 100%;
+    }
+    body {
+        height: 100%;
+    }
+    #__next {
+        height: 100%;
+    }
+`;
+
+const OuterContainer = styled(Container)`
+    height: 100%;
+    width: 100%;
+    display: grid;
+    align-items: center;
+    justify-content: center;
+`;
 
 const InnerContainer = styled.main`
     display: grid;
-    grid-template-columns: 20% 60% 20%;
-    grid-template-rows: 30% 70%;
+    grid-template-columns: auto;
+    grid-template-rows: auto 1fr 1fr;
     grid-template-areas:
-        'logo logo logo'
-        '. portal .';
-    min-height: 100vh;
-    padding: 15%;
+        'logo'
+        'input'
+        'button';
+    width: 100%;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: stretch;
 `;
 
 const Logo = styled.div`
     grid-area: logo;
+    margin-bottom: 5rem;
     text-align: center;
-`;
-
-const Portal = styled.div`
-    grid-area: portal;
-    display: grid;
-    grid-template-columns: 50% 50%;
-    grid-template-rows: 30% 30% 40%;
-    grid-template-areas:
-        'input input'
-        'button  button '
-        '.     .';
-    padding: 25% 10%;
-    column-gap: 20px;
-    row-gap: 10px;
 `;
 
 export default function Home(): React.ReactElement {
@@ -55,30 +66,36 @@ export default function Home(): React.ReactElement {
     };
 
     return (
-        <Container>
+        <OuterContainer>
             <Head>
                 <title>Audio HQ</title>
                 <link rel="icon" href="/favicon.ico" />
             </Head>
+            <GlobalFull />
 
             <InnerContainer>
                 <Logo>
                     <Typography variant="h1">Audio HQ</Typography>
                 </Logo>
-                <Portal>
-                    <TextField
-                        style={{ gridArea: 'input' }}
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        onKeyDown={enterListener}
-                        variant="outlined"
-                        label="Workspace Name"
-                    />
-                    <Button style={{ gridArea: 'button' }} variant="contained" color="primary" onClick={go}>
-                        Join
-                    </Button>
-                </Portal>
+                <TextField
+                    style={{ gridArea: 'input' }}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={enterListener}
+                    variant="outlined"
+                    label="Workspace Name"
+                />
+                <Button
+                    style={{ gridArea: 'button' }}
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    color="primary"
+                    onClick={go}
+                >
+                    Join
+                </Button>
             </InnerContainer>
-        </Container>
+        </OuterContainer>
     );
 }
