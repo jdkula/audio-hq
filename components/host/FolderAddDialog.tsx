@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import React, { FC, useState, useContext, KeyboardEvent } from 'react';
 import { mutate } from 'swr';
-import { WorkspaceContext } from '~/pages/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]';
 
 import { File as WSFile } from '~/lib/Workspace';
 import { Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';

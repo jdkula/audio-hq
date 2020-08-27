@@ -44,7 +44,7 @@ export default function Home(): React.ReactElement {
     const router = useRouter();
 
     const go = () => {
-        router.push(`/${encodeURIComponent(text)}/host`);
+        router.push('/[id]', `/${encodeURIComponent(text)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {

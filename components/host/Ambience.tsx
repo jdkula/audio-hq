@@ -1,7 +1,7 @@
 import { makeStyles, Paper, Typography } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 import styled from 'styled-components';
-import { WorkspaceContext } from '../../pages/[id]/host';
+import { WorkspaceContext } from '../../pages/[id]';
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver } from '../../lib/Workspace';
 

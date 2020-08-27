@@ -12,7 +12,7 @@ import {
     useMediaQuery,
     useTheme,
 } from '@material-ui/core';
-import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]/host';
+import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]';
 import { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
@@ -57,7 +57,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
-                    {host && ' – Host View'}
+                    {!host && ' – Micro View'}
                 </title>
             </Head>
             <Toolbar>
@@ -70,9 +70,9 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         >
                             Audio HQ – {workspace ? workspace.name : 'Loading...'}
                         </Typography>
-                        {!isSmall && host && (
+                        {!isSmall && !host && (
                             <Box px={4}>
-                                <Typography variant="subtitle1">Host View</Typography>
+                                <Typography variant="subtitle1">Micro View</Typography>
                             </Box>
                         )}
                     </Box>

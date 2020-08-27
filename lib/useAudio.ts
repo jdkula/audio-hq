@@ -2,7 +2,7 @@ import { PlayState } from './Workspace';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
 import { useRecoilState } from 'recoil';
-import { globalVolumeAtom } from '~/pages/[id]/host';
+import { globalVolumeAtom } from '~/pages/[id]';
 
 interface AudioInfo {
     duration: number;

@@ -8,9 +8,10 @@ import {
     InputAdornment,
     Paper,
     TextField,
+    Tooltip,
 } from '@material-ui/core';
 import React, { FunctionComponent, useCallback, useContext, useState } from 'react';
-import { WorkspaceContext } from '~/pages/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]';
 import { File as WSFile, Workspace } from '~/lib/Workspace';
 
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -174,14 +175,18 @@ export const Explorer: FunctionComponent = (props) => {
                                         ),
                                     }}
                                 />
-                                <IconButton onClick={() => finishSearch()}>
-                                    <CloseIcon />
-                                </IconButton>
+                                <Tooltip placement="bottom" title="Close search" arrow>
+                                    <IconButton onClick={() => finishSearch()}>
+                                        <CloseIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </>
                         ) : (
-                            <IconButton onClick={() => setSearching(true)}>
-                                <SearchIcon />
-                            </IconButton>
+                            <Tooltip placement="left" title="Search all files and folders" arrow>
+                                <IconButton onClick={() => setSearching(true)}>
+                                    <SearchIcon />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </Box>
                 </Box>

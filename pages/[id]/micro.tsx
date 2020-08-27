@@ -1,44 +1,25 @@
-import { createContext, FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
-import { Header } from '~/components/host/Header';
-import { NowPlaying } from '~/components/host/NowPlaying';
+import { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
+import { Header, VolumeButton } from '~/components/host/Header';
 import { Explorer } from '~/components/host/Explorer';
 import { Ambience } from '~/components/host/Ambience';
 // import { SoundFX } from '~/components/host/SoundFX';
 // import { CurrentUsers } from '~/components/host/CurrentUsers';
-import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
-import { atom, useRecoilState } from 'recoil';
-import { AppBar, Box, Tab, Tabs, useMediaQuery, useTheme } from '@material-ui/core';
-
-export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
-
-export const globalVolumeAtom = atom({
-    key: 'globalVolume',
-    default: 1,
-});
+import { useRecoilState } from 'recoil';
+import { globalVolumeAtom, WorkspaceContext } from '.';
+import { AudioControls } from '../../components/host/AudioControls';
+import { Box, IconButton, LinearProgress, Popover, Slider, Tooltip } from '@material-ui/core';
 
 const Container = styled.div`
     display: grid;
-    grid-template-columns: 50% 30% 20%;
-    grid-template-rows: 65px 40% auto 40%;
+    grid-template-columns: 100%;
+    grid-template-rows: 65px auto;
     grid-template-areas:
-        'header     header   header  '
-        'nowplaying explorer explorer'
-        'ambience   explorer explorer'
-        'ambience   explorer explorer';
-    min-height: 100vh;
-
-    ${({ theme }) => theme.breakpoints.down('sm')} {
-        grid-template-columns: 100%;
-        grid-template-rows: 65px 45px auto;
-        grid-template-areas:
-            'header'
-            'tabs'
-            'tabcontent';
-    }
+        'header'
+        'tabcontent';
 
     & > div {
         overflow: hidden;
@@ -55,44 +36,53 @@ const TabContainer = styled.div`
     }
 `;
 
+const MajorVolumeControls: FC = () => {
+    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+
+    return (
+        <Box mx="1rem" my="0.25rem" minWidth="6rem">
+            <Slider
+                min={0}
+                max={1}
+                step={0.05}
+                value={globalVolume}
+                onChange={(_, val) => setGlobalVolume(val as number)}
+            />
+        </Box>
+    );
+};
+
 const MainApp: FC = () => {
     const { state, resolver } = useContext(WorkspaceContext);
-    const theme = useTheme();
-    const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+    const fileManager = useContext(FileManagerContext);
+    const [blocked, setBlocked] = useState(false);
 
-    const [tabValue, setTabValue] = useState(0);
+    const players = [...state.ambience, ...(state.playing ? [state.playing] : [])].map((ps) => (
+        <AudioControls
+            state={ps}
+            key={ps.id}
+            resolver={() => {
+                /* do nothing */
+            }}
+            onBlocked={(b) => setBlocked(b)}
+        />
+    ));
 
-    const nowPlaying = <NowPlaying resolver={(update) => resolver({ playing: update })} state={state.playing} />;
+    const fetchers = fileManager.fetching.map((job) =>
+        job.progress === null ? (
+            <LinearProgress key={job.jobId} />
+        ) : (
+            <LinearProgress variant="determinate" value={job.progress * 100} key={job.jobId} />
+        ),
+    );
 
-    if (isSmall) {
-        return (
-            <>
-                <Header host />
-                <AppBar position="static" color="default" style={{ gridArea: 'tabs' }}>
-                    <Tabs variant="fullWidth" value={tabValue} onChange={(_, v) => setTabValue(v)}>
-                        <Tab label="Main" />
-                        <Tab label="Ambience" />
-                        <Tab label="Explorer" />
-                    </Tabs>
-                </AppBar>
-                <TabContainer>
-                    <TabContainer style={{ display: tabValue === 0 ? undefined : 'none' }}>{nowPlaying}</TabContainer>
-                    <TabContainer style={{ display: tabValue === 1 ? undefined : 'none' }}>
-                        <Ambience />
-                    </TabContainer>
-                    <TabContainer style={{ display: tabValue === 2 ? undefined : 'none' }}>
-                        <Explorer />
-                    </TabContainer>
-                </TabContainer>
-            </>
-        );
-    }
     return (
         <>
-            <Header host />
-            {nowPlaying}
-            <Explorer />
-            <Ambience />
+            <Header />
+            <MajorVolumeControls />
+            <Box display="none">{players}</Box>
+            {blocked && 'Please click anywhere on the screen to enable audio.'}
+            {fetchers}
             {/* <SoundFX /> */}
             {/* <CurrentUsers /> */}
         </>
@@ -124,17 +114,13 @@ const Host: FunctionComponent<{
                 previousVolumeValue.current = globalVolume;
                 setGlobalVolume(0);
             });
-            navigator.mediaSession.setActionHandler('stop', () => {
-                resolve({ playing: null });
-            });
-
             navigator.mediaSession.setActionHandler('play', () => {
                 if (globalVolume === 0) {
                     setGlobalVolume(previousVolumeValue.current ?? 1);
                 }
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
-                resolve({ playing: { startTimestamp: Date.now(), pauseTime: null } });
+                // do nothing
             });
         }
     }, [resolve, globalVolume, setGlobalVolume]);

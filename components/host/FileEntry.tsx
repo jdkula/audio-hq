@@ -28,7 +28,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import { toTimestamp } from './AudioControls';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 
-import { WorkspaceContext } from '../../pages/[id]/host';
+import { WorkspaceContext } from '../../pages/[id]';
 
 export const FileContainer = styled(Paper)`
     display: grid;

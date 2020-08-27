@@ -21,7 +21,7 @@ import {
     DialogActions,
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
-import { WorkspaceContext } from '~/pages/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]';
 import { DeleteForever } from '@material-ui/icons';
 
 const DeleteDialog: FC<DialogProps & { folder: string; onConfirm: () => void }> = ({ folder, onConfirm, ...props }) => {

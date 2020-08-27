@@ -4,7 +4,7 @@ import { FunctionComponent, useContext } from 'react';
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
-import { WorkspaceContext } from '~/pages/[id]/host';
+import { WorkspaceContext } from '~/pages/[id]';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 
 const NowPlayingContainer = styled.div`
