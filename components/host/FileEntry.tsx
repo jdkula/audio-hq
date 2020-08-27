@@ -197,65 +197,63 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                     />
                                 </IconButton>
                             </Tooltip>
-                            <Tooltip title={editing ? '' : 'Double-click to edit'} placement="top" arrow>
-                                <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    style={{ minWidth: editing ? '100%' : undefined }}
-                                    onDoubleClick={startEditing}
-                                >
-                                    {editing ? (
-                                        <>
-                                            <Box display="flex" flexDirection="column" flexGrow={1}>
-                                                <TextField
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                style={{ minWidth: editing ? '100%' : undefined, cursor: editing ? undefined : 'text' }}
+                                onDoubleClick={startEditing}
+                            >
+                                {editing ? (
+                                    <>
+                                        <Box display="flex" flexDirection="column" flexGrow={1}>
+                                            <TextField
+                                                fullWidth
+                                                autoFocus
+                                                variant="outlined"
+                                                label="Title"
+                                                value={editName}
+                                                onChange={(e) => setEditName(e.target.value)}
+                                                onKeyDown={handleKeyDown}
+                                            />
+                                            <Box m={0.5} />
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                variant="outlined"
+                                                label="Description"
+                                                value={editDescription}
+                                                onChange={(e) => setEditDescription(e.target.value)}
+                                                onKeyDown={handleKeyDown}
+                                            />
+                                        </Box>
+                                        <Divider variant="middle" orientation="vertical" flexItem />
+                                        <Box display="flex" flexDirection="column" alignItems="center">
+                                            <Box mb={0.5} width="100%">
+                                                <Button
                                                     fullWidth
-                                                    autoFocus
+                                                    onClick={saveEdits}
                                                     variant="outlined"
-                                                    label="Title"
-                                                    value={editName}
-                                                    onChange={(e) => setEditName(e.target.value)}
-                                                    onKeyDown={handleKeyDown}
-                                                />
-                                                <Box m={0.5} />
-                                                <TextField
-                                                    fullWidth
-                                                    size="small"
-                                                    variant="outlined"
-                                                    label="Description"
-                                                    value={editDescription}
-                                                    onChange={(e) => setEditDescription(e.target.value)}
-                                                    onKeyDown={handleKeyDown}
-                                                />
-                                            </Box>
-                                            <Divider variant="middle" orientation="vertical" flexItem />
-                                            <Box display="flex" flexDirection="column" alignItems="center">
-                                                <Box mb={0.5} width="100%">
-                                                    <Button
-                                                        fullWidth
-                                                        onClick={saveEdits}
-                                                        variant="outlined"
-                                                        color="primary"
-                                                    >
-                                                        Save
-                                                    </Button>
-                                                </Box>
-                                                <Button fullWidth onClick={cancelEdits} variant="outlined">
-                                                    Cancel
+                                                    color="primary"
+                                                >
+                                                    Save
                                                 </Button>
                                             </Box>
-                                        </>
-                                    ) : (
-                                        <Box display="flex" flexDirection="column">
-                                            <Typography variant="body1" component="span">
-                                                {file.name || 'Untitled file...'}
-                                            </Typography>
-                                            {file.description && (
-                                                <Typography variant="caption">{file.description}</Typography>
-                                            )}
+                                            <Button fullWidth onClick={cancelEdits} variant="outlined">
+                                                Cancel
+                                            </Button>
                                         </Box>
-                                    )}
-                                </Box>
-                            </Tooltip>
+                                    </>
+                                ) : (
+                                    <Box display="flex" flexDirection="column">
+                                        <Typography variant="body1" component="span">
+                                            {file.name || 'Untitled file...'}
+                                        </Typography>
+                                        {file.description && (
+                                            <Typography variant="caption">{file.description}</Typography>
+                                        )}
+                                    </Box>
+                                )}
+                            </Box>
                         </Box>
                         <Box textAlign="right" px={2}>
                             <Typography variant="body1">{toTimestamp(file.length)}</Typography>
