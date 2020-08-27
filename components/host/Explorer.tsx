@@ -41,7 +41,11 @@ const ExplorerContainer = styled.div`
 
 const getFiles = (workspace: Workspace, path: string[], searchText?: string): WSFile[] => {
     if (searchText !== undefined)
-        return workspace.files.filter((file) => !!file.name.match(new RegExp(`.*${searchText}.*`, 'i')));
+        return workspace.files.filter(
+            (file) =>
+                !!file.name.match(new RegExp(`.*${searchText}.*`, 'i')) ||
+                !!file.description?.match(new RegExp(`.*${searchText}.*`, 'i')),
+        );
     return (
         workspace.files.filter(
             (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
