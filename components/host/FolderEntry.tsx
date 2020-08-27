@@ -133,11 +133,10 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                     placement="top"
                                 >
                                     <Box
-                                        minWidth="100px"
                                         display="flex"
                                         onClick={(e) => e.stopPropagation()}
                                         onDoubleClick={startRenaming}
-                                        style={{ cursor: 'text' }}
+                                        style={{ cursor: 'text', minWidth: renaming ? '100%' : '100px' }}
                                     >
                                         {renaming ? (
                                             <>
