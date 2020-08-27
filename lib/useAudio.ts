@@ -1,5 +1,5 @@
 import { PlayState } from './Workspace';
-import { useRef, useState, useEffect, useCallback, useContext } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom } from '~/pages/[id]/host';
@@ -126,23 +126,21 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked: blocked };
 
+    const getSeek = useCallback(() => {
+        if (!state.startTimestamp || !duration) return null;
+        return ((((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed) % (duration * 1000)) / 1000;
+    }, [state.startTimestamp, duration, state.speed, state.pauseTime]);
+
     useEffect(() => {
         handle.current = window.setInterval(() => {
-            let currentTime;
-            if (state.startTimestamp) {
-                currentTime = (((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000)) / 1000;
-            } else {
-                currentTime = audio.current.currentTime;
-            }
-
-            setTime(currentTime);
+            setTime(getSeek() ?? audio.current.currentTime);
         }, 500);
 
         return () => {
             if (handle.current) window.clearInterval(handle.current);
             handle.current = null;
         };
-    }, [state.startTimestamp, state.pauseTime, audio.current, duration]);
+    }, [getSeek, audio.current]);
 
     useEffect(() => {
         console.log('Song getter called');
@@ -169,16 +167,10 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         console.log('Seeker called');
 
         if (!loading) {
-            let destinationSeek;
-            if (state.startTimestamp) {
-                destinationSeek = ((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000);
-            } else {
-                destinationSeek = 0;
-            }
-            audio.current.currentTime = destinationSeek / 1000;
-            setTime(destinationSeek / 1000);
+            audio.current.currentTime = getSeek() ?? 0;
+            setTime(getSeek() ?? 0);
         }
-    }, [state.startTimestamp, state.pauseTime, loading, hasInteracted]);
+    }, [getSeek, loading, hasInteracted]);
 
     useEffect(() => {
         console.log('Play/pauser called');
@@ -193,6 +185,12 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         }
     }, [state.pauseTime, loading, blocked]);
 
+    useEffect(() => {
+        if (!loading && !blocked) {
+            audio.current.playbackRate = state.speed;
+        }
+    }, [state.speed, audio.current, loading, blocked]);
+
     // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
     useEffect(() => {
         if (shadowPaused) {
@@ -200,8 +198,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         } else {
             if (!loading && !blocked && !paused) {
                 if (state.startTimestamp) {
-                    audio.current.currentTime =
-                        (((state.pauseTime ?? Date.now()) - state.startTimestamp) % (duration * 1000)) / 1000;
+                    audio.current.currentTime = getSeek()!;
                 }
                 audio.current.play();
             }

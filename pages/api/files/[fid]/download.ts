@@ -13,10 +13,15 @@ const get: NextApiHandler = async (req, res) => {
         const info = await AppFS.read(req.query.fid as string);
         if (isRedirect(info)) {
             res.setHeader('Location', info.redirect);
+            res.setHeader('X-Redirect-Location', info.redirect);
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
             res.setHeader('Access-Control-Max-Age', 3000);
-            res.status(302).end();
+            if (req.headers['x-manual-redirect'] === 'true') {
+                res.status(200).end();
+            } else {
+                res.status(302).end();
+            }
             return;
         }
         res.setHeader('Content-Type', 'audio/mp3');

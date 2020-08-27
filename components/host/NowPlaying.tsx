@@ -1,9 +1,8 @@
-import { makeStyles, Button, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 
 import { AudioControls } from './AudioControls';
-import { WorkspaceState, PlayStateResolver, PlayState } from '~/lib/Workspace';
-import { Seeker } from '../Seeker';
+import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
 import { WorkspaceContext } from '~/pages/[id]/host';
 
@@ -17,6 +16,7 @@ const NowPlayingContainer = styled.div`
     border: 1px solid black;
     align-items: center;
     justify-content: center;
+    justify-items: center;
     align-content: center;
 `;
 

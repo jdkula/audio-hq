@@ -16,7 +16,7 @@ const S3 = new AWS.S3({
 export default class S3FileSystem implements FileSystem {
     async read(id: string): Promise<FileInfo> {
         return {
-            redirect: `https://${defaultParams.Bucket}.s3-us-west-2.amazonaws.com/${id}`,
+            redirect: `https://${defaultParams.Bucket}.s3.amazonaws.com/${id}`,
         };
     }
 

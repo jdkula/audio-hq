@@ -11,7 +11,7 @@ import DownloadIcon from '@material-ui/icons/CloudDownload';
 import SaveIcon from '@material-ui/icons/Save';
 import { toTimestamp } from './AudioControls';
 
-const FileContainer = styled(Paper).attrs({})`
+export const FileContainer = styled(Paper)`
     display: grid;
     grid-template-columns: 2fr 1fr min-content;
     grid-template-rows: auto;
@@ -21,6 +21,7 @@ const FileContainer = styled(Paper).attrs({})`
     transition: background-color 0.25s;
     align-content: center;
     align-items: center;
+    min-height: 50px;
 
     &:hover {
         background-color: #eee;
@@ -36,7 +37,7 @@ const StatusContainer = styled.div`
 const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = (props) =>
     props.value ? (
         <Box position="relative" display="inline-flex">
-            <CircularProgress variant="static" {...props} />
+            <CircularProgress {...props} />
             <Box
                 top={0}
                 left={0}
@@ -57,9 +58,9 @@ const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> 
     );
 
 const CircularProgressVisibleBackground = styled(CircularProgressWithLabel)`
-    & .circle {
-        color: #ddd;
-    }
+    //& .circle {
+    //    color: #ddd;
+    //}
 `;
 
 const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; index: number }> = ({
@@ -87,46 +88,44 @@ const FileEntry: FC<{ file: WSFile; onPlay: () => void; onDelete: () => void; in
     return (
         <Draggable draggableId={file.id} index={index}>
             {(provided) => (
-                <div {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
-                    <FileContainer>
-                        <div>
-                            <IconButton onClick={onPlay}>
-                                <PlayArrow />
+                <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
+                    <Box display="flex" alignItems="center">
+                        <IconButton onClick={onPlay}>
+                            <PlayArrow />
+                        </IconButton>
+                        <Typography variant="body1" component="span">
+                            {file.name}
+                        </Typography>
+                    </Box>
+                    <Box textAlign="right" px={2}>
+                        <Typography variant="body1">{toTimestamp(file.length)}</Typography>
+                    </Box>
+                    <StatusContainer>
+                        {downloadJob &&
+                            (downloadJob.progress ? (
+                                <CircularProgressVisibleBackground
+                                    variant="static"
+                                    value={downloadJob.progress * 100}
+                                />
+                            ) : (
+                                <CircularProgressVisibleBackground />
+                            ))}
+                        {cached && (
+                            <IconButton onClick={save}>
+                                <SaveIcon />
                             </IconButton>
-                            <Typography variant="body1" component="span">
-                                {file.name}
-                            </Typography>
-                        </div>
-                        <Box textAlign="right" px={2}>
-                            <Typography variant="body1">{toTimestamp(file.length)}</Typography>
-                        </Box>
-                        <StatusContainer>
-                            {downloadJob &&
-                                (downloadJob.progress ? (
-                                    <CircularProgressVisibleBackground
-                                        variant="static"
-                                        value={downloadJob.progress * 100}
-                                    />
-                                ) : (
-                                    <CircularProgressVisibleBackground />
-                                ))}
-                            {cached && (
-                                <IconButton onClick={save}>
-                                    <SaveIcon />
-                                </IconButton>
-                            )}
-                            {!downloadJob && !cached && (
-                                <IconButton onClick={download}>
-                                    <DownloadIcon />
-                                </IconButton>
-                            )}
+                        )}
+                        {!downloadJob && !cached && (
+                            <IconButton onClick={download}>
+                                <DownloadIcon />
+                            </IconButton>
+                        )}
 
-                            <IconButton onClick={onDelete}>
-                                <DeleteForever />
-                            </IconButton>
-                        </StatusContainer>
-                    </FileContainer>
-                </div>
+                        <IconButton onClick={onDelete}>
+                            <DeleteForever />
+                        </IconButton>
+                    </StatusContainer>
+                </FileContainer>
             )}
         </Draggable>
     );

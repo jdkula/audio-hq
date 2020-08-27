@@ -1,6 +1,6 @@
 import { makeStyles, AppBar, Toolbar, Typography, Box, Button, Popover, Slider, IconButton } from '@material-ui/core';
 import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]/host';
-import { useContext, FunctionComponent, useState } from 'react';
+import { useContext, FunctionComponent, useState, FC } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
 import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
@@ -12,6 +12,21 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
+export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
+    let volumeIcon;
+    if (volume === 0) {
+        volumeIcon = <VolumeOff color="secondary" />;
+    } else if (volume < 0.2) {
+        volumeIcon = <VolumeMute />;
+    } else if (volume < 0.5) {
+        volumeIcon = <VolumeDown />;
+    } else {
+        volumeIcon = <VolumeUp />;
+    }
+
+    return volumeIcon;
+};
+
 export const Header: FunctionComponent = () => {
     const classes = useStyles();
     const workspace = useContext(WorkspaceContext);
@@ -21,17 +36,6 @@ export const Header: FunctionComponent = () => {
 
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-    let volumeIcon;
-    if (globalVolume === 0) {
-        volumeIcon = <VolumeOff color="secondary" />;
-    } else if (globalVolume < 0.2) {
-        volumeIcon = <VolumeMute />;
-    } else if (globalVolume < 0.5) {
-        volumeIcon = <VolumeDown />;
-    } else {
-        volumeIcon = <VolumeUp />;
-    }
 
     return (
         <AppBar position="relative" className={classes.header}>
@@ -48,7 +52,7 @@ export const Header: FunctionComponent = () => {
                     </Box>
                     <Box color="white">
                         <IconButton color="inherit" ref={(r) => setAnchorEl(r)} onClick={() => setVolumeOpen(true)}>
-                            {volumeIcon}
+                            <VolumeButton volume={globalVolume} />
                         </IconButton>
                         <Popover
                             open={volumeOpen}
@@ -57,14 +61,15 @@ export const Header: FunctionComponent = () => {
                             anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
                             transformOrigin={{ vertical: 'center', horizontal: 'right' }}
                         >
-                            <Slider
-                                min={0}
-                                max={1}
-                                step={0.05}
-                                value={globalVolume}
-                                onChange={(_, val) => setGlobalVolume(val as number)}
-                                style={{ minWidth: '5rem' }}
-                            />
+                            <Box mx="1rem" my="0.25rem" minWidth="6rem">
+                                <Slider
+                                    min={0}
+                                    max={1}
+                                    step={0.05}
+                                    value={globalVolume}
+                                    onChange={(_, val) => setGlobalVolume(val as number)}
+                                />
+                            </Box>
                         </Popover>
                     </Box>
                     <Box color="#bbb">

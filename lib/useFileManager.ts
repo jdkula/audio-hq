@@ -1,6 +1,6 @@
 import PouchDB from 'pouchdb';
 import Axios from 'axios';
-import { createContext, useState, useRef, useEffect, MutableRefObject } from 'react';
+import { createContext, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { Set } from 'immutable';
 import { mutate } from 'swr';
 import type { Job } from './jobs';
@@ -17,6 +17,16 @@ interface FileManager {
     cached: Set<string>;
     fetching: Set<Job>;
     working: Set<Job>;
+}
+
+async function* readBody(body: ReadableStream<Uint8Array>) {
+    const reader = body.getReader();
+    while (true) {
+        const next = await reader.read();
+        if (next.done) break;
+        yield next;
+    }
+    reader.releaseLock();
 }
 
 const useFileManager = (workspaceId: string): FileManager => {
@@ -81,16 +91,40 @@ const useFileManager = (workspaceId: string): FileManager => {
                         workspace: workspaceId,
                     }),
                 );
-                const resp = await Axios.get(url, {
-                    // TODO: Sometimes this stalls...
-                    responseType: 'blob',
-                    onDownloadProgress: (progress) => {
-                        updateFetching(id, progress.loaded / progress.total);
-                    },
+                let resp = await fetch(url, {
                     headers: {
+                        'X-Manual-Redirect': 'true',
                         Accept: 'audio/mp3',
                     },
                 });
+                console.warn(resp);
+
+                if (resp.headers.get('X-Redirect-Location')) {
+                    resp = await fetch(resp.headers.get('X-Redirect-Location')!, {
+                        headers: {
+                            Accept: 'audio/mp3',
+                        },
+                    });
+                }
+                console.warn(resp);
+                if (!resp || !resp.body) throw new Error(JSON.stringify(resp));
+
+                const bytes = parseInt(resp.headers.get('Content-Length') ?? '1');
+                let read = 0;
+                let lastNotified = 0;
+                const data: Uint8Array[] = [];
+                for await (const chunk of readBody(resp.body)) {
+                    read += chunk.value.length;
+                    data.push(chunk.value);
+                    if (read - lastNotified > 1024 * 1024) {
+                        // only update every 1 MB
+                        updateFetching(id, read / bytes);
+                        lastNotified = read;
+                    }
+                }
+
+                const blob = new Blob(data, { type: 'audio/mp3' });
+
                 setFetching((fetching) =>
                     fetching.map((v) =>
                         v.jobId === id
@@ -109,13 +143,13 @@ const useFileManager = (workspaceId: string): FileManager => {
                     _attachments: {
                         file: {
                             content_type: 'audio/mp3',
-                            data: resp.data,
+                            data: blob,
                         },
                     },
                 });
                 setCached((cached) => cached.add(id));
                 setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
-                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(resp.data as Blob));
+                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(blob));
                 fetchCallbacks.current.delete(id);
             });
 

@@ -24,11 +24,9 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
     };
 
     return (
-        <Dialog open={files.length > 0}>
-            <DialogTitle>
-                <Typography variant="h4">Add Folder</Typography>
-            </DialogTitle>
-            <DialogContent>
+        <Dialog open={files.length > 0} onClose={doCancel}>
+            <DialogTitle>Add Folder</DialogTitle>
+            <DialogContent dividers>
                 <TextField value={name} onChange={(e) => setName(e.target.value)} label="Folder Name" />
             </DialogContent>
             <DialogActions>

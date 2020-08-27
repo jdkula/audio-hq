@@ -30,14 +30,18 @@ const Container = styled.div`
         'ambience   explorer explorer';
     min-height: 100vh;
 
-    ${({ theme }) => theme.breakpoints.down('xs')} {
+    ${({ theme }) => theme.breakpoints.down('sm')} {
         grid-template-columns: 100%;
         grid-template-rows: 65px 20% 40% auto;
         grid-template-areas:
             'header'
             'nowplaying'
-            'explorer'
-            'ambience';
+            'ambience'
+            'explorer';
+    }
+
+    & > div {
+        overflow: hidden;
     }
 `;
 
@@ -53,11 +57,16 @@ const Host: FunctionComponent<{
         resolve({ playing: { id, startTimestamp: Date.now() } });
     };
 
+    const currentlyPlaying = workspace?.files.find((file) => file.id === workspace.state.playing?.id);
+
     useEffect(() => {
         if (navigator.mediaSession) {
-            navigator.mediaSession.metadata = new MediaMetadata({ title: props.workspace, artist: 'Audio HQ' });
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentlyPlaying?.name ?? 'Nothing Playing',
+                artist: `Audio HQ - ${props.workspace}`,
+            });
         }
-    }, [workspace]);
+    }, [props.workspace, currentlyPlaying]);
 
     useEffect(() => {
         if (navigator.mediaSession) {

@@ -1,5 +1,5 @@
-import { Button, Breadcrumbs, Paper, Fab, Box } from '@material-ui/core';
-import React, { useContext, FunctionComponent, useState, useCallback } from 'react';
+import { Box, Breadcrumbs, Button, Divider, Fab, Paper } from '@material-ui/core';
+import React, { FunctionComponent, useCallback, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/pages/[id]/host';
 import { File as WSFile } from '~/lib/Workspace';
 
@@ -7,7 +7,7 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import AddIcon from '@material-ui/icons/Add';
 
 import { FileManagerContext } from '~/lib/useFileManager';
-import { DragDropContext, DropResult, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 import Axios from 'axios';
 import { mutate } from 'swr';
@@ -15,12 +15,14 @@ import { Set } from 'immutable';
 import AddFileDialog from './AddFileDialog';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './FolderAddDialog';
-import Folder from './FolderEntry';
+import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
     border: 1px solid black;
+    display: flex;
+    flex-direction: column;
 `;
 
 export const Explorer: FunctionComponent<{
@@ -58,7 +60,11 @@ export const Explorer: FunctionComponent<{
         workspace.files
             .filter((file) => file.path.length > path.length && path.every((v, i) => file.path[i] === v))
             .map((file) => file.path[path.length]),
-    ).map((foldername) => <Folder name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />);
+    )
+        .sort()
+        .map((foldername) => (
+            <FolderEntry name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />
+        ));
 
     const jobNotes = fileManager.working.map((j) => (
         <JobEntry job={j} key={j.jobId} onCanceled={() => mutate(`/api/${workspace.name}/jobs`)} />
@@ -87,7 +93,7 @@ export const Explorer: FunctionComponent<{
                 // folder
                 const folderName = result.destination.droppableId;
                 const destPath =
-                    folderName === '..'
+                    folderName === '___back___'
                         ? srcFile.path.slice(0, srcFile.path.length - 1)
                         : [...srcFile.path, folderName];
                 Axios.put(`/api/files/${srcFile.id}`, { path: destPath }).then(
@@ -113,23 +119,29 @@ export const Explorer: FunctionComponent<{
             <Paper square variant="elevation" color="primary">
                 <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
             </Paper>
-            <FolderAddDialog files={combining} cancel={() => setCombining([])} />
-            <AddFileDialog open={adding} onClose={() => setAdding(false)} />
-            <DragDropContext onDragEnd={handleDrag}>
-                {path.length > 0 && <Folder name=".." onClick={() => setPath(path.slice(0, path.length - 1))} />}
-                {folders}
-                <Droppable isCombineEnabled droppableId="___current___">
-                    {(provided) => (
-                        <div {...provided.droppableProps} ref={provided.innerRef}>
-                            {fileButtons}
-
-                            {provided.placeholder}
-                        </div>
+            <Box m="1px" />
+            <Box overflow="auto" flexGrow={1}>
+                <FolderAddDialog files={combining} cancel={() => setCombining([])} />
+                <AddFileDialog open={adding} onClose={() => setAdding(false)} />
+                <DragDropContext onDragEnd={handleDrag}>
+                    {path.length > 0 && (
+                        <FolderEntry name="Back" up onClick={() => setPath(path.slice(0, path.length - 1))} />
                     )}
-                </Droppable>
-                {jobNotes}
-            </DragDropContext>
-            <Box position="absolute" right="4rem" bottom="4rem">
+                    {folders}
+                    <Divider />
+                    <Droppable isCombineEnabled droppableId="___current___">
+                        {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                {fileButtons}
+                                <div style={{ margin: '0.5rem 1rem' }}>{provided.placeholder}</div>
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
+            </Box>
+            <Box>{jobNotes}</Box>
+
+            <Box position="fixed" right="4rem" bottom="4rem">
                 <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
                     <AddIcon />
                     Add A Song
