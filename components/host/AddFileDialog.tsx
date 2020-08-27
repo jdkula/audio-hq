@@ -34,7 +34,7 @@ const DropRoot = styled.div<{ isDragActive?: boolean }>`
     }
 `;
 
-const AddFileDialog: FC<DialogProps> = (props) => {
+const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPath, ...props }) => {
     const [url, setUrl] = useState('');
     const [name, setName] = useState('');
     const [file, setFile] = useState<File | null>(null);
@@ -50,10 +50,10 @@ const AddFileDialog: FC<DialogProps> = (props) => {
 
     const onUpload = () => {
         if (file) {
-            fileManager.upload(name || file.name, file);
+            fileManager.upload(name || file.name, file, currentPath);
             doClose();
         } else if (name) {
-            fileManager.import(name, url);
+            fileManager.import(name, url, currentPath);
             doClose();
         }
     };

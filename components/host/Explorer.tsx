@@ -183,7 +183,7 @@ export const Explorer: FunctionComponent = (props) => {
             </Paper>
             <Box m="1px" />
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />
-            <AddFileDialog open={adding} onClose={() => setAdding(false)} />
+            <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
 
             <Box overflow="hidden" flexGrow={1} position="relative">
                 <Box height="100%" overflow="auto">

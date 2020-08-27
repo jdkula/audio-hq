@@ -10,8 +10,8 @@ import { File as WSFile, Reorderable } from './Workspace';
 interface FileManager {
     song: (id: string, onCacheRetrieve?: (song: Blob) => void) => string;
     reset: () => Promise<void>;
-    import: (name: string, url: string) => Promise<Job>;
-    upload: (name: string, file: File) => Promise<Job>;
+    import: (name: string, url: string, path?: string[]) => Promise<Job>;
+    upload: (name: string, file: File, path?: string[]) => Promise<Job>;
     delete: (id: string) => Promise<void>;
     update: (id: string, update: Partial<WSFile & Reorderable>) => Promise<void>;
     cached: Set<string>;
@@ -164,17 +164,23 @@ const useFileManager = (workspaceId: string): FileManager => {
         return url;
     };
 
-    const imp = async (name: string, url: string) => {
-        const res = await Axios.post('/api/files/import', { workspace: workspaceId, name: name, url: url });
+    const imp = async (name: string, url: string, currentPath?: string[]) => {
+        const res = await Axios.post('/api/files/import', {
+            workspace: workspaceId,
+            name: name,
+            url: url,
+            path: currentPath,
+        });
         mutate(`/api/${workspaceId}/jobs`);
         return res.data;
     };
 
-    const upload = async (name: string, file: File) => {
+    const upload = async (name: string, file: File, currentPath?: string[]) => {
         const formdata = new FormData();
         formdata.append('workspace', workspaceId);
         formdata.append('upload', file);
         formdata.append('name', name);
+        currentPath && formdata.append('path', JSON.stringify(currentPath));
         setWorking((working) =>
             working.add({ jobId: name, name, progress: 0, status: 'uploading', workspace: workspaceId }),
         );

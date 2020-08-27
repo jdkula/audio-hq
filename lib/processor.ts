@@ -30,29 +30,35 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
-export async function addFile(id: string, filepath: string, filename: string, workspaceId: string): Promise<string> {
+interface FileOptions {
+    name: string;
+    workspace: string;
+    path?: string[];
+}
+
+export async function addFile(id: string, filepath: string, { name, workspace, path }: FileOptions): Promise<string> {
     const duration = await getAudioDurationInSeconds(filepath);
 
     const file: File = {
         id,
-        name: filename,
-        path: [],
+        name: name,
+        path: path ?? [],
         type: 'audio',
         length: duration,
     };
 
-    await findOrCreateWorkspace(workspaceId);
+    await findOrCreateWorkspace(workspace);
 
     Jobs.set(id, (job) => ({ ...job, status: 'saving' }));
 
     await AppFS.write(filepath, id, (progress) => progress && Jobs.set(id, (job) => ({ ...job, progress })));
 
-    await (await mongoworkspaces).updateOne({ _id: workspaceId }, { $push: { files: file } });
+    await (await mongoworkspaces).updateOne({ _id: workspace }, { $push: { files: file } });
 
     return id;
 }
 
-export function processFile(name: string, workspace: string, filePath: (id: string) => Promise<string>): Job {
+export function processFile({ name, workspace, path }: FileOptions, filePath: (id: string) => Promise<string>): Job {
     const id = new ObjectId().toHexString();
 
     const job: Job = {
@@ -66,7 +72,7 @@ export function processFile(name: string, workspace: string, filePath: (id: stri
     (async () => {
         try {
             const filepath = await filePath(id);
-            await addFile(id, filepath, name, workspace);
+            await addFile(id, filepath, { name, workspace, path });
             Jobs.set(id, (job) => ({ ...job, status: 'done', result: id }));
         } catch (e) {
             Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: e.toString() }));
