@@ -104,33 +104,36 @@ export const Explorer: FunctionComponent = (props) => {
                 <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
             </Paper>
             <Box m="1px" />
-            <Box overflow="auto" flexGrow={1}>
-                <FolderAddDialog files={combining} cancel={() => setCombining([])} />
-                <AddFileDialog open={adding} onClose={() => setAdding(false)} />
-                <DragDropContext onDragEnd={handleDrag}>
-                    {path.length > 0 && (
-                        <FolderEntry name="Back" up onClick={() => setPath(path.slice(0, path.length - 1))} />
-                    )}
-                    {folders}
-                    <Divider />
-                    <Droppable isCombineEnabled droppableId="___current___">
-                        {(provided) => (
-                            <div {...provided.droppableProps} ref={provided.innerRef}>
-                                {fileButtons}
-                                <div style={{ margin: '0.5rem 1rem' }}>{provided.placeholder}</div>
-                            </div>
-                        )}
-                    </Droppable>
-                </DragDropContext>
-            </Box>
-            <Box>{jobNotes}</Box>
+            <FolderAddDialog files={combining} cancel={() => setCombining([])} />
+            <AddFileDialog open={adding} onClose={() => setAdding(false)} />
 
-            <Box position="fixed" right="4rem" bottom="4rem">
-                <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
-                    <AddIcon />
-                    Add A Song
-                </Fab>
+            <Box overflow="hidden" flexGrow={1} position="relative">
+                <Box height="100%" overflow="auto">
+                    <DragDropContext onDragEnd={handleDrag}>
+                        {path.length > 0 && (
+                            <FolderEntry name="Back" up onClick={() => setPath(path.slice(0, path.length - 1))} />
+                        )}
+                        {folders}
+                        <Divider />
+                        <Droppable isCombineEnabled droppableId="___current___">
+                            {(provided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef}>
+                                    {fileButtons}
+                                    <div style={{ margin: '0.5rem 1rem' }}>{provided.placeholder}</div>
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+                </Box>
+                <Box position="absolute" right="4rem" bottom="4rem">
+                    <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
+                        <AddIcon />
+                        Add A Song
+                    </Fab>
+                </Box>
             </Box>
+            <Divider />
+            <Box>{jobNotes}</Box>
         </ExplorerContainer>
     );
 };

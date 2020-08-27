@@ -159,9 +159,6 @@ const useFileManager = (workspaceId: string): FileManager => {
     const imp = async (name: string, url: string) => {
         const res = await Axios.post('/api/files/import', { workspace: workspaceId, name: name, url: url });
         mutate(`/api/${workspaceId}/jobs`);
-        // waitForJob(res.data.jobId, workspaceId).then(({ id }) =>
-        //     setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
-        // );
         return res.data;
     };
 
@@ -182,11 +179,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                         ),
                     ),
             });
-            mutate(`/api/${workspaceId}/jobs`);
-            // setWorking((working) => working.add(res.data));
-            // waitForJob(res.data.jobId, workspaceId, updateJob).then(({ id }) =>
-            //     setWorking((working) => working.filterNot((job) => ((job.jobId as unknown) as string) === id)),
-            // );
+            mutate(`/api/${workspaceId}/jobs`, (jobs: Job[]) => [...jobs, res.data]);
             return res.data;
         } finally {
             setWorking((working) => working.filterNot((v) => v.jobId === name));
