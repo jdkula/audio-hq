@@ -18,12 +18,15 @@ const Convert: NextApiHandler = async (req, res) => {
     for (const filename of Object.keys(files)) {
         const file = files[filename];
         const name = fields.name as string;
+        const description = fields.description as string | undefined;
         const path = fields.path as string | undefined;
         const parsedPath: string[] | undefined = path && JSON.parse(path);
 
         const workspace: string = fields.workspace as string;
 
-        const job = await processFile({ name, workspace, path: parsedPath }, (id) => convert(file.path, id));
+        const job = await processFile({ name, workspace, path: parsedPath, description }, (id) =>
+            convert(file.path, id),
+        );
 
         res.status(200).send(job);
         return;

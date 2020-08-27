@@ -27,6 +27,7 @@ import DownloadIcon from '@material-ui/icons/CloudDownload';
 import SaveIcon from '@material-ui/icons/Save';
 import { toTimestamp } from './AudioControls';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
+import EditIcon from '@material-ui/icons/Edit';
 
 import { WorkspaceContext } from '../../pages/[id]';
 
@@ -114,27 +115,31 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
 
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState(file.name);
+    const [editDescription, setEditDescription] = useState(file.description);
 
     const startEditing = () => {
         setEditName(file.name);
+        setEditDescription(file.description);
         setEditing(true);
     };
 
-    const saveName = () => {
+    const saveEdits = () => {
         setEditing(false);
         fileManager.update(file.id, {
             name: editName,
+            description: editDescription,
         });
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
             e.preventDefault();
-            saveName();
+            saveEdits();
         }
         if (e.nativeEvent.code === 'Escape') {
             e.preventDefault();
             setEditName(file.name);
+            setEditDescription(file.description);
             setEditing(false);
         }
     };
@@ -184,26 +189,45 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                 placement="top"
                                 arrow
                             >
-                                <Box display="flex" width="100%" onDoubleClick={startEditing}>
+                                <Box display="flex" alignItems="center" width="100%" onDoubleClick={startEditing}>
                                     {editing ? (
                                         <>
-                                            <TextField
-                                                fullWidth
-                                                autoFocus
-                                                value={editName}
-                                                onChange={(e) => setEditName(e.target.value)}
-                                                onKeyDown={handleKeyDown}
-                                            />
+                                            <Box display="flex" flexDirection="column" flexGrow={1}>
+                                                <TextField
+                                                    fullWidth
+                                                    autoFocus
+                                                    variant="outlined"
+                                                    label="Title"
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                />
+                                                <Box m={0.5} />
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    variant="outlined"
+                                                    label="Description"
+                                                    value={editDescription}
+                                                    onChange={(e) => setEditDescription(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                />
+                                            </Box>
                                             <Box mx={1}>
-                                                <Button onClick={saveName} variant="outlined" color="primary">
+                                                <Button onClick={saveEdits} variant="outlined" color="primary">
                                                     Save
                                                 </Button>
                                             </Box>
                                         </>
                                     ) : (
-                                        <Typography variant="body1" component="span">
-                                            {file.name || 'Untitled file...'}
-                                        </Typography>
+                                        <Box display="flex" flexDirection="column">
+                                            <Typography variant="body1" component="span">
+                                                {file.name || 'Untitled file...'}
+                                            </Typography>
+                                            {file.description && (
+                                                <Typography variant="caption">{file.description}</Typography>
+                                            )}
+                                        </Box>
                                     )}
                                 </Box>
                             </Tooltip>
@@ -212,6 +236,11 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                             <Typography variant="body1">{toTimestamp(file.length)}</Typography>
                         </Box>
                         <StatusContainer>
+                            <Tooltip placement="left" title="Rename" arrow>
+                                <IconButton onClick={startEditing}>
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
                             {downloadJob && (
                                 <Tooltip placement="left" title="Downloading..." arrow>
                                     {downloadJob.progress ? (

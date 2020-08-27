@@ -34,9 +34,14 @@ interface FileOptions {
     name: string;
     workspace: string;
     path?: string[];
+    description?: string;
 }
 
-export async function addFile(id: string, filepath: string, { name, workspace, path }: FileOptions): Promise<string> {
+export async function addFile(
+    id: string,
+    filepath: string,
+    { name, workspace, path, description }: FileOptions,
+): Promise<string> {
     const duration = await getAudioDurationInSeconds(filepath);
 
     const file: File = {
@@ -45,6 +50,7 @@ export async function addFile(id: string, filepath: string, { name, workspace, p
         path: path ?? [],
         type: 'audio',
         length: duration,
+        description: description,
     };
 
     await findOrCreateWorkspace(workspace);
@@ -58,7 +64,10 @@ export async function addFile(id: string, filepath: string, { name, workspace, p
     return id;
 }
 
-export function processFile({ name, workspace, path }: FileOptions, filePath: (id: string) => Promise<string>): Job {
+export function processFile(
+    { name, workspace, path, description }: FileOptions,
+    filePath: (id: string) => Promise<string>,
+): Job {
     const id = new ObjectId().toHexString();
 
     const job: Job = {
@@ -72,7 +81,7 @@ export function processFile({ name, workspace, path }: FileOptions, filePath: (i
     (async () => {
         try {
             const filepath = await filePath(id);
-            await addFile(id, filepath, { name, workspace, path });
+            await addFile(id, filepath, { name, workspace, path, description });
             Jobs.set(id, (job) => ({ ...job, status: 'done', result: id }));
         } catch (e) {
             Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: e.toString() }));

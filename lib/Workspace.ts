@@ -4,6 +4,7 @@ type ID = string;
 export interface File {
     name: string;
     path: string[];
+    description?: string;
     id: ID;
     type: 'audioset' | 'audio';
     length: number;

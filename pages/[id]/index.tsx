@@ -29,7 +29,7 @@ const Container = styled.div`
         'nowplaying explorer explorer'
         'ambience   explorer explorer'
         'ambience   explorer explorer';
-    min-height: 100vh;
+    height: 100vh;
 
     ${({ theme }) => theme.breakpoints.down('sm')} {
         grid-template-columns: 100%;

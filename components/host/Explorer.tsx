@@ -27,7 +27,7 @@ import { mutate } from 'swr';
 import { Set, List } from 'immutable';
 import AddFileDialog from './AddFileDialog';
 import FileEntry from './FileEntry';
-import FolderAddDialog from './FolderAddDialog';
+import FolderAddDialog from './AddFolderDialog';
 import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 
@@ -164,6 +164,7 @@ export const Explorer: FunctionComponent = (props) => {
                             <>
                                 <TextField
                                     autoFocus
+                                    variant="filled"
                                     value={searchText}
                                     onChange={(e) => setSearchText(e.target.value)}
                                     label="Search..."

@@ -133,7 +133,12 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                     {name}
                                 </Typography>
                             ) : renaming ? (
-                                <Box display="flex" width="100%" onClick={(e) => e.stopPropagation()}>
+                                <Box
+                                    display="flex"
+                                    alignItems="center"
+                                    width="100%"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <Tooltip
                                         title="Pro tip: Enter the name of another folder to merge them!"
                                         placement="top"
@@ -141,6 +146,8 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                         <TextField
                                             fullWidth
                                             autoFocus
+                                            label="Name"
+                                            variant="outlined"
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
                                             onKeyDown={handleKeyDown}

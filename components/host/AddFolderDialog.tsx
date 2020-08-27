@@ -35,6 +35,7 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
             <DialogContent dividers>
                 <TextField
                     value={name}
+                    variant="outlined"
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={handleEnter}
                     label="Folder Name"

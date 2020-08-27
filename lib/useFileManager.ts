@@ -10,8 +10,8 @@ import { File as WSFile, Reorderable } from './Workspace';
 interface FileManager {
     song: (id: string, onCacheRetrieve?: (song: Blob) => void) => string;
     reset: () => Promise<void>;
-    import: (name: string, url: string, path?: string[]) => Promise<Job>;
-    upload: (name: string, file: File, path?: string[]) => Promise<Job>;
+    import: (name: string, url: string, path?: string[], description?: string) => Promise<Job>;
+    upload: (name: string, file: File, path?: string[], description?: string) => Promise<Job>;
     delete: (id: string) => Promise<void>;
     update: (id: string, update: Partial<WSFile & Reorderable>) => Promise<void>;
     cached: Set<string>;
@@ -164,22 +164,24 @@ const useFileManager = (workspaceId: string): FileManager => {
         return url;
     };
 
-    const imp = async (name: string, url: string, currentPath?: string[]) => {
+    const imp = async (name: string, url: string, currentPath?: string[], description?: string) => {
         const res = await Axios.post('/api/files/import', {
             workspace: workspaceId,
             name: name,
             url: url,
             path: currentPath,
+            description: description,
         });
         mutate(`/api/${workspaceId}/jobs`);
         return res.data;
     };
 
-    const upload = async (name: string, file: File, currentPath?: string[]) => {
+    const upload = async (name: string, file: File, currentPath?: string[], description?: string) => {
         const formdata = new FormData();
         formdata.append('workspace', workspaceId);
         formdata.append('upload', file);
         formdata.append('name', name);
+        description && formdata.append('description', description);
         currentPath && formdata.append('path', JSON.stringify(currentPath));
         setWorking((working) =>
             working.add({ jobId: name, name, progress: 0, status: 'uploading', workspace: workspaceId }),
@@ -207,7 +209,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         } catch (e) {
             // ignore
         }
-        setCached(cached => cached.remove(id));
+        setCached((cached) => cached.remove(id));
         mutate(`/api/${workspaceId}/files`, (files?: WSFile[]) => files?.filter((f) => f.id !== id), false);
         await Axios.delete(`/api/files/${id}`);
         mutate(`/api/${workspaceId}/files`);

@@ -6,6 +6,7 @@ import {
     DialogContent,
     DialogProps,
     DialogTitle,
+    Paper,
     TextField,
     Typography,
 } from '@material-ui/core';
@@ -38,6 +39,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const [url, setUrl] = useState('');
     const [name, setName] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [description, setDescription] = useState('');
 
     const fileManager = useContext(FileManagerContext);
 
@@ -50,10 +52,10 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
 
     const onUpload = () => {
         if (file) {
-            fileManager.upload(name || file.name, file, currentPath);
+            fileManager.upload(name || file.name, file, currentPath, description);
             doClose();
         } else if (name) {
-            fileManager.import(name, url, currentPath);
+            fileManager.import(name, url, currentPath, description);
             doClose();
         }
     };
@@ -72,7 +74,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
             </Typography>
         );
     } else {
-        fileInfo = <Typography variant="body1">Drag files or click here to upload!</Typography>;
+        fileInfo = <Typography variant="body1">Drag files or click here to upload them!</Typography>;
     }
 
     const notifyEnterName = !!(!name && url);
@@ -85,8 +87,10 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     value={name}
                     fullWidth
                     autoFocus
+                    required
+                    variant="outlined"
                     onChange={(e) => setName(e.target.value)}
-                    label="Name"
+                    label="Track Title"
                     placeholder={file ? file.name : undefined}
                     error={notifyEnterName}
                     InputLabelProps={
@@ -96,24 +100,45 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                               }
                             : undefined
                     }
-                    helperText={notifyEnterName ? 'Please enter a file name!' : undefined}
+                    helperText={notifyEnterName ? 'Please enter a song title!' : undefined}
                 />
-
+                <Box m={1} />
+                <TextField
+                    value={description}
+                    fullWidth
+                    autoFocus
+                    size="small"
+                    variant="outlined"
+                    onChange={(e) => setDescription(e.target.value)}
+                    label="Track Description"
+                />
                 <Box m="1rem" />
 
-                {!url && (
-                    <DropRoot {...getRootProps()} isDragActive={isDragActive}>
-                        <input {...getInputProps()} />
-                        {fileInfo}
-                    </DropRoot>
-                )}
+                <Paper variant="outlined">
+                    <Box m="0.5rem">
+                        {!url && (
+                            <DropRoot {...getRootProps()} isDragActive={isDragActive}>
+                                <input {...getInputProps()} />
+                                {fileInfo}
+                            </DropRoot>
+                        )}
 
-                {!url && !file && (
-                    <Box textAlign="center" style={{ marginTop: '1rem' }}>
-                        - or -
+                        {!url && !file && (
+                            <Box textAlign="center" style={{ margin: '1rem' }}>
+                                - or, import from a website (youtube, etc.) -
+                            </Box>
+                        )}
+                        {!file && (
+                            <TextField
+                                value={url}
+                                variant="outlined"
+                                fullWidth
+                                onChange={(e) => setUrl(e.target.value)}
+                                label="Link"
+                            />
+                        )}
                     </Box>
-                )}
-                {!file && <TextField value={url} fullWidth onChange={(e) => setUrl(e.target.value)} label="URL" />}
+                </Paper>
             </DialogContent>
             <DialogActions>
                 {file && <Button onClick={() => setFile(null)}>Clear</Button>}
