@@ -28,7 +28,9 @@ interface LoadingDetail {
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
 const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void } => {
-    const { data, mutate } = useSWR<Workspace['files']>(`/api/${encodeURIComponent(workspaceId)}/files`, fetcher);
+    const { data, mutate } = useSWR<Workspace['files']>(`/api/${encodeURIComponent(workspaceId)}/files`, fetcher, {
+        refreshInterval: 2000,
+    });
 
     // TODO: Pusher.
 
@@ -53,7 +55,8 @@ const useWorkspaceState = (
 
 export const useJobs = (workspaceId: string): { jobs: Job[]; mutateJobs: (jobs?: Job[]) => void } => {
     const jobs = useSWR<Workspace['jobs']>(`/api/${encodeURIComponent(workspaceId)}/jobs`, fetcher, {
-        refreshInterval: 500,
+        refreshInterval: 1000,
+        refreshWhenHidden: true,
     });
     return { jobs: jobs.data ?? [], mutateJobs: jobs.mutate };
 };
