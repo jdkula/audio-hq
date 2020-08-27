@@ -161,7 +161,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                         </Box>
                         <div style={{ display: 'none' }}>{provided.placeholder}</div>
                         {!up && (
-                            <Box justifySelf="end">
+                            <Box justifySelf="end" display="flex" flexWrap="nowrap">
                                 <Tooltip placement="left" title="Rename" arrow>
                                     <IconButton onClick={startRenaming}>
                                         <EditIcon />
