@@ -12,6 +12,11 @@ const AmbienceContainer = styled.div`
     grid-area: ambience;
 `;
 
+const AmbienceScrollContainer = styled.div`
+    overflow: auto;
+    height: 100%;
+`;
+
 const EmptyContainer = styled.div`
     width: 100%;
     height: 100%;
@@ -68,5 +73,9 @@ export const Ambience: FunctionComponent = () => {
         );
     }
 
-    return <AmbienceContainer>{controls}</AmbienceContainer>;
+    return (
+        <AmbienceContainer>
+            <AmbienceScrollContainer>{controls}</AmbienceScrollContainer>
+        </AmbienceContainer>
+    );
 };

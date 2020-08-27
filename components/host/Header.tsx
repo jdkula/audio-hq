@@ -53,7 +53,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
     return (
-        <AppBar position="relative" style={{ gridArea: 'header' }}>
+        <AppBar position="static" style={{ gridArea: 'header' }}>
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
