@@ -178,7 +178,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                 placement="top"
                                 arrow
                             >
-                                <Box display="flex" width="100%">
+                                <Box display="flex" width="100%" onDoubleClick={startEditing}>
                                     {editing ? (
                                         <>
                                             <TextField
@@ -195,8 +195,8 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                             </Box>
                                         </>
                                     ) : (
-                                        <Typography variant="body1" component="span" onDoubleClick={startEditing}>
-                                            {file.name}
+                                        <Typography variant="body1" component="span">
+                                            {file.name || 'Untitled file...'}
                                         </Typography>
                                     )}
                                 </Box>

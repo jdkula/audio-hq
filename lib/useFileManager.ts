@@ -207,7 +207,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         } catch (e) {
             // ignore
         }
-        setCached(cached.remove(id));
+        setCached(cached => cached.remove(id));
         mutate(`/api/${workspaceId}/files`, (files?: WSFile[]) => files?.filter((f) => f.id !== id), false);
         await Axios.delete(`/api/files/${id}`);
         mutate(`/api/${workspaceId}/files`);

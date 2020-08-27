@@ -92,11 +92,16 @@ export const Explorer: FunctionComponent = (props) => {
     const searchFolders = !searching
         ? null
         : getSearchFolders(workspace, searchText).map((path, i) => (
-              <FolderEntry name={path[path.length - 1]} key={i} onClick={() => finishSearch(path)} />
+              <FolderEntry
+                  name={path[path.length - 1]}
+                  path={path.slice(0, path.length - 1)}
+                  key={i}
+                  onClick={() => finishSearch(path)}
+              />
           ));
 
     const folders = getFolders(workspace, path).map((foldername) => (
-        <FolderEntry name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />
+        <FolderEntry name={foldername} key={foldername} path={path} onClick={() => setPath([...path, foldername])} />
     ));
 
     const jobNotes = fileManager.working.map((j) => (
@@ -124,7 +129,7 @@ export const Explorer: FunctionComponent = (props) => {
             } else {
                 if (!result.destination || result.destination.droppableId === '___current___') return;
                 // folder
-                const folderName = result.destination.droppableId;
+                const folderName = result.destination.droppableId.replaceAll(/^___folder_/, '');
                 const destPath =
                     folderName === '___back___'
                         ? srcFile.path.slice(0, srcFile.path.length - 1)
@@ -189,7 +194,12 @@ export const Explorer: FunctionComponent = (props) => {
                 <Box height="100%" overflow="auto">
                     <DragDropContext onDragEnd={handleDrag}>
                         {!searching && path.length > 0 && (
-                            <FolderEntry name="Back" up onClick={() => setPath(path.slice(0, path.length - 1))} />
+                            <FolderEntry
+                                name="Back"
+                                up
+                                path={[]}
+                                onClick={() => setPath(path.slice(0, path.length - 1))}
+                            />
                         )}
                         {searching ? searchFolders : folders}
                         <Divider />
