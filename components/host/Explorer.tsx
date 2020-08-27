@@ -122,7 +122,7 @@ export const Explorer: FunctionComponent = (props) => {
                 if (!destFile) throw new Error('rip');
 
                 setCombining([srcFile, destFile]);
-            } else if (result.destination?.droppableId === '___current___') {
+            } else if (result.destination?.droppableId === '___current___' && currentFiles.length > 1) {
                 const targetId = currentFiles[result.destination.index]?.id;
                 const reorder = targetId ? { before: targetId } : { after: currentFiles[currentFiles.length - 1].id };
                 fileManager.update(srcFile.id, { reorder });

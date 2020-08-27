@@ -26,6 +26,8 @@ import DeleteForever from '@material-ui/icons/DeleteForever';
 import DownloadIcon from '@material-ui/icons/CloudDownload';
 import SaveIcon from '@material-ui/icons/Save';
 import { toTimestamp } from './AudioControls';
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
+
 import { WorkspaceContext } from '../../pages/[id]/host';
 
 export const FileContainer = styled(Paper)`
@@ -160,12 +162,16 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
         <>
             <DeleteDialog open={showDelete} file={file} onClose={() => setDelete(false)} />
             <Draggable draggableId={file.id} index={index}>
-                {(provided) => (
+                {(provided, snapshot) => (
                     <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
                         <Box display="flex" alignItems="center">
                             <Tooltip title="Play File" placement="left" arrow>
                                 <IconButton onClick={onPlay}>
-                                    <PlayArrow />
+                                    {snapshot.combineTargetFor ? (
+                                        <CreateNewFolderIcon color="primary" />
+                                    ) : (
+                                        <PlayArrow />
+                                    )}
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Play File As Ambience" placement="left" arrow>

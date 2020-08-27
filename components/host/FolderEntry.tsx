@@ -4,6 +4,9 @@ import { Droppable } from 'react-beautiful-dnd';
 import { FileContainer } from './FileEntry';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import EditIcon from '@material-ui/icons/Edit';
+import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+
 import {
     Box,
     Button,
@@ -58,8 +61,10 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const fullPath = [...path, name];
 
     const startRenaming = (e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (up) return;
-        setRenaming(true);
+        setRenaming(!renaming);
         setNewName(name);
     };
 
@@ -102,7 +107,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 
     return (
         <Droppable droppableId={up ? '___back___' : `___folder_${name}`}>
-            {(provided) => (
+            {(provided, snapshot) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                     <DeleteDialog
                         folder={name}
@@ -112,64 +117,63 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                     />
                     <FileContainer onClick={onClick} style={{ cursor: 'pointer' }}>
                         <Box display="flex" alignItems="center">
-                            <Box color="black" component="span">
-                                <Tooltip title="Click to enter folder" placement="left">
-                                    <IconButton onClick={onClick} color="inherit">
-                                        {up ? <ArrowBackIcon /> : <FolderIcon />}
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
+                            <Tooltip title="Click to enter folder" placement="left">
+                                <IconButton onClick={onClick}>
+                                    {snapshot.isDraggingOver ? (
+                                        <FolderOpenIcon color="primary" />
+                                    ) : up ? (
+                                        <ArrowBackIcon />
+                                    ) : (
+                                        <FolderIcon />
+                                    )}
+                                </IconButton>
+                            </Tooltip>
                             {up ? (
                                 <Typography variant="body1" component="span">
                                     {name}
                                 </Typography>
-                            ) : (
-                                <Tooltip
-                                    title={
-                                        renaming
-                                            ? 'Pro tip: Enter the name of another folder to merge them!'
-                                            : 'Double-click to rename'
-                                    }
-                                    placement="top"
-                                >
-                                    <Box
-                                        display="flex"
-                                        onClick={(e) => e.stopPropagation()}
-                                        onDoubleClick={startRenaming}
-                                        style={{ cursor: 'text', minWidth: renaming ? '100%' : '100px' }}
+                            ) : renaming ? (
+                                <Box display="flex" width="100%" onClick={(e) => e.stopPropagation()}>
+                                    <Tooltip
+                                        title="Pro tip: Enter the name of another folder to merge them!"
+                                        placement="top"
                                     >
-                                        {renaming ? (
-                                            <>
-                                                <TextField
-                                                    fullWidth
-                                                    autoFocus
-                                                    value={newName}
-                                                    onChange={(e) => setNewName(e.target.value)}
-                                                    onKeyDown={handleKeyDown}
-                                                />
-                                                <Box mx={1}>
-                                                    <Button onClick={onRename} variant="outlined" color="primary">
-                                                        Save
-                                                    </Button>
-                                                </Box>
-                                            </>
-                                        ) : (
-                                            <Typography variant="body1" component="span">
-                                                {name || 'Untitled Folder...'}
-                                            </Typography>
-                                        )}
+                                        <TextField
+                                            fullWidth
+                                            autoFocus
+                                            value={newName}
+                                            onChange={(e) => setNewName(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                        />
+                                    </Tooltip>
+
+                                    <Box mx={1}>
+                                        <Button onClick={onRename} variant="outlined" color="primary">
+                                            Save
+                                        </Button>
                                     </Box>
-                                </Tooltip>
+                                </Box>
+                            ) : (
+                                <Typography variant="body1" component="span">
+                                    {name || 'Untitled Folder...'}
+                                </Typography>
                             )}
                         </Box>
                         <div style={{ display: 'none' }}>{provided.placeholder}</div>
-                        <Box justifySelf="end">
-                            <Tooltip placement="left" title="Delete Folder" arrow>
-                                <IconButton onClick={onDeleteInitiate}>
-                                    <DeleteForever />
-                                </IconButton>
-                            </Tooltip>
-                        </Box>
+                        {!up && (
+                            <Box justifySelf="end">
+                                <Tooltip placement="left" title="Rename" arrow>
+                                    <IconButton onClick={startRenaming}>
+                                        <EditIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip placement="left" title="Delete Folder" arrow>
+                                    <IconButton onClick={onDeleteInitiate}>
+                                        <DeleteForever />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        )}
                     </FileContainer>
                 </div>
             )}
