@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogProps,
     DialogTitle,
+    Divider,
     IconButton,
     Paper,
     TextField,
@@ -28,6 +29,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import { toTimestamp } from './AudioControls';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import EditIcon from '@material-ui/icons/Edit';
+import OfflinePinIcon from '@material-ui/icons/OfflinePin';
 
 import { WorkspaceContext } from '../../pages/[id]';
 
@@ -131,16 +133,19 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
         });
     };
 
+    const cancelEdits = () => {
+        setEditName(file.name);
+        setEditDescription(file.description);
+        setEditing(false);
+    };
+
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
             e.preventDefault();
             saveEdits();
-        }
-        if (e.nativeEvent.code === 'Escape') {
+        } else if (e.nativeEvent.code === 'Escape') {
             e.preventDefault();
-            setEditName(file.name);
-            setEditDescription(file.description);
-            setEditing(false);
+            cancelEdits();
         }
     };
 
@@ -175,21 +180,30 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                     {snapshot.combineTargetFor ? (
                                         <CreateNewFolderIcon color="primary" />
                                     ) : (
-                                        <PlayArrow />
+                                        <PlayArrow
+                                            color={workspace.state.playing?.id === file.id ? 'primary' : undefined}
+                                        />
                                     )}
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Play File As Ambience" placement="left" arrow>
                                 <IconButton onClick={onAmbience}>
-                                    <AddIcon />
+                                    <AddIcon
+                                        color={
+                                            workspace.state.ambience.find((ps) => ps.id === file.id)
+                                                ? 'primary'
+                                                : undefined
+                                        }
+                                    />
                                 </IconButton>
                             </Tooltip>
-                            <Tooltip
-                                title={editing ? 'Press enter to save' : 'Double-click to edit'}
-                                placement="top"
-                                arrow
-                            >
-                                <Box display="flex" alignItems="center" width="100%" onDoubleClick={startEditing}>
+                            <Tooltip title={editing ? '' : 'Double-click to edit'} placement="top" arrow>
+                                <Box
+                                    display="flex"
+                                    alignItems="center"
+                                    style={{ minWidth: editing ? '100%' : undefined }}
+                                    onDoubleClick={startEditing}
+                                >
                                     {editing ? (
                                         <>
                                             <Box display="flex" flexDirection="column" flexGrow={1}>
@@ -213,9 +227,20 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                                     onKeyDown={handleKeyDown}
                                                 />
                                             </Box>
-                                            <Box mx={1}>
-                                                <Button onClick={saveEdits} variant="outlined" color="primary">
-                                                    Save
+                                            <Divider variant="middle" orientation="vertical" flexItem />
+                                            <Box display="flex" flexDirection="column" alignItems="center">
+                                                <Box mb={0.5} width="100%">
+                                                    <Button
+                                                        fullWidth
+                                                        onClick={saveEdits}
+                                                        variant="outlined"
+                                                        color="primary"
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                </Box>
+                                                <Button fullWidth onClick={cancelEdits} variant="outlined">
+                                                    Cancel
                                                 </Button>
                                             </Box>
                                         </>
@@ -237,8 +262,8 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                         </Box>
                         <StatusContainer>
                             <Tooltip placement="left" title="Rename" arrow>
-                                <IconButton onClick={startEditing}>
-                                    <EditIcon />
+                                <IconButton onClick={() => (editing ? cancelEdits() : startEditing())}>
+                                    <EditIcon color={editing ? 'primary' : undefined} />
                                 </IconButton>
                             </Tooltip>
                             {downloadJob && (
@@ -256,7 +281,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                             {cached && (
                                 <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
                                     <IconButton onClick={save}>
-                                        <SaveIcon />
+                                        <OfflinePinIcon />
                                     </IconButton>
                                 </Tooltip>
                             )}
