@@ -17,6 +17,8 @@ import Head from 'next/head';
 import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
 
+import DeleteIcon from '@material-ui/icons/DeleteSweep';
+
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
     if (volume === 0) {
@@ -78,10 +80,12 @@ export const Header: FunctionComponent = () => {
                             </Box>
                         </Popover>
                     </Box>
-                    <Box color="#bbb">
-                        <Button variant="outlined" color="inherit" onClick={() => fileManager.reset()}>
-                            Clear File Cache
-                        </Button>
+                    <Box color="white">
+                        <Tooltip placement="bottom" title="Clear entire cache (shift click to activate)" arrow>
+                            <IconButton color="inherit" onClick={(e) => e.nativeEvent.shiftKey && fileManager.reset()}>
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
                     </Box>
                 </Box>
             </Toolbar>

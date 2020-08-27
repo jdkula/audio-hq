@@ -5,6 +5,7 @@ import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
 import { WorkspaceContext } from '~/pages/[id]/host';
+import PlayIcon from '@material-ui/icons/PlayArrow';
 
 const NowPlayingContainer = styled.div`
     grid-area: nowplaying;
@@ -28,6 +29,9 @@ export const NowPlaying: FunctionComponent<{
         return (
             <NowPlayingContainer>
                 <Typography variant="h4">Nothing Playing</Typography>
+                <Typography variant="subtitle1">
+                    Use the <PlayIcon /> button to add some!
+                </Typography>
             </NowPlayingContainer>
         );
     }
