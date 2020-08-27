@@ -57,7 +57,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
-                    {!host && ' – Micro View'}
+                    {!host ? ' – Micro View' : ''}
                 </title>
             </Head>
             <Toolbar>
