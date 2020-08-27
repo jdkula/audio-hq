@@ -3,10 +3,11 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { Container, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import { useState } from 'react';
+import { KeyboardEvent, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import { listen } from 'socket.io';
 
 const InnerContainer = styled.main`
     display: grid;
@@ -42,6 +43,17 @@ export default function Home(): React.ReactElement {
     const [text, setText] = useState('');
     const router = useRouter();
 
+    const go = () => {
+        router.push(`/${encodeURIComponent(text)}/host`);
+    };
+
+    const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.nativeEvent.code === 'Enter') {
+            e.preventDefault();
+            go();
+        }
+    };
+
     return (
         <Container>
             <Head>
@@ -58,15 +70,11 @@ export default function Home(): React.ReactElement {
                         style={{ gridArea: 'input' }}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
+                        onKeyDown={enterListener}
                         variant="outlined"
                         label="Workspace Name"
                     />
-                    <Button
-                        style={{ gridArea: 'button' }}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => router.push(`/${encodeURIComponent(text)}/host`)}
-                    >
+                    <Button style={{ gridArea: 'button' }} variant="contained" color="primary" onClick={go}>
                         Join
                     </Button>
                 </Portal>

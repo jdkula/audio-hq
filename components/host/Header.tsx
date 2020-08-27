@@ -21,6 +21,7 @@ import { useRecoilState } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
+import { useDoubleTap } from 'use-double-tap';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -46,6 +47,10 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+    const bindDoubleTap = useDoubleTap(() => {
+        fileManager.reset().then(() => window.location.reload());
+    }, 300);
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -106,11 +111,8 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     )}
                     {!isSmall && (
                         <Box color="white">
-                            <Tooltip placement="bottom" title="Clear entire cache (shift click to activate)" arrow>
-                                <IconButton
-                                    color="inherit"
-                                    onClick={(e) => e.nativeEvent.shiftKey && fileManager.reset()}
-                                >
+                            <Tooltip placement="bottom" title="Clear entire cache (double click/tap to activate)" arrow>
+                                <IconButton color="inherit" {...bindDoubleTap}>
                                     <DeleteIcon />
                                 </IconButton>
                             </Tooltip>
