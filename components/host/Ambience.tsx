@@ -50,7 +50,7 @@ export const Ambience: FunctionComponent = () => {
 
     const controls = workspace.state.ambience.map((ps) => (
         <AmbienceControlsContainer key={ps.id}>
-            <Typography variant="h5">{workspace.files.find((f) => f.id === ps.id)?.name ?? '不明'}</Typography>
+            <Typography variant="h5">{workspace.files.find((f) => f.id === ps.id)?.name ?? 'Loading...'}</Typography>
             <AudioControls state={ps} resolver={makeResolver(ps.id)} />
         </AmbienceControlsContainer>
     ));

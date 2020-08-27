@@ -36,7 +36,7 @@ export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     return volumeIcon;
 };
 
-export const Header: FunctionComponent = () => {
+export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
 
@@ -51,7 +51,10 @@ export const Header: FunctionComponent = () => {
     return (
         <AppBar position="relative" style={{ gridArea: 'header' }}>
             <Head>
-                <title>Audio HQ – {workspace ? workspace.name : 'Loading...'} – Host View</title>
+                <title>
+                    Audio HQ – {workspace ? workspace.name : 'Loading...'}
+                    {host && ' – Host View'}
+                </title>
             </Head>
             <Toolbar>
                 <Box display="flex" width="100%" alignItems="center">
@@ -59,36 +62,42 @@ export const Header: FunctionComponent = () => {
                         <Typography variant={isSmall ? 'h5' : 'h4'}>
                             Audio HQ – {workspace ? workspace.name : 'Loading...'}
                         </Typography>
-                        {!isSmall && (
+                        {!isSmall && host && (
                             <Box px={4}>
                                 <Typography variant="subtitle1">Host View</Typography>
                             </Box>
                         )}
                     </Box>
-                    <Box color="white">
-                        <Tooltip title="Your Volume" placement="bottom" arrow>
-                            <IconButton color="inherit" ref={(r) => setAnchorEl(r)} onClick={() => setVolumeOpen(true)}>
-                                <VolumeButton volume={globalVolume} />
-                            </IconButton>
-                        </Tooltip>
-                        <Popover
-                            open={volumeOpen}
-                            onClose={() => setVolumeOpen(false)}
-                            anchorEl={anchorEl}
-                            anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
-                            transformOrigin={{ vertical: 'center', horizontal: 'right' }}
-                        >
-                            <Box mx="1rem" my="0.25rem" minWidth="6rem">
-                                <Slider
-                                    min={0}
-                                    max={1}
-                                    step={0.05}
-                                    value={globalVolume}
-                                    onChange={(_, val) => setGlobalVolume(val as number)}
-                                />
-                            </Box>
-                        </Popover>
-                    </Box>
+                    {host && (
+                        <Box color="white">
+                            <Tooltip title="Your Volume" placement="bottom" arrow>
+                                <IconButton
+                                    color="inherit"
+                                    ref={(r) => setAnchorEl(r)}
+                                    onClick={() => setVolumeOpen(true)}
+                                >
+                                    <VolumeButton volume={globalVolume} />
+                                </IconButton>
+                            </Tooltip>
+                            <Popover
+                                open={volumeOpen}
+                                onClose={() => setVolumeOpen(false)}
+                                anchorEl={anchorEl}
+                                anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
+                                transformOrigin={{ vertical: 'center', horizontal: 'right' }}
+                            >
+                                <Box mx="1rem" my="0.25rem" minWidth="6rem">
+                                    <Slider
+                                        min={0}
+                                        max={1}
+                                        step={0.05}
+                                        value={globalVolume}
+                                        onChange={(_, val) => setGlobalVolume(val as number)}
+                                    />
+                                </Box>
+                            </Popover>
+                        </Box>
+                    )}
                     {!isSmall && (
                         <Box color="white">
                             <Tooltip placement="bottom" title="Clear entire cache (shift click to activate)" arrow>

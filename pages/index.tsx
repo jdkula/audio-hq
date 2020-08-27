@@ -5,8 +5,9 @@ import { Container, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import styled from 'styled-components';
+import Link from 'next/link';
 
 const InnerContainer = styled.main`
     display: grid;
@@ -31,7 +32,7 @@ const Portal = styled.div`
     grid-template-rows: 30% 30% 40%;
     grid-template-areas:
         'input input'
-        'host  join '
+        'button  button '
         '.     .';
     padding: 25% 10%;
     column-gap: 20px;
@@ -40,10 +41,7 @@ const Portal = styled.div`
 
 export default function Home(): React.ReactElement {
     const [text, setText] = useState('');
-
-    function go(location: string) {
-        Router.push(location);
-    }
+    const router = useRouter();
 
     return (
         <Container>
@@ -64,22 +62,16 @@ export default function Home(): React.ReactElement {
                         variant="outlined"
                         label="Workspace Name"
                     />
-                    <Button
-                        style={{ gridArea: 'host' }}
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => go(`/workspace/${text}/host`)}
-                    >
-                        Host
-                    </Button>
-                    <Button
-                        style={{ gridArea: 'join' }}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => go(`/workspace/${text}`)}
-                    >
-                        Join
-                    </Button>
+                    <Link href="/[id]/host">
+                        <Button
+                            style={{ gridArea: 'button' }}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => router.push(`/${text}/host`)}
+                        >
+                            Join
+                        </Button>
+                    </Link>
                 </Portal>
             </InnerContainer>
         </Container>

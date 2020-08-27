@@ -46,7 +46,7 @@ export const NowPlaying: FunctionComponent<{
 
     return (
         <NowPlayingContainer>
-            <Typography variant="h5">{songName ?? '不明'}</Typography>
+            <Typography variant="h5">{songName ?? 'Loading...'}</Typography>
             <AudioControls state={state} resolver={resolver} />
         </NowPlayingContainer>
     );

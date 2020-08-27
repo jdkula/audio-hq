@@ -138,15 +138,23 @@ const useFileManager = (workspaceId: string): FileManager => {
                             : v,
                     ),
                 );
-                await cache.current.put({
-                    _id: id,
-                    _attachments: {
-                        file: {
-                            content_type: 'audio/mp3',
-                            data: blob,
+                try {
+                    await cache.current.put({
+                        _id: id,
+                        _attachments: {
+                            file: {
+                                content_type: 'audio/mp3',
+                                data: blob,
+                            },
                         },
-                    },
-                });
+                    });
+                } catch (e) {
+                    if (e?.status === 409) {
+                        console.warn('Confict error... probably added in another tab?');
+                    } else {
+                        throw e;
+                    }
+                }
                 setCached((cached) => cached.add(id));
                 setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
                 (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(blob));

@@ -1,5 +1,5 @@
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import { Seeker } from '../Seeker';
 import useAudio from '~/lib/useAudio';
@@ -47,7 +47,9 @@ const AudioControlsContainer = styled.div`
 export const AudioControls: FunctionComponent<{
     state: PlayState;
     resolver: PlayStateResolver;
-}> = ({ state, resolver }) => {
+    onBlocked?: (blocked: boolean) => void;
+    onLoading?: (loading: boolean) => void;
+}> = ({ state, resolver, onBlocked, onLoading }) => {
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
     const [anchorEl, setAnchor] = useState<HTMLButtonElement | null>(null);
@@ -56,6 +58,9 @@ export const AudioControls: FunctionComponent<{
     const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
         overrideVolume: tempVolume ?? undefined,
     });
+
+    useEffect(() => onBlocked?.(blocked), [blocked]);
+    useEffect(() => onLoading?.(loading), [loading]);
 
     const [seekTimestamp, setSeekTimestamp] = useState<number | null>(null);
 
