@@ -1,17 +1,29 @@
-import { Box, Breadcrumbs, Button, Divider, Fab, Paper } from '@material-ui/core';
+import {
+    Box,
+    Breadcrumbs,
+    Button,
+    Divider,
+    Fab,
+    IconButton,
+    InputAdornment,
+    Paper,
+    TextField,
+} from '@material-ui/core';
 import React, { FunctionComponent, useCallback, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/pages/[id]/host';
-import { File as WSFile } from '~/lib/Workspace';
+import { File as WSFile, Workspace } from '~/lib/Workspace';
 
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import AddIcon from '@material-ui/icons/Add';
+import SearchIcon from '@material-ui/icons/Search';
+import CloseIcon from '@material-ui/icons/Close';
 
 import { FileManagerContext } from '~/lib/useFileManager';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 import Axios from 'axios';
 import { mutate } from 'swr';
-import { Set } from 'immutable';
+import { Set, List } from 'immutable';
 import AddFileDialog from './AddFileDialog';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './FolderAddDialog';
@@ -26,6 +38,36 @@ const ExplorerContainer = styled.div`
     overflow: hidden;
 `;
 
+const getFiles = (workspace: Workspace, path: string[], searchText?: string): WSFile[] => {
+    if (searchText !== undefined)
+        return workspace.files.filter((file) => !!file.name.match(new RegExp(`.*${searchText}.*`, 'i')));
+    return (
+        workspace.files.filter(
+            (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
+        ) ?? []
+    );
+};
+
+const getSearchFolders = (workspace: Workspace, searchText: string): string[][] => {
+    return [
+        ...Set(
+            workspace.files
+                .map((file) => file.path)
+                .filter((path) => path.length > 0)
+                .filter((path) => path[path.length - 1].match(new RegExp(`.*${searchText}.*`, 'i')))
+                .map((path) => List(path)), // deduplicate
+        ).map((list) => [...list]),
+    ];
+};
+
+const getFolders = (workspace: Workspace, path: string[]): Set<string> => {
+    return Set(
+        workspace.files
+            .filter((file) => file.path.length > path.length && path.every((v, i) => file.path[i] === v))
+            .map((file) => file.path[path.length]),
+    ).sort();
+};
+
 export const Explorer: FunctionComponent = (props) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
@@ -34,22 +76,28 @@ export const Explorer: FunctionComponent = (props) => {
     const [combining, setCombining] = useState<WSFile[]>([]);
     const [adding, setAdding] = useState(false);
 
-    const currentFiles =
-        workspace?.files.filter(
-            (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
-        ) ?? [];
+    const [searching, setSearching] = useState(false);
+    const [searchText, setSearchText] = useState('');
+
+    const currentFiles = getFiles(workspace, path, searching ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
-    const folders = Set(
-        workspace.files
-            .filter((file) => file.path.length > path.length && path.every((v, i) => file.path[i] === v))
-            .map((file) => file.path[path.length]),
-    )
-        .sort()
-        .map((foldername) => (
-            <FolderEntry name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />
-        ));
+    const finishSearch = (path?: string[]) => {
+        setSearching(false);
+        setSearchText('');
+        if (path) setPath(path);
+    };
+
+    const searchFolders = !searching
+        ? null
+        : getSearchFolders(workspace, searchText).map((path, i) => (
+              <FolderEntry name={path[path.length - 1]} key={i} onClick={() => finishSearch(path)} />
+          ));
+
+    const folders = getFolders(workspace, path).map((foldername) => (
+        <FolderEntry name={foldername} key={foldername} onClick={() => setPath([...path, foldername])} />
+    ));
 
     const jobNotes = fileManager.working.map((j) => (
         <JobEntry job={j} key={j.jobId} onCanceled={() => mutate(`/api/${workspace.name}/jobs`)} />
@@ -102,7 +150,37 @@ export const Explorer: FunctionComponent = (props) => {
     return (
         <ExplorerContainer>
             <Paper square variant="elevation" color="primary">
-                <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
+                <Box display="flex" alignItems="center" p="0.5rem">
+                    <Box flexGrow={1}>
+                        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
+                    </Box>
+                    <Box>
+                        {searching ? (
+                            <>
+                                <TextField
+                                    autoFocus
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    label="Search..."
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <SearchIcon />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                                <IconButton onClick={() => finishSearch()}>
+                                    <CloseIcon />
+                                </IconButton>
+                            </>
+                        ) : (
+                            <IconButton onClick={() => setSearching(true)}>
+                                <SearchIcon />
+                            </IconButton>
+                        )}
+                    </Box>
+                </Box>
             </Paper>
             <Box m="1px" />
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />
@@ -111,10 +189,10 @@ export const Explorer: FunctionComponent = (props) => {
             <Box overflow="hidden" flexGrow={1} position="relative">
                 <Box height="100%" overflow="auto">
                     <DragDropContext onDragEnd={handleDrag}>
-                        {path.length > 0 && (
+                        {!searching && path.length > 0 && (
                             <FolderEntry name="Back" up onClick={() => setPath(path.slice(0, path.length - 1))} />
                         )}
-                        {folders}
+                        {searching ? searchFolders : folders}
                         <Divider />
                         <Droppable isCombineEnabled droppableId="___current___">
                             {(provided) => (
