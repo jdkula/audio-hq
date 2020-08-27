@@ -1,6 +1,6 @@
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, useState } from 'react';
-import { Box, IconButton, Popover, Slider, Typography } from '@material-ui/core';
+import { Box, IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import { Seeker } from '../Seeker';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
@@ -69,23 +69,28 @@ export const AudioControls: FunctionComponent<{
 
     return (
         <AudioControlsContainer>
-            <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+            <Tooltip title={paused ? 'Play' : 'Pause'} placement="bottom" arrow>
+                <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+            </Tooltip>
             <Slider
                 value={seekTimestamp ?? time}
                 min={0}
                 max={duration}
                 step={1}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => <Box fontSize="7pt">{toTimestamp(value)}</Box>}
                 onChangeCommitted={(_, v) => finishSeek(v as number)}
                 onChange={(_, v) => setSeekTimestamp(v as number)}
             />
             <Box mx={2}>
                 <Typography variant="subtitle1">{toTimestamp(seekTimestamp ?? time)}</Typography>
             </Box>
-            <IconButton onClick={(e) => setAnchor(e.currentTarget)}>
-                <VolumeButton volume={volume} />
-            </IconButton>
+            <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
+                <IconButton onClick={(e) => setAnchor(e.currentTarget)}>
+                    <VolumeButton volume={volume} />
+                </IconButton>
+            </Tooltip>
             <Popover
-                id="volume-popover"
                 open={!!anchorEl}
                 onClose={() => setAnchor(null)}
                 anchorEl={anchorEl}
@@ -103,11 +108,12 @@ export const AudioControls: FunctionComponent<{
                     style={{ minHeight: '5rem', margin: '1rem' }}
                 />
             </Popover>
-            <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
-                <SpeedIcon />
-            </IconButton>
+            <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
+                <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
+                    <SpeedIcon />
+                </IconButton>
+            </Tooltip>
             <Popover
-                id="volume-popover"
                 open={!!speedAnchorEl}
                 onClose={() => setSpeedAnchor(null)}
                 anchorEl={speedAnchorEl}
@@ -127,9 +133,11 @@ export const AudioControls: FunctionComponent<{
                     style={{ minHeight: '5rem', margin: '4rem 1rem 1rem 1rem' }}
                 />
             </Popover>
-            <IconButton onClick={() => resolver(null)}>
-                <StopIcon />
-            </IconButton>
+            <Tooltip title="Stop playing" placement="bottom" arrow>
+                <IconButton onClick={() => resolver(null)}>
+                    <StopIcon />
+                </IconButton>
+            </Tooltip>
         </AudioControlsContainer>
     );
 };

@@ -1,16 +1,21 @@
-import { makeStyles, AppBar, Toolbar, Typography, Box, Button, Popover, Slider, IconButton } from '@material-ui/core';
+import {
+    makeStyles,
+    AppBar,
+    Toolbar,
+    Typography,
+    Box,
+    Button,
+    Popover,
+    Slider,
+    IconButton,
+    Tooltip,
+} from '@material-ui/core';
 import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]/host';
 import { useContext, FunctionComponent, useState, FC } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
 import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
-
-const useStyles = makeStyles(() => ({
-    header: {
-        gridArea: 'header',
-    },
-}));
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -28,7 +33,6 @@ export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
 };
 
 export const Header: FunctionComponent = () => {
-    const classes = useStyles();
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
 
@@ -38,7 +42,7 @@ export const Header: FunctionComponent = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     return (
-        <AppBar position="relative" className={classes.header}>
+        <AppBar position="relative" style={{ gridArea: 'header' }}>
             <Head>
                 <title>Audio HQ – {workspace ? workspace.name : 'Loading...'} – Host View</title>
             </Head>
@@ -51,9 +55,11 @@ export const Header: FunctionComponent = () => {
                         </Box>
                     </Box>
                     <Box color="white">
-                        <IconButton color="inherit" ref={(r) => setAnchorEl(r)} onClick={() => setVolumeOpen(true)}>
-                            <VolumeButton volume={globalVolume} />
-                        </IconButton>
+                        <Tooltip title="Your Volume" placement="bottom" arrow>
+                            <IconButton color="inherit" ref={(r) => setAnchorEl(r)} onClick={() => setVolumeOpen(true)}>
+                                <VolumeButton volume={globalVolume} />
+                            </IconButton>
+                        </Tooltip>
                         <Popover
                             open={volumeOpen}
                             onClose={() => setVolumeOpen(false)}

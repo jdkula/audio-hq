@@ -25,9 +25,7 @@ const ExplorerContainer = styled.div`
     flex-direction: column;
 `;
 
-export const Explorer: FunctionComponent<{
-    setSong: (id: string) => void;
-}> = (props) => {
+export const Explorer: FunctionComponent = (props) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
 
@@ -35,26 +33,12 @@ export const Explorer: FunctionComponent<{
     const [combining, setCombining] = useState<WSFile[]>([]);
     const [adding, setAdding] = useState(false);
 
-    const doPlay = (fileId: string) => {
-        return () => {
-            props.setSong(fileId);
-        };
-    };
-
     const currentFiles =
         workspace?.files.filter(
             (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
         ) ?? [];
 
-    const fileButtons = currentFiles.map((file, i) => (
-        <FileEntry
-            file={file}
-            index={i}
-            onPlay={doPlay(file.id)}
-            onDelete={() => fileManager.delete(file.id)}
-            key={file.id}
-        />
-    ));
+    const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
     const folders = Set(
         workspace.files

@@ -53,10 +53,6 @@ const Host: FunctionComponent<{
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
 
-    const setSong = async (id: string) => {
-        resolve({ playing: { id, startTimestamp: Date.now() } });
-    };
-
     const currentlyPlaying = workspace?.files.find((file) => file.id === workspace.state.playing?.id);
 
     useEffect(() => {
@@ -97,7 +93,7 @@ const Host: FunctionComponent<{
                 <Container>
                     <Header />
                     <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
-                    <Explorer setSong={setSong} />
+                    <Explorer />
                     <Ambience />
                     {/* <SoundFX /> */}
                     {/* <CurrentUsers /> */}

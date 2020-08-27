@@ -87,10 +87,6 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.oncanplaythrough = () => {
             setLoading(false);
         };
-
-        document.addEventListener('keyup', onInteract);
-        document.addEventListener('mouseup', onInteract);
-        document.addEventListener('touchend', onInteract);
     }, [audio.current]);
 
     useEffect(() => {
@@ -108,6 +104,10 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                     setHasInteracted(false);
                     setIsBlocked(true);
                     setPaused(true);
+
+                    document.addEventListener('keyup', onInteract);
+                    document.addEventListener('mouseup', onInteract);
+                    document.addEventListener('touchend', onInteract);
                 });
         }
     }, [loading]);

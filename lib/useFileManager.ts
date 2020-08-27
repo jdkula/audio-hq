@@ -116,10 +116,10 @@ const useFileManager = (workspaceId: string): FileManager => {
                 for await (const chunk of readBody(resp.body)) {
                     read += chunk.value.length;
                     data.push(chunk.value);
-                    if (read - lastNotified > 1024 * 1024) {
-                        // only update every 1 MB
+                    if (Date.now() - lastNotified > 500) {
+                        // only update every half second
                         updateFetching(id, read / bytes);
-                        lastNotified = read;
+                        lastNotified = Date.now();
                     }
                 }
 
@@ -200,8 +200,9 @@ const useFileManager = (workspaceId: string): FileManager => {
         } catch (e) {
             // ignore
         }
-        await Axios.delete(`/api/files/${id}`);
         setCached(cached.remove(id));
+        mutate(`/api/${workspaceId}/files`, (files?: WSFile[]) => files?.filter((f) => f.id !== id), false);
+        await Axios.delete(`/api/files/${id}`);
         mutate(`/api/${workspaceId}/files`);
     };
 

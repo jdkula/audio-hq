@@ -67,8 +67,25 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
     const resolve = async (update: WorkspaceUpdate) => {
         if (state === null) return;
 
-        const copy = { ...state };
+        const copy: WorkspaceState = JSON.parse(JSON.stringify(state));
         copy.playing = updatePlayState(update.playing, copy.playing);
+
+        if (update.ambience) {
+            let updated = false;
+            for (let i = 0; i < copy.ambience.length; i++) {
+                if (copy.ambience[i].id === update.ambience.id) {
+                    // both non-null, output will be non-null.
+                    copy.ambience[i] = updatePlayState(update.ambience, copy.ambience[i])!;
+                    updated = true;
+                }
+            }
+            if (!updated) {
+                const newState = updatePlayState(update.ambience, null);
+                newState && copy.ambience.push(newState);
+            }
+        } else if (update.delAmbience) {
+            copy.ambience = copy.ambience.filter((ps) => ps.id !== update.delAmbience);
+        }
 
         mutateState(copy);
     };
