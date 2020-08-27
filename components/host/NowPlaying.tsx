@@ -22,6 +22,7 @@ const NowPlayingContainer = styled.div`
     justify-content: center;
     justify-items: center;
     align-content: center;
+    text-align: center;
 `;
 
 export const NowPlaying: FunctionComponent<{

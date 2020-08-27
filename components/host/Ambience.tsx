@@ -23,6 +23,16 @@ const EmptyContainer = styled.div`
     align-items: center;
 `;
 
+const AmbienceControlsContainer = styled(Paper)`
+    margin: 1rem;
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+`;
+
 export const Ambience: FunctionComponent = () => {
     const workspace = useContext(WorkspaceContext);
 
@@ -39,10 +49,10 @@ export const Ambience: FunctionComponent = () => {
     };
 
     const controls = workspace.state.ambience.map((ps) => (
-        <Paper key={ps.id}>
-            <Typography variant="h4">{workspace.files.find((f) => f.id === ps.id)?.name ?? '不明'}</Typography>
+        <AmbienceControlsContainer key={ps.id}>
+            <Typography variant="h5">{workspace.files.find((f) => f.id === ps.id)?.name ?? '不明'}</Typography>
             <AudioControls state={ps} resolver={makeResolver(ps.id)} />
-        </Paper>
+        </AmbienceControlsContainer>
     ));
 
     if (controls.length === 0) {
