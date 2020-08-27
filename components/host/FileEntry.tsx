@@ -183,6 +183,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                         <>
                                             <TextField
                                                 fullWidth
+                                                autoFocus
                                                 value={editName}
                                                 onChange={(e) => setEditName(e.target.value)}
                                                 onKeyDown={handleKeyDown}
