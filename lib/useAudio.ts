@@ -89,6 +89,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
         audio.current.oncanplay = () => {
             console.log('audio.current.oncanplay called');
+            // TODO: Don't try to play until here, but try interaction blockers with onLoadedMetadata...?
         };
     }, [audio.current]);
 

@@ -27,6 +27,14 @@ export function toTimestamp(seconds: number): string {
     }
 }
 
+const speedMarks = [
+    { value: 0.25, label: '1/4x' },
+    { value: 0.5, label: '1/2x' },
+    { value: 1, label: '1x' },
+    { value: 2, label: '2x' },
+    { value: 3, label: '3x' },
+];
+
 const AudioControlsContainer = styled.div`
     display: grid;
     grid-template-rows: auto;
@@ -124,7 +132,7 @@ export const AudioControls: FunctionComponent<{
                         onChangeCommitted={(_, v) => resolver({ volume: v as number })}
                         onChange={(_, v) => setTempVolume(v as number)}
                         orientation="vertical"
-                        style={{ minHeight: '5rem', margin: '1rem' }}
+                        style={{ minHeight: '10rem', margin: '1rem' }}
                     />
                 </Popover>
                 <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
@@ -141,15 +149,14 @@ export const AudioControls: FunctionComponent<{
                 >
                     <Slider
                         value={tempSpeed ?? 1}
-                        min={0.5}
+                        min={0}
                         max={3}
-                        step={0.5}
-                        marks={true}
-                        valueLabelDisplay="auto"
+                        step={null}
+                        marks={speedMarks}
                         onChangeCommitted={(_, v) => resolver({ speed: v as number, timePlayed: time })}
                         onChange={(_, v) => setTempSpeed(v as number)}
                         orientation="vertical"
-                        style={{ minHeight: '5rem', margin: '4rem 1rem 1rem 1rem' }}
+                        style={{ minHeight: '10rem', margin: '1rem 2.5rem 1rem 1rem' }}
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
