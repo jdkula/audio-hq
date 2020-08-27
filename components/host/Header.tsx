@@ -13,7 +13,7 @@ import {
     useTheme,
 } from '@material-ui/core';
 import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]/host';
-import { useContext, FunctionComponent, useState, FC } from 'react';
+import { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
 import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
@@ -21,7 +21,6 @@ import { useRecoilState } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
-import { useDoubleTap } from 'use-double-tap';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -48,9 +47,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    const bindDoubleTap = useDoubleTap(() => {
-        fileManager.reset().then(() => window.location.reload());
-    }, 300);
+    const onReset = () => fileManager.reset().then(() => window.location.reload());
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -80,7 +77,8 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         )}
                     </Box>
                     {host && (
-                        <Box color="white">
+                        <Box color="white" display="flex" alignItems="center">
+                            <Typography variant="body1">Your Volume Controls</Typography>
                             <Tooltip title="Your Volume" placement="bottom" arrow>
                                 <IconButton
                                     color="inherit"
@@ -97,11 +95,11 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                                 anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
                                 transformOrigin={{ vertical: 'center', horizontal: 'right' }}
                             >
-                                <Box mx="1rem" my="0.25rem" minWidth="6rem">
+                                <Box mx="1rem" my="0.25rem" minWidth="10rem">
                                     <Slider
                                         min={0}
                                         max={1}
-                                        step={0.05}
+                                        step={0.01}
                                         value={globalVolume}
                                         onChange={(_, val) => setGlobalVolume(val as number)}
                                     />
@@ -112,7 +110,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     {!isSmall && (
                         <Box color="white">
                             <Tooltip placement="bottom" title="Clear entire cache (double click/tap to activate)" arrow>
-                                <IconButton color="inherit" {...bindDoubleTap}>
+                                <IconButton color="inherit" onDoubleClick={onReset}>
                                     <DeleteIcon />
                                 </IconButton>
                             </Tooltip>

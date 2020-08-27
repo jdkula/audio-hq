@@ -129,9 +129,8 @@ export const Explorer: FunctionComponent = (props) => {
                     folderName === '___back___'
                         ? srcFile.path.slice(0, srcFile.path.length - 1)
                         : [...srcFile.path, folderName];
-                Axios.put(`/api/files/${srcFile.id}`, { path: destPath }).then(
-                    () => workspace && mutate(`/api/${workspace.name}/files`),
-                );
+
+                fileManager.update(srcFile.id, { path: destPath });
             }
         },
         [workspace],

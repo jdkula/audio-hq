@@ -5,10 +5,12 @@ import { WorkspaceContext } from '~/pages/[id]/host';
 
 import { File as WSFile } from '~/lib/Workspace';
 import { Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
+import { FileManagerContext } from '~/lib/useFileManager';
 
 const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, cancel }) => {
     const [name, setName] = useState('');
     const workspace = useContext(WorkspaceContext);
+    const fileManager = useContext(FileManagerContext);
 
     const doCancel = () => {
         setName('');
@@ -17,10 +19,7 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
 
     const addFilesToFolder = async () => {
         doCancel();
-        await Promise.all(
-            files.map(async (file) => Axios.put(`/api/files/${file.id}`, { path: [...file.path, name] })),
-        );
-        if (workspace) mutate(`/api/${workspace.name}/files`);
+        await Promise.all(files.map((file) => fileManager.update(file.id, { path: [...file.path, name] })));
     };
 
     return (
