@@ -149,13 +149,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, [getSeek, audio.current]);
 
     useEffect(() => {
-        console.log('Song getter called', audio, state);
+        console.log('Track getter called', audio, state);
         if (audio.current.src?.includes('blob')) {
             URL.revokeObjectURL(audio.current.src);
         }
         audio.current.src = '';
         setLoading(true);
-        audio.current.src = fileManager.song(state.id, (cached) => {
+        audio.current.src = fileManager.track(state.id, (cached) => {
             audio.current.src = URL.createObjectURL(cached);
         });
     }, [state.id]);

@@ -145,11 +145,11 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
     };
 
     const download = async () => {
-        fileManager.song(file.id);
+        fileManager.track(file.id);
     };
 
     const save = async () => {
-        fileManager.song(file.id, (blob) => {
+        fileManager.track(file.id, (blob) => {
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank', 'norel noreferrer');
         });

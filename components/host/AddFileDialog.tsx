@@ -100,7 +100,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                               }
                             : undefined
                     }
-                    helperText={notifyEnterName ? 'Please enter a song title!' : undefined}
+                    helperText={notifyEnterName ? 'Please enter a track title!' : undefined}
                 />
                 <Box m={1} />
                 <TextField

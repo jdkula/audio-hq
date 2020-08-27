@@ -8,7 +8,7 @@ import { useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
 
 interface FileManager {
-    song: (id: string, onCacheRetrieve?: (song: Blob) => void) => string;
+    track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
     reset: () => Promise<void>;
     import: (name: string, url: string, path?: string[], description?: string) => Promise<Job>;
     upload: (name: string, file: File, path?: string[], description?: string) => Promise<Job>;
@@ -32,7 +32,7 @@ async function* readBody(body: ReadableStream<Uint8Array>) {
 const useFileManager = (workspaceId: string): FileManager => {
     const cache = useRef(new PouchDB('cache'));
 
-    const fetchCallbacks: MutableRefObject<Map<string, Set<(song: Blob) => void>>> = useRef(new Map());
+    const fetchCallbacks: MutableRefObject<Map<string, Set<(track: Blob) => void>>> = useRef(new Map());
 
     const [cached, setCached] = useState<Set<string>>(Set());
     const [fetching, setFetching] = useState<Set<Job>>(Set());
@@ -64,7 +64,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         );
     };
 
-    const song = (id: string, onCacheRetrieve?: (song: Blob) => void): string => {
+    const track = (id: string, onCacheRetrieve?: (track: Blob) => void): string => {
         // TODO: audio sets
         const url = `/api/files/${id}/download`;
         const inflight = fetchCallbacks.current.has(id);
@@ -247,7 +247,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         import: imp,
         delete: del,
         reset,
-        song,
+        track,
         upload,
         update,
         working: working.concat(jobs),

@@ -222,7 +222,7 @@ export const Explorer: FunctionComponent = (props) => {
                 <Box position="absolute" right="4rem" bottom="4rem">
                     <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
                         <AddIcon />
-                        Add A Song
+                        Add A Track
                     </Fab>
                 </Box>
             </Box>

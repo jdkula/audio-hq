@@ -42,11 +42,11 @@ export const NowPlaying: FunctionComponent<{
 
     const ws = useContext(WorkspaceContext);
 
-    const songName = ws.files.find((f) => f.id === ws.state.playing?.id)?.name;
+    const trackName = ws.files.find((f) => f.id === ws.state.playing?.id)?.name;
 
     return (
         <NowPlayingContainer>
-            <Typography variant="h5">{songName ?? 'Loading...'}</Typography>
+            <Typography variant="h5">{trackName ?? 'Loading...'}</Typography>
             <AudioControls state={state} resolver={resolver} />
         </NowPlayingContainer>
     );
