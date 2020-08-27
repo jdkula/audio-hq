@@ -65,9 +65,9 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     useEffect(() => {
         console.log('Interaction gate called');
         if (!blocked) {
+            console.log('interaction gate removed');
             document.removeEventListener('keyup', onInteract);
             document.removeEventListener('mouseup', onInteract);
-            document.removeEventListener('touchend', onInteract);
         }
     }, [blocked]);
 
@@ -77,37 +77,42 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.preload = 'auto';
 
         audio.current.onloadstart = () => {
+            console.log('audio.current.onloadstart called');
             setLoading(true);
         };
 
         audio.current.onloadedmetadata = () => {
+            console.log('audio.current.onloadedmetadata called');
             setDuration(audio.current.duration);
+            setLoading(false);
         };
 
-        audio.current.oncanplaythrough = () => {
-            setLoading(false);
+        audio.current.oncanplay = () => {
+            console.log('audio.current.oncanplay called');
         };
     }, [audio.current]);
 
     useEffect(() => {
         console.log('Audio block checker called', loading);
         if (!loading) {
+            console.log('Setting blocked...', loading);
             setIsBlocked(true);
             audio.current
                 .play()
                 .then(() => {
+                    console.log('Play appears to have succeeded...');
                     typeof state?.pauseTime === 'number' && audio.current.pause();
                     setIsBlocked(false);
                 })
                 .catch((err) => {
                     console.warn(err);
+                    console.log('Play appears to have failed... adding interaction gate');
                     setHasInteracted(false);
                     setIsBlocked(true);
                     setPaused(true);
 
                     document.addEventListener('keyup', onInteract);
                     document.addEventListener('mouseup', onInteract);
-                    document.addEventListener('touchend', onInteract);
                 });
         }
     }, [loading]);
@@ -143,7 +148,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, [getSeek, audio.current]);
 
     useEffect(() => {
-        console.log('Song getter called');
+        console.log('Song getter called', audio, state);
         if (audio.current.src?.includes('blob')) {
             URL.revokeObjectURL(audio.current.src);
         }
@@ -176,7 +181,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         console.log('Play/pauser called');
 
         if (!loading && !blocked) {
-            setPaused(state.pauseTime !== null || !hasInteracted);
+            setPaused(state.pauseTime !== null);
             if (state.pauseTime === null) {
                 audio.current.play().catch((err) => console.warn(err));
             } else {
