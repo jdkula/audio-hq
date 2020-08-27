@@ -35,7 +35,7 @@ import { WorkspaceContext } from '../../pages/[id]';
 
 export const FileContainer = styled(Paper)`
     display: grid;
-    grid-template-columns: 4fr 1fr min-content;
+    grid-template-columns: 1fr auto auto;
     grid-template-rows: auto;
     margin: 0.5rem 1rem;
     border-radius: 9999px;
@@ -51,8 +51,9 @@ export const FileContainer = styled(Paper)`
 `;
 
 const StatusContainer = styled.div`
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
     align-items: center;
 `;
 
@@ -200,7 +201,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                             <Box
                                 display="flex"
                                 alignItems="center"
-                                style={{ minWidth: editing ? '100%' : undefined, cursor: editing ? undefined : 'text' }}
+                                style={{ flexGrow: editing ? 1 : undefined, cursor: editing ? undefined : 'text' }}
                                 onDoubleClick={startEditing}
                             >
                                 {editing ? (
