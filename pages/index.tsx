@@ -5,9 +5,8 @@ import { Container, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import { useState } from 'react';
 
-import Router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import styled from 'styled-components';
-import Link from 'next/link';
 
 const InnerContainer = styled.main`
     display: grid;
@@ -62,16 +61,14 @@ export default function Home(): React.ReactElement {
                         variant="outlined"
                         label="Workspace Name"
                     />
-                    <Link href="/[id]/host">
-                        <Button
-                            style={{ gridArea: 'button' }}
-                            variant="contained"
-                            color="primary"
-                            onClick={() => router.push(`/${text}/host`)}
-                        >
-                            Join
-                        </Button>
-                    </Link>
+                    <Button
+                        style={{ gridArea: 'button' }}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => router.push(`/${encodeURIComponent(text)}/host`)}
+                    >
+                        Join
+                    </Button>
                 </Portal>
             </InnerContainer>
         </Container>

@@ -28,7 +28,7 @@ interface LoadingDetail {
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
 const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void } => {
-    const { data, mutate } = useSWR<Workspace['files']>(`/api/${workspaceId}/files`, fetcher);
+    const { data, mutate } = useSWR<Workspace['files']>(`/api/${encodeURIComponent(workspaceId)}/files`, fetcher);
 
     // TODO: Pusher.
 
@@ -38,21 +38,23 @@ const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void
 const useWorkspaceState = (
     workspaceId: string,
 ): { state: WorkspaceState | null; mutateState: (state: WorkspaceState) => void } => {
-    const { data, mutate } = useSWR<WorkspaceState>(`/api/${workspaceId}/state`, fetcher, {
+    const { data, mutate } = useSWR<WorkspaceState>(`/api/${encodeURIComponent(workspaceId)}/state`, fetcher, {
         refreshInterval: 1000,
         refreshWhenHidden: true,
     });
 
     const mutateState = (state: WorkspaceState) => {
         mutate(state, false);
-        Axios.post(`/api/${workspaceId}/state`, state).then((response) => mutate(response.data));
+        Axios.post(`/api/${encodeURIComponent(workspaceId)}/state`, state).then((response) => mutate(response.data));
     };
 
     return { state: data ?? null, mutateState };
 };
 
 export const useJobs = (workspaceId: string): { jobs: Job[]; mutateJobs: (jobs?: Job[]) => void } => {
-    const jobs = useSWR<Workspace['jobs']>(`/api/${workspaceId}/jobs`, fetcher, { refreshInterval: 500 });
+    const jobs = useSWR<Workspace['jobs']>(`/api/${encodeURIComponent(workspaceId)}/jobs`, fetcher, {
+        refreshInterval: 500,
+    });
     return { jobs: jobs.data ?? [], mutateJobs: jobs.mutate };
 };
 

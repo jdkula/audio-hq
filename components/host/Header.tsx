@@ -20,6 +20,7 @@ import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons'
 import { useRecoilState } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
+import { useRouter } from 'next/router';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -39,6 +40,7 @@ export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
+    const router = useRouter();
 
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
 
@@ -59,7 +61,11 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Toolbar>
                 <Box display="flex" width="100%" alignItems="center">
                     <Box flexGrow="1" display="flex" alignItems="center">
-                        <Typography variant={isSmall ? 'h5' : 'h4'}>
+                        <Typography
+                            variant={isSmall ? 'h5' : 'h4'}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => router.push('/')}
+                        >
                             Audio HQ – {workspace ? workspace.name : 'Loading...'}
                         </Typography>
                         {!isSmall && host && (
