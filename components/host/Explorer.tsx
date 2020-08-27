@@ -130,7 +130,7 @@ export const Explorer: FunctionComponent = (props) => {
             } else {
                 if (!result.destination || result.destination.droppableId === '___current___') return;
                 // folder
-                const folderName = result.destination.droppableId.replaceAll(/^___folder_/, '');
+                const folderName = result.destination.droppableId.replace(/^___folder_/, '');
                 const destPath =
                     folderName === '___back___'
                         ? srcFile.path.slice(0, srcFile.path.length - 1)
