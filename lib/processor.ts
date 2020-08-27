@@ -145,7 +145,7 @@ export async function convert(input: string, id?: string): Promise<string> {
     id && Jobs.set(id, (job) => ({ ...job, status: 'converting' }));
 
     return new Promise<string>((resolve, reject) => {
-        ffmpeg(input, { niceness: 0 })
+        ffmpeg(input, { niceness: 20 })
             .noVideo()
             .audioQuality(3)
             .on('error', async (err) => {

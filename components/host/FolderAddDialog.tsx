@@ -1,5 +1,5 @@
 import Axios from 'axios';
-import React, { FC, useState, useContext } from 'react';
+import React, { FC, useState, useContext, KeyboardEvent } from 'react';
 import { mutate } from 'swr';
 import { WorkspaceContext } from '~/pages/[id]/host';
 
@@ -22,11 +22,23 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
         await Promise.all(files.map((file) => fileManager.update(file.id, { path: [...file.path, name] })));
     };
 
+    const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.nativeEvent.code === 'Enter') {
+            e.preventDefault();
+            addFilesToFolder();
+        }
+    };
+
     return (
         <Dialog open={files.length > 0} onClose={doCancel}>
             <DialogTitle>Add Folder</DialogTitle>
             <DialogContent dividers>
-                <TextField value={name} onChange={(e) => setName(e.target.value)} label="Folder Name" />
+                <TextField
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={handleEnter}
+                    label="Folder Name"
+                />
             </DialogContent>
             <DialogActions>
                 <Button onClick={doCancel}>Cancel</Button>

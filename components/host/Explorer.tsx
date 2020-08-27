@@ -211,7 +211,7 @@ export const Explorer: FunctionComponent = (props) => {
                 </Box>
             </Box>
             <Divider />
-            <Box>{jobNotes}</Box>
+            <Box style={{ maxHeight: '200px', overflow: 'auto' }}>{jobNotes}</Box>
         </ExplorerContainer>
     );
 };
