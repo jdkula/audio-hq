@@ -9,6 +9,8 @@ import {
     Slider,
     IconButton,
     Tooltip,
+    useMediaQuery,
+    useTheme,
 } from '@material-ui/core';
 import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]/host';
 import { useContext, FunctionComponent, useState, FC } from 'react';
@@ -43,6 +45,9 @@ export const Header: FunctionComponent = () => {
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
+    const theme = useTheme();
+    const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+
     return (
         <AppBar position="relative" style={{ gridArea: 'header' }}>
             <Head>
@@ -51,10 +56,14 @@ export const Header: FunctionComponent = () => {
             <Toolbar>
                 <Box display="flex" width="100%" alignItems="center">
                     <Box flexGrow="1" display="flex" alignItems="center">
-                        <Typography variant="h4">Audio HQ – {workspace ? workspace.name : 'Loading...'}</Typography>
-                        <Box px={4}>
-                            <Typography variant="subtitle1">Host View</Typography>
-                        </Box>
+                        <Typography variant={isSmall ? 'h5' : 'h4'}>
+                            Audio HQ – {workspace ? workspace.name : 'Loading...'}
+                        </Typography>
+                        {!isSmall && (
+                            <Box px={4}>
+                                <Typography variant="subtitle1">Host View</Typography>
+                            </Box>
+                        )}
                     </Box>
                     <Box color="white">
                         <Tooltip title="Your Volume" placement="bottom" arrow>
@@ -80,13 +89,18 @@ export const Header: FunctionComponent = () => {
                             </Box>
                         </Popover>
                     </Box>
-                    <Box color="white">
-                        <Tooltip placement="bottom" title="Clear entire cache (shift click to activate)" arrow>
-                            <IconButton color="inherit" onClick={(e) => e.nativeEvent.shiftKey && fileManager.reset()}>
-                                <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
-                    </Box>
+                    {!isSmall && (
+                        <Box color="white">
+                            <Tooltip placement="bottom" title="Clear entire cache (shift click to activate)" arrow>
+                                <IconButton
+                                    color="inherit"
+                                    onClick={(e) => e.nativeEvent.shiftKey && fileManager.reset()}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    )}
                 </Box>
             </Toolbar>
         </AppBar>

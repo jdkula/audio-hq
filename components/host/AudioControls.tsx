@@ -28,9 +28,20 @@ export function toTimestamp(seconds: number): string {
 }
 
 const AudioControlsContainer = styled.div`
-    display: flex;
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: 1fr min-content;
     align-items: center;
-    min-width: 400px;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    width: 100%;
+    min-width: 500px;
+    @media only screen and (max-width: 550px) {
+        min-width: 300px;
+        grid-template-rows: auto auto;
+        grid-template-columns: 100%;
+    }
 `;
 
 export const AudioControls: FunctionComponent<{
@@ -69,75 +80,79 @@ export const AudioControls: FunctionComponent<{
 
     return (
         <AudioControlsContainer>
-            <Tooltip title={paused ? 'Play' : 'Pause'} placement="bottom" arrow>
-                <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
-            </Tooltip>
-            <Slider
-                value={seekTimestamp ?? time}
-                min={0}
-                max={duration}
-                step={1}
-                valueLabelDisplay="auto"
-                valueLabelFormat={(value) => <Box fontSize="7pt">{toTimestamp(value)}</Box>}
-                onChangeCommitted={(_, v) => finishSeek(v as number)}
-                onChange={(_, v) => setSeekTimestamp(v as number)}
-            />
-            <Box mx={2}>
-                <Typography variant="subtitle1">{toTimestamp(seekTimestamp ?? time)}</Typography>
-            </Box>
-            <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
-                <IconButton onClick={(e) => setAnchor(e.currentTarget)}>
-                    <VolumeButton volume={volume} />
-                </IconButton>
-            </Tooltip>
-            <Popover
-                open={!!anchorEl}
-                onClose={() => setAnchor(null)}
-                anchorEl={anchorEl}
-                transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            >
+            <Box display="flex" alignItems="center" width="100%">
+                <Tooltip title={paused ? 'Play' : 'Pause'} placement="bottom" arrow>
+                    <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+                </Tooltip>
                 <Slider
-                    value={volume ?? 0}
+                    value={seekTimestamp ?? time}
                     min={0}
-                    max={1}
-                    step={0.01}
-                    onChangeCommitted={(_, v) => resolver({ volume: v as number })}
-                    onChange={(_, v) => setTempVolume(v as number)}
-                    orientation="vertical"
-                    style={{ minHeight: '5rem', margin: '1rem' }}
-                />
-            </Popover>
-            <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
-                <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
-                    <SpeedIcon />
-                </IconButton>
-            </Tooltip>
-            <Popover
-                open={!!speedAnchorEl}
-                onClose={() => setSpeedAnchor(null)}
-                anchorEl={speedAnchorEl}
-                transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-            >
-                <Slider
-                    value={tempSpeed ?? 1}
-                    min={0.5}
-                    max={3}
-                    step={0.5}
-                    marks={true}
+                    max={duration}
+                    step={1}
                     valueLabelDisplay="auto"
-                    onChangeCommitted={(_, v) => resolver({ speed: v as number, timePlayed: time })}
-                    onChange={(_, v) => setTempSpeed(v as number)}
-                    orientation="vertical"
-                    style={{ minHeight: '5rem', margin: '4rem 1rem 1rem 1rem' }}
+                    valueLabelFormat={(value) => <Box fontSize="7pt">{toTimestamp(value)}</Box>}
+                    onChangeCommitted={(_, v) => finishSeek(v as number)}
+                    onChange={(_, v) => setSeekTimestamp(v as number)}
                 />
-            </Popover>
-            <Tooltip title="Stop playing" placement="bottom" arrow>
-                <IconButton onClick={() => resolver(null)}>
-                    <StopIcon />
-                </IconButton>
-            </Tooltip>
+                <Box mx={2}>
+                    <Typography variant="subtitle1">{toTimestamp(seekTimestamp ?? time)}</Typography>
+                </Box>
+            </Box>
+            <Box display="flex" alignItems="center">
+                <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
+                    <IconButton onClick={(e) => setAnchor(e.currentTarget)}>
+                        <VolumeButton volume={volume} />
+                    </IconButton>
+                </Tooltip>
+                <Popover
+                    open={!!anchorEl}
+                    onClose={() => setAnchor(null)}
+                    anchorEl={anchorEl}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Slider
+                        value={volume ?? 0}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onChangeCommitted={(_, v) => resolver({ volume: v as number })}
+                        onChange={(_, v) => setTempVolume(v as number)}
+                        orientation="vertical"
+                        style={{ minHeight: '5rem', margin: '1rem' }}
+                    />
+                </Popover>
+                <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
+                    <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
+                        <SpeedIcon />
+                    </IconButton>
+                </Tooltip>
+                <Popover
+                    open={!!speedAnchorEl}
+                    onClose={() => setSpeedAnchor(null)}
+                    anchorEl={speedAnchorEl}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Slider
+                        value={tempSpeed ?? 1}
+                        min={0.5}
+                        max={3}
+                        step={0.5}
+                        marks={true}
+                        valueLabelDisplay="auto"
+                        onChangeCommitted={(_, v) => resolver({ speed: v as number, timePlayed: time })}
+                        onChange={(_, v) => setTempSpeed(v as number)}
+                        orientation="vertical"
+                        style={{ minHeight: '5rem', margin: '4rem 1rem 1rem 1rem' }}
+                    />
+                </Popover>
+                <Tooltip title="Stop playing" placement="bottom" arrow>
+                    <IconButton onClick={() => resolver(null)}>
+                        <StopIcon />
+                    </IconButton>
+                </Tooltip>
+            </Box>
         </AudioControlsContainer>
     );
 };

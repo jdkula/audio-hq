@@ -1,4 +1,4 @@
-import { useEffect, FunctionComponent, createContext, useRef } from 'react';
+import { createContext, FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { Header } from '~/components/host/Header';
 import { NowPlaying } from '~/components/host/NowPlaying';
 import { Explorer } from '~/components/host/Explorer';
@@ -10,7 +10,8 @@ import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
-import { atom, RecoilRoot, useRecoilState } from 'recoil';
+import { atom, useRecoilState } from 'recoil';
+import { AppBar, Box, Tab, Tabs, useMediaQuery, useTheme } from '@material-ui/core';
 
 export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
 
@@ -32,18 +33,71 @@ const Container = styled.div`
 
     ${({ theme }) => theme.breakpoints.down('sm')} {
         grid-template-columns: 100%;
-        grid-template-rows: 65px 20% 40% auto;
+        grid-template-rows: 65px 45px auto;
         grid-template-areas:
             'header'
-            'nowplaying'
-            'ambience'
-            'explorer';
+            'tabs'
+            'tabcontent';
     }
 
     & > div {
         overflow: hidden;
     }
 `;
+
+const TabContainer = styled.div`
+    grid-area: tabcontent;
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: auto;
+    & > * {
+        grid-area: unset;
+    }
+`;
+
+const MainApp: FC = () => {
+    const { state, resolver } = useContext(WorkspaceContext);
+    const theme = useTheme();
+    const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const [tabValue, setTabValue] = useState(0);
+
+    const nowPlaying = <NowPlaying resolver={(update) => resolver({ playing: update })} state={state.playing} />;
+
+    if (isSmall) {
+        return (
+            <>
+                <Header />
+                <AppBar position="static" color="default" style={{ gridArea: 'tabs' }}>
+                    <Tabs variant="fullWidth" value={tabValue} onChange={(_, v) => setTabValue(v)}>
+                        <Tab label="Main" />
+                        <Tab label="Ambience" />
+                        <Tab label="Explorer" />
+                    </Tabs>
+                </AppBar>
+                <TabContainer>
+                    <TabContainer style={{ display: tabValue === 0 ? undefined : 'none' }}>{nowPlaying}</TabContainer>
+                    <TabContainer style={{ display: tabValue === 1 ? undefined : 'none' }}>
+                        <Ambience />
+                    </TabContainer>
+                    <TabContainer style={{ display: tabValue === 2 ? undefined : 'none' }}>
+                        <Explorer />
+                    </TabContainer>
+                </TabContainer>
+            </>
+        );
+    }
+    return (
+        <>
+            <Header />
+            {nowPlaying}
+            <Explorer />
+            <Ambience />
+            {/* <SoundFX /> */}
+            {/* <CurrentUsers /> */}
+        </>
+    );
+};
 
 const Host: FunctionComponent<{
     workspace: string;
@@ -91,12 +145,7 @@ const Host: FunctionComponent<{
         <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
             <FileManagerContext.Provider value={fileManager}>
                 <Container>
-                    <Header />
-                    <NowPlaying resolver={(update) => resolve({ playing: update })} state={workspace.state.playing} />
-                    <Explorer />
-                    <Ambience />
-                    {/* <SoundFX /> */}
-                    {/* <CurrentUsers /> */}
+                    <MainApp />
                 </Container>
             </FileManagerContext.Provider>
         </WorkspaceContext.Provider>

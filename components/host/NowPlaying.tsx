@@ -10,6 +10,9 @@ import PlayIcon from '@material-ui/icons/PlayArrow';
 const NowPlayingContainer = styled.div`
     grid-area: nowplaying;
 
+    padding: 1rem;
+    overflow: hidden;
+
     display: grid;
     grid-template-rows: min-content min-content;
     grid-template-columns: auto;
