@@ -188,7 +188,7 @@ const Host: FunctionComponent<{
                 <Head>
                     <title>Audio HQ - {props.workspace} - Loading...</title>
                 </Head>
-                <Box display="flex" flexDirection="column" alignItems="center" alignText="center">
+                <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
                     <Box mb="5rem">
                         <Typography variant="h2">Audio HQ</Typography>
                     </Box>
