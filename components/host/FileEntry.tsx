@@ -35,10 +35,13 @@ import { WorkspaceContext } from '../../pages/[id]';
 
 export const FileContainer = styled(Paper)`
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: auto 1fr auto;
     grid-template-rows: auto;
+    grid-template-areas: 'playcontrols details filecontrols';
+
     margin: 0.5rem 1rem;
-    border-radius: 9999px;
+    border-radius: 3rem;
+    overflow: hidden;
     padding: 0.25rem 0.25rem;
     transition: background-color 0.25s;
     align-content: center;
@@ -48,6 +51,15 @@ export const FileContainer = styled(Paper)`
     &:hover {
         background-color: #eee;
     }
+
+    ${({ theme }) => theme.breakpoints.down('xs')} {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+            'playcontrols filecontrols'
+            'details      details';
+        padding: 1rem 2rem;
+    }
 `;
 
 const StatusContainer = styled.div`
@@ -55,6 +67,14 @@ const StatusContainer = styled.div`
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: auto;
     align-items: center;
+`;
+
+const DetailsContainer = styled.div`
+    display: flex;
+    align-items: center;
+    grid-area: details;
+
+    padding: 0.33rem 1rem;
 `;
 
 const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = (props) =>
@@ -175,7 +195,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
             <Draggable draggableId={file.id} index={index}>
                 {(provided, snapshot) => (
                     <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
-                        <Box display="flex" alignItems="center">
+                        <Box display="flex" alignItems="center" gridArea="playcontrols">
                             <Tooltip title="Play File" placement="left" arrow>
                                 <IconButton onClick={onPlay}>
                                     {snapshot.combineTargetFor ? (
@@ -198,6 +218,8 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                     />
                                 </IconButton>
                             </Tooltip>
+                        </Box>
+                        <DetailsContainer>
                             <Box
                                 display="flex"
                                 alignItems="center"
@@ -255,10 +277,10 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                     </Box>
                                 )}
                             </Box>
-                        </Box>
-                        <Box textAlign="right" px={2}>
-                            <Typography variant="body1">{toTimestamp(file.length)}</Typography>
-                        </Box>
+                            <Box pl="1rem" textAlign="right" style={{ flexGrow: editing ? undefined : 1 }}>
+                                <Typography variant="body1">{toTimestamp(file.length)}</Typography>
+                            </Box>
+                        </DetailsContainer>
                         <StatusContainer>
                             <Tooltip placement="left" title="Rename" arrow>
                                 <IconButton onClick={() => (editing ? cancelEdits() : startEditing())}>

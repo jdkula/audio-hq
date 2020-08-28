@@ -106,7 +106,7 @@ export default function Home(): React.ReactElement {
                     </Button>
                 )}
             </InnerContainer>
-            <Box m={2} display="flex" alignItems="center">
+            <Box m={2} display="flex" alignItems="center" textAlign="center">
                 <Box m={2}>
                     <Link
                         href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.dmg"
