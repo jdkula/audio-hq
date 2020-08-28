@@ -3,7 +3,7 @@ import path from 'path';
 import ytdl from 'youtube-dl';
 
 import { v4 as uuidv4 } from 'uuid';
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg, { FilterSpecification } from 'fluent-ffmpeg';
 import { ObjectId } from 'mongodb';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { findOrCreateWorkspace } from '~/pages/api/[ws]';
@@ -166,10 +166,43 @@ export async function convert(input: string, id?: string, options?: ConvertOptio
         let length = 1;
         let ofDuration = 1;
 
+        const complexFilter: (FilterSpecification | string)[] = [
+            { filter: 'anull', inputs: ['0:a:0'], outputs: ['audio'] },
+        ];
+
         if (options?.cut) {
+            complexFilter.push({
+                filter: 'atrim',
+                options: options.cut.start + ':' + options.cut.end,
+                inputs: ['audio'],
+                outputs: ['audio'],
+            });
             ofDuration = options.cut.end - options.cut.start;
-            cmd = cmd.setStartTime(options.cut.start).setDuration(ofDuration);
         }
+
+        if (options?.fadeIn) {
+            complexFilter.push('aevalsrc=0:d=' + options.fadeIn + ' [ain_silence]');
+            complexFilter.push({
+                filter: 'acrossfade',
+                options: { d: options.fadeIn, curve1: 'losi', curve2: 'losi' },
+                inputs: ['ain_silence', 'audio'],
+                outputs: ['audio'],
+            });
+        }
+
+        if (options?.fadeOut) {
+            complexFilter.push('aevalsrc=0:d=' + options.fadeOut + ' [aout_silence]');
+            complexFilter.push({
+                filter: 'acrossfade',
+                options: { d: options.fadeOut, curve1: 'losi', curve2: 'losi' },
+                inputs: ['audio', 'aout_silence'],
+                outputs: ['audio'],
+            });
+        }
+
+        complexFilter.push({ filter: 'anull', inputs: ['audio'] });
+
+        cmd = cmd.complexFilter(complexFilter);
 
         cmd.on('error', async (err) => {
             reject(err);

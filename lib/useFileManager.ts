@@ -30,6 +30,8 @@ export interface ConvertOptions {
         start: number;
         end: number;
     };
+    fadeIn?: number;
+    fadeOut?: number;
 }
 
 async function* readBody(body: ReadableStream<Uint8Array>) {

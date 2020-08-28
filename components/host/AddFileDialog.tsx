@@ -54,6 +54,11 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const [startTime, setStartTime] = useState(0);
     const [endTime, setEndTime] = useState(3600);
 
+    const [shouldFadeIn, setShouldFadeIn] = useState(false);
+    const [shouldFadeOut, setShouldFadeOut] = useState(false);
+    const [fadeInTime, setFadeInTime] = useState(3);
+    const [fadeOutTime, setFadeOutTime] = useState(3);
+
     const fileManager = useContext(FileManagerContext);
 
     const doClose = () => {
@@ -64,12 +69,18 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         setShouldCut(true);
         setStartTime(0);
         setEndTime(3600);
+        setShouldFadeIn(false);
+        setShouldFadeOut(false);
+        setFadeInTime(3);
+        setFadeOutTime(3);
         props.onClose?.({}, 'escapeKeyDown');
     };
 
     const onUpload = () => {
         const options = {
             cut: shouldCut ? { start: startTime, end: endTime } : undefined,
+            fadeIn: shouldFadeIn ? fadeInTime : undefined,
+            fadeOut: shouldFadeOut ? fadeOutTime : undefined,
         };
         if (file) {
             fileManager.upload(name || file.name, file, currentPath, description, options);
@@ -215,7 +226,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                         Other Options
                     </AccordionSummary>
                     <AccordionDetails>
-                        <Box clone width="100%">
+                        <Box width="100%" display="flex" flexDirection="column">
                             <Accordion defaultExpanded>
                                 <AccordionSummary
                                     expandIcon={<ExpandMore />}
@@ -262,6 +273,98 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                                                 {timeOptionsInner}
                                             </Box>
                                         </Hidden>
+                                    </Box>
+                                </AccordionDetails>
+                            </Accordion>
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMore />}
+                                    id="fadein-header"
+                                    aria-controls="fadein-content"
+                                >
+                                    <Box display="flex" alignItems="center">
+                                        <Checkbox
+                                            aria-label="Fade In Checkbox"
+                                            onClick={(event) => event.stopPropagation()}
+                                            onFocus={(event) => event.stopPropagation()}
+                                            onChange={(e) => setShouldFadeIn(e.currentTarget.checked)}
+                                            checked={shouldFadeIn}
+                                        />
+                                        <Typography>Fade In</Typography>
+                                    </Box>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Box display="flex" alignItems="center" flexDirection="column" textAlign="center">
+                                        <Box mb="1rem">
+                                            <Typography>
+                                                Allow the audio track to fade in for the specified number of seconds at
+                                                its beginning.
+                                            </Typography>
+                                        </Box>
+                                        <Box display="flex" alignItems="center" justifyContent="center" width="100%">
+                                            <TextField
+                                                type="number"
+                                                variant="outlined"
+                                                label="Fade Time"
+                                                size="small"
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">seconds</InputAdornment>
+                                                    ),
+                                                }}
+                                                inputProps={{
+                                                    style: { maxWidth: '5rem' },
+                                                }}
+                                                value={fadeInTime}
+                                                onChange={(e) => setFadeInTime(parseInt(e.currentTarget.value))}
+                                            />
+                                        </Box>
+                                    </Box>
+                                </AccordionDetails>
+                            </Accordion>
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMore />}
+                                    id="fadein-header"
+                                    aria-controls="fadein-content"
+                                >
+                                    <Box display="flex" alignItems="center">
+                                        <Checkbox
+                                            aria-label="Fade Out Checkbox"
+                                            onClick={(event) => event.stopPropagation()}
+                                            onFocus={(event) => event.stopPropagation()}
+                                            onChange={(e) => setShouldFadeOut(e.currentTarget.checked)}
+                                            checked={shouldFadeOut}
+                                        />
+                                        <Typography>Fade Out</Typography>
+                                    </Box>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Box display="flex" alignItems="center" flexDirection="column" textAlign="center">
+                                        <Box mb="1rem">
+                                            <Typography>
+                                                Allow the audio track to fade out for the specified number of seconds at
+                                                its end.
+                                            </Typography>
+                                        </Box>
+                                        <Box display="flex" alignItems="center" justifyContent="center" width="100%">
+                                            <TextField
+                                                type="number"
+                                                variant="outlined"
+                                                label="Fade Time"
+                                                size="small"
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">seconds</InputAdornment>
+                                                    ),
+                                                }}
+                                                inputProps={{
+                                                    style: { maxWidth: '5rem' },
+                                                }}
+                                                value={fadeOutTime}
+                                                onChange={(e) => setFadeOutTime(parseInt(e.currentTarget.value))}
+                                            />
+                                        </Box>
                                     </Box>
                                 </AccordionDetails>
                             </Accordion>
