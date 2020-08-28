@@ -10,13 +10,26 @@ import { File as WSFile, Reorderable } from './Workspace';
 interface FileManager {
     track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
     reset: () => Promise<void>;
-    import: (name: string, url: string, path?: string[], description?: string) => Promise<Job>;
-    upload: (name: string, file: File, path?: string[], description?: string) => Promise<Job>;
+    import: (
+        name: string,
+        url: string,
+        path?: string[],
+        description?: string,
+        options?: ConvertOptions,
+    ) => Promise<Job>;
+    upload: (name: string, file: File, path?: string[], description?: string, options?: ConvertOptions) => Promise<Job>;
     delete: (id: string) => Promise<void>;
     update: (id: string, update: Partial<WSFile & Reorderable>) => Promise<void>;
     cached: Set<string>;
     fetching: Set<Job>;
     working: Set<Job>;
+}
+
+export interface ConvertOptions {
+    cut?: {
+        start: number;
+        end: number;
+    };
 }
 
 async function* readBody(body: ReadableStream<Uint8Array>) {
@@ -164,25 +177,40 @@ const useFileManager = (workspaceId: string): FileManager => {
         return url;
     };
 
-    const imp = async (name: string, url: string, currentPath?: string[], description?: string) => {
+    const imp = async (
+        name: string,
+        url: string,
+        currentPath?: string[],
+        description?: string,
+        options?: ConvertOptions,
+    ) => {
         const res = await Axios.post('/api/files/import', {
             workspace: workspaceId,
             name: name,
             url: url,
             path: currentPath,
             description: description,
+            options: options,
         });
         mutate(`/api/${workspaceId}/jobs`);
         return res.data;
     };
 
-    const upload = async (name: string, file: File, currentPath?: string[], description?: string) => {
+    const upload = async (
+        name: string,
+        file: File,
+        currentPath?: string[],
+        description?: string,
+        options?: ConvertOptions,
+    ) => {
         const formdata = new FormData();
         formdata.append('workspace', workspaceId);
         formdata.append('upload', file);
         formdata.append('name', name);
         description && formdata.append('description', description);
         currentPath && formdata.append('path', JSON.stringify(currentPath));
+        options && formdata.append('options', JSON.stringify(options));
+
         setWorking((working) =>
             working.add({ jobId: name, name, progress: 0, status: 'uploading', workspace: workspaceId }),
         );

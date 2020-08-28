@@ -2,7 +2,7 @@ import fs from 'promise-fs';
 import path from 'path';
 import ytdl from 'youtube-dl';
 
-import { uuid as uuidv4 } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
 import { ObjectId } from 'mongodb';
 import getAudioDurationInSeconds from 'get-audio-duration';
@@ -13,6 +13,7 @@ import { File } from './Workspace';
 import { spawn } from 'child_process';
 import Jobs, { Job } from './jobs';
 import { AppFS } from './filesystems/FileSystem';
+import type { ConvertOptions } from './useFileManager';
 
 const kBaseDir = '/tmp/audio-hq/storage';
 
@@ -93,7 +94,7 @@ export function processFile(
     return job;
 }
 
-export async function download(url: string, id?: string): Promise<string> {
+export async function download(url: string, id?: string, options?: ConvertOptions): Promise<string> {
     const basedir = kBaseDir;
 
     try {
@@ -133,7 +134,7 @@ export async function download(url: string, id?: string): Promise<string> {
                     .then((files) => files.find((f) => f.startsWith(uuid)))
                     .then((file) => {
                         if (!file) return null;
-                        else return convert(path.join(basedir, file), id);
+                        else return convert(path.join(basedir, file), id, options);
                     })
                     .then((converted) => {
                         if (!converted) reject('Conversion failed');
@@ -144,7 +145,7 @@ export async function download(url: string, id?: string): Promise<string> {
     });
 }
 
-export async function convert(input: string, id?: string): Promise<string> {
+export async function convert(input: string, id?: string, options?: ConvertOptions): Promise<string> {
     const basedir = kBaseDir;
 
     try {
@@ -160,19 +161,35 @@ export async function convert(input: string, id?: string): Promise<string> {
     id && Jobs.set(id, (job) => ({ ...job, status: 'converting' }));
 
     return new Promise<string>((resolve, reject) => {
-        ffmpeg(input, { niceness: 20 })
-            .noVideo()
-            .audioQuality(3)
-            .on('error', async (err) => {
-                reject(err);
-            })
+        let cmd = ffmpeg(input, { niceness: 20 }).noVideo().audioQuality(3);
+
+        let length = 1;
+        let ofDuration = 1;
+
+        if (options?.cut) {
+            ofDuration = options.cut.end - options.cut.start;
+            cmd = cmd.setStartTime(options.cut.start).setDuration(ofDuration);
+        }
+
+        cmd.on('error', async (err) => {
+            reject(err);
+        })
             .on('end', async () => {
                 await fs.unlink(input);
                 resolve(outPath);
             })
+            .on('codecData', (info) => {
+                length = fromTimestamp(info.duration);
+            })
             .on('progress', (info) => {
-                id && Jobs.set(id, (job) => ({ ...job, progress: info.percent / 100 }));
+                const percentBoost = options?.cut && ofDuration < length ? length / ofDuration : 1;
+                id && Jobs.set(id, (job) => ({ ...job, progress: (info.percent / 100) * percentBoost }));
             })
             .save(outPath);
     });
+}
+
+function fromTimestamp(ffmpegTimestamp: string): number {
+    const [hour, minute, seconds] = ffmpegTimestamp.split(':').map(parseFloat);
+    return hour * 3600 + minute * 60 + seconds;
 }

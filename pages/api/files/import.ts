@@ -9,7 +9,7 @@ const Import: NextApiHandler = async (req, res) => {
 
     const job = processFile(
         { name: req.body.name, description: req.body.description, workspace: req.body.workspace, path: req.body.path },
-        (id) => download(req.body.url, id),
+        (id) => download(req.body.url, id, req.body.options),
     );
 
     res.status(200).send(job);

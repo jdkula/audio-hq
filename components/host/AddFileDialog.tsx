@@ -1,11 +1,18 @@
 import {
+    Accordion,
+    AccordionActions,
+    AccordionDetails,
+    AccordionSummary,
     Box,
     Button,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
     DialogProps,
     DialogTitle,
+    FormControlLabel,
+    InputAdornment,
     Paper,
     TextField,
     Typography,
@@ -14,6 +21,7 @@ import React, { FC, useContext, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FileManagerContext } from '~/lib/useFileManager';
 import styled from 'styled-components';
+import { ExpandMore } from '@material-ui/icons';
 
 const DropRoot = styled.div<{ isDragActive?: boolean }>`
     flex: 1;
@@ -41,21 +49,31 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const [file, setFile] = useState<File | null>(null);
     const [description, setDescription] = useState('');
 
+    const [shouldCut, setShouldCut] = useState(true);
+    const [startTime, setStartTime] = useState(0);
+    const [endTime, setEndTime] = useState(3600);
+
     const fileManager = useContext(FileManagerContext);
 
     const doClose = () => {
         setUrl('');
         setName('');
         setFile(null);
+        setShouldCut(true);
+        setStartTime(0);
+        setEndTime(3600);
         props.onClose?.({}, 'escapeKeyDown');
     };
 
     const onUpload = () => {
+        const options = {
+            cut: shouldCut ? { start: startTime, end: endTime } : undefined,
+        };
         if (file) {
-            fileManager.upload(name || file.name, file, currentPath, description);
+            fileManager.upload(name || file.name, file, currentPath, description, options);
             doClose();
         } else if (name) {
-            fileManager.import(name, url, currentPath, description);
+            fileManager.import(name, url, currentPath, description, options);
             doClose();
         }
     };
@@ -103,7 +121,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     }
                     helperText={notifyEnterName ? 'Please enter a track title!' : undefined}
                 />
-                <Box m={1} />
+                <Box m="0.5rem" />
                 <TextField
                     id="track-description"
                     value={description}
@@ -115,32 +133,119 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                 />
                 <Box m="1rem" />
 
-                <Paper variant="outlined">
-                    <Box m="0.5rem">
-                        {!url && (
-                            <DropRoot {...getRootProps()} isDragActive={isDragActive}>
-                                <input {...getInputProps()} />
-                                {fileInfo}
-                            </DropRoot>
-                        )}
+                <Accordion defaultExpanded>
+                    <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        id="uploadimport-header"
+                        aria-controls="uploadimport-content"
+                    >
+                        Upload {'&'} Import *
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box m="0.5rem" width="100%">
+                            {!url && (
+                                <DropRoot {...getRootProps()} isDragActive={isDragActive}>
+                                    <input {...getInputProps()} />
+                                    {fileInfo}
+                                </DropRoot>
+                            )}
 
-                        {!url && !file && (
-                            <Box textAlign="center" style={{ margin: '1rem' }}>
-                                - or, import from a website (youtube, etc.) -
-                            </Box>
-                        )}
-                        {!file && (
-                            <TextField
-                                value={url}
-                                id="track-url"
-                                variant="outlined"
-                                fullWidth
-                                onChange={(e) => setUrl(e.target.value)}
-                                label="URL"
-                            />
-                        )}
-                    </Box>
-                </Paper>
+                            {!url && !file && (
+                                <Box textAlign="center" style={{ margin: '1rem' }}>
+                                    - or, import from a website (youtube, etc.) -
+                                </Box>
+                            )}
+                            {!file && (
+                                <TextField
+                                    value={url}
+                                    id="track-url"
+                                    variant="outlined"
+                                    fullWidth
+                                    onChange={(e) => setUrl(e.target.value)}
+                                    label="URL"
+                                />
+                            )}
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        id="otheroptions-header"
+                        aria-controls="otheroptions-content"
+                    >
+                        Other Options
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box clone width="100%">
+                            <Accordion defaultExpanded>
+                                <AccordionSummary
+                                    expandIcon={<ExpandMore />}
+                                    id="cut-header"
+                                    aria-controls="cut-content"
+                                >
+                                    <Box display="flex" alignItems="center">
+                                        <Checkbox
+                                            aria-label="Time Cut Checkbox"
+                                            onClick={(event) => event.stopPropagation()}
+                                            onFocus={(event) => event.stopPropagation()}
+                                            onChange={(e) => setShouldCut(e.currentTarget.checked)}
+                                            checked={shouldCut}
+                                        />
+                                        <Typography>Time Cut</Typography>
+                                    </Box>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Box display="flex" alignItems="center" flexDirection="column" textAlign="center">
+                                        <Box mb="1rem">
+                                            <Typography>
+                                                Audio HQ, by default, cuts tracks to be at most 1 hour long. You can
+                                                change or disable that here.
+                                            </Typography>
+                                        </Box>
+                                        <Box display="flex" alignItems="center" justifyContent="center" width="100%">
+                                            <TextField
+                                                type="number"
+                                                variant="outlined"
+                                                label="Start Time"
+                                                size="small"
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">seconds</InputAdornment>
+                                                    ),
+                                                }}
+                                                inputProps={{
+                                                    style: { maxWidth: '5rem' },
+                                                }}
+                                                value={startTime}
+                                                onChange={(e) => setStartTime(parseInt(e.currentTarget.value))}
+                                            />
+                                            <Box m="0.5rem">
+                                                <Typography>to</Typography>
+                                            </Box>
+                                            <TextField
+                                                type="number"
+                                                variant="outlined"
+                                                label="End Time"
+                                                size="small"
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">seconds</InputAdornment>
+                                                    ),
+                                                }}
+                                                inputProps={{
+                                                    style: { maxWidth: '5rem' },
+                                                }}
+                                                value={endTime}
+                                                onChange={(e) => setEndTime(parseInt(e.currentTarget.value))}
+                                            />
+                                        </Box>
+                                    </Box>
+                                </AccordionDetails>
+                            </Accordion>
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
             </DialogContent>
             <DialogActions>
                 {file && <Button onClick={() => setFile(null)}>Clear</Button>}
