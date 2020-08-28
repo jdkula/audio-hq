@@ -66,7 +66,8 @@ const StatusContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: auto;
-    align-items: center;
+    align-items: flex-end;
+    justify-items: center;
 `;
 
 const DetailsContainer = styled.div`
@@ -199,7 +200,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
             <Draggable draggableId={file.id} index={index}>
                 {(provided, snapshot) => (
                     <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
-                        <Box display="flex" alignItems="center" gridArea="playcontrols">
+                        <Box display="flex" alignItems="center" justifyItems="center" gridArea="playcontrols">
                             <Tooltip title="Play File" placement="left" arrow>
                                 <IconButton onClick={onPlay}>
                                     {snapshot.combineTargetFor ? (
@@ -289,45 +290,47 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                 <Typography variant="body1">{toTimestamp(file.length)}</Typography>
                             </Box>
                         </DetailsContainer>
-                        <StatusContainer>
-                            <Tooltip placement="left" title="Rename" arrow>
-                                <IconButton onClick={() => (editing ? cancelEdits() : startEditing())}>
-                                    <EditIcon color={editing ? 'primary' : undefined} />
-                                </IconButton>
-                            </Tooltip>
-                            {downloadJob && (
-                                <Tooltip placement="left" title="Downloading..." arrow>
-                                    {downloadJob.progress ? (
-                                        <CircularProgressVisibleBackground
-                                            variant="static"
-                                            value={downloadJob.progress * 100}
-                                        />
-                                    ) : (
-                                        <CircularProgressVisibleBackground />
-                                    )}
-                                </Tooltip>
-                            )}
-                            {cached && (
-                                <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
-                                    <IconButton onClick={save}>
-                                        <OfflinePinIcon />
+                        <Box display="flex" justifyContent="flex-end">
+                            <StatusContainer>
+                                <Tooltip placement="left" title="Rename" arrow>
+                                    <IconButton onClick={() => (editing ? cancelEdits() : startEditing())}>
+                                        <EditIcon color={editing ? 'primary' : undefined} />
                                     </IconButton>
                                 </Tooltip>
-                            )}
-                            {!downloadJob && !cached && (
-                                <Tooltip placement="left" title="Audio on the cloud (click to cache)" arrow>
-                                    <IconButton onClick={download}>
-                                        <DownloadIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
+                                {downloadJob && (
+                                    <Tooltip placement="left" title="Downloading..." arrow>
+                                        {downloadJob.progress ? (
+                                            <CircularProgressVisibleBackground
+                                                variant="static"
+                                                value={downloadJob.progress * 100}
+                                            />
+                                        ) : (
+                                            <CircularProgressVisibleBackground />
+                                        )}
+                                    </Tooltip>
+                                )}
+                                {cached && (
+                                    <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
+                                        <IconButton onClick={save}>
+                                            <OfflinePinIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                {!downloadJob && !cached && (
+                                    <Tooltip placement="left" title="Audio on the cloud (click to cache)" arrow>
+                                        <IconButton onClick={download}>
+                                            <DownloadIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
 
-                            <Tooltip placement="left" title="Delete" arrow>
-                                <IconButton onClick={() => setDelete(true)}>
-                                    <DeleteForever />
-                                </IconButton>
-                            </Tooltip>
-                        </StatusContainer>
+                                <Tooltip placement="left" title="Delete" arrow>
+                                    <IconButton onClick={() => setDelete(true)}>
+                                        <DeleteForever />
+                                    </IconButton>
+                                </Tooltip>
+                            </StatusContainer>
+                        </Box>
                     </FileContainer>
                 )}
             </Draggable>
