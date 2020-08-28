@@ -139,15 +139,18 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState(file.name);
     const [editDescription, setEditDescription] = useState(file.description);
+    const [autoFocusTitle, setAutoFocusTitle] = useState(true);
 
-    const startEditing = () => {
+    const startEditing = (withTitle = true) => {
         setEditName(file.name);
         setEditDescription(file.description);
         setEditing(true);
+        setAutoFocusTitle(withTitle);
     };
 
     const saveEdits = () => {
         setEditing(false);
+        setAutoFocusTitle(true);
         fileManager.update(file.id, {
             name: editName,
             description: editDescription,
@@ -158,6 +161,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
         setEditName(file.name);
         setEditDescription(file.description);
         setEditing(false);
+        setAutoFocusTitle(true);
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -220,19 +224,14 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                             </Tooltip>
                         </Box>
                         <DetailsContainer>
-                            <Box
-                                display="flex"
-                                alignItems="center"
-                                style={{ flexGrow: editing ? 1 : undefined, cursor: editing ? undefined : 'text' }}
-                                onDoubleClick={startEditing}
-                            >
+                            <Box display="flex" alignItems="center" flexGrow={1}>
                                 {editing ? (
                                     <>
                                         <Box display="flex" flexDirection="column" flexGrow={1}>
                                             <TextField
                                                 id={file.id + '-title'}
                                                 fullWidth
-                                                autoFocus
+                                                autoFocus={autoFocusTitle}
                                                 variant="outlined"
                                                 label="Title"
                                                 value={editName}
@@ -243,6 +242,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                             <TextField
                                                 id={file.id + '-description'}
                                                 fullWidth
+                                                autoFocus={!autoFocusTitle}
                                                 size="small"
                                                 variant="outlined"
                                                 label="Description"
@@ -269,12 +269,18 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                         </Box>
                                     </>
                                 ) : (
-                                    <Box display="flex" flexDirection="column">
-                                        <Typography variant="body1" component="span">
+                                    <Box display="flex" flexDirection="column" style={{ cursor: 'text' }}>
+                                        <Typography
+                                            variant="body1"
+                                            component="span"
+                                            onDoubleClick={() => startEditing(true)}
+                                        >
                                             {file.name || 'Untitled file...'}
                                         </Typography>
                                         {file.description && (
-                                            <Typography variant="caption">{file.description}</Typography>
+                                            <Typography variant="caption" onDoubleClick={() => startEditing(false)}>
+                                                {file.description}
+                                            </Typography>
                                         )}
                                     </Box>
                                 )}
