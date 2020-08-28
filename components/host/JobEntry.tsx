@@ -45,12 +45,17 @@ const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job, onCanceled }
                     </Tooltip>
                 </Box>
             </JobInnerContainer>
-            {job.progress !== null && job.status !== 'started' && job.status !== 'done' && (
-                <LinearProgress variant="determinate" value={percent} />
-            )}
-            {job.status !== 'error' && (job.progress === null || job.status === 'done' || job.status === 'started') && (
-                <LinearProgress variant="indeterminate" />
-            )}
+            {job.progress !== null &&
+                job.status !== 'started' &&
+                job.status !== 'done' &&
+                job.progress !== 0 &&
+                job.progress !== 100 && <LinearProgress variant="determinate" value={percent} />}
+            {job.status !== 'error' &&
+                (job.progress === null ||
+                    job.progress === 0 ||
+                    job.progress === 100 ||
+                    job.status === 'done' ||
+                    job.status === 'started') && <LinearProgress variant="indeterminate" />}
             {job.status === 'error' && <LinearProgress color="secondary" variant="determinate" value={100} />}
         </JobContainer>
     );
