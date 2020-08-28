@@ -84,6 +84,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
             <DialogTitle>Add a track!</DialogTitle>
             <DialogContent dividers style={{ minWidth: '300px' }}>
                 <TextField
+                    id="track-title"
                     value={name}
                     fullWidth
                     autoFocus
@@ -104,6 +105,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                 />
                 <Box m={1} />
                 <TextField
+                    id="track-description"
                     value={description}
                     fullWidth
                     autoFocus
@@ -131,10 +133,11 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                         {!file && (
                             <TextField
                                 value={url}
+                                id="track-url"
                                 variant="outlined"
                                 fullWidth
                                 onChange={(e) => setUrl(e.target.value)}
-                                label="Link"
+                                label="URL"
                             />
                         )}
                     </Box>

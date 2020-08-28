@@ -230,6 +230,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                     <>
                                         <Box display="flex" flexDirection="column" flexGrow={1}>
                                             <TextField
+                                                id={file.id + '-title'}
                                                 fullWidth
                                                 autoFocus
                                                 variant="outlined"
@@ -240,6 +241,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                                             />
                                             <Box m={0.5} />
                                             <TextField
+                                                id={file.id + '-description'}
                                                 fullWidth
                                                 size="small"
                                                 variant="outlined"

@@ -167,6 +167,7 @@ export const Explorer: FunctionComponent = (props) => {
                         {searching ? (
                             <Box display="flex" alignItems="center">
                                 <TextField
+                                    id="search-bar"
                                     autoFocus
                                     variant="filled"
                                     value={searchText}

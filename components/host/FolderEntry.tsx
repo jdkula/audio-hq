@@ -144,6 +144,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                         placement="top"
                                     >
                                         <TextField
+                                            id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
                                             fullWidth
                                             autoFocus
                                             label="Name"

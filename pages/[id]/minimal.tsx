@@ -69,6 +69,8 @@ const MajorVolumeControls: FC = () => {
                         max={1}
                         step={0.01}
                         value={globalVolume}
+                        aria-label="Master Volume Control"
+                        getAriaValueText={(value) => 'Volume Level ' + Math.floor(value * 100) + '%'}
                         onChange={(_, val) => setGlobalVolume(val as number)}
                     />
                 </Box>

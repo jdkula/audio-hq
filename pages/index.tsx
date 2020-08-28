@@ -89,6 +89,7 @@ export default function Home(): React.ReactElement {
                 </Logo>
                 <TextField
                     style={{ gridArea: 'input' }}
+                    id="workspace-input"
                     fullWidth
                     autoFocus
                     value={text}
