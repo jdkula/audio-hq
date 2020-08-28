@@ -52,6 +52,7 @@ const TabContainer = styled.div`
     grid-template-columns: auto;
     & > * {
         grid-area: unset;
+        overflow: auto;
     }
 `;
 

@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Container, Divider, Link, Typography } from '@material-ui/core';
+import { Box, CircularProgress, Container, Divider, Link, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import { KeyboardEvent, useState } from 'react';
 
@@ -42,7 +42,7 @@ const InnerContainer = styled.main`
     align-items: center;
     align-content: center;
     justify-content: center;
-    justify-items: stretch;
+    justify-items: center;
 `;
 
 const Logo = styled.div`
@@ -55,8 +55,11 @@ export default function Home(): React.ReactElement {
     const [text, setText] = useState('');
     const router = useRouter();
 
+    const [loading, setLoading] = useState(false);
+
     const go = () => {
-        router.push('/[id]', `/${encodeURIComponent(text)}`);
+        setLoading(true);
+        router.push('/[id]', `/${encodeURIComponent(text)}`).finally(() => setLoading(false));
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -80,22 +83,28 @@ export default function Home(): React.ReactElement {
                 </Logo>
                 <TextField
                     style={{ gridArea: 'input' }}
+                    fullWidth
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={enterListener}
                     variant="outlined"
                     label="Workspace Name"
+                    disabled={loading}
                 />
-                <Button
-                    style={{ gridArea: 'button' }}
-                    fullWidth
-                    size="large"
-                    variant="contained"
-                    color="primary"
-                    onClick={go}
-                >
-                    Join
-                </Button>
+                {loading ? (
+                    <CircularProgress variant="indeterminate" />
+                ) : (
+                    <Button
+                        style={{ gridArea: 'button' }}
+                        fullWidth
+                        size="large"
+                        variant="contained"
+                        color="primary"
+                        onClick={go}
+                    >
+                        Join
+                    </Button>
+                )}
             </InnerContainer>
             <Box m={2} display="flex" alignItems="center">
                 <Box m={2}>

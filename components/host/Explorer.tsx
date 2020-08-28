@@ -165,7 +165,7 @@ export const Explorer: FunctionComponent = (props) => {
                     </Box>
                     <Box>
                         {searching ? (
-                            <>
+                            <Box display="flex" alignItems="center">
                                 <TextField
                                     autoFocus
                                     variant="filled"
@@ -185,7 +185,7 @@ export const Explorer: FunctionComponent = (props) => {
                                         <CloseIcon />
                                     </IconButton>
                                 </Tooltip>
-                            </>
+                            </Box>
                         ) : (
                             <Tooltip placement="left" title="Search all files and folders" arrow>
                                 <IconButton onClick={() => setSearching(true)}>
