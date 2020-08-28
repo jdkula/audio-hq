@@ -110,7 +110,11 @@ const MainApp: FC = () => {
                 gridArea="tabcontent"
                 textAlign="center"
             >
-                <Typography variant="h4">Listening to: {name}</Typography>
+                {players.length > 0 ? (
+                    <Typography variant="h4">Listening to: {name}</Typography>
+                ) : (
+                    <Typography variant="h4">{name}</Typography>
+                )}
                 <Typography variant="subtitle1">Adjust your volume below.</Typography>
                 <MajorVolumeControls />
                 {blocked && (
@@ -137,13 +141,13 @@ const Host: FunctionComponent<{
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
 
-    const currentlyPlaying = workspace?.files.find((file) => file.id === workspace.state.playing?.id);
+    const currentlyPlaying = workspace?.state.playing || (workspace?.state.ambience.length ?? 0) > 0;
 
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentlyPlaying?.name ?? 'Nothing Playing',
-                artist: `Audio HQ - ${props.workspace}`,
+                title: currentlyPlaying ? `${props.workspace}` : `${props.workspace}: Nothing Playing`,
+                artist: `Audio HQ`,
             });
         }
     }, [props.workspace, currentlyPlaying]);

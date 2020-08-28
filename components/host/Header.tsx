@@ -51,13 +51,14 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+    const isXSmall = useMediaQuery(theme.breakpoints.down('xs'));
 
     return (
         <AppBar position="static" style={{ gridArea: 'header' }}>
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
-                    {!host ? ' – Micro View' : ''}
+                    {!host ? ' – Player View' : ''}
                 </title>
             </Head>
             <Toolbar>
@@ -72,13 +73,13 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         </Typography>
                         {!isSmall && !host && (
                             <Box px={4}>
-                                <Typography variant="subtitle1">Micro View</Typography>
+                                <Typography variant="subtitle1">Player View</Typography>
                             </Box>
                         )}
                     </Box>
                     {host && (
                         <Box color="white" display="flex" alignItems="center">
-                            <Typography variant="body1">Your Volume Controls</Typography>
+                            {!isXSmall && <Typography variant="body1">Your Volume Controls</Typography>}
                             <Tooltip title="Your Volume" placement="bottom" arrow>
                                 <IconButton
                                     color="inherit"

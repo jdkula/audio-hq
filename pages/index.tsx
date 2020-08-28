@@ -57,15 +57,17 @@ export default function Home(): React.ReactElement {
 
     const [loading, setLoading] = useState(false);
 
-    const go = () => {
+    const go = (player: boolean) => {
         setLoading(true);
-        router.push('/[id]', `/${encodeURIComponent(text)}`).finally(() => setLoading(false));
+        router
+            .push(`/[id]${player ? '/player' : ''}`, `/${encodeURIComponent(text)}${player ? '/player' : ''}`)
+            .finally(() => setLoading(false));
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
             e.preventDefault();
-            go();
+            go(false);
         }
     };
 
@@ -94,16 +96,15 @@ export default function Home(): React.ReactElement {
                 {loading ? (
                     <CircularProgress variant="indeterminate" />
                 ) : (
-                    <Button
-                        style={{ gridArea: 'button' }}
-                        fullWidth
-                        size="large"
-                        variant="contained"
-                        color="primary"
-                        onClick={go}
-                    >
-                        Join
-                    </Button>
+                    <Box gridArea="button" display="flex" flexDirection="column" alignItems="center" width="100%">
+                        <Button fullWidth size="large" variant="contained" color="primary" onClick={() => go(false)}>
+                            Join
+                        </Button>
+                        <Box m="2px" />
+                        <Button size="small" variant="outlined" onClick={() => go(true)}>
+                            Join Player View
+                        </Button>
+                    </Box>
                 )}
             </InnerContainer>
             <Box m={2} display="flex" alignItems="center" textAlign="center">
