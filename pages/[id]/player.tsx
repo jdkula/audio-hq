@@ -60,7 +60,9 @@ const MajorVolumeControls: FC = () => {
                 display="flex"
                 alignItems="center"
             >
-                <VolumeButton volume={globalVolume} />
+                <Box mr="1rem">
+                    <VolumeButton volume={globalVolume} />
+                </Box>
                 <Box flexGrow={1}>
                     <Slider
                         min={0}
