@@ -8,6 +8,10 @@
     "start": "next start -p $PORT",
     "lint": "eslint pages/ lib/ components/ --ext .jsx,.js,.ts,.tsx --quiet"
   },
+  "cacheDirectories": [
+    "node_modules/",
+    ".next/cache/"
+  ],
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "@ffprobe-installer/ffprobe": "^1.0.12",
