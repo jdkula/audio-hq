@@ -3,7 +3,7 @@ import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, CircularProgress, Container, Divider, Link, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import { KeyboardEvent, useState } from 'react';
+import { KeyboardEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
@@ -52,16 +52,20 @@ const Logo = styled.div`
 `;
 
 export default function Home(): React.ReactElement {
-    const [text, setText] = useState('');
     const router = useRouter();
+    const last = router.query.last;
+
+    const [text, setText] = useState('');
+
+    useEffect(() => {
+        last && setText(last as string);
+    }, [router]);
 
     const [loading, setLoading] = useState(false);
 
     const go = (minimal: boolean) => {
         setLoading(true);
-        router
-            .push(`/[id]${minimal ? '/minimal' : ''}`, `/${encodeURIComponent(text)}${minimal ? '/minimal' : ''}`)
-            .finally(() => setLoading(false));
+        router.push(`/[id]${minimal ? '/minimal' : ''}`, `/${encodeURIComponent(text)}${minimal ? '/minimal' : ''}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -86,6 +90,7 @@ export default function Home(): React.ReactElement {
                 <TextField
                     style={{ gridArea: 'input' }}
                     fullWidth
+                    autoFocus
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={enterListener}

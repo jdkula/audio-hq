@@ -67,7 +67,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         <Typography
                             variant={isSmall ? 'h5' : 'h4'}
                             style={{ cursor: 'pointer' }}
-                            onClick={() => router.push('/')}
+                            onClick={() => router.push(`/?last=${encodeURIComponent(workspace.name)}`)}
                         >
                             Audio HQ – {workspace ? workspace.name : 'Loading...'}
                         </Typography>
