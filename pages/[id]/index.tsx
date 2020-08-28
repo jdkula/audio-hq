@@ -12,6 +12,7 @@ import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { atom, useRecoilState } from 'recoil';
 import { AppBar, Box, CircularProgress, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@material-ui/core';
+import Head from 'next/head';
 
 export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
 
@@ -151,7 +152,10 @@ const Host: FunctionComponent<{
                 justifyContent="center"
                 justifyItems="center"
             >
-                <Box display="flex" flexDirection="column" alignItems="center">
+                <Head>
+                    <title>Audio HQ - {props.workspace} - Loading...</title>
+                </Head>
+                <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
                     <Box mb="5rem">
                         <Typography variant="h2">Audio HQ</Typography>
                     </Box>

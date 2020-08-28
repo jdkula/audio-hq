@@ -12,6 +12,7 @@ import { useRecoilState } from 'recoil';
 import { globalVolumeAtom, WorkspaceContext } from '.';
 import { AudioControls } from '../../components/host/AudioControls';
 import { Box, CircularProgress, IconButton, LinearProgress, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
+import Head from 'next/head';
 
 const Container = styled.div`
     display: grid;
@@ -184,7 +185,10 @@ const Host: FunctionComponent<{
                 justifyContent="center"
                 justifyItems="center"
             >
-                <Box display="flex" flexDirection="column" alignItems="center">
+                <Head>
+                    <title>Audio HQ - {props.workspace} - Loading...</title>
+                </Head>
+                <Box display="flex" flexDirection="column" alignItems="center" alignText="center">
                     <Box mb="5rem">
                         <Typography variant="h2">Audio HQ</Typography>
                     </Box>
