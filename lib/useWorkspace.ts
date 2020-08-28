@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Workspace, WorkspaceUpdate, updatePlayState, File, WorkspaceState, WorkspaceResolver } from './Workspace';
 import Axios from 'axios';
 import useSWR from 'swr';
@@ -6,10 +5,7 @@ import type { Job } from './jobs';
 
 interface WorkspaceHookResult {
     workspace: Workspace | null;
-    loading: {
-        files: LoadingDetail[];
-        workspace: boolean;
-    };
+    loading: boolean;
     resolve: WorkspaceResolver;
 }
 
@@ -27,19 +23,19 @@ interface LoadingDetail {
 
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
-const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void } => {
+const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void; loading: boolean } => {
     const { data, mutate } = useSWR<Workspace['files']>(`/api/${encodeURIComponent(workspaceId)}/files`, fetcher, {
         refreshInterval: 2000,
     });
 
     // TODO: Pusher.
 
-    return { files: data ?? [], changeFiles: mutate };
+    return { files: data ?? [], changeFiles: mutate, loading: data === undefined };
 };
 
 const useWorkspaceState = (
     workspaceId: string,
-): { state: WorkspaceState | null; mutateState: (state: WorkspaceState) => void } => {
+): { state: WorkspaceState | null; mutateState: (state: WorkspaceState) => void; loading: boolean } => {
     const { data, mutate } = useSWR<WorkspaceState>(`/api/${encodeURIComponent(workspaceId)}/state`, fetcher, {
         refreshInterval: 1000,
         refreshWhenHidden: true,
@@ -50,7 +46,7 @@ const useWorkspaceState = (
         Axios.post(`/api/${encodeURIComponent(workspaceId)}/state`, state).then((response) => mutate(response.data));
     };
 
-    return { state: data ?? null, mutateState };
+    return { state: data ?? null, mutateState, loading: data === undefined };
 };
 
 export const useJobs = (workspaceId: string): { jobs: Job[]; mutateJobs: (jobs?: Job[]) => void } => {
@@ -62,12 +58,9 @@ export const useJobs = (workspaceId: string): { jobs: Job[]; mutateJobs: (jobs?:
 };
 
 const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
-    const { files } = useFiles(workspaceId);
-    const { state, mutateState } = useWorkspaceState(workspaceId);
+    const { files, loading: filesLoading } = useFiles(workspaceId);
+    const { state, mutateState, loading: stateLoading } = useWorkspaceState(workspaceId);
     const { jobs } = useJobs(workspaceId);
-
-    const [filesLoading] = useState<LoadingDetail[]>([]);
-    const [workspaceLoading] = useState(true);
 
     const resolve = async (update: WorkspaceUpdate) => {
         if (state === null) return;
@@ -105,11 +98,8 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
                       name: workspaceId,
                       jobs: jobs,
                   },
-        loading: {
-            files: filesLoading,
-            workspace: workspaceLoading,
-        },
         resolve,
+        loading: stateLoading || filesLoading,
     };
 };
 

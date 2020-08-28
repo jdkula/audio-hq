@@ -11,7 +11,7 @@ import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom, WorkspaceContext } from '.';
 import { AudioControls } from '../../components/host/AudioControls';
-import { Box, IconButton, LinearProgress, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
+import { Box, CircularProgress, IconButton, LinearProgress, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 
 const Container = styled.div`
     display: grid;
@@ -140,7 +140,7 @@ const MainApp: FC = () => {
 const Host: FunctionComponent<{
     workspace: string;
 }> = (props) => {
-    const { workspace, resolve } = useWorkspace(props.workspace);
+    const { workspace, resolve, loading } = useWorkspace(props.workspace);
     const fileManager = useFileManager(props.workspace);
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
@@ -173,8 +173,31 @@ const Host: FunctionComponent<{
         }
     }, [resolve, globalVolume, setGlobalVolume]);
 
-    if (!workspace?.state) return null;
-
+    if (!workspace?.state || loading) {
+        return (
+            <Box
+                display="grid"
+                minHeight="100vh"
+                minWidth="100vw"
+                alignContent="center"
+                alignItems="center"
+                justifyContent="center"
+                justifyItems="center"
+            >
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    <Box mb="5rem">
+                        <Typography variant="h2">Audio HQ</Typography>
+                    </Box>
+                    <CircularProgress />
+                    <Box m="2rem">
+                        <Typography variant="h4">
+                            Loading Workspace <strong>{props.workspace}</strong>...
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
+        );
+    }
     return (
         <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
             <FileManagerContext.Provider value={fileManager}>
