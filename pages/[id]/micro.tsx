@@ -1,4 +1,4 @@
-import { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { Header, VolumeButton } from '~/components/host/Header';
 import { Explorer } from '~/components/host/Explorer';
 import { Ambience } from '~/components/host/Ambience';
@@ -11,15 +11,24 @@ import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom, WorkspaceContext } from '.';
 import { AudioControls } from '../../components/host/AudioControls';
-import { Box, IconButton, LinearProgress, Popover, Slider, Tooltip } from '@material-ui/core';
+import { Box, IconButton, LinearProgress, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 
 const Container = styled.div`
     display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: 65px auto;
+    grid-template-columns: auto;
+    grid-template-rows: auto 1fr min-content;
     grid-template-areas:
         'header'
-        'tabcontent';
+        'tabcontent'
+        'other';
+
+    align-items: center;
+    justify-content: stretch;
+    justify-items: center;
+    align-content: stretch;
+
+    min-width: 100vw;
+    min-height: 100vh;
 
     & > div {
         overflow: hidden;
@@ -40,20 +49,34 @@ const MajorVolumeControls: FC = () => {
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
 
     return (
-        <Box mx="1rem" my="0.25rem" minWidth="6rem">
-            <Slider
-                min={0}
-                max={1}
-                step={0.05}
-                value={globalVolume}
-                onChange={(_, val) => setGlobalVolume(val as number)}
-            />
+        <Box display="flex" justifyContent="center" width="100%">
+            <Box
+                mx="1rem"
+                my="0.25rem"
+                p="2rem"
+                minWidth="10rem"
+                maxWidth="50rem"
+                width="100%"
+                display="flex"
+                alignItems="center"
+            >
+                <VolumeButton volume={globalVolume} />
+                <Box flexGrow={1}>
+                    <Slider
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={globalVolume}
+                        onChange={(_, val) => setGlobalVolume(val as number)}
+                    />
+                </Box>
+            </Box>
         </Box>
     );
 };
 
 const MainApp: FC = () => {
-    const { state, resolver } = useContext(WorkspaceContext);
+    const { state, resolver, name } = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
     const [blocked, setBlocked] = useState(false);
 
@@ -79,10 +102,27 @@ const MainApp: FC = () => {
     return (
         <>
             <Header />
-            <MajorVolumeControls />
+            <Box
+                width="100%"
+                display="flex"
+                alignItems="center"
+                flexDirection="column"
+                gridArea="tabcontent"
+                textAlign="center"
+            >
+                <Typography variant="h4">Listening to: {name}</Typography>
+                <Typography variant="subtitle1">Adjust your volume below.</Typography>
+                <MajorVolumeControls />
+                {blocked && (
+                    <Typography color="error" variant="h5">
+                        Please click anywhere on the screen to enable audio.
+                    </Typography>
+                )}
+            </Box>
+            <Box gridArea="other" width="100%" display="flex" flexDirection="column" alignItems="stretch">
+                {fetchers}
+            </Box>
             <Box display="none">{players}</Box>
-            {blocked && 'Please click anywhere on the screen to enable audio.'}
-            {fetchers}
             {/* <SoundFX /> */}
             {/* <CurrentUsers /> */}
         </>
