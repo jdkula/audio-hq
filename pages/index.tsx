@@ -57,10 +57,10 @@ export default function Home(): React.ReactElement {
 
     const [loading, setLoading] = useState(false);
 
-    const go = (player: boolean) => {
+    const go = (minimal: boolean) => {
         setLoading(true);
         router
-            .push(`/[id]${player ? '/player' : ''}`, `/${encodeURIComponent(text)}${player ? '/player' : ''}`)
+            .push(`/[id]${minimal ? '/minimal' : ''}`, `/${encodeURIComponent(text)}${minimal ? '/minimal' : ''}`)
             .finally(() => setLoading(false));
     };
 
@@ -102,7 +102,7 @@ export default function Home(): React.ReactElement {
                         </Button>
                         <Box m="2px" />
                         <Button size="small" variant="outlined" onClick={() => go(true)}>
-                            Join Player View
+                            Join Minimal View
                         </Button>
                     </Box>
                 )}

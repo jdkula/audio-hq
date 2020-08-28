@@ -58,7 +58,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
-                    {!host ? ' – Player View' : ''}
+                    {!host ? ' – Minimal View' : ''}
                 </title>
             </Head>
             <Toolbar>
@@ -73,7 +73,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         </Typography>
                         {!isSmall && !host && (
                             <Box px={4}>
-                                <Typography variant="subtitle1">Player View</Typography>
+                                <Typography variant="subtitle1">Minimal View</Typography>
                             </Box>
                         )}
                     </Box>
