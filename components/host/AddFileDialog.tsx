@@ -108,7 +108,6 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     id="track-description"
                     value={description}
                     fullWidth
-                    autoFocus
                     size="small"
                     variant="outlined"
                     onChange={(e) => setDescription(e.target.value)}
