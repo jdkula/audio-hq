@@ -113,38 +113,35 @@ export const Explorer: FunctionComponent = (props) => {
         <JobEntry job={j} key={j.jobId} onCanceled={() => mutate(`/api/${workspace.name}/jobs`)} />
     ));
 
-    const handleDrag = useCallback(
-        (result: DropResult) => {
-            console.log('Drop', result);
+    const handleDrag = (result: DropResult) => {
+        console.log('Drop', result);
 
-            const srcFile = workspace?.files.find((file) => file.id === result.draggableId);
+        const srcFile = workspace?.files.find((file) => file.id === result.draggableId);
 
-            if (!srcFile) throw new Error('rip');
+        if (!srcFile) throw new Error('rip');
 
-            if (result.combine?.droppableId === '___current___') {
-                const destFile = workspace?.files.find((file) => file.id === result.combine?.draggableId);
+        if (result.combine?.droppableId === '___current___') {
+            const destFile = workspace?.files.find((file) => file.id === result.combine?.draggableId);
 
-                if (!destFile) throw new Error('rip');
+            if (!destFile) throw new Error('rip');
 
-                setCombining([srcFile, destFile]);
-            } else if (result.destination?.droppableId === '___current___' && currentFiles.length > 1) {
-                const targetId = currentFiles[result.destination.index]?.id;
-                const reorder = targetId ? { before: targetId } : { after: currentFiles[currentFiles.length - 1].id };
-                fileManager.update(srcFile.id, { reorder });
-            } else {
-                if (!result.destination || result.destination.droppableId === '___current___') return;
-                // folder
-                const folderName = result.destination.droppableId.replace(/^___folder_/, '');
-                const destPath =
-                    folderName === '___back___'
-                        ? srcFile.path.slice(0, srcFile.path.length - 1)
-                        : [...srcFile.path, folderName];
+            setCombining([srcFile, destFile]);
+        } else if (result.destination?.droppableId === '___current___' && currentFiles.length > 1) {
+            const targetId = currentFiles[result.destination.index]?.id;
+            const reorder = targetId ? { before: targetId } : { after: currentFiles[currentFiles.length - 1].id };
+            fileManager.update(srcFile.id, { reorder });
+        } else {
+            if (!result.destination || result.destination.droppableId === '___current___') return;
+            // folder
+            const folderName = result.destination.droppableId.replace(/^___folder_/, '');
+            const destPath =
+                folderName === '___back___'
+                    ? srcFile.path.slice(0, srcFile.path.length - 1)
+                    : [...srcFile.path, folderName];
 
-                fileManager.update(srcFile.id, { path: destPath });
-            }
-        },
-        [workspace],
-    );
+            fileManager.update(srcFile.id, { path: destPath });
+        }
+    };
 
     const breadcrumbs = ['', ...path].map((el, i) => {
         const partial = path.slice(0, i);

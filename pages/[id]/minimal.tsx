@@ -11,7 +11,16 @@ import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom, WorkspaceContext } from '.';
 import { AudioControls } from '../../components/host/AudioControls';
-import { Box, CircularProgress, IconButton, LinearProgress, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
+import {
+    Box,
+    CircularProgress,
+    IconButton,
+    LinearProgress,
+    Popover,
+    Slider,
+    Tooltip,
+    Typography,
+} from '@material-ui/core';
 import Head from 'next/head';
 
 const Container = styled.div`
