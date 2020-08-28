@@ -12,6 +12,7 @@ import {
     DialogProps,
     DialogTitle,
     FormControlLabel,
+    Hidden,
     InputAdornment,
     Paper,
     TextField,
@@ -58,6 +59,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const doClose = () => {
         setUrl('');
         setName('');
+        setDescription('');
         setFile(null);
         setShouldCut(true);
         setStartTime(0);
@@ -96,6 +98,42 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     }
 
     const notifyEnterName = !!(!name && url);
+
+    const timeOptionsInner = (
+        <>
+            <TextField
+                type="number"
+                variant="outlined"
+                label="Start Time"
+                size="small"
+                InputProps={{
+                    endAdornment: <InputAdornment position="end">seconds</InputAdornment>,
+                }}
+                inputProps={{
+                    style: { maxWidth: '5rem' },
+                }}
+                value={startTime}
+                onChange={(e) => setStartTime(parseInt(e.currentTarget.value))}
+            />
+            <Box m="0.5rem">
+                <Typography>to</Typography>
+            </Box>
+            <TextField
+                type="number"
+                variant="outlined"
+                label="End Time"
+                size="small"
+                InputProps={{
+                    endAdornment: <InputAdornment position="end">seconds</InputAdornment>,
+                }}
+                inputProps={{
+                    style: { maxWidth: '5rem' },
+                }}
+                value={endTime}
+                onChange={(e) => setEndTime(parseInt(e.currentTarget.value))}
+            />
+        </>
+    );
 
     return (
         <Dialog {...props} onClose={doClose}>
@@ -203,43 +241,27 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                                                 change or disable that here.
                                             </Typography>
                                         </Box>
-                                        <Box display="flex" alignItems="center" justifyContent="center" width="100%">
-                                            <TextField
-                                                type="number"
-                                                variant="outlined"
-                                                label="Start Time"
-                                                size="small"
-                                                InputProps={{
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">seconds</InputAdornment>
-                                                    ),
-                                                }}
-                                                inputProps={{
-                                                    style: { maxWidth: '5rem' },
-                                                }}
-                                                value={startTime}
-                                                onChange={(e) => setStartTime(parseInt(e.currentTarget.value))}
-                                            />
-                                            <Box m="0.5rem">
-                                                <Typography>to</Typography>
+                                        <Hidden xsDown>
+                                            <Box
+                                                display="flex"
+                                                alignItems="center"
+                                                justifyContent="center"
+                                                width="100%"
+                                            >
+                                                {timeOptionsInner}
                                             </Box>
-                                            <TextField
-                                                type="number"
-                                                variant="outlined"
-                                                label="End Time"
-                                                size="small"
-                                                InputProps={{
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">seconds</InputAdornment>
-                                                    ),
-                                                }}
-                                                inputProps={{
-                                                    style: { maxWidth: '5rem' },
-                                                }}
-                                                value={endTime}
-                                                onChange={(e) => setEndTime(parseInt(e.currentTarget.value))}
-                                            />
-                                        </Box>
+                                        </Hidden>
+                                        <Hidden smUp>
+                                            <Box
+                                                display="flex"
+                                                flexDirection="column"
+                                                alignItems="center"
+                                                justifyContent="center"
+                                                width="100%"
+                                            >
+                                                {timeOptionsInner}
+                                            </Box>
+                                        </Hidden>
                                     </Box>
                                 </AccordionDetails>
                             </Accordion>

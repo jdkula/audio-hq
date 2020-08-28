@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, CircularProgress, Container, Divider, Link, Typography } from '@material-ui/core';
+import { Box, CircularProgress, Container, Divider, Hidden, Link, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import { KeyboardEvent, useEffect, useState } from 'react';
+import React, { KeyboardEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
@@ -85,7 +85,12 @@ export default function Home(): React.ReactElement {
 
             <InnerContainer>
                 <Logo>
-                    <Typography variant="h1">Audio HQ</Typography>
+                    <Hidden xsDown>
+                        <Typography variant="h1">Audio HQ</Typography>
+                    </Hidden>
+                    <Hidden smUp>
+                        <Typography variant="h2">Audio HQ</Typography>
+                    </Hidden>
                 </Logo>
                 <TextField
                     style={{ gridArea: 'input' }}
@@ -102,34 +107,43 @@ export default function Home(): React.ReactElement {
                 {loading ? (
                     <CircularProgress variant="indeterminate" />
                 ) : (
-                    <Box gridArea="button" display="flex" flexDirection="column" alignItems="center" width="100%">
+                    <Box
+                        gridArea="button"
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                        width="100%"
+                        mt="1rem"
+                    >
                         <Button fullWidth size="large" variant="contained" color="primary" onClick={() => go(false)}>
                             Join
                         </Button>
-                        <Box m="2px" />
+                        <Box m="0.5rem" />
                         <Button size="small" variant="outlined" onClick={() => go(true)}>
                             Join Minimal View
                         </Button>
                     </Box>
                 )}
             </InnerContainer>
-            <Box m={2} display="flex" alignItems="center" textAlign="center">
-                <Box m={2}>
-                    <Link
-                        href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.dmg"
-                        download
-                    >
-                        Audio HQ for Mac
-                    </Link>
-                </Box>
-                <Divider flexItem variant="middle" orientation="vertical" />
-                <Box m={2}>
-                    <Link
-                        href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.zip"
-                        download
-                    >
-                        Audio HQ for Windows
-                    </Link>
+            <Box m={2}>
+                <Box display="grid" gridTemplateColumns="1fr auto 1fr" gridTemplateRows="auto" alignItems="center">
+                    <Box m={2} justifySelf="end" textAlign="center">
+                        <Link
+                            href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.dmg"
+                            download
+                        >
+                            Audio HQ for Mac
+                        </Link>
+                    </Box>
+                    <Divider flexItem variant="middle" orientation="vertical" />
+                    <Box m={2} justifySelf="start" textAlign="center">
+                        <Link
+                            href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.zip"
+                            download
+                        >
+                            Audio HQ for Windows
+                        </Link>
+                    </Box>
                 </Box>
             </Box>
         </OuterContainer>
