@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { Container, Typography } from '@material-ui/core';
+import { Box, Container, Divider, Link, Typography } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import { KeyboardEvent, useState } from 'react';
 
@@ -27,6 +27,7 @@ const OuterContainer = styled(Container)`
     display: grid;
     align-items: center;
     justify-content: center;
+    grid-template-rows: 1fr auto;
 `;
 
 const InnerContainer = styled.main`
@@ -96,6 +97,25 @@ export default function Home(): React.ReactElement {
                     Join
                 </Button>
             </InnerContainer>
+            <Box m={2} display="flex" alignItems="center">
+                <Box m={2}>
+                    <Link
+                        href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.dmg"
+                        download
+                    >
+                        Audio HQ for Mac
+                    </Link>
+                </Box>
+                <Divider flexItem variant="middle" orientation="vertical" />
+                <Box m={2}>
+                    <Link
+                        href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.zip"
+                        download
+                    >
+                        Audio HQ for Windows
+                    </Link>
+                </Box>
+            </Box>
         </OuterContainer>
     );
 }
