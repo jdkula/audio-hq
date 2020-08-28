@@ -19,10 +19,32 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Paper,
+    ClickAwayListener,
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { WorkspaceContext } from '~/pages/[id]';
 import { DeleteForever } from '@material-ui/icons';
+import styled from 'styled-components';
+
+export const FolderContainer = styled(Paper)`
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto;
+
+    margin: 0.5rem 1rem;
+    border-radius: 3rem;
+    overflow: hidden;
+    padding: 0.25rem 0.25rem;
+    transition: background-color 0.25s;
+    align-content: center;
+    align-items: center;
+    min-height: 50px;
+
+    &:hover {
+        background-color: #eee;
+    }
+`;
 
 const DeleteDialog: FC<DialogProps & { folder: string; onConfirm: () => void }> = ({ folder, onConfirm, ...props }) => {
     const doDelete = () => {
@@ -68,6 +90,11 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         setNewName(name);
     };
 
+    const stopRenaming = () => {
+        setRenaming(!renaming);
+        setNewName(name);
+    };
+
     const subfiles = () =>
         workspace.files.filter(
             (file) =>
@@ -95,8 +122,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         }
         if (e.nativeEvent.code === 'Escape') {
             e.preventDefault();
-            setNewName(name);
-            setRenaming(false);
+            stopRenaming();
         }
     };
 
@@ -115,7 +141,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                         open={deleting}
                         onClose={() => setDeleting(false)}
                     />
-                    <FileContainer onClick={onClick} style={{ cursor: 'pointer' }}>
+                    <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
                         <Box display="flex" alignItems="center">
                             <Tooltip title="Click to enter folder" placement="left">
                                 <IconButton onClick={onClick}>
@@ -133,34 +159,37 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                     {name}
                                 </Typography>
                             ) : renaming ? (
-                                <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    width="100%"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Tooltip
-                                        title="Pro tip: Enter the name of another folder to merge them!"
-                                        placement="top"
+                                <ClickAwayListener onClickAway={stopRenaming}>
+                                    <Box
+                                        display="flex"
+                                        alignItems="center"
+                                        width="100%"
+                                        m="0.5rem"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        <TextField
-                                            id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
-                                            fullWidth
-                                            autoFocus
-                                            label="Name"
-                                            variant="outlined"
-                                            value={newName}
-                                            onChange={(e) => setNewName(e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                        />
-                                    </Tooltip>
+                                        <Tooltip
+                                            title="Pro tip: Enter the name of another folder to merge them!"
+                                            placement="top"
+                                        >
+                                            <TextField
+                                                id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
+                                                fullWidth
+                                                autoFocus
+                                                label="Name"
+                                                variant="outlined"
+                                                value={newName}
+                                                onChange={(e) => setNewName(e.target.value)}
+                                                onKeyDown={handleKeyDown}
+                                            />
+                                        </Tooltip>
 
-                                    <Box mx={1}>
-                                        <Button onClick={onRename} variant="outlined" color="primary">
-                                            Save
-                                        </Button>
+                                        <Box mx={1}>
+                                            <Button onClick={onRename} variant="outlined" color="primary">
+                                                Save
+                                            </Button>
+                                        </Box>
                                     </Box>
-                                </Box>
+                                </ClickAwayListener>
                             ) : (
                                 <Typography variant="body1" component="span">
                                     {name || 'Untitled Folder...'}
@@ -172,7 +201,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                             <Box justifySelf="end" display="flex" flexWrap="nowrap">
                                 <Tooltip placement="left" title="Rename" arrow>
                                     <IconButton onClick={startRenaming}>
-                                        <EditIcon />
+                                        <EditIcon color={renaming ? 'primary' : undefined} />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip placement="left" title="Delete Folder" arrow>
@@ -182,7 +211,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                 </Tooltip>
                             </Box>
                         )}
-                    </FileContainer>
+                    </FolderContainer>
                 </div>
             )}
         </Droppable>

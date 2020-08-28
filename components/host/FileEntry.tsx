@@ -3,6 +3,7 @@ import {
     Button,
     CircularProgress,
     CircularProgressProps,
+    ClickAwayListener,
     Dialog,
     DialogActions,
     DialogContent,
@@ -227,48 +228,50 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                         <DetailsContainer>
                             <Box display="flex" alignItems="center" flexGrow={1}>
                                 {editing ? (
-                                    <>
-                                        <Box display="flex" flexDirection="column" flexGrow={1}>
-                                            <TextField
-                                                id={file.id + '-title'}
-                                                fullWidth
-                                                autoFocus={autoFocusTitle}
-                                                variant="outlined"
-                                                label="Title"
-                                                value={editName}
-                                                onChange={(e) => setEditName(e.target.value)}
-                                                onKeyDown={handleKeyDown}
-                                            />
-                                            <Box m={0.5} />
-                                            <TextField
-                                                id={file.id + '-description'}
-                                                fullWidth
-                                                autoFocus={!autoFocusTitle}
-                                                size="small"
-                                                variant="outlined"
-                                                label="Description"
-                                                value={editDescription}
-                                                onChange={(e) => setEditDescription(e.target.value)}
-                                                onKeyDown={handleKeyDown}
-                                            />
-                                        </Box>
-                                        <Divider variant="middle" orientation="vertical" flexItem />
-                                        <Box display="flex" flexDirection="column" alignItems="center">
-                                            <Box mb={0.5} width="100%">
-                                                <Button
+                                    <ClickAwayListener onClickAway={cancelEdits}>
+                                        <Box display="flex" alignItems="center" flexGrow={1}>
+                                            <Box display="flex" flexDirection="column" flexGrow={1}>
+                                                <TextField
+                                                    id={file.id + '-title'}
                                                     fullWidth
-                                                    onClick={saveEdits}
+                                                    autoFocus={autoFocusTitle}
                                                     variant="outlined"
-                                                    color="primary"
-                                                >
-                                                    Save
+                                                    label="Title"
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                />
+                                                <Box m={0.5} />
+                                                <TextField
+                                                    id={file.id + '-description'}
+                                                    fullWidth
+                                                    autoFocus={!autoFocusTitle}
+                                                    size="small"
+                                                    variant="outlined"
+                                                    label="Description"
+                                                    value={editDescription}
+                                                    onChange={(e) => setEditDescription(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                />
+                                            </Box>
+                                            <Divider variant="middle" orientation="vertical" flexItem />
+                                            <Box display="flex" flexDirection="column" alignItems="center">
+                                                <Box mb={0.5} width="100%">
+                                                    <Button
+                                                        fullWidth
+                                                        onClick={saveEdits}
+                                                        variant="outlined"
+                                                        color="primary"
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                </Box>
+                                                <Button fullWidth onClick={cancelEdits} variant="outlined">
+                                                    Cancel
                                                 </Button>
                                             </Box>
-                                            <Button fullWidth onClick={cancelEdits} variant="outlined">
-                                                Cancel
-                                            </Button>
                                         </Box>
-                                    </>
+                                    </ClickAwayListener>
                                 ) : (
                                     <Box display="flex" flexDirection="column" style={{ cursor: 'text' }}>
                                         <Typography
