@@ -18,7 +18,7 @@ import {
     TextField,
     Typography,
 } from '@material-ui/core';
-import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useState } from 'react';
+import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FileManagerContext } from '~/lib/useFileManager';
 import styled from 'styled-components';
@@ -60,9 +60,11 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const [fadeInTime, setFadeInTime] = useState(3);
     const [fadeOutTime, setFadeOutTime] = useState(3);
 
+    const titleRef = useRef<HTMLInputElement | null>(null);
+
     const fileManager = useContext(FileManagerContext);
 
-    const doClose = () => {
+    const doClose = (shouldClose = true) => {
         setUrl('');
         setName('');
         setDescription('');
@@ -74,7 +76,12 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         setShouldFadeOut(false);
         setFadeInTime(3);
         setFadeOutTime(3);
-        props.onClose?.({}, 'escapeKeyDown');
+        if (shouldClose) {
+            props.onClose?.({}, 'escapeKeyDown');
+        } else {
+            console.log(titleRef);
+            titleRef.current?.focus();
+        }
     };
 
     const isUrl = (text: string) => {
@@ -96,7 +103,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         }
     };
 
-    const onUpload = () => {
+    const onUpload = (shouldClose = true) => {
         const options = {
             cut: shouldCut ? { start: startTime, end: endTime } : undefined,
             fadeIn: shouldFadeIn ? fadeInTime : undefined,
@@ -104,10 +111,10 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         };
         if (file) {
             fileManager.upload(name || file.name, file, currentPath, description, options);
-            doClose();
+            doClose(shouldClose);
         } else if (name) {
             fileManager.import(name, url, currentPath, description, options);
-            doClose();
+            doClose(shouldClose);
         }
     };
 
@@ -136,7 +143,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         if (!ready) return;
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        onUpload();
+        onUpload(!e.shiftKey);
     };
 
     const timeOptionsInner = (
@@ -178,12 +185,13 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     );
 
     return (
-        <Dialog {...props} onClose={doClose} onPasteCapture={handleUrlPaste}>
+        <Dialog {...props} onClose={() => doClose()} onPasteCapture={handleUrlPaste}>
             <DialogTitle>Add a track!</DialogTitle>
             <DialogContent dividers style={{ minWidth: '300px' }}>
                 <TextField
                     id="track-title"
                     value={name}
+                    inputRef={titleRef}
                     fullWidth
                     autoFocus
                     required

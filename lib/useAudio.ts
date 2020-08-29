@@ -55,7 +55,9 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             .play()
             .then(() => {
                 console.log('onInteract -> play() -> then called');
-                (state?.pauseTime ?? 0) !== null && audio.current.pause();
+                if (state === null || state.pauseTime !== null) {
+                    audio.current.pause();
+                }
                 setIsBlocked(false);
                 setHasInteracted(true);
                 clearInteractGate();
