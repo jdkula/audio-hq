@@ -128,29 +128,29 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                             </Popover>
                         </Box>
                     )}
-                    {host && (
-                        <>
-                            {!allCached && (
-                                <Box color="white" mx="0.5rem">
-                                    {!downloading && (
-                                        <Tooltip arrow placement="bottom" title="Download all tracks">
-                                            <IconButton color="inherit" onClick={onDownload}>
-                                                <GetApp />
-                                            </IconButton>
-                                        </Tooltip>
-                                    )}
-                                    {downloading && (
-                                        <Box mx="1rem">
-                                            <CircularProgressWithLabel
-                                                color="secondary"
-                                                textColor="inherit"
-                                                value={downloadPercent}
-                                                variant={downloadPercent ? 'static' : 'indeterminate'}
-                                            />
-                                        </Box>
-                                    )}
+                    {!allCached && (
+                        <Box color="white" mx="0.5rem">
+                            {!downloading && (
+                                <Tooltip arrow placement="bottom" title="Download all tracks">
+                                    <IconButton color="inherit" onClick={onDownload}>
+                                        <GetApp />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                            {downloading && (
+                                <Box mx="1rem">
+                                    <CircularProgressWithLabel
+                                        color="secondary"
+                                        textColor="inherit"
+                                        value={downloadPercent}
+                                        variant={downloadPercent ? 'static' : 'indeterminate'}
+                                    />
                                 </Box>
                             )}
+                        </Box>
+                    )}
+                    {host && (
+                        <>
                             <Hidden xsDown>
                                 <Button
                                     variant="contained"
