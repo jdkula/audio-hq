@@ -110,6 +110,8 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
 
     const notifyEnterName = !!(!name && url);
 
+    const ready = file || (url && name);
+
     const timeOptionsInner = (
         <>
             <TextField
@@ -374,8 +376,8 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
             </DialogContent>
             <DialogActions>
                 {file && <Button onClick={() => setFile(null)}>Clear</Button>}
-                <Button color={file || (url && name) ? 'primary' : undefined} onClick={onUpload}>
-                    Upload
+                <Button color={ready ? 'primary' : undefined} onClick={ready ? onUpload : doClose}>
+                    {ready ? (file ? 'Upload' : 'Import') : 'Close'}
                 </Button>
             </DialogActions>
         </Dialog>

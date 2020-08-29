@@ -161,7 +161,7 @@ export async function convert(input: string, id?: string, options?: ConvertOptio
     id && Jobs.set(id, (job) => ({ ...job, status: 'converting' }));
 
     return new Promise<string>((resolve, reject) => {
-        let cmd = ffmpeg(input, { niceness: 20 }).noVideo().audioQuality(3);
+        let cmd = ffmpeg(input).noVideo().audioQuality(3);
 
         let length = 1;
         let ofDuration = 1;
