@@ -177,7 +177,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     );
 
     return (
-        <Dialog {...props} onClose={doClose}>
+        <Dialog {...props} onClose={doClose} onPasteCapture={handleUrlPaste}>
             <DialogTitle>Add a track!</DialogTitle>
             <DialogContent dividers style={{ minWidth: '300px' }}>
                 <TextField
@@ -187,7 +187,6 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     autoFocus
                     required
                     variant="outlined"
-                    onPaste={handleUrlPaste}
                     onKeyDown={handleEnter}
                     onChange={(e) => setName(e.target.value)}
                     label="Track Title"
