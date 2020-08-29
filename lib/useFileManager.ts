@@ -112,7 +112,6 @@ const useFileManager = (workspaceId: string): FileManager => {
                         Accept: 'audio/mp3',
                     },
                 });
-                console.warn(resp);
 
                 if (resp.headers.get('X-Redirect-Location')) {
                     resp = await fetch(resp.headers.get('X-Redirect-Location')!, {
@@ -121,7 +120,6 @@ const useFileManager = (workspaceId: string): FileManager => {
                         },
                     });
                 }
-                console.warn(resp);
                 if (!resp || !resp.body) throw new Error(JSON.stringify(resp));
 
                 const bytes = parseInt(resp.headers.get('Content-Length') ?? '1');
