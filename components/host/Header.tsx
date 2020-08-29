@@ -149,14 +149,20 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                             )}
                             {downloading && (
                                 <Box mx="1rem">
-                                    <CircularProgressWithLabel
-                                        color="secondary"
-                                        textColor="inherit"
-                                        value={downloadPercent}
-                                        variant={
-                                            !downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'static'
-                                        }
-                                    />
+                                    <Tooltip
+                                        arrow
+                                        placement="bottom"
+                                        title={`${downloadFinished} of ${downloadTotal} complete.`}
+                                    >
+                                        <CircularProgressWithLabel
+                                            color="secondary"
+                                            textColor="inherit"
+                                            value={downloadPercent}
+                                            variant={
+                                                !downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'static'
+                                            }
+                                        />
+                                    </Tooltip>
                                 </Box>
                             )}
                         </Box>
