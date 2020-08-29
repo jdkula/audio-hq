@@ -418,7 +418,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
             </DialogContent>
             <DialogActions>
                 {file && <Button onClick={() => setFile(null)}>Clear</Button>}
-                <Button color={ready ? 'primary' : undefined} onClick={ready ? onUpload : doClose}>
+                <Button color={ready ? 'primary' : undefined} onClick={() => (ready ? onUpload() : doClose())}>
                     {ready ? (file ? 'Upload' : 'Import') : 'Close'}
                 </Button>
             </DialogActions>
