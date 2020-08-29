@@ -1,12 +1,27 @@
 import Head from 'next/head';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, CircularProgress, Container, Divider, Hidden, Link, Typography } from '@material-ui/core';
+import {
+    Box,
+    CircularProgress,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogProps,
+    DialogTitle,
+    Divider,
+    Hidden,
+    Link,
+    Tooltip,
+    Typography,
+} from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import React, { KeyboardEvent, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
+import PouchDB from 'pouchdb';
 import { listen } from 'socket.io';
 
 const GlobalFull = createGlobalStyle`
@@ -49,7 +64,38 @@ const Logo = styled.div`
     grid-area: logo;
     margin-bottom: 5rem;
     text-align: center;
+    cursor: pointer;
+    user-select: none;
 `;
+
+const ConfirmDeleteAllDialog: FC<DialogProps> = (props) => {
+    const [deleting, setDeleting] = useState(false);
+
+    const doDelete = () => {
+        setDeleting(true);
+        new PouchDB('cache').destroy().then(() => window.location.reload());
+    };
+
+    return (
+        <Dialog {...props}>
+            <DialogTitle>Clear Audio Cache</DialogTitle>
+            <DialogContent dividers>
+                Are you sure? This will completely clear all stored music, meaning you&apos;ll have to download
+                everything from scratch!
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => props.onClose?.({}, 'escapeKeyDown')}>Cancel</Button>
+                {deleting ? (
+                    <CircularProgress />
+                ) : (
+                    <Button onClick={doDelete} color="secondary">
+                        Delete
+                    </Button>
+                )}
+            </DialogActions>
+        </Dialog>
+    );
+};
 
 export default function Home(): React.ReactElement {
     const router = useRouter();
@@ -62,6 +108,7 @@ export default function Home(): React.ReactElement {
     }, [router]);
 
     const [loading, setLoading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const go = (minimal: boolean) => {
         setLoading(true);
@@ -77,6 +124,7 @@ export default function Home(): React.ReactElement {
 
     return (
         <OuterContainer>
+            <ConfirmDeleteAllDialog onClose={() => setDeleting(false)} open={deleting} />
             <Head>
                 <title>Audio HQ</title>
                 <link rel="icon" href="/favicon.ico" />
@@ -84,14 +132,16 @@ export default function Home(): React.ReactElement {
             <GlobalFull />
 
             <InnerContainer>
-                <Logo>
-                    <Hidden xsDown>
-                        <Typography variant="h1">Audio HQ</Typography>
-                    </Hidden>
-                    <Hidden smUp>
-                        <Typography variant="h2">Audio HQ</Typography>
-                    </Hidden>
-                </Logo>
+                <Tooltip placement="top" arrow title="Double-click/tap to delete audio cache" enterDelay={500}>
+                    <Logo onDoubleClick={() => setDeleting(true)}>
+                        <Hidden xsDown>
+                            <Typography variant="h1">Audio HQ</Typography>
+                        </Hidden>
+                        <Hidden smUp>
+                            <Typography variant="h2">Audio HQ</Typography>
+                        </Hidden>
+                    </Logo>
+                </Tooltip>
                 <TextField
                     style={{ gridArea: 'input' }}
                     id="workspace-input"
