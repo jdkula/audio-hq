@@ -15,6 +15,7 @@ import {
     TextField,
     Tooltip,
     Typography,
+    TypographyProps,
 } from '@material-ui/core';
 import React, { FC, SyntheticEvent, useContext, useState, KeyboardEvent, forwardRef } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
@@ -79,8 +80,10 @@ const DetailsContainer = styled.div`
     padding: 0.33rem 1rem;
 `;
 
-const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = forwardRef((props, ref) =>
-    props.value ? (
+export const CircularProgressWithLabel: FC<
+    CircularProgressProps & { textColor?: TypographyProps['color'] }
+> = forwardRef(({ textColor, ...props }, ref) =>
+    props.value !== undefined ? (
         <Box position="relative" display="inline-flex">
             <CircularProgress {...props} ref={ref} />
             <Box
@@ -93,7 +96,7 @@ const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> 
                 alignItems="center"
                 justifyContent="center"
             >
-                <Typography variant="caption" component="div" color="textSecondary">{`${Math.round(
+                <Typography variant="caption" component="div" color={textColor || 'textSecondary'}>{`${Math.round(
                     props.value,
                 )}%`}</Typography>
             </Box>

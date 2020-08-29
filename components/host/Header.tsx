@@ -17,12 +17,13 @@ import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]';
 import React, { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
-import { VolumeUp, VolumeDown, VolumeMute, VolumeOff, Add } from '@material-ui/icons';
+import { VolumeUp, VolumeDown, VolumeMute, VolumeOff, Add, CloudDownload, GetApp } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
 import { addingAtom } from './Explorer';
+import { CircularProgressWithLabel } from './FileEntry';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -50,6 +51,22 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+    const [downloading, setDownloading] = useState(false);
+    const [downloadTotal, setDownloadTotal] = useState(0);
+    const [downloadFinished, setDownloadFinished] = useState(0);
+    const downloadPercent = downloadTotal === 0 ? undefined : Math.floor((downloadFinished / downloadTotal) * 100);
+
+    const onDownload = async () => {
+        setDownloading(true);
+        await fileManager.downloadAll(
+            (cached, total) => setDownloadTotal(total - cached),
+            (_, finished) => setDownloadFinished(finished),
+        );
+        setDownloading(false);
+        setDownloadTotal(0);
+        setDownloadFinished(0);
+    };
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -112,6 +129,25 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     )}
                     {host && (
                         <>
+                            <Box color="white" mx="0.5rem">
+                                {!downloading && (
+                                    <Tooltip arrow placement="bottom" title="Download all tracks">
+                                        <IconButton color="inherit" onClick={onDownload}>
+                                            <GetApp />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                {downloading && (
+                                    <Box mx="1rem">
+                                        <CircularProgressWithLabel
+                                            color="secondary"
+                                            textColor="inherit"
+                                            value={downloadPercent}
+                                            variant={downloadPercent ? 'static' : 'indeterminate'}
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
                             <Hidden xsDown>
                                 <Button
                                     variant="contained"

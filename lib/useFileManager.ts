@@ -20,6 +20,10 @@ interface FileManager {
     upload: (name: string, file: File, path?: string[], description?: string, options?: ConvertOptions) => Promise<Job>;
     delete: (id: string) => Promise<void>;
     update: (id: string, update: Partial<WSFile & Reorderable>) => Promise<void>;
+    downloadAll: (
+        onStart: (cached: number, total: number) => void,
+        onProgress: (started: number, finished: number) => void,
+    ) => Promise<void>;
     cached: Set<string>;
     fetching: Set<Job>;
     working: Set<Job>;
@@ -269,6 +273,37 @@ const useFileManager = (workspaceId: string): FileManager => {
         mutate(`/api/${workspaceId}/files`);
     };
 
+    const downloadAll = async (
+        onStart?: (cached: number, total: number) => void,
+        onProgress?: (started: number, finished: number) => void,
+    ) => {
+        console.log('Downloading all songs...');
+        const alreadyDownloaded = (await cache.current.allDocs()).rows;
+        const idSet = Set(alreadyDownloaded.map((doc) => doc.id));
+        const files: WSFile[] = (await Axios.get(`/api/${workspaceId}/files`)).data;
+        console.log('Already cached ', alreadyDownloaded.length, 'of', files.length, 'total');
+        onStart?.(alreadyDownloaded.length, files.length);
+
+        const progress = { started: 0, finished: 0 };
+
+        for (const file of files) {
+            if (!idSet.contains(file.id)) {
+                await new Promise((resolve) => {
+                    console.log('Downloading', file.name, `(${file.id})`);
+                    progress.started++;
+                    onProgress?.(progress.started, progress.finished);
+                    track(file.id, () => {
+                        console.log('Finished downloading', file.name, `(${file.id})`);
+                        progress.finished++;
+                        onProgress?.(progress.started, progress.finished);
+                        resolve();
+                    });
+                });
+            }
+        }
+        console.log('Done.');
+    };
+
     return {
         cached,
         fetching,
@@ -278,6 +313,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         track,
         upload,
         update,
+        downloadAll,
         working: working.concat(jobs),
     };
 };
