@@ -30,6 +30,13 @@ import FileEntry from './FileEntry';
 import FolderAddDialog from './AddFolderDialog';
 import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
+import { atom, useRecoilState } from 'recoil';
+
+// TODO: Find a better solution than global state :(
+export const addingAtom = atom({
+    key: 'adding_song',
+    default: false,
+});
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -79,7 +86,7 @@ export const Explorer: FunctionComponent = (props) => {
 
     const [path, setPath] = useState<string[]>([]);
     const [combining, setCombining] = useState<WSFile[]>([]);
-    const [adding, setAdding] = useState(false);
+    const [adding, setAdding] = useRecoilState(addingAtom);
 
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -220,12 +227,6 @@ export const Explorer: FunctionComponent = (props) => {
                             )}
                         </Droppable>
                     </DragDropContext>
-                </Box>
-                <Box position="absolute" right="4rem" bottom="4rem">
-                    <Fab color="secondary" variant="extended" size="large" onClick={() => setAdding(true)}>
-                        <AddIcon />
-                        Add A Track
-                    </Fab>
                 </Box>
             </Box>
             <Divider />

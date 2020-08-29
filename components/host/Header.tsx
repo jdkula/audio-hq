@@ -11,16 +11,18 @@ import {
     Tooltip,
     useMediaQuery,
     useTheme,
+    Hidden,
 } from '@material-ui/core';
 import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]';
-import { useContext, FunctionComponent, useState, FC, useRef } from 'react';
+import React, { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
-import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
+import { VolumeUp, VolumeDown, VolumeMute, VolumeOff, Add } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
+import { addingAtom } from './Explorer';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -42,12 +44,12 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const fileManager = useContext(FileManagerContext);
     const router = useRouter();
 
+    const [adding, setAdding] = useRecoilState(addingAtom);
+
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
 
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-    const onReset = () => fileManager.reset().then(() => window.location.reload());
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -108,14 +110,24 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                             </Popover>
                         </Box>
                     )}
-                    {!isSmall && (
-                        <Box color="white">
-                            <Tooltip placement="bottom" title="Clear entire cache (double click/tap to activate)" arrow>
-                                <IconButton color="inherit" onDoubleClick={onReset}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Tooltip>
-                        </Box>
+                    {host && (
+                        <>
+                            <Hidden xsDown>
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={() => setAdding(true)}
+                                    startIcon={<Add />}
+                                >
+                                    Add a Track
+                                </Button>
+                            </Hidden>
+                            <Hidden smUp>
+                                <Button variant="contained" color="secondary" onClick={() => setAdding(true)}>
+                                    <Add />
+                                </Button>
+                            </Hidden>
+                        </>
                     )}
                 </Box>
             </Toolbar>
