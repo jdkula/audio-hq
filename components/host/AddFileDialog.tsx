@@ -18,7 +18,7 @@ import {
     TextField,
     Typography,
 } from '@material-ui/core';
-import React, { FC, useContext, useState } from 'react';
+import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FileManagerContext } from '~/lib/useFileManager';
 import styled from 'styled-components';
@@ -76,6 +76,25 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         props.onClose?.({}, 'escapeKeyDown');
     };
 
+    const isUrl = (text: string) => {
+        let url;
+        try {
+            url = new URL(text);
+        } catch (_) {
+            return false;
+        }
+
+        return url.protocol.startsWith('http');
+    };
+
+    const handleUrlPaste = (e: ClipboardEvent<HTMLInputElement>) => {
+        const pasted = e.clipboardData.getData('text/plain');
+        if (isUrl(pasted) && !url && !file) {
+            setUrl(pasted);
+            e.preventDefault();
+        }
+    };
+
     const onUpload = () => {
         const options = {
             cut: shouldCut ? { start: startTime, end: endTime } : undefined,
@@ -112,9 +131,17 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
 
     const ready = file || (url && name);
 
+    const handleEnter = (e: KeyboardEvent<never>) => {
+        if (!ready) return;
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        onUpload();
+    };
+
     const timeOptionsInner = (
         <>
             <TextField
+                onKeyDown={handleEnter}
                 type="number"
                 variant="outlined"
                 label="Start Time"
@@ -132,6 +159,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                 <Typography>to</Typography>
             </Box>
             <TextField
+                onKeyDown={handleEnter}
                 type="number"
                 variant="outlined"
                 label="End Time"
@@ -159,6 +187,8 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     autoFocus
                     required
                     variant="outlined"
+                    onPaste={handleUrlPaste}
+                    onKeyDown={handleEnter}
                     onChange={(e) => setName(e.target.value)}
                     label="Track Title"
                     placeholder={file ? file.name : undefined}
@@ -176,6 +206,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                 <TextField
                     id="track-description"
                     value={description}
+                    onKeyDown={handleEnter}
                     fullWidth
                     size="small"
                     variant="outlined"
@@ -212,6 +243,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                                     id="track-url"
                                     variant="outlined"
                                     fullWidth
+                                    onKeyDown={handleEnter}
                                     onChange={(e) => setUrl(e.target.value)}
                                     label="URL"
                                 />
@@ -305,6 +337,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                                         </Box>
                                         <Box display="flex" alignItems="center" justifyContent="center" width="100%">
                                             <TextField
+                                                onKeyDown={handleEnter}
                                                 type="number"
                                                 variant="outlined"
                                                 label="Fade Time"
@@ -351,6 +384,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                                         </Box>
                                         <Box display="flex" alignItems="center" justifyContent="center" width="100%">
                                             <TextField
+                                                onKeyDown={handleEnter}
                                                 type="number"
                                                 variant="outlined"
                                                 label="Fade Time"
