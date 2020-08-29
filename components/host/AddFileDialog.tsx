@@ -29,6 +29,7 @@ const DropRoot = styled.div<{ isDragActive?: boolean }>`
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
     padding: 20px;
     border-width: 2px;
     border-radius: 2px;

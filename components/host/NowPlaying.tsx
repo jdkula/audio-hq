@@ -1,4 +1,4 @@
-import { Typography } from '@material-ui/core';
+import { Typography, Box } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 
 import { AudioControls } from './AudioControls';
@@ -33,9 +33,11 @@ export const NowPlaying: FunctionComponent<{
         return (
             <NowPlayingContainer>
                 <Typography variant="h4">Nothing Playing</Typography>
-                <Typography variant="subtitle1">
-                    Use the <PlayIcon /> button to add some!
-                </Typography>
+                <Box clone display="flex" alignItems="center" mt="0.5rem">
+                    <Typography variant="subtitle1">
+                        Use the <PlayIcon /> button to add some!
+                    </Typography>
+                </Box>
             </NowPlayingContainer>
         );
     }

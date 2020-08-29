@@ -1,4 +1,4 @@
-import { makeStyles, Paper, Typography } from '@material-ui/core';
+import { makeStyles, Paper, Typography, Box } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 import styled from 'styled-components';
 import { WorkspaceContext } from '../../pages/[id]';
@@ -21,6 +21,7 @@ const EmptyContainer = styled.div`
     width: 100%;
     height: 100%;
     display: grid;
+    row-gap: 1rem;
     grid-template-columns: auto;
     justify-items: center;
     justify-content: center;
@@ -65,9 +66,11 @@ export const Ambience: FunctionComponent = () => {
             <AmbienceContainer>
                 <EmptyContainer>
                     <Typography variant="h4">No Ambience Playing</Typography>
-                    <Typography variant="subtitle1">
-                        Use the <AddIcon /> button to add some!
-                    </Typography>
+                    <Box clone display="flex" alignItems="center">
+                        <Typography variant="subtitle1">
+                            Use the <AddIcon /> button to add some!
+                        </Typography>
+                    </Box>
                 </EmptyContainer>
             </AmbienceContainer>
         );
