@@ -131,7 +131,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     {!allCached && (
                         <Box color="white" mx="0.5rem">
                             {!downloading && (
-                                <Tooltip arrow placement="bottom" title="Download all tracks">
+                                <Tooltip arrow placement="bottom" title="Preload all tracks">
                                     <IconButton color="inherit" onClick={onDownload}>
                                         <GetApp />
                                     </IconButton>
