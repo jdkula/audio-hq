@@ -110,9 +110,13 @@ export async function download(url: string, id?: string, options?: ConvertOption
     id && Jobs.set(id, (job) => ({ ...job, status: 'downloading' }));
 
     return new Promise<string>((resolve, reject) => {
-        const ytdl = spawn(ytdlPath, ['--ffmpeg-location', ffmpegPath, '-x', '-f', 'bestaudio', '-o', outPath, url], {
-            cwd: basedir,
-        });
+        const ytdl = spawn(
+            ytdlPath,
+            ['--ffmpeg-location', ffmpegPath, '-x', '-f', 'bestaudio/best', '-o', outPath, url],
+            {
+                cwd: basedir,
+            },
+        );
 
         ytdl.stdout.on('data', (data: string) => {
             console.log('ytdl stdout: ' + data);
