@@ -16,7 +16,7 @@ import {
     Tooltip,
     Typography,
 } from '@material-ui/core';
-import React, { FC, SyntheticEvent, useContext, useState, KeyboardEvent } from 'react';
+import React, { FC, SyntheticEvent, useContext, useState, KeyboardEvent, forwardRef } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { File as WSFile } from '~/lib/Workspace';
@@ -79,10 +79,10 @@ const DetailsContainer = styled.div`
     padding: 0.33rem 1rem;
 `;
 
-const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = (props) =>
+const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> = forwardRef((props, ref) =>
     props.value ? (
         <Box position="relative" display="inline-flex">
-            <CircularProgress {...props} />
+            <CircularProgress {...props} ref={ref} />
             <Box
                 top={0}
                 left={0}
@@ -99,8 +99,10 @@ const CircularProgressWithLabel: FC<CircularProgressProps & { value?: number }> 
             </Box>
         </Box>
     ) : (
-        <CircularProgress {...props} />
-    );
+        <CircularProgress ref={ref} {...props} />
+    ),
+);
+CircularProgressWithLabel.displayName = 'CircularProgressWithLabel';
 
 const CircularProgressVisibleBackground = styled(CircularProgressWithLabel)`
     //& .circle {

@@ -120,6 +120,12 @@ export function updatePlayState(
         if (update.id) {
             copy.id = update.id;
         }
+        if (update.startTimestamp !== undefined) {
+            copy.startTimestamp = update.startTimestamp;
+            if (copy.pauseTime !== null && update.pauseTime === undefined) {
+                copy.pauseTime = Date.now(); // update pause time to reflect seek.
+            }
+        }
         if (update.pauseTime === null) {
             if (original?.pauseTime) {
                 const difference = Date.now() - original.pauseTime;
@@ -141,9 +147,6 @@ export function updatePlayState(
                     copy.startTimestamp = update.pauseTime - update.timePlayed * 1000;
                 }
             }
-        }
-        if (update.startTimestamp !== undefined) {
-            copy.startTimestamp = update.startTimestamp;
         }
         if (typeof update.volume === 'number') {
             copy.volume = update.volume;

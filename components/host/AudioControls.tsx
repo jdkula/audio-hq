@@ -31,7 +31,9 @@ const speedMarks = [
     { value: 0.25, label: '1/4x' },
     { value: 0.5, label: '1/2x' },
     { value: 1, label: '1x' },
+    { value: 1.5, label: '1.5x' },
     { value: 2, label: '2x' },
+    { value: 2.5, label: '2.5x' },
     { value: 3, label: '3x' },
 ];
 
@@ -83,8 +85,8 @@ export const AudioControls: FunctionComponent<{
         return <div>Waiting for Audio to Load</div>;
     }
 
-    if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
     if (blocked) return <AudioControlsContainer>Please click on the page to allow audio.</AudioControlsContainer>;
+    if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
 
     const onPlayPause = () => {
         if (paused) resolver({ pauseTime: null });

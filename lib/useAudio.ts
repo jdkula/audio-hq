@@ -32,7 +32,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     const [loading, setLoading] = useState(true);
 
     const [hasInteracted, setHasInteracted] = useState(true);
-    const [blocked, setIsBlocked] = useState(false);
+    const [blocked, setIsBlocked] = useState(true);
 
     const handle = useRef<number | null>(null);
 
@@ -58,12 +58,21 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                 (state?.pauseTime ?? 0) !== null && audio.current.pause();
                 setIsBlocked(false);
                 setHasInteracted(true);
-                document.removeEventListener('keyup', onInteract);
-                document.removeEventListener('mouseup', onInteract);
+                clearInteractGate();
                 console.log('interaction gate removed');
             })
             .catch((e) => console.warn(e));
-    }, [audio.current]);
+    }, [audio.current, state?.pauseTime]);
+
+    const setInteractGate = useCallback(() => {
+        document.addEventListener('keyup', onInteract);
+        document.addEventListener('mouseup', onInteract);
+    }, [onInteract]);
+
+    const clearInteractGate = useCallback(() => {
+        document.removeEventListener('keyup', onInteract);
+        document.removeEventListener('mouseup', onInteract);
+    }, [onInteract]);
 
     useEffect(() => {
         console.log('Audio setup called');
@@ -78,11 +87,12 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.onloadedmetadata = () => {
             console.log('audio.current.onloadedmetadata called');
             setDuration(audio.current.duration);
-            setLoading(false);
+            setInteractGate();
         };
 
         audio.current.oncanplay = () => {
             console.log('audio.current.oncanplay called');
+            setLoading(false);
             // TODO: Don't try to play until here, but try interaction blockers with onLoadedMetadata...?
         };
     }, [audio.current]);
@@ -106,11 +116,10 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                     setIsBlocked(true);
                     setPaused(true);
 
-                    document.addEventListener('keyup', onInteract);
-                    document.addEventListener('mouseup', onInteract);
+                    setInteractGate();
                 });
         }
-    }, [loading]);
+    }, [loading, setInteractGate]);
 
     useEffect(() => {
         console.log('AudioTimeUpdate setter called');
@@ -178,12 +187,16 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         if (!loading && !blocked) {
             setPaused(state.pauseTime !== null);
             if (state.pauseTime === null) {
-                audio.current.play().catch((err) => console.warn(err));
+                audio.current.play().catch((err) => {
+                    setIsBlocked(true);
+                    setInteractGate();
+                    console.warn(err);
+                });
             } else {
                 audio.current.pause();
             }
         }
-    }, [state.pauseTime, loading, blocked]);
+    }, [state.pauseTime, loading, blocked, setInteractGate]);
 
     useEffect(() => {
         if (!loading && !blocked) {
