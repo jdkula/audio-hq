@@ -58,18 +58,12 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                 (state?.pauseTime ?? 0) !== null && audio.current.pause();
                 setIsBlocked(false);
                 setHasInteracted(true);
+                document.removeEventListener('keyup', onInteract);
+                document.removeEventListener('mouseup', onInteract);
+                console.log('interaction gate removed');
             })
             .catch((e) => console.warn(e));
     }, [audio.current]);
-
-    useEffect(() => {
-        console.log('Interaction gate called');
-        if (!blocked) {
-            console.log('interaction gate removed');
-            document.removeEventListener('keyup', onInteract);
-            document.removeEventListener('mouseup', onInteract);
-        }
-    }, [blocked]);
 
     useEffect(() => {
         console.log('Audio setup called');

@@ -38,3 +38,4 @@ yarn-error.log*
 /.VSCodeCounter
 .vercel
 deploy.sh
+deploy-prod.sh
