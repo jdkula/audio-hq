@@ -4,7 +4,8 @@ import formidable from 'formidable';
 import type { ConvertOptions } from '~/lib/useFileManager';
 
 const Convert: NextApiHandler = async (req, res) => {
-    const form = new formidable.IncomingForm();
+    //@ts-expect-error
+    const form = new formidable.IncomingForm({ maxFileSize: 2048 * 1024 * 1024 }); // 2gb
     form.uploadDir = '/tmp/audio-hq';
     form.keepExtensions = true;
     const parsePromise = new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {

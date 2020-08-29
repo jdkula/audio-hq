@@ -171,13 +171,17 @@ export async function convert(input: string, id?: string, options?: ConvertOptio
         ];
 
         if (options?.cut) {
+            ofDuration = options.cut.end - options.cut.start;
+
             complexFilter.push({
                 filter: 'atrim',
-                options: options.cut.start + ':' + options.cut.end,
+                options: {
+                    start: options.cut.start,
+                    end: options.cut.end,
+                },
                 inputs: ['audio'],
                 outputs: ['audio'],
             });
-            ofDuration = options.cut.end - options.cut.start;
         }
 
         if (options?.fadeIn) {
@@ -200,7 +204,8 @@ export async function convert(input: string, id?: string, options?: ConvertOptio
             });
         }
 
-        complexFilter.push({ filter: 'anull', inputs: ['audio'] });
+        complexFilter.push({ filter: 'asetpts', options: 'PTS-STARTPTS', inputs: ['audio'] });
+        // complexFilter.push({ filter: 'anull', inputs: ['audio'] });
 
         cmd = cmd.complexFilter(complexFilter);
 
