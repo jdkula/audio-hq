@@ -55,7 +55,17 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const [downloading, setDownloading] = useState(false);
     const [downloadTotal, setDownloadTotal] = useState(0);
     const [downloadFinished, setDownloadFinished] = useState(0);
-    const downloadPercent = downloadTotal === 0 ? undefined : Math.floor((downloadFinished / downloadTotal) * 100);
+    const filePartial =
+        fileManager.fetching.size === 0
+            ? 0
+            : fileManager.fetching
+                  .map((j) => (j.status === 'saving' ? { ...j, progress: 1 } : j))
+                  .filter((j) => j.progress !== null)
+                  .reduce((curr, v) => curr + v.progress!, 0) / fileManager.fetching.size;
+    const downloadPercent =
+        downloadTotal === 0
+            ? undefined
+            : (downloadFinished / downloadTotal) * 100 + (filePartial * 100) / downloadTotal;
     const allCached = fileManager.cached.size === workspace.files.length;
 
     const onDownload = async () => {
@@ -143,7 +153,9 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                                         color="secondary"
                                         textColor="inherit"
                                         value={downloadPercent}
-                                        variant={downloadPercent ? 'static' : 'indeterminate'}
+                                        variant={
+                                            !downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'static'
+                                        }
                                     />
                                 </Box>
                             )}
