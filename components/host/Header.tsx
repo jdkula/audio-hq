@@ -56,6 +56,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const [downloadTotal, setDownloadTotal] = useState(0);
     const [downloadFinished, setDownloadFinished] = useState(0);
     const downloadPercent = downloadTotal === 0 ? undefined : Math.floor((downloadFinished / downloadTotal) * 100);
+    const allCached = fileManager.cached.size === workspace.files.length;
 
     const onDownload = async () => {
         setDownloading(true);
@@ -129,25 +130,27 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     )}
                     {host && (
                         <>
-                            <Box color="white" mx="0.5rem">
-                                {!downloading && (
-                                    <Tooltip arrow placement="bottom" title="Download all tracks">
-                                        <IconButton color="inherit" onClick={onDownload}>
-                                            <GetApp />
-                                        </IconButton>
-                                    </Tooltip>
-                                )}
-                                {downloading && (
-                                    <Box mx="1rem">
-                                        <CircularProgressWithLabel
-                                            color="secondary"
-                                            textColor="inherit"
-                                            value={downloadPercent}
-                                            variant={downloadPercent ? 'static' : 'indeterminate'}
-                                        />
-                                    </Box>
-                                )}
-                            </Box>
+                            {!allCached && (
+                                <Box color="white" mx="0.5rem">
+                                    {!downloading && (
+                                        <Tooltip arrow placement="bottom" title="Download all tracks">
+                                            <IconButton color="inherit" onClick={onDownload}>
+                                                <GetApp />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
+                                    {downloading && (
+                                        <Box mx="1rem">
+                                            <CircularProgressWithLabel
+                                                color="secondary"
+                                                textColor="inherit"
+                                                value={downloadPercent}
+                                                variant={downloadPercent ? 'static' : 'indeterminate'}
+                                            />
+                                        </Box>
+                                    )}
+                                </Box>
+                            )}
                             <Hidden xsDown>
                                 <Button
                                     variant="contained"

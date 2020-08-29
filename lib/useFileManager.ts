@@ -58,8 +58,31 @@ const useFileManager = (workspaceId: string): FileManager => {
     const [working, setWorking] = useState<Set<Job>>(Set());
     const { jobs } = useJobs(workspaceId);
 
+    const reset = async () => {
+        await cache.current.destroy();
+        cache.current = new PouchDB('cache');
+        setCached(Set());
+    };
+
     useEffect(() => {
-        cache.current.allDocs().then((docs) => setCached(Set(docs.rows.map((row) => row.id))));
+        if (window.localStorage.getItem('cache_version') !== 'v1.0') {
+            reset().then(() => {
+                window.localStorage.setItem('cache_version', 'v1.0');
+                window.location.reload();
+            });
+        } else {
+            cache.current
+                .allDocs<{ workspace?: string }>({ include_docs: true })
+                .then((docs) =>
+                    setCached(
+                        Set(
+                            docs.rows
+                                .filter((row) => (row.doc?.workspace ?? workspaceId) === workspaceId)
+                                .map((row) => row.id),
+                        ),
+                    ),
+                );
+        }
     }, [cache.current]);
 
     useEffect(() => {
@@ -70,12 +93,6 @@ const useFileManager = (workspaceId: string): FileManager => {
             },
         );
     }, [jobs]);
-
-    const reset = async () => {
-        await cache.current.destroy();
-        cache.current = new PouchDB('cache');
-        setCached(Set());
-    };
 
     const updateFetching = (id: string, progress: number) => {
         setFetching((fetching) =>
@@ -158,6 +175,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                 try {
                     await cache.current.put({
                         _id: id,
+                        workspace: workspaceId,
                         _attachments: {
                             file: {
                                 content_type: 'audio/mp3',
@@ -278,7 +296,9 @@ const useFileManager = (workspaceId: string): FileManager => {
         onProgress?: (started: number, finished: number) => void,
     ) => {
         console.log('Downloading all songs...');
-        const alreadyDownloaded = (await cache.current.allDocs()).rows;
+        const alreadyDownloaded = (
+            await cache.current.allDocs<{ workspace?: string }>({ include_docs: true })
+        ).rows.filter((row) => (row.doc?.workspace ?? workspaceId) === workspaceId);
         const idSet = Set(alreadyDownloaded.map((doc) => doc.id));
         const files: WSFile[] = (await Axios.get(`/api/${workspaceId}/files`)).data;
         console.log('Already cached ', alreadyDownloaded.length, 'of', files.length, 'total');
