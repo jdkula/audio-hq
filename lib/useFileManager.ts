@@ -6,6 +6,7 @@ import { mutate } from 'swr';
 import Job from './Job';
 import { useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
+import ConvertOptions from './ConvertOptions';
 
 interface FileManager {
     track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
@@ -27,15 +28,6 @@ interface FileManager {
     cached: Set<string>;
     fetching: Set<Job>;
     working: Set<Job>;
-}
-
-export interface ConvertOptions {
-    cut?: {
-        start: number;
-        end: number;
-    };
-    fadeIn?: number;
-    fadeOut?: number;
 }
 
 async function* readBody(body: ReadableStream<Uint8Array>) {
