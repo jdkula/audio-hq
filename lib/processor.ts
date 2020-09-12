@@ -17,7 +17,7 @@ import { spawn } from 'child_process';
 import Jobs from './Jobs';
 import Job from './Job';
 import { AppFS } from './filesystems/FileSystem';
-import type { ConvertOptions } from './useFileManager';
+import ConvertOptions from './ConvertOptions';
 
 if (typeof global === undefined) {
     throw new Error('processor.ts should never be imported in client side code!');

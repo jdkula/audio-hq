@@ -1,7 +1,7 @@
 import { NextApiHandler } from 'next';
 import { convert, processFile } from '~/lib/processor';
 import formidable from 'formidable';
-import type { ConvertOptions } from '~/lib/useFileManager';
+import ConvertOptions from '~/lib/ConvertOptions';
 
 const Convert: NextApiHandler = async (req, res) => {
     //@ts-expect-error
