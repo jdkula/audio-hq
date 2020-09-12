@@ -1,8 +1,8 @@
 import { PlayState } from './Workspace';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
-import { useRecoilState } from 'recoil';
-import { globalVolumeAtom } from '~/pages/[id]';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { globalVolumeAtom } from './atoms';
 
 interface AudioInfo {
     duration: number;
@@ -21,7 +21,7 @@ interface Options {
 const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
     loop = loop ?? true;
     const fileManager = useContext(FileManagerContext);
-    const [globalVolume] = useRecoilState(globalVolumeAtom);
+    const globalVolume = useRecoilValue(globalVolumeAtom);
     const audio = useRef(new Audio());
 
     const [volumeValue, setVolume] = useState(0);

@@ -2,7 +2,7 @@ import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { StoredWorkspace, Workspace } from '~/lib/Workspace';
 import { FindAndModifyWriteOpResultObject } from 'mongodb';
-import Jobs from '~/lib/jobs';
+import Jobs from '~/lib/Jobs';
 
 export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
     const workspace: FindAndModifyWriteOpResultObject<StoredWorkspace & { _id: any }> = await (

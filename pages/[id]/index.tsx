@@ -1,10 +1,10 @@
 import { createContext, FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
-import { Header } from '~/components/host/Header';
-import { NowPlaying } from '~/components/host/NowPlaying';
-import { Explorer } from '~/components/host/Explorer';
-import { Ambience } from '~/components/host/Ambience';
-// import { SoundFX } from '~/components/host/SoundFX';
-// import { CurrentUsers } from '~/components/host/CurrentUsers';
+import { Header } from '~/components/Header';
+import { NowPlaying } from '~/components/NowPlaying';
+import { Explorer } from '~/components/Explorer';
+import { Ambience } from '~/components/Ambience';
+// import { SoundFX } from '~/components/SoundFX';
+// import { CurrentUsers } from '~/components/CurrentUsers';
 import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
@@ -13,13 +13,9 @@ import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { atom, useRecoilState } from 'recoil';
 import { AppBar, Box, CircularProgress, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import Head from 'next/head';
+import { globalVolumeAtom } from '~/lib/atoms';
 
 export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
-
-export const globalVolumeAtom = atom({
-    key: 'globalVolume',
-    default: 1,
-});
 
 const Container = styled.div`
     display: grid;

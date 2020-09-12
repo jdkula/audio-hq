@@ -1,7 +1,7 @@
 import { Box, Button, IconButton, LinearProgress, Paper, Tooltip, Typography } from '@material-ui/core';
 import Axios from 'axios';
 import { FC } from 'react';
-import type { Job } from '~/lib/jobs';
+import Job from '~/lib/Job';
 
 import CloseIcon from '@material-ui/icons/Close';
 import styled from 'styled-components';

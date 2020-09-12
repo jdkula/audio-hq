@@ -4,8 +4,18 @@ import fs from 'promise-fs';
 
 import AWS from 'aws-sdk';
 
+if (process.env.S3_BUCKET_NAME === undefined) {
+    throw new Error('S3_BUCKET_NAME environment variable must be defined!');
+}
+if (process.env.AWS_ACCESS_KEY_ID === undefined) {
+    throw new Error('AWS_ACCESS_KEY_ID environment variable must be defined!');
+}
+if (process.env.AWS_SECRET_ACCESS_KEY === undefined) {
+    throw new Error('AWS_SECRET_ACCESS_KEY environment variable must be defined!');
+}
+
 const defaultParams = {
-    Bucket: process.env.S3_BUCKET_NAME!,
+    Bucket: process.env.S3_BUCKET_NAME,
 };
 
 const S3 = new AWS.S3({

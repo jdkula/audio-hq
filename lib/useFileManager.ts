@@ -3,7 +3,7 @@ import Axios from 'axios';
 import { createContext, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { Set } from 'immutable';
 import { mutate } from 'swr';
-import type { Job } from './jobs';
+import Job from './Job';
 import { useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
 

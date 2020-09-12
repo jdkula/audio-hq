@@ -1,9 +1,9 @@
 import { makeStyles, Paper, Typography, Box } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 import styled from 'styled-components';
-import { WorkspaceContext } from '../../pages/[id]';
+import { WorkspaceContext } from '../pages/[id]';
 import { AudioControls } from './AudioControls';
-import { PlayStateResolver } from '../../lib/Workspace';
+import { PlayStateResolver } from '../lib/Workspace';
 
 import AddIcon from '@material-ui/icons/Add';
 

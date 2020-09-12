@@ -25,18 +25,12 @@ import styled from 'styled-components';
 import Axios from 'axios';
 import { mutate } from 'swr';
 import { Set, List } from 'immutable';
-import AddFileDialog from './AddFileDialog';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './AddFolderDialog';
 import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
-import { atom, useRecoilState } from 'recoil';
-
-// TODO: Find a better solution than global state :(
-export const addingAtom = atom({
-    key: 'adding_song',
-    default: false,
-});
+import { useRecoilState } from 'recoil';
+import { pathAtom } from '~/lib/atoms';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -84,9 +78,8 @@ export const Explorer: FunctionComponent = (props) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
 
-    const [path, setPath] = useState<string[]>([]);
+    const [path, setPath] = useRecoilState(pathAtom);
     const [combining, setCombining] = useState<WSFile[]>([]);
-    const [adding, setAdding] = useRecoilState(addingAtom);
 
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -203,7 +196,6 @@ export const Explorer: FunctionComponent = (props) => {
             </Paper>
             <Box m="1px" />
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />
-            <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
 
             <Box overflow="hidden" flexGrow={1} position="relative">
                 <Box height="100%" overflow="auto">

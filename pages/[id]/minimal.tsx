@@ -1,16 +1,16 @@
 import React, { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
-import { Header, VolumeButton } from '~/components/host/Header';
-import { Explorer } from '~/components/host/Explorer';
-import { Ambience } from '~/components/host/Ambience';
-// import { SoundFX } from '~/components/host/SoundFX';
-// import { CurrentUsers } from '~/components/host/CurrentUsers';
+import { Header, VolumeButton } from '~/components/Header';
+import { Explorer } from '~/components/Explorer';
+import { Ambience } from '~/components/Ambience';
+// import { SoundFX } from '~/components/SoundFX';
+// import { CurrentUsers } from '~/components/CurrentUsers';
 import { GetServerSideProps } from 'next';
 import useWorkspace from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import { useRecoilState } from 'recoil';
-import { globalVolumeAtom, WorkspaceContext } from '.';
-import { AudioControls } from '../../components/host/AudioControls';
+import { WorkspaceContext } from './index';
+import { AudioControls } from '~/components/AudioControls';
 import {
     Box,
     CircularProgress,
@@ -22,6 +22,7 @@ import {
     Typography,
 } from '@material-ui/core';
 import Head from 'next/head';
+import { globalVolumeAtom } from '~/lib/atoms';
 
 const Container = styled.div`
     display: grid;

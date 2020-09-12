@@ -1,7 +1,7 @@
 import { Workspace, WorkspaceUpdate, updatePlayState, File, WorkspaceState, WorkspaceResolver } from './Workspace';
 import Axios from 'axios';
 import useSWR from 'swr';
-import type { Job } from './jobs';
+import Job from './Job';
 
 interface WorkspaceHookResult {
     workspace: Workspace | null;

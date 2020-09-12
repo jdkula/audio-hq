@@ -1,4 +1,4 @@
-import type { Job } from './jobs';
+import Job from './Job';
 
 type ID = string;
 export interface File {

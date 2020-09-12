@@ -1,7 +1,7 @@
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
-import { Seeker } from '../Seeker';
+import { Seeker } from './Seeker';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
 

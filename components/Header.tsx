@@ -13,17 +13,18 @@ import {
     useTheme,
     Hidden,
 } from '@material-ui/core';
-import { globalVolumeAtom, WorkspaceContext } from '~/pages/[id]';
+import AddFileDialog from './AddFileDialog';
+import { WorkspaceContext } from '~/pages/[id]';
 import React, { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
 import { VolumeUp, VolumeDown, VolumeMute, VolumeOff, Add, CloudDownload, GetApp } from '@material-ui/icons';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
-import { addingAtom } from './Explorer';
 import { CircularProgressWithLabel } from './FileEntry';
+import { globalVolumeAtom, pathAtom } from '~/lib/atoms';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
@@ -45,9 +46,10 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const fileManager = useContext(FileManagerContext);
     const router = useRouter();
 
-    const [adding, setAdding] = useRecoilState(addingAtom);
+    const [adding, setAdding] = useState(false);
 
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+    const path = useRecoilValue(pathAtom);
 
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -85,6 +87,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     return (
         <AppBar position="static" style={{ gridArea: 'header' }}>
+            <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
             <Head>
                 <title>
                     Audio HQ – {workspace ? workspace.name : 'Loading...'}

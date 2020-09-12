@@ -1,6 +1,4 @@
-import { MongoClient } from 'mongodb';
+import mongoclient from './mongoclient';
 
-const client = new MongoClient(process.env.MONGO_URL!, { useNewUrlParser: true, useUnifiedTopology: true });
-
-const mongodb = client.connect().then((mongo) => mongo.db('audio-hq'));
+const mongodb = mongoclient.then((mongo) => mongo.db('audio-hq'));
 export default mongodb;

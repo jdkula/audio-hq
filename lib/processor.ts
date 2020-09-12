@@ -2,6 +2,9 @@ import fs from 'promise-fs';
 import path from 'path';
 import ytdl from 'youtube-dl';
 
+import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
+import { path as ffprobePath } from '@ffprobe-installer/ffprobe';
+
 import { v4 as uuidv4 } from 'uuid';
 import ffmpeg, { FilterSpecification } from 'fluent-ffmpeg';
 import { ObjectId } from 'mongodb';
@@ -11,25 +14,30 @@ import mongoworkspaces from './db/mongoworkspaces';
 import { File } from './Workspace';
 
 import { spawn } from 'child_process';
-import Jobs, { Job } from './jobs';
+import Jobs from './Jobs';
+import Job from './Job';
 import { AppFS } from './filesystems/FileSystem';
 import type { ConvertOptions } from './useFileManager';
 
-const kBaseDir = '/tmp/audio-hq/storage';
-
-try {
-    fs.mkdirSync('/tmp/audio-hq');
-} catch (e) {
-    // do nothing;
+if (typeof global === undefined) {
+    throw new Error('processor.ts should never be imported in client side code!');
 }
 
-// Type definitions for ytdl are bad... this exists! (gotta love the double-disable...)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-expect-error
+if (!process.env.TEMP_DIR) {
+    process.env.TEMP_DIR = '/tmp/audio-hq/storage';
+}
+
+const kBaseDir = process.env.TEMP_DIR;
+
+try {
+    fs.mkdirSync(kBaseDir, { recursive: true });
+} catch (e) {
+    // do nothing; already exists.
+}
+
 const ytdlPath = ytdl.getYtdlBinary();
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
+ffmpeg.setFfprobePath(ffprobePath);
 
 interface FileOptions {
     name: string;

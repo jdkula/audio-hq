@@ -33,7 +33,7 @@ import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import EditIcon from '@material-ui/icons/Edit';
 import OfflinePinIcon from '@material-ui/icons/OfflinePin';
 
-import { WorkspaceContext } from '../../pages/[id]';
+import { WorkspaceContext } from '../pages/[id]';
 
 export const FileContainer = styled(Paper)`
     display: grid;
