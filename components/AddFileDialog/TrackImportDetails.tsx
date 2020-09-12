@@ -1,4 +1,4 @@
-import { Accordion, AccordionSummary, AccordionDetails, Box, TextField, Typography } from '@material-ui/core';
+import { Accordion, AccordionSummary, AccordionDetails, TextField, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import React, { FC } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -23,6 +23,16 @@ const DropRoot = styled.div<{ isDragActive?: boolean }>`
     &:hover {
         border-color: #cccccc;
     }
+`;
+
+const OrContainer = styled.div`
+    text-align: center;
+    margin: 1rem;
+`;
+
+const TrackImportContainer = styled.div`
+    width: 100%;
+    margin: 0.5rem;
 `;
 
 interface TrackImportDetailsProps {
@@ -58,7 +68,7 @@ const TrackImportDetails: FC<TrackImportDetailsProps> = ({ url, setUrl, file, se
                 Upload {'&'} Import *
             </AccordionSummary>
             <AccordionDetails>
-                <Box m="0.5rem" width="100%">
+                <TrackImportContainer>
                     {!url && (
                         <DropRoot {...getRootProps()} isDragActive={isDragActive}>
                             <input {...getInputProps()} />
@@ -66,11 +76,7 @@ const TrackImportDetails: FC<TrackImportDetailsProps> = ({ url, setUrl, file, se
                         </DropRoot>
                     )}
 
-                    {!url && !file && (
-                        <Box textAlign="center" style={{ margin: '1rem' }}>
-                            - or, import from a website (youtube, etc.) -
-                        </Box>
-                    )}
+                    {!url && !file && <OrContainer>- or, import from a website (youtube, etc.) -</OrContainer>}
                     {!file && (
                         <TextField
                             value={url}
@@ -81,7 +87,7 @@ const TrackImportDetails: FC<TrackImportDetailsProps> = ({ url, setUrl, file, se
                             label="URL"
                         />
                     )}
-                </Box>
+                </TrackImportContainer>
             </AccordionDetails>
         </Accordion>
     );

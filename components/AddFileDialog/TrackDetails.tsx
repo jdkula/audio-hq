@@ -1,5 +1,5 @@
 import { TextField } from '@material-ui/core';
-import React, { FC, KeyboardEvent, RefObject, useRef } from 'react';
+import React, { FC, RefObject } from 'react';
 import styled from 'styled-components';
 
 const TrackDetailsBase = styled.div`

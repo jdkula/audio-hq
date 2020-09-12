@@ -1,22 +1,18 @@
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    Checkbox,
-    Hidden,
-    InputAdornment,
-    TextField,
-    Typography,
-} from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
-import React, { FC, forwardRef, ForwardRefRenderFunction, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, ForwardRefRenderFunction, useEffect, useImperativeHandle, useState } from 'react';
 import styled from 'styled-components';
 import ConvertOptions from '~/lib/ConvertOptions';
 import TrackCutOptions from './TrackCutOptions';
 import TrackFadeOptions from './TrackFadeOptions';
 
 const TrackOptionsBase = styled.div``;
+
+const TrackOptionsList = styled.div`
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+`;
 
 interface TrackOptionsProps {
     setOptions: (options: ConvertOptions) => void;
@@ -56,16 +52,10 @@ const TrackOptions: ForwardRefRenderFunction<TrackRef, TrackOptionsProps> = ({ s
         setOptions({ cut, fadeIn, fadeOut });
     }, [shouldCut, startTime, endTime, shouldFadeIn, fadeInTime, shouldFadeOut, fadeOutTime]);
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            reset: () => reset(),
-        }),
-        [reset],
-    );
+    useImperativeHandle(ref, () => ({ reset }));
 
     return (
-        <TrackOptionsBase ref={ref}>
+        <TrackOptionsBase>
             <Accordion>
                 <AccordionSummary
                     expandIcon={<ExpandMore />}
@@ -75,7 +65,7 @@ const TrackOptions: ForwardRefRenderFunction<TrackRef, TrackOptionsProps> = ({ s
                     Other Options
                 </AccordionSummary>
                 <AccordionDetails>
-                    <Box width="100%" display="flex" flexDirection="column">
+                    <TrackOptionsList>
                         <TrackCutOptions
                             {...{ shouldCut, setShouldCut, startTime, setStartTime, endTime, setEndTime }}
                         />
@@ -93,7 +83,7 @@ const TrackOptions: ForwardRefRenderFunction<TrackRef, TrackOptionsProps> = ({ s
                             shouldFade={shouldFadeOut}
                             setShouldFade={setShouldFadeOut}
                         />
-                    </Box>
+                    </TrackOptionsList>
                 </AccordionDetails>
             </Accordion>
         </TrackOptionsBase>

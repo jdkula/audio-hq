@@ -1,15 +1,19 @@
-import {
-    Accordion,
-    AccordionSummary,
-    Box,
-    Checkbox,
-    Typography,
-    AccordionDetails,
-    TextField,
-    InputAdornment,
-} from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+import { Accordion, Typography, AccordionDetails, TextField, InputAdornment } from '@material-ui/core';
 import React, { FC } from 'react';
+import styled from 'styled-components';
+import TrackOptionsContainer from './TrackOptionsContainer';
+import AccordionCheckboxHeader from './AccordionCheckboxHeader';
+
+const Separator = styled.div`
+    margin-bottom: 1rem;
+`;
+
+const FadeOptionsContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+`;
 
 interface TrackFadeOptionsProps {
     shouldFade: boolean;
@@ -30,31 +34,19 @@ const TrackFadeOptions: FC<TrackFadeOptionsProps> = ({
 }) => {
     return (
         <Accordion>
-            <AccordionSummary
-                expandIcon={<ExpandMore />}
-                id={`fade${fadeType}-header`}
-                aria-controls={`fade${fadeType}-content`}
-            >
-                <Box display="flex" alignItems="center">
-                    <Checkbox
-                        aria-label={`Fade ${fadeType} Checkbox`}
-                        onClick={(event) => event.stopPropagation()}
-                        onFocus={(event) => event.stopPropagation()}
-                        onChange={(e) => setShouldFade(e.currentTarget.checked)}
-                        checked={shouldFade}
-                    />
-                    <Typography>Fade {fadeType}</Typography>
-                </Box>
-            </AccordionSummary>
+            <AccordionCheckboxHeader
+                id={`fade${fadeType}`}
+                label={`Fade ${fadeType}`}
+                checked={shouldFade}
+                setChecked={setShouldFade}
+            />
             <AccordionDetails>
-                <Box display="flex" alignItems="center" flexDirection="column" textAlign="center">
-                    <Box mb="1rem">
-                        <Typography>
-                            Allow the audio track to fade {fadeType} for the specified number of seconds at its
-                            beginning.
-                        </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" justifyContent="center" width="100%">
+                <TrackOptionsContainer>
+                    <Typography>
+                        Allow the audio track to fade {fadeType} for the specified number of seconds at its beginning.
+                    </Typography>
+                    <Separator />
+                    <FadeOptionsContainer>
                         <TextField
                             type="number"
                             variant="outlined"
@@ -69,8 +61,8 @@ const TrackFadeOptions: FC<TrackFadeOptionsProps> = ({
                             value={fadeTime}
                             onChange={(e) => setFadeTime(parseInt(e.currentTarget.value))}
                         />
-                    </Box>
-                </Box>
+                    </FadeOptionsContainer>
+                </TrackOptionsContainer>
             </AccordionDetails>
         </Accordion>
     );

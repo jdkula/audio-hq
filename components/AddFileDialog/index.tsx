@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogProps,
-    DialogTitle,
-} from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@material-ui/core';
 import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useRef, useState } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import styled from 'styled-components';
