@@ -1,3 +1,12 @@
+/**
+ * AddFileDialog/TrackDetails.tsx
+ * ========================
+ * Provides fields to set the title and description of a given track.
+ *
+ * Optionally displays a warning if the form is incomplete.
+ * Optionally displays a placeholder with the file's name.
+ */
+
 import { TextField } from '@material-ui/core';
 import React, { FC, RefObject } from 'react';
 import styled from 'styled-components';
@@ -17,7 +26,7 @@ interface TrackDetailsProps {
     description: string;
     setDescription: (title: string) => void;
 
-    error?: boolean;
+    incomplete?: boolean;
 
     titleRef?: RefObject<HTMLInputElement | null>;
 }
@@ -28,7 +37,7 @@ const TrackDetails: FC<TrackDetailsProps> = ({
     description,
     setDescription,
     file,
-    error,
+    incomplete: error,
     titleRef,
 }) => {
     return (

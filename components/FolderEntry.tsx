@@ -23,7 +23,7 @@ import {
     ClickAwayListener,
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
-import { WorkspaceContext } from '~/pages/[id]';
+import { WorkspaceContext } from '~/lib/useWorkspace';
 import { DeleteForever } from '@material-ui/icons';
 import styled from 'styled-components';
 

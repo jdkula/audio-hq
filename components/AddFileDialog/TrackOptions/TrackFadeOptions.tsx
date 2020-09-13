@@ -1,3 +1,10 @@
+/**
+ * TrackOptions/TrackFadeOptions.tsx
+ * ========================
+ * Provides an accordion that provides settings
+ * relating to fading a track in/out.
+ */
+
 import { Accordion, Typography, AccordionDetails, TextField, InputAdornment } from '@material-ui/core';
 import React, { FC } from 'react';
 import styled from 'styled-components';
@@ -22,6 +29,7 @@ interface TrackFadeOptionsProps {
     fadeTime: number;
     setFadeTime: (fadeTime: number) => void;
 
+    // only affects verbiage.
     fadeType: 'in' | 'out';
 }
 

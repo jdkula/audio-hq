@@ -1,3 +1,10 @@
+/**
+ * TrackOptions/TrackCutOptions.tsx
+ * ========================
+ * Provides an accordion that provides settings
+ * relating to cutting a track to a given start/end time.
+ */
+
 import { Accordion, Typography, AccordionDetails, InputAdornment, TextField } from '@material-ui/core';
 import React, { FC } from 'react';
 import styled from 'styled-components';
@@ -8,7 +15,7 @@ const Separator = styled.div`
     margin-bottom: 1rem;
 `;
 
-const ToContainer = styled(Typography)`
+const Spaced = styled(Typography)`
     margin: 0.5rem;
 `;
 
@@ -67,7 +74,7 @@ const TrackCutOptions: FC<TrackCutOptionsProps> = ({
                             value={startTime}
                             onChange={(e) => setStartTime(parseInt(e.currentTarget.value))}
                         />
-                        <ToContainer>to</ToContainer>
+                        <Spaced>to</Spaced>
                         <TextField
                             type="number"
                             variant="outlined"

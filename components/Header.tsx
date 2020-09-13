@@ -14,7 +14,6 @@ import {
     Hidden,
 } from '@material-ui/core';
 import AddFileDialog from './AddFileDialog';
-import { WorkspaceContext } from '~/pages/[id]';
 import React, { useContext, FunctionComponent, useState, FC, useRef } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
@@ -23,8 +22,9 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 
 import DeleteIcon from '@material-ui/icons/DeleteSweep';
 import { useRouter } from 'next/router';
-import { CircularProgressWithLabel } from './FileEntry';
+import CircularProgressWithLabel from './CircularProgressWithLabel';
 import { globalVolumeAtom, pathAtom } from '~/lib/atoms';
+import { WorkspaceContext } from '~/lib/useWorkspace';
 
 export const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;

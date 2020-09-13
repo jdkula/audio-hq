@@ -1,3 +1,10 @@
+/**
+ * TrackOptions/index.tsx
+ * ========================
+ * Provides an accordion that contains all the possible additional
+ * conversion options, such as cutting tracks or fading them in/out.
+ */
+
 import { Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import React, { forwardRef, ForwardRefRenderFunction, useEffect, useImperativeHandle, useState } from 'react';
@@ -18,6 +25,7 @@ interface TrackOptionsProps {
     setOptions: (options: ConvertOptions) => void;
 }
 
+// Since nullish ConvertOptions are ambiguous, values must be imperatively reset.
 export interface TrackRef {
     reset: () => void;
 }

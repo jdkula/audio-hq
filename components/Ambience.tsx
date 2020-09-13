@@ -1,7 +1,14 @@
-import { makeStyles, Paper, Typography, Box } from '@material-ui/core';
+/**
+ * Ambience.tsx
+ * ========================
+ * One of the three main AudioHQ sections.
+ * Displays controls for all ambient tracks playing in the workspace.
+ */
+
+import { Paper, Typography } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 import styled from 'styled-components';
-import { WorkspaceContext } from '../pages/[id]';
+import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver } from '../lib/Workspace';
 
@@ -15,6 +22,11 @@ const AmbienceContainer = styled.div`
 const AmbienceScrollContainer = styled.div`
     overflow: auto;
     height: 100%;
+`;
+
+const CenteredTypography = styled(Typography)`
+    display: flex;
+    align-items: center;
 `;
 
 const EmptyContainer = styled.div`
@@ -66,11 +78,9 @@ export const Ambience: FunctionComponent = () => {
             <AmbienceContainer>
                 <EmptyContainer>
                     <Typography variant="h4">No Ambience Playing</Typography>
-                    <Box clone display="flex" alignItems="center">
-                        <Typography variant="subtitle1">
-                            Use the <AddIcon /> button to add some!
-                        </Typography>
-                    </Box>
+                    <CenteredTypography variant="subtitle1">
+                        Use the <AddIcon /> button to add some!
+                    </CenteredTypography>
                 </EmptyContainer>
             </AmbienceContainer>
         );

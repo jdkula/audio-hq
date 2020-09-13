@@ -1,3 +1,10 @@
+/**
+ * TrackOptions/TrackOptionsContainer.tsx
+ * ========================
+ * Provides a simple container used inside
+ * the AccordionDetails for all options.
+ */
+
 import styled from 'styled-components';
 
 const TrackOptionsContainer = styled.div`

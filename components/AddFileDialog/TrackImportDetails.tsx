@@ -1,9 +1,16 @@
+/**
+ * AddFileDialog/TrackImportDetails.tsx
+ * ========================
+ * Provides fields to accept a URL to import or file to upload.
+ */
+
 import { Accordion, AccordionSummary, AccordionDetails, TextField, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import React, { FC } from 'react';
 import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
 
+/** Container to drag a file on top of. */
 const DropRoot = styled.div<{ isDragActive?: boolean }>`
     flex: 1;
     display: flex;
@@ -25,14 +32,18 @@ const DropRoot = styled.div<{ isDragActive?: boolean }>`
     }
 `;
 
-const OrContainer = styled.div`
-    text-align: center;
+const Spaced = styled.div`
     margin: 1rem;
 `;
 
+/** Container for the inside of the accordion. */
 const TrackImportContainer = styled.div`
     width: 100%;
     margin: 0.5rem;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
 `;
 
 interface TrackImportDetailsProps {
@@ -51,6 +62,7 @@ const TrackImportDetails: FC<TrackImportDetailsProps> = ({ url, setUrl, file, se
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+    // If a file is available, show its name.
     let fileInfo;
     if (file) {
         fileInfo = (
@@ -76,7 +88,7 @@ const TrackImportDetails: FC<TrackImportDetailsProps> = ({ url, setUrl, file, se
                         </DropRoot>
                     )}
 
-                    {!url && !file && <OrContainer>- or, import from a website (youtube, etc.) -</OrContainer>}
+                    {!url && !file && <Spaced> - or, import from a website (youtube, etc.) - </Spaced>}
                     {!file && (
                         <TextField
                             value={url}

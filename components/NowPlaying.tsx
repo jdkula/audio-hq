@@ -4,8 +4,8 @@ import { FunctionComponent, useContext } from 'react';
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
-import { WorkspaceContext } from '~/pages/[id]';
 import PlayIcon from '@material-ui/icons/PlayArrow';
+import { WorkspaceContext } from '~/lib/useWorkspace';
 
 const NowPlayingContainer = styled.div`
     grid-area: nowplaying;

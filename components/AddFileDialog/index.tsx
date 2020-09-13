@@ -1,3 +1,15 @@
+/**
+ * AddFileDialog/index.tsx
+ * ========================
+ * Provides a dialog modal allowing users to add songs to their workspace.
+ * Provides options to add a title, description, import from URL or upload a file,
+ * as well as track editing options like cuts and fades.
+ *
+ * Pasting anywhere with a URL fills in the URL field.
+ * Enter anywhere submits the form and closes the modal.
+ * Shift+Enter anywhere submits the form, resets it, and focuses the title input.
+ */
+
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@material-ui/core';
 import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useRef, useState } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
@@ -7,6 +19,7 @@ import TrackOptions, { TrackRef } from './TrackOptions';
 import TrackImportDetails from './TrackImportDetails';
 import TrackDetails from './TrackDetails';
 
+/** Dialog content wrapper */
 const AddTrackContent = styled(DialogContent)`
     min-width: 300px;
     display: grid;
@@ -22,13 +35,16 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const [file, setFile] = useState<File | null>(null);
 
     const [options, setOptions] = useState<ConvertOptions>({});
+
+    // TrackRef provides a reset function to clear/reset its fields.
     const optionsRef = useRef<TrackRef | null>(null);
 
+    // Needed to focus the title on shift+enter.
     const titleRef = useRef<HTMLInputElement | null>(null);
 
     const fileManager = useContext(FileManagerContext);
 
-    const doClose = (shouldClose = true) => {
+    const afterSubmit = (shouldClose = true) => {
         setUrl('');
         setTitle('');
         setDescription('');
@@ -37,7 +53,6 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
         if (shouldClose) {
             props.onClose?.({}, 'escapeKeyDown');
         } else {
-            console.log(titleRef);
             titleRef.current?.focus();
         }
     };
@@ -64,10 +79,10 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const onUpload = (shouldClose = true) => {
         if (file) {
             fileManager.upload(title || file.name, file, currentPath, description, options);
-            doClose(shouldClose);
+            afterSubmit(shouldClose);
         } else if (title) {
             fileManager.import(title, url, currentPath, description, options);
-            doClose(shouldClose);
+            afterSubmit(shouldClose);
         }
     };
 
@@ -83,7 +98,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     };
 
     return (
-        <Dialog {...props} onClose={() => doClose()} onPasteCapture={handleUrlPaste} onKeyDown={handleEnter}>
+        <Dialog {...props} onClose={() => afterSubmit()} onPasteCapture={handleUrlPaste} onKeyDown={handleEnter}>
             <DialogTitle>Add a track!</DialogTitle>
             <AddTrackContent dividers>
                 <TrackDetails
@@ -93,7 +108,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
                     setDescription={setDescription}
                     file={file}
                     titleRef={titleRef}
-                    error={notifyEnterName}
+                    incomplete={notifyEnterName}
                 />
 
                 <div>
@@ -103,7 +118,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
             </AddTrackContent>
             <DialogActions>
                 {file && <Button onClick={() => setFile(null)}>Clear</Button>}
-                <Button color={ready ? 'primary' : undefined} onClick={() => (ready ? onUpload() : doClose())}>
+                <Button color={ready ? 'primary' : undefined} onClick={() => (ready ? onUpload() : afterSubmit())}>
                     {ready ? (file ? 'Upload' : 'Import') : 'Close'}
                 </Button>
             </DialogActions>

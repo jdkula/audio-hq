@@ -4,7 +4,7 @@ import { createContext, MutableRefObject, useEffect, useRef, useState } from 're
 import { Set } from 'immutable';
 import { mutate } from 'swr';
 import Job from './Job';
-import { useJobs } from './useWorkspace';
+import { useFiles, useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
 import ConvertOptions from './ConvertOptions';
 
@@ -49,6 +49,7 @@ const useFileManager = (workspaceId: string): FileManager => {
     const [fetching, setFetching] = useState<Set<Job>>(Set());
     const [working, setWorking] = useState<Set<Job>>(Set());
     const { jobs } = useJobs(workspaceId);
+    const { files } = useFiles(workspaceId);
 
     const reset = async () => {
         await cache.current.destroy();
@@ -57,25 +58,21 @@ const useFileManager = (workspaceId: string): FileManager => {
     };
 
     useEffect(() => {
-        if (window.localStorage.getItem('cache_version') !== 'v1.0') {
+        if (window.localStorage.getItem('cache_version') !== 'v1.1') {
             reset().then(() => {
-                window.localStorage.setItem('cache_version', 'v1.0');
+                window.localStorage.setItem('cache_version', 'v1.1');
                 window.location.reload();
             });
         } else {
             cache.current
-                .allDocs<{ workspace?: string }>({ include_docs: true })
+                .allDocs()
                 .then((docs) =>
-                    setCached(
-                        Set(
-                            docs.rows
-                                .filter((row) => (row.doc?.workspace ?? workspaceId) === workspaceId)
-                                .map((row) => row.id),
-                        ),
+                    setCached((cached) =>
+                        cached.union(Set(docs.rows.map((row) => row.id))).intersect(Set(files.map((f) => f.id))),
                     ),
                 );
         }
-    }, [cache.current]);
+    }, [cache.current, files]);
 
     useEffect(() => {
         Promise.all(jobs.filter((j) => j.status === 'done').map((j) => Axios.delete(`/api/jobs/${j.jobId}`))).then(

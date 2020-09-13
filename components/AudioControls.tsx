@@ -1,31 +1,22 @@
+/**
+ * AudioControls.tsx
+ * ========================
+ * Given a PlayState, provides both the audio player
+ * and controls for it (play/pause, seek, speed, volume).
+ */
+
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Box, IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
-import { Seeker } from './Seeker';
+import { IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
 
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import StopIcon from '@material-ui/icons/Stop';
-import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import SpeedIcon from '@material-ui/icons/Speed';
 import { VolumeButton } from './Header';
-
-export function toTimestamp(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    seconds %= 3600;
-    const minutes = Math.floor(seconds / 60);
-    seconds %= 60;
-
-    const secondsPadded = seconds.toFixed(0).padStart(2, '0');
-    const minutesPadded = minutes.toFixed(0).padStart(2, '0');
-    if (hours) {
-        return `${hours}:${minutesPadded}:${secondsPadded}`;
-    } else {
-        return `${minutes}:${secondsPadded}`;
-    }
-}
+import toTimestamp from '~/lib/toTimestamp';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -54,31 +45,49 @@ const AudioControlsContainer = styled.div`
     }
 `;
 
-export const AudioControls: FunctionComponent<{
+const ControlsContainer = styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
+`;
+
+const Spaced = styled.div`
+    margin: 0 0.5rem;
+`;
+
+const Timestamp = styled.div`
+    font-size: 7pt;
+`;
+
+interface AudioControlsProps {
     state: PlayState;
     resolver: PlayStateResolver;
     onBlocked?: (blocked: boolean) => void;
     onLoading?: (loading: boolean) => void;
-}> = ({ state, resolver, onBlocked, onLoading }) => {
+}
+
+export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, resolver, onBlocked, onLoading }) => {
+    // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
-    const [anchorEl, setAnchor] = useState<HTMLButtonElement | null>(null);
+    const [tempSeek, setTempSeek] = useState<number | null>(null);
+
+    const [volumeAnchorEl, serVolumeAnchor] = useState<HTMLButtonElement | null>(null);
     const [speedAnchorEl, setSpeedAnchor] = useState<HTMLButtonElement | null>(null);
 
     const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
         overrideVolume: tempVolume ?? undefined,
     });
 
+    // propagate blocked and/or loading state up (if the parent wants it)
     useEffect(() => onBlocked?.(blocked), [blocked]);
     useEffect(() => onLoading?.(loading), [loading]);
-
-    const [seekTimestamp, setSeekTimestamp] = useState<number | null>(null);
 
     const finishSeek = (to: number) => {
         resolver({
             startTimestamp: Date.now() - to * 1000,
         });
-        setSeekTimestamp(null);
+        setTempSeek(null);
     };
 
     if (!state) {
@@ -95,34 +104,34 @@ export const AudioControls: FunctionComponent<{
 
     return (
         <AudioControlsContainer>
-            <Box display="flex" alignItems="center" width="100%">
+            <ControlsContainer>
                 <Tooltip title={paused ? 'Play' : 'Pause'} placement="bottom" arrow>
                     <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
                 </Tooltip>
                 <Slider
-                    value={seekTimestamp ?? time}
+                    value={tempSeek ?? time}
                     min={0}
                     max={duration}
                     step={1}
                     valueLabelDisplay="auto"
-                    valueLabelFormat={(value) => <Box fontSize="7pt">{toTimestamp(value)}</Box>}
+                    valueLabelFormat={(value) => <Timestamp>{toTimestamp(value)}</Timestamp>}
                     onChangeCommitted={(_, v) => finishSeek(v as number)}
-                    onChange={(_, v) => setSeekTimestamp(v as number)}
+                    onChange={(_, v) => setTempSeek(v as number)}
                 />
-                <Box mx={2}>
-                    <Typography variant="subtitle1">{toTimestamp(seekTimestamp ?? time)}</Typography>
-                </Box>
-            </Box>
-            <Box display="flex" alignItems="center">
+                <Spaced>
+                    <Typography variant="subtitle1">{toTimestamp(tempSeek ?? time)}</Typography>
+                </Spaced>
+            </ControlsContainer>
+            <ControlsContainer>
                 <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
-                    <IconButton onClick={(e) => setAnchor(e.currentTarget)}>
+                    <IconButton onClick={(e) => serVolumeAnchor(e.currentTarget)}>
                         <VolumeButton volume={volume} />
                     </IconButton>
                 </Tooltip>
                 <Popover
-                    open={!!anchorEl}
-                    onClose={() => setAnchor(null)}
-                    anchorEl={anchorEl}
+                    open={!!volumeAnchorEl}
+                    onClose={() => serVolumeAnchor(null)}
+                    anchorEl={volumeAnchorEl}
                     transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
@@ -166,7 +175,7 @@ export const AudioControls: FunctionComponent<{
                         <StopIcon />
                     </IconButton>
                 </Tooltip>
-            </Box>
+            </ControlsContainer>
         </AudioControlsContainer>
     );
 };

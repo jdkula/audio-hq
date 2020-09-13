@@ -2,6 +2,7 @@ import { Workspace, WorkspaceUpdate, updatePlayState, File, WorkspaceState, Work
 import Axios from 'axios';
 import useSWR from 'swr';
 import Job from './Job';
+import { createContext } from 'react';
 
 interface WorkspaceHookResult {
     workspace: Workspace | null;
@@ -23,7 +24,7 @@ interface LoadingDetail {
 
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
-const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void; loading: boolean } => {
+export const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void; loading: boolean } => {
     const { data, mutate } = useSWR<Workspace['files']>(`/api/${encodeURIComponent(workspaceId)}/files`, fetcher, {
         refreshInterval: 2000,
     });
@@ -104,3 +105,6 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
 };
 
 export default useWorkspace;
+
+export type WorkspaceContextType = Workspace & { resolver: WorkspaceResolver };
+export const WorkspaceContext = createContext<WorkspaceContextType>(null as never);

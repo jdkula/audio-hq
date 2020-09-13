@@ -1,21 +1,18 @@
-import { createContext, FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
+import { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { Header } from '~/components/Header';
 import { NowPlaying } from '~/components/NowPlaying';
 import { Explorer } from '~/components/Explorer';
 import { Ambience } from '~/components/Ambience';
 // import { SoundFX } from '~/components/SoundFX';
 // import { CurrentUsers } from '~/components/CurrentUsers';
-import { Workspace, WorkspaceResolver } from '~/lib/Workspace';
 import { GetServerSideProps } from 'next';
-import useWorkspace from '~/lib/useWorkspace';
+import useWorkspace, { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
-import { atom, useRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { AppBar, Box, CircularProgress, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@material-ui/core';
 import Head from 'next/head';
 import { globalVolumeAtom } from '~/lib/atoms';
-
-export const WorkspaceContext = createContext<Workspace & { resolver: WorkspaceResolver }>(null as never);
 
 const Container = styled.div`
     display: grid;

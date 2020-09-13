@@ -1,36 +1,42 @@
-import Axios from 'axios';
+/**
+ * AddFolderDialog.tsx
+ * ========================
+ * Provides a simple dialog that combines
+ * multiple files together into a new folder.
+ */
+
 import React, { FC, useState, useContext, KeyboardEvent } from 'react';
-import { mutate } from 'swr';
-import { WorkspaceContext } from '~/pages/[id]';
 
 import { File as WSFile } from '~/lib/Workspace';
-import { Dialog, DialogTitle, Typography, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
 
 const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, cancel }) => {
     const [name, setName] = useState('');
-    const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
 
-    const doCancel = () => {
+    const onCancel = () => {
         setName('');
         cancel();
     };
 
     const addFilesToFolder = async () => {
-        doCancel();
+        onCancel();
+
+        // We can assign all files to a new folder by just adding the name on.
+        // The captured value of "name" is unaffected by the call to onCancel above.
         await Promise.all(files.map((file) => fileManager.update(file.id, { path: [...file.path, name] })));
     };
 
     const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.nativeEvent.code === 'Enter') {
-            e.preventDefault();
-            addFilesToFolder();
-        }
+        if (e.nativeEvent.code !== 'Enter') return;
+
+        e.preventDefault();
+        addFilesToFolder();
     };
 
     return (
-        <Dialog open={files.length > 0} onClose={doCancel}>
+        <Dialog open={files.length > 0} onClose={onCancel}>
             <DialogTitle>Add Folder</DialogTitle>
             <DialogContent dividers>
                 <TextField
@@ -43,7 +49,7 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={doCancel}>Cancel</Button>
+                <Button onClick={onCancel}>Cancel</Button>
                 <Button onClick={addFilesToFolder}>Add</Button>
             </DialogActions>
         </Dialog>
