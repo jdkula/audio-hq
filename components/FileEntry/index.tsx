@@ -1,3 +1,12 @@
+/**
+ * FileEntry/index.tsx
+ * ==========================
+ * Provides a user-interactible interface for a given File.
+ * Allows the user to play a song as main/ambience, edit
+ * file details, download or delete the file, as well as
+ * display file information.
+ */
+
 import { Paper } from '@material-ui/core';
 import React, { FC, useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';

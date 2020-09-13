@@ -1,3 +1,10 @@
+/**
+ * FileEntry/DeleteDialog.tsx
+ * ===========================
+ * Presents a dialog modal that confirms if the user
+ * truly wants to delete the given file.
+ */
+
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@material-ui/core';
 import React, { FC, useContext } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';

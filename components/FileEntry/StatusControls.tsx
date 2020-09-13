@@ -1,3 +1,10 @@
+/**
+ * FileEntry/StatusControls.tsx
+ * ==========================
+ * Provides the ability to edit song details,
+ * download, or delete a song.
+ */
+
 import { Tooltip, IconButton } from '@material-ui/core';
 import React, { FC, useContext } from 'react';
 import styled from 'styled-components';

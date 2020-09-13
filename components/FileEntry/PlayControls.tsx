@@ -1,3 +1,10 @@
+/**
+ * FileEntry/PlayControls.tsx
+ * ==========================
+ * Provides the ability to play a song on main
+ * or as ambience.
+ */
+
 import styled from 'styled-components';
 import { File } from '~/lib/Workspace';
 
