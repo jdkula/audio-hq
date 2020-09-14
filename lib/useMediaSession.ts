@@ -1,4 +1,3 @@
-import { resolve } from 'dns';
 import { useRef, useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom } from './atoms';
@@ -38,7 +37,7 @@ const useMediaSession = (workspace: Workspace | null, resolver: WorkspaceResolve
                 resolver({ playing: { startTimestamp: Date.now(), pauseTime: null } });
             });
         }
-    }, [resolve, globalVolume, setGlobalVolume]);
+    }, [resolver, globalVolume, setGlobalVolume]);
 };
 
 export default useMediaSession;
