@@ -1,3 +1,10 @@
+/**
+ * MainPlayer.tsx
+ * ===============
+ * One of Audio HQ's three main areas. Provides
+ * audio controls for the primary track.
+ */
+
 import { Typography, Box } from '@material-ui/core';
 import { FunctionComponent, useContext } from 'react';
 
@@ -7,7 +14,7 @@ import styled from 'styled-components';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 
-const NowPlayingContainer = styled.div`
+const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
 
     padding: 1rem;
@@ -25,20 +32,20 @@ const NowPlayingContainer = styled.div`
     text-align: center;
 `;
 
-export const NowPlaying: FunctionComponent<{
+export const MainPlayer: FunctionComponent<{
     state: PlayState | null;
     resolver: PlayStateResolver;
 }> = ({ state, resolver }) => {
     if (!state) {
         return (
-            <NowPlayingContainer>
+            <MainPlayerContainer>
                 <Typography variant="h4">Nothing Playing</Typography>
                 <Box clone display="flex" alignItems="center" mt="0.5rem">
                     <Typography variant="subtitle1">
                         Use the <PlayIcon /> button to add some!
                     </Typography>
                 </Box>
-            </NowPlayingContainer>
+            </MainPlayerContainer>
         );
     }
 
@@ -47,9 +54,9 @@ export const NowPlaying: FunctionComponent<{
     const trackName = ws.files.find((f) => f.id === ws.state.playing?.id)?.name;
 
     return (
-        <NowPlayingContainer>
+        <MainPlayerContainer>
             <Typography variant="h5">{trackName ?? 'Loading...'}</Typography>
             <AudioControls state={state} resolver={resolver} />
-        </NowPlayingContainer>
+        </MainPlayerContainer>
     );
 };

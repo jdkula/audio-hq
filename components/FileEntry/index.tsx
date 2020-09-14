@@ -13,7 +13,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import { File as WSFile } from '~/lib/Workspace';
 import styled from 'styled-components';
 
-import DeleteDialog from './DeleteDialog';
+import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
@@ -65,7 +65,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
 
     return (
         <>
-            <DeleteDialog open={showDelete} file={file} onClose={() => setDelete(false)} />
+            <FileDeleteDialog open={showDelete} file={file} onClose={() => setDelete(false)} />
             <Draggable draggableId={file.id} index={index}>
                 {(provided, snapshot) => (
                     <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>

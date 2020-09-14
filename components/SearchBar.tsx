@@ -1,3 +1,9 @@
+/**
+ * SearchBar.tsx
+ * ===============
+ * Provides a search bar for the explorer!
+ */
+
 import { TextField, InputAdornment, Tooltip, IconButton } from '@material-ui/core';
 import React, { FC } from 'react';
 
@@ -10,14 +16,14 @@ const SearchContainer = styled.div`
     align-items: center;
 `;
 
-interface SearchAreaProps {
+interface SearchBarProps {
     searching: boolean;
     searchText: string;
     setSearching: (searching: boolean) => void;
     setSearchText: (searchText: string) => void;
 }
 
-const SearchArea: FC<SearchAreaProps> = ({ searching, searchText, setSearching, setSearchText }) => {
+const SearchBar: FC<SearchBarProps> = ({ searching, searchText, setSearching, setSearchText }) => {
     return searching ? (
         <SearchContainer>
             <TextField
@@ -50,4 +56,4 @@ const SearchArea: FC<SearchAreaProps> = ({ searching, searchText, setSearching, 
     );
 };
 
-export default SearchArea;
+export default SearchBar;

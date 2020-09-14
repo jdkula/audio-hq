@@ -1,5 +1,5 @@
 export default function toTimestamp(seconds: number): string {
-    if (seconds < 0) return `${seconds}`;
+    if (seconds < 0) return `${Math.floor(seconds)}`;
 
     const hours = Math.floor(seconds / 3600);
     seconds %= 3600;

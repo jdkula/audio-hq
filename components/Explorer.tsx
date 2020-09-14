@@ -1,3 +1,11 @@
+/**
+ * Explorer.tsx
+ * ==============================
+ * One of Audio HQ's main panels. Provides
+ * file/folder operations with all the saved tracks,
+ * as well as is the interface by which users may play music.
+ */
+
 import { Breadcrumbs, Button, Divider, Paper } from '@material-ui/core';
 import React, { FC, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/lib/useWorkspace';
@@ -16,7 +24,7 @@ import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 import { useRecoilState } from 'recoil';
 import { pathAtom } from '~/lib/atoms';
-import SearchArea from './SearchArea';
+import SearchBar from './SearchBar';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -193,7 +201,7 @@ export const Explorer: FC = () => {
                 <BreadcrumbsContainer>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
                 </BreadcrumbsContainer>
-                <SearchArea
+                <SearchBar
                     searching={searching}
                     searchText={searchText}
                     setSearchText={setSearchText}

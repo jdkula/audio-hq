@@ -1,3 +1,10 @@
+/**
+ * CircularProgressWithLabel.tsx
+ * ==============================
+ * From the CircularProgress MUI documentation.
+ * Displays a percentage inside a circular progress indicator.
+ */
+
 import { Box, CircularProgress, CircularProgressProps, Typography, TypographyProps } from '@material-ui/core';
 import React, { FC, forwardRef } from 'react';
 

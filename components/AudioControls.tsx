@@ -10,12 +10,12 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
+import VolumeButton from './VolumeButton';
 
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PauseIcon from '@material-ui/icons/Pause';
 import StopIcon from '@material-ui/icons/Stop';
 import SpeedIcon from '@material-ui/icons/Speed';
-import { VolumeButton } from './Header';
 import toTimestamp from '~/lib/toTimestamp';
 
 const speedMarks = [

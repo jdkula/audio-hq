@@ -1,6 +1,6 @@
 import { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { Header } from '~/components/Header';
-import { NowPlaying } from '~/components/NowPlaying';
+import { MainPlayer } from '~/components/MainPlayer';
 import { Explorer } from '~/components/Explorer';
 import { Ambience } from '~/components/Ambience';
 // import { SoundFX } from '~/components/SoundFX';
@@ -57,7 +57,7 @@ const MainApp: FC = () => {
 
     const [tabValue, setTabValue] = useState(0);
 
-    const nowPlaying = <NowPlaying resolver={(update) => resolver({ playing: update })} state={state.playing} />;
+    const nowPlaying = <MainPlayer resolver={(update) => resolver({ playing: update })} state={state.playing} />;
 
     if (isSmall) {
         return (

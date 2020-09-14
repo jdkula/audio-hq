@@ -10,7 +10,7 @@ import React, { FC, useContext } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { File as WSFile } from '~/lib/Workspace';
 
-const DeleteDialog: FC<DialogProps & { file: WSFile }> = ({ file, ...props }) => {
+const FileDeleteDialog: FC<DialogProps & { file: WSFile }> = ({ file, ...props }) => {
     const fileManager = useContext(FileManagerContext);
 
     const doDelete = () => {
@@ -32,4 +32,4 @@ const DeleteDialog: FC<DialogProps & { file: WSFile }> = ({ file, ...props }) =>
     );
 };
 
-export default DeleteDialog;
+export default FileDeleteDialog;
