@@ -1,76 +1,60 @@
-import React, { FC, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, FunctionComponent, useContext, useState } from 'react';
 import { Header } from '~/components/Header';
-import { Explorer } from '~/components/Explorer';
-import { Ambience } from '~/components/Ambience';
-// import { SoundFX } from '~/components/SoundFX';
-// import { CurrentUsers } from '~/components/CurrentUsers';
 import { GetServerSideProps } from 'next';
-import useWorkspace, { WorkspaceContext } from '~/lib/useWorkspace';
-import styled from 'styled-components';
-import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
+import { WorkspaceContext } from '~/lib/useWorkspace';
+import { FileManagerContext } from '~/lib/useFileManager';
 import { useRecoilState } from 'recoil';
 import { AudioControls } from '~/components/AudioControls';
-import {
-    Box,
-    CircularProgress,
-    IconButton,
-    LinearProgress,
-    Popover,
-    Slider,
-    Tooltip,
-    Typography,
-} from '@material-ui/core';
-import Head from 'next/head';
+import { Box, LinearProgress, Slider, Typography } from '@material-ui/core';
 import { globalVolumeAtom } from '~/lib/atoms';
 import VolumeButton from '~/components/VolumeButton';
+import Root from '~/components/Root';
+import styled from 'styled-components';
 
-const Container = styled.div`
-    display: grid;
-    grid-template-columns: auto;
-    grid-template-rows: auto 1fr min-content;
-    grid-template-areas:
-        'header'
-        'tabcontent'
-        'other';
-
-    align-items: center;
-    justify-content: stretch;
-    justify-items: center;
-    align-content: stretch;
-
-    min-width: 100vw;
-    min-height: 100vh;
-
-    & > div {
-        overflow: hidden;
-    }
+const VolumeControlOuter = styled.div`
+    display: flex;
+    justify-content: center;
+    width: 100%;
 `;
 
-const TabContainer = styled.div`
+const VolumeControlInner = styled.div`
+    margin: 0.25rem 1rem;
+    padding: 2rem;
+
+    min-width: 10rem;
+    max-width: 50rem;
+
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+`;
+
+const MainContainer = styled.div`
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
     grid-area: tabcontent;
-    display: grid;
-    grid-template-rows: auto;
-    grid-template-columns: auto;
-    & > * {
-        grid-area: unset;
-    }
+    text-align: center;
+`;
+
+const Fetchers = styled.div`
+    grid-area: other;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 `;
 
 const MajorVolumeControls: FC = () => {
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
 
     return (
-        <Box display="flex" justifyContent="center" width="100%">
-            <Box
-                mx="1rem"
-                my="0.25rem"
-                p="2rem"
-                minWidth="10rem"
-                maxWidth="50rem"
-                width="100%"
-                display="flex"
-                alignItems="center"
-            >
+        <VolumeControlOuter>
+            <VolumeControlInner>
                 <Box mr="1rem">
                     <VolumeButton volume={globalVolume} />
                 </Box>
@@ -85,13 +69,13 @@ const MajorVolumeControls: FC = () => {
                         onChange={(_, val) => setGlobalVolume(val as number)}
                     />
                 </Box>
-            </Box>
-        </Box>
+            </VolumeControlInner>
+        </VolumeControlOuter>
     );
 };
 
 const MainApp: FC = () => {
-    const { state, resolver, name } = useContext(WorkspaceContext);
+    const { state, name } = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
     const [blocked, setBlocked] = useState(false);
 
@@ -117,14 +101,7 @@ const MainApp: FC = () => {
     return (
         <>
             <Header />
-            <Box
-                width="100%"
-                display="flex"
-                alignItems="center"
-                flexDirection="column"
-                gridArea="tabcontent"
-                textAlign="center"
-            >
+            <MainContainer>
                 {players.length > 0 ? (
                     <Typography variant="h4">Listening to: {name}</Typography>
                 ) : (
@@ -137,91 +114,21 @@ const MainApp: FC = () => {
                         Please click anywhere on the screen to enable audio.
                     </Typography>
                 )}
-            </Box>
-            <Box gridArea="other" width="100%" display="flex" flexDirection="column" alignItems="stretch">
-                {fetchers}
-            </Box>
+            </MainContainer>
+            <Fetchers>{fetchers}</Fetchers>
             <Box display="none">{players}</Box>
-            {/* <SoundFX /> */}
-            {/* <CurrentUsers /> */}
         </>
     );
 };
 
 const Host: FunctionComponent<{
     workspace: string;
-}> = (props) => {
-    const { workspace, resolve, loading } = useWorkspace(props.workspace);
-    const fileManager = useFileManager(props.workspace);
-    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
-    const previousVolumeValue = useRef<number | null>(null);
+}> = ({ workspace }) => (
+    <Root workspace={workspace}>
+        <MainApp />
+    </Root>
+);
 
-    const currentlyPlaying = workspace?.state.playing || (workspace?.state.ambience.length ?? 0) > 0;
-
-    useEffect(() => {
-        if (navigator.mediaSession) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentlyPlaying ? `${props.workspace}` : `${props.workspace}: Nothing Playing`,
-                artist: `Audio HQ`,
-            });
-        }
-    }, [props.workspace, currentlyPlaying]);
-
-    useEffect(() => {
-        if (navigator.mediaSession) {
-            navigator.mediaSession.setActionHandler('pause', () => {
-                previousVolumeValue.current = globalVolume;
-                setGlobalVolume(0);
-            });
-            navigator.mediaSession.setActionHandler('play', () => {
-                if (globalVolume === 0) {
-                    setGlobalVolume(previousVolumeValue.current ?? 1);
-                }
-            });
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                // do nothing
-            });
-        }
-    }, [resolve, globalVolume, setGlobalVolume]);
-
-    if (!workspace?.state || loading) {
-        return (
-            <Box
-                display="grid"
-                minHeight="100vh"
-                minWidth="100vw"
-                alignContent="center"
-                alignItems="center"
-                justifyContent="center"
-                justifyItems="center"
-            >
-                <Head>
-                    <title>Audio HQ - {props.workspace} - Loading...</title>
-                </Head>
-                <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
-                    <Box mb="5rem">
-                        <Typography variant="h2">Audio HQ</Typography>
-                    </Box>
-                    <CircularProgress />
-                    <Box m="2rem">
-                        <Typography variant="h4">
-                            Loading Workspace <strong>{props.workspace}</strong>...
-                        </Typography>
-                    </Box>
-                </Box>
-            </Box>
-        );
-    }
-    return (
-        <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
-            <FileManagerContext.Provider value={fileManager}>
-                <Container>
-                    <MainApp />
-                </Container>
-            </FileManagerContext.Provider>
-        </WorkspaceContext.Provider>
-    );
-};
 export default Host;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

@@ -1,7 +1,7 @@
-import { useRouter } from 'next/router';
+import { NextPage } from 'next';
 import { useEffect } from 'react';
 
-const Host = () => {
+const Host: NextPage = () => {
     useEffect(() => {
         window.location.replace('.');
     }, []);
