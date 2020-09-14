@@ -1,31 +1,8 @@
 import React, { FC } from 'react';
-import styled from 'styled-components';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 import useMediaSession from '~/lib/useMediaSession';
 import useWorkspace, { WorkspaceContext } from '~/lib/useWorkspace';
 import LoadingPage from './LoadingPage';
-
-const Container = styled.div`
-    display: grid;
-    grid-template-columns: auto;
-    grid-template-rows: auto 1fr min-content;
-    grid-template-areas:
-        'header'
-        'tabcontent'
-        'other';
-
-    align-items: center;
-    justify-content: stretch;
-    justify-items: center;
-    align-content: stretch;
-
-    min-width: 100vw;
-    min-height: 100vh;
-
-    & > div {
-        overflow: hidden;
-    }
-`;
 
 const Root: FC<{
     workspace: string;
@@ -41,9 +18,7 @@ const Root: FC<{
 
     return (
         <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
-            <FileManagerContext.Provider value={fileManager}>
-                <Container>{props.children}</Container>
-            </FileManagerContext.Provider>
+            <FileManagerContext.Provider value={fileManager}>{props.children}</FileManagerContext.Provider>
         </WorkspaceContext.Provider>
     );
 };

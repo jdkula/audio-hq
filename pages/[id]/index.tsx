@@ -62,11 +62,38 @@ const MainApp: FC = () => {
     );
 };
 
+const Container = styled.div`
+    display: grid;
+    grid-template-columns: 50% 30% 20%;
+    grid-template-rows: 65px 40% auto 40%;
+    grid-template-areas:
+        'header     header   header  '
+        'nowplaying explorer explorer'
+        'ambience   explorer explorer'
+        'ambience   explorer explorer';
+    height: 100vh;
+
+    ${({ theme }) => theme.breakpoints.down('sm')} {
+        grid-template-columns: 100%;
+        grid-template-rows: 65px 45px auto;
+        grid-template-areas:
+            'header'
+            'tabs'
+            'tabcontent';
+    }
+
+    & > div {
+        overflow: hidden;
+    }
+`;
+
 const Host: FunctionComponent<{
     workspace: string;
 }> = ({ workspace }) => (
     <Root workspace={workspace}>
-        <MainApp />
+        <Container>
+            <MainApp />
+        </Container>
     </Root>
 );
 

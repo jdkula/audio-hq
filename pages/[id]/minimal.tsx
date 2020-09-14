@@ -121,11 +121,35 @@ const MainApp: FC = () => {
     );
 };
 
+const Container = styled.div`
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto 1fr min-content;
+    grid-template-areas:
+        'header'
+        'tabcontent'
+        'other';
+
+    align-items: center;
+    justify-content: stretch;
+    justify-items: center;
+    align-content: stretch;
+
+    min-width: 100vw;
+    min-height: 100vh;
+
+    & > div {
+        overflow: hidden;
+    }
+`;
+
 const Host: FunctionComponent<{
     workspace: string;
 }> = ({ workspace }) => (
     <Root workspace={workspace}>
-        <MainApp />
+        <Container>
+            <MainApp />
+        </Container>
     </Root>
 );
 
