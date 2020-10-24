@@ -39,6 +39,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     const [blocked, setIsBlocked] = useState(false);
 
     const handle = useRef<number | null>(null);
+    const idRef = useRef(''); // used to prevent race conditions with loading many tracks.
 
     const shadowPaused = globalVolume === 0;
 
@@ -146,9 +147,12 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             URL.revokeObjectURL(audio.current.src);
         }
         audio.current.src = '';
+        idRef.current = state.id;
         setLoading(true);
         audio.current.src = fileManager.track(state.id, (cached) => {
-            audio.current.src = URL.createObjectURL(cached);
+            if (idRef.current === state.id) {
+                audio.current.src = URL.createObjectURL(cached);
+            }
         });
     }, [audio.current, state.id]);
 
