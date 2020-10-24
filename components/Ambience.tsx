@@ -86,16 +86,25 @@ export const Ambience: FunctionComponent = () => {
     ));
 
     useEffect(() => {
-        if (shouldPlaySFX(workspace.state.sfx)) {
+        if (
+            shouldPlaySFX(workspace.state.sfx) ||
+            (sfx && (workspace.state.sfx.sfx?.id === sfx.id || workspace.state.sfx.sfx === null))
+        ) {
             setSfx(workspace.state.sfx.sfx);
         }
     }, [workspace.state.sfx]);
 
     const sfxResolver: PlayStateResolver = (update) => {
         if (update === null) {
-            setSfx(null);
+            workspace.resolver({
+                sfx: null,
+                sfxMerge: true,
+            });
         } else {
-            setSfx(updatePlayState(update, sfx));
+            workspace.resolver({
+                sfx: update,
+                sfxMerge: true,
+            });
         }
     };
 

@@ -93,10 +93,11 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
     // propagate blocked and/or loading state up (if the parent wants it)
     useEffect(() => onBlocked?.(blocked), [blocked]);
     useEffect(() => onLoading?.(loading), [loading]);
+    useEffect(() => setTempSpeed(state.speed), [state.speed]);
 
     const finishSeek = (to: number) => {
         resolver({
-            startTimestamp: Date.now() - to * 1000,
+            startTimestamp: Date.now() - (to * 1000) / state.speed,
         });
         setTempSeek(null);
     };

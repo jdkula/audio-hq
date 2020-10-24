@@ -95,6 +95,7 @@ export interface WorkspaceUpdate {
     playing?: PlayStateUpdate | null;
     ambience?: PlayStateUpdate | null;
     sfx?: PlayStateUpdate | null;
+    sfxMerge?: boolean;
     suggestion?: Suggestion;
     users?: PlayerState;
     delAmbience?: ID;
