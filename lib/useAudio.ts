@@ -49,7 +49,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.onloadedmetadata = null;
             audio.current.oncanplaythrough = null;
             audio.current.ontimeupdate = null;
+            audio.current.onloadstart = null;
             audio.current.pause();
+            audio.current.src = '';
+            audio.current.load();
+            audio.current.remove();
         };
     }, []);
 
@@ -155,7 +159,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.volume = (overrideVolume ?? state.volume) * globalVolume;
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [audio.current, state.id, state.volume, loading, overrideVolume, globalVolume]);
+    }, [audio.current, state.volume, loading, overrideVolume, globalVolume]);
 
     useEffect(() => {
         console.log('Seeker called');
@@ -164,7 +168,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.currentTime = getSeek() ?? 0;
             setTime(getSeek() ?? 0);
         }
-    }, [audio.current, state.id, getSeek, loading, hasInteracted]);
+    }, [audio.current, getSeek, loading, hasInteracted]);
 
     useEffect(() => {
         console.log('Play/pauser called');
@@ -181,13 +185,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                 audio.current.pause();
             }
         }
-    }, [audio.current, state.id, state.pauseTime, loading, blocked, setInteractGate]);
+    }, [audio.current, state.pauseTime, loading, blocked, setInteractGate]);
 
     useEffect(() => {
         if (!loading && !blocked) {
             audio.current.playbackRate = state.speed;
         }
-    }, [audio.current, state.id, state.speed, loading, blocked]);
+    }, [audio.current, state.speed, loading, blocked]);
 
     // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
     useEffect(() => {

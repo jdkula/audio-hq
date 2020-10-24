@@ -55,6 +55,7 @@ export interface WorkspaceState {
     ambience: PlayState[];
     suggestions: Suggestion[];
     users: PlayerState[];
+    startVolume: number;
 }
 
 export interface StoredWorkspace {
@@ -99,6 +100,7 @@ export type WorkspaceResolver = (update: WorkspaceUpdate) => Promise<void>;
 export function updatePlayState(
     update: PlayStateUpdate | null | undefined,
     original: PlayState | null,
+    defaultVolume?: number,
 ): PlayState | null {
     if (update === undefined) return original;
     if (update === null) return null;
@@ -111,7 +113,7 @@ export function updatePlayState(
                   fileId: update.fileId ?? (update.id as string),
                   pauseTime: update.pauseTime ?? update.startTimestamp ?? Date.now(),
                   startTimestamp: update.startTimestamp ?? Date.now(),
-                  volume: update.volume ?? 1,
+                  volume: update.volume ?? defaultVolume ?? 1,
                   speed: update.speed ?? 1,
               }
             : { ...original };

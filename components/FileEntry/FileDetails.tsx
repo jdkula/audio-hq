@@ -32,10 +32,10 @@ const TextContainer = styled.div`
     cursor: text;
 `;
 
-const TimestampContainer = styled(Typography)<{ editing?: boolean }>`
+const TimestampContainer = styled(Typography)<{ $editing?: boolean }>`
     padding-left: 1rem;
     text-align: right;
-    ${({ editing }) => (editing ? '' : 'flex-grow: 1;')}
+    ${({ $editing }) => ($editing ? '' : 'flex-grow: 1;')}
 `;
 
 interface FileDetailsProps {
@@ -68,7 +68,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                     </TextContainer>
                 )}
             </EditorContainer>
-            <TimestampContainer editing={editing} variant="body1">
+            <TimestampContainer $editing={editing} variant="body1">
                 {toTimestamp(file.length)}
             </TimestampContainer>
         </DetailsContainer>
