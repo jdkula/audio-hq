@@ -20,7 +20,7 @@ interface Options {
 
 const isiOS = () =>
     navigator.userAgent.match(/(iPod|iPhone|iPad)/) ||
-    (navigator.userAgent.match(/Safari/) && navigator.maxTouchPoints > 0);
+    (navigator.userAgent.match(/Safari/) && !navigator.userAgent.match(/Chrome/) && navigator.maxTouchPoints > 0);
 
 const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
     loop = loop ?? true;
