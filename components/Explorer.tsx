@@ -38,6 +38,7 @@ const ExplorerToolbar = styled(Paper)`
     display: flex;
     align-items: center;
     padding: 0.5rem;
+    margin-bottom: 1px;
 `;
 
 const BreadcrumbsContainer = styled.div`
@@ -45,7 +46,8 @@ const BreadcrumbsContainer = styled.div`
 `;
 
 const FileListContainer = styled.div`
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     flex-grow: 1;
     position: relative;
     margin: 1px;
@@ -53,7 +55,6 @@ const FileListContainer = styled.div`
 
 const FileListScrollContainer = styled.div`
     height: 100%;
-    overflow: auto;
 `;
 
 const PlaceholderContainer = styled.div`
