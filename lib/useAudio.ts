@@ -18,6 +18,10 @@ interface Options {
     overrideVolume?: number;
 }
 
+const isiOS = () =>
+    navigator.userAgent.match(/(iPod|iPhone|iPad)/) ||
+    (navigator.userAgent.match(/Safari/) && navigator.maxTouchPoints > 0);
+
 const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
     loop = loop ?? true;
     const fileManager = useContext(FileManagerContext);
@@ -89,6 +93,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.onloadedmetadata = () => {
             console.log('audio.current.onloadedmetadata called');
             setDuration(audio.current.duration);
+            if (isiOS()) {
+                console.log('Hello, I am iOS. Setting interact gate.');
+                setIsBlocked(true);
+                setInteractGate();
+            }
         };
 
         audio.current.oncanplay = () => {
@@ -96,30 +105,6 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             setLoading(false);
         };
     }, [audio.current]);
-
-    useEffect(() => {
-        console.log('Audio block checker called', loading);
-        if (!loading) {
-            console.log('Setting blocked...', loading);
-            setIsBlocked(true);
-            audio.current
-                .play()
-                .then(() => {
-                    console.log('Play appears to have succeeded...');
-                    typeof state?.pauseTime === 'number' && audio.current.pause();
-                    setIsBlocked(false);
-                })
-                .catch((err) => {
-                    console.warn(err);
-                    console.log('Play appears to have failed... adding interaction gate');
-                    setHasInteracted(false);
-                    setIsBlocked(true);
-                    setPaused(true);
-
-                    setInteractGate();
-                });
-        }
-    }, [loading, setInteractGate]);
 
     useEffect(() => {
         console.log('AudioTimeUpdate setter called');
