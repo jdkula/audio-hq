@@ -16,13 +16,14 @@ interface AudioInfo {
 interface Options {
     loop?: boolean;
     overrideVolume?: number;
+    onFinish?: () => void;
 }
 
 const isiOS = () =>
     navigator.userAgent.match(/(iPod|iPhone|iPad)/) ||
     (navigator.userAgent.match(/Safari/) && !navigator.userAgent.match(/Chrome/) && navigator.maxTouchPoints > 0);
 
-const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {}): AudioInfo => {
+const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: Options = {}): AudioInfo => {
     loop = loop ?? true;
     const fileManager = useContext(FileManagerContext);
     const globalVolume = useRecoilValue(globalVolumeAtom);
@@ -51,6 +52,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.oncanplaythrough = null;
             audio.current.ontimeupdate = null;
             audio.current.onloadstart = null;
+            audio.current.onended = null;
             audio.current.pause();
             audio.current.src = '';
             audio.current.load();
@@ -112,10 +114,17 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
     }, [audio.current]);
 
     useEffect(() => {
+        audio.current.onended = () => {
+            if (!loop) {
+                onFinish?.();
+            }
+        };
+    }, [audio.current, onFinish, loop]);
+
+    useEffect(() => {
         console.log('AudioTimeUpdate setter called');
         audio.current.loop = loop ?? true;
         audio.current.ontimeupdate = () => {
-            // setTime(audio.current.currentTime);
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
             if (loop && audio.current.currentTime > audio.current.duration - 0.44) {
                 audio.current.currentTime = 0;
@@ -127,7 +136,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     const getSeek = useCallback(() => {
         if (!state.startTimestamp || !duration) return null;
-        return ((((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed) % (duration * 1000)) / 1000;
+        const timeElapsedMs = ((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed;
+        if (timeElapsedMs > duration * 1000 && !loop) {
+            return duration;
+        }
+        return (timeElapsedMs % (duration * 1000)) / 1000;
     }, [state.startTimestamp, duration, state.speed, state.pauseTime]);
 
     useEffect(() => {

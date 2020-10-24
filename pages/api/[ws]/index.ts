@@ -21,6 +21,11 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
                     suggestions: [],
                     users: [],
                     startVolume: 1,
+                    sfx: {
+                        sfx: null,
+                        timeoutTimestamp: 0,
+                        triggerTimestamp: 0,
+                    },
                 },
             } as Omit<StoredWorkspace, '_id'>,
         },

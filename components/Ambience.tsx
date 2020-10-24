@@ -5,14 +5,15 @@
  * Displays controls for all ambient tracks playing in the workspace.
  */
 
-import { Paper, Typography } from '@material-ui/core';
-import { FunctionComponent, useContext } from 'react';
+import { Paper, Tooltip, Typography } from '@material-ui/core';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
-import { PlayStateResolver } from '../lib/Workspace';
+import { PlayState, PlayStateResolver, SfxState, updatePlayState } from '../lib/Workspace';
 
 import AddIcon from '@material-ui/icons/Add';
+import { BlurOn } from '@material-ui/icons';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -51,8 +52,19 @@ const AmbienceControlsContainer = styled(Paper)`
     text-align: center;
 `;
 
+const shouldPlaySFX = (sfx: SfxState): boolean => {
+    const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
+    const valid = !!sfx.sfx && sfx.timeoutTimestamp > Date.now() && sfx.triggerTimestamp > lastTrigger;
+
+    if (valid) {
+        localStorage.setItem('__AHQ_LAST_SFX', JSON.stringify(sfx.triggerTimestamp));
+    }
+    return valid;
+};
+
 export const Ambience: FunctionComponent = () => {
     const workspace = useContext(WorkspaceContext);
+    const [sfx, setSfx] = useState<PlayState | null>(null);
 
     const makeResolver = (id: string): PlayStateResolver => {
         return (update) => {
@@ -66,14 +78,28 @@ export const Ambience: FunctionComponent = () => {
         };
     };
 
-    const controls = workspace.state.ambience.map((ps) => (
+    const controls = [...workspace.state.ambience].map((ps) => (
         <AmbienceControlsContainer key={ps.id}>
             <Typography variant="h5">{workspace.files.find((f) => f.id === ps.id)?.name ?? 'Loading...'}</Typography>
             <AudioControls state={ps} resolver={makeResolver(ps.id)} />
         </AmbienceControlsContainer>
     ));
 
-    if (controls.length === 0) {
+    useEffect(() => {
+        if (shouldPlaySFX(workspace.state.sfx)) {
+            setSfx(workspace.state.sfx.sfx);
+        }
+    }, [workspace.state.sfx]);
+
+    const sfxResolver: PlayStateResolver = (update) => {
+        if (update === null) {
+            setSfx(null);
+        } else {
+            setSfx(updatePlayState(update, sfx));
+        }
+    };
+
+    if (controls.length === 0 && !sfx) {
         return (
             <AmbienceContainer>
                 <EmptyContainer>
@@ -88,7 +114,20 @@ export const Ambience: FunctionComponent = () => {
 
     return (
         <AmbienceContainer>
-            <AmbienceScrollContainer>{controls}</AmbienceScrollContainer>
+            <AmbienceScrollContainer>
+                {controls}
+                {sfx && (
+                    <AmbienceControlsContainer>
+                        <Tooltip title="Playing as SFX" arrow>
+                            <BlurOn />
+                        </Tooltip>
+                        <Typography variant="h5">
+                            {workspace.files.find((f) => f.id === sfx.id)?.name ?? 'Loading...'}
+                        </Typography>
+                        <AudioControls state={sfx} resolver={sfxResolver} loop={false} onFinish={() => setSfx(null)} />
+                    </AmbienceControlsContainer>
+                )}
+            </AmbienceScrollContainer>
         </AmbienceContainer>
     );
 };

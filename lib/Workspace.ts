@@ -50,11 +50,18 @@ export interface PlayerState {
     volume: number;
 }
 
+export interface SfxState {
+    triggerTimestamp: number;
+    sfx: PlayState | null;
+    timeoutTimestamp: number;
+}
+
 export interface WorkspaceState {
     playing: PlayState | null;
     ambience: PlayState[];
     suggestions: Suggestion[];
     users: PlayerState[];
+    sfx: SfxState;
     startVolume: number;
 }
 
@@ -87,7 +94,7 @@ export interface PlayStateUpdate {
 export interface WorkspaceUpdate {
     playing?: PlayStateUpdate | null;
     ambience?: PlayStateUpdate | null;
-    sfx?: PlayState | null;
+    sfx?: PlayStateUpdate | null;
     suggestion?: Suggestion;
     users?: PlayerState;
     delAmbience?: ID;

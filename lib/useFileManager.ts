@@ -58,9 +58,9 @@ const useFileManager = (workspaceId: string): FileManager => {
     };
 
     useEffect(() => {
-        if (window.localStorage.getItem('cache_version') !== 'v1.1') {
+        if (window.localStorage.getItem('__AHQ_CACHE_VERSION') !== 'v1.1') {
             reset().then(() => {
-                window.localStorage.setItem('cache_version', 'v1.1');
+                window.localStorage.setItem('__AHQ_CACHE_VERSION', 'v1.1');
                 window.location.reload();
             });
         } else {

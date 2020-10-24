@@ -62,11 +62,20 @@ const Timestamp = styled.div`
 interface AudioControlsProps {
     state: PlayState;
     resolver: PlayStateResolver;
+    loop?: boolean;
     onBlocked?: (blocked: boolean) => void;
     onLoading?: (loading: boolean) => void;
+    onFinish?: () => void;
 }
 
-export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, resolver, onBlocked, onLoading }) => {
+export const AudioControls: FunctionComponent<AudioControlsProps> = ({
+    state,
+    resolver,
+    loop,
+    onBlocked,
+    onLoading,
+    onFinish,
+}) => {
     // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
@@ -77,6 +86,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
 
     const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
         overrideVolume: tempVolume ?? undefined,
+        loop: loop ?? true,
+        onFinish: onFinish,
     });
 
     // propagate blocked and/or loading state up (if the parent wants it)

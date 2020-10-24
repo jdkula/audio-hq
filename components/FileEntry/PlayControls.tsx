@@ -11,10 +11,11 @@ import { File } from '~/lib/Workspace';
 import PlayArrow from '@material-ui/icons/PlayArrow';
 import AddIcon from '@material-ui/icons/Add';
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { Tooltip, IconButton } from '@material-ui/core';
 import { WorkspaceContext } from '~/lib/useWorkspace';
+import { BlurOn } from '@material-ui/icons';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -30,6 +31,18 @@ interface PlayControlsProps {
 
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const workspace = useContext(WorkspaceContext);
+    const [highlightingSfx, setSfxHighlight] = useState(false);
+
+    const sfxHighlightTimeoutHandle = useRef<number | null>(null);
+
+    useEffect(
+        () => () => {
+            if (sfxHighlightTimeoutHandle.current) {
+                clearTimeout(sfxHighlightTimeoutHandle.current);
+            }
+        },
+        [],
+    );
 
     const onAmbience = async () => {
         workspace.resolver({ ambience: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
@@ -37,6 +50,22 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
 
     const onPlay = async () => {
         workspace.resolver({ playing: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
+    };
+
+    const onSfx = async () => {
+        setSfxHighlight(true);
+        sfxHighlightTimeoutHandle.current = setTimeout(() => {
+            setSfxHighlight(false);
+            sfxHighlightTimeoutHandle.current = null;
+        }, 2000);
+
+        workspace.resolver({
+            sfx: {
+                id: file.id,
+                startTimestamp: Date.now(),
+                pauseTime: null,
+            },
+        });
     };
     return (
         <PlayControlsContainer>
@@ -52,6 +81,11 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             <Tooltip title="Play File As Ambience" placement="left" arrow>
                 <IconButton onClick={onAmbience}>
                     <AddIcon color={workspace.state.ambience.find((ps) => ps.id === file.id) ? 'primary' : undefined} />
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Play File As SFX" placement="left" arrow>
+                <IconButton onClick={onSfx}>
+                    <BlurOn color={highlightingSfx ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
         </PlayControlsContainer>

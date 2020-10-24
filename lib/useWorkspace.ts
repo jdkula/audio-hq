@@ -87,6 +87,13 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
             copy.ambience = copy.ambience.filter((ps) => ps.id !== update.delAmbience);
         }
 
+        if (update.sfx) {
+            if (!copy.sfx) copy.sfx = {} as any;
+            copy.sfx.sfx = updatePlayState(update.sfx, copy.sfx?.sfx ?? null, copy.startVolume);
+            copy.sfx.triggerTimestamp = Date.now();
+            copy.sfx.timeoutTimestamp = copy.sfx.triggerTimestamp + 10 * 1000;
+        }
+
         mutateState(copy);
     };
 
