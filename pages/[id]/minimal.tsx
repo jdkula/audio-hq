@@ -112,7 +112,7 @@ const MainApp: FC = () => {
         <>
             <Header />
             <MainContainer>
-                {players.length > 0 ? (
+                {players.length > 0 || sfx ? (
                     <Typography variant="h4">Listening to: {name}</Typography>
                 ) : (
                     <Typography variant="h4">{name}</Typography>

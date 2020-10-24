@@ -7,13 +7,16 @@ const useMediaSession = (workspace: Workspace | null, resolver: WorkspaceResolve
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
 
-    const currentlyPlaying = workspace?.files.find((file) => file.id === workspace.state.playing?.id);
+    const currentlyPlaying = workspace?.files.find(
+        (file) =>
+            file.id === (workspace.state.playing?.id ?? workspace.state.ambience[0]?.id ?? workspace.state.sfx.sfx?.id),
+    );
 
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentlyPlaying?.name ?? 'Nothing Playing',
-                artist: `Audio HQ - ${workspace}`,
+                artist: `Audio HQ - ${workspace?.name ?? ''}`,
             });
         }
     }, [workspace, currentlyPlaying]);
