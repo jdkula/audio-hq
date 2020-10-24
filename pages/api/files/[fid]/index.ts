@@ -28,12 +28,12 @@ async function reorder(id: string, { reorder }: Reorderable) {
     const file = ws.files[removeIndex];
 
     await (await mongoworkspaces).bulkWrite([
-        //@ts-expect-error
+        //@ts-expect-error This pull operators does work.
         { updateOne: { filter: { _id: ws.name }, update: { $pull: { files: { id } } } } },
         {
             updateOne: {
                 filter: { _id: ws.name },
-                //@ts-expect-error
+                //@ts-expect-error As does this push operator.
                 update: { $push: { files: { $each: [file], $position: insertIndex } } },
             },
         },

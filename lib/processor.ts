@@ -35,7 +35,8 @@ try {
     // do nothing; already exists.
 }
 
-const ytdlPath = ytdl.getYtdlBinary();
+//@ts-expect-error The typings are incorrect for ytdl; getYtdlBinary retrieves the path as a string.
+const ytdlPath: string = ytdl.getYtdlBinary();
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 

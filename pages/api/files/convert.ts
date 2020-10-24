@@ -4,7 +4,7 @@ import formidable from 'formidable';
 import ConvertOptions from '~/lib/ConvertOptions';
 
 const Convert: NextApiHandler = async (req, res) => {
-    //@ts-expect-error
+    //@ts-expect-error IncomingForm accepts a max file size parameter.
     const form = new formidable.IncomingForm({ maxFileSize: 2048 * 1024 * 1024 }); // 2gb
     form.uploadDir = '/tmp/audio-hq';
     form.keepExtensions = true;
