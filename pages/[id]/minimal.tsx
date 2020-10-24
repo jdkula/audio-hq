@@ -1,4 +1,4 @@
-import React, { FC, FunctionComponent, useContext, useState } from 'react';
+import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Header } from '~/components/Header';
 import { GetServerSideProps } from 'next';
 import { WorkspaceContext } from '~/lib/useWorkspace';
@@ -10,6 +10,8 @@ import { globalVolumeAtom } from '~/lib/atoms';
 import VolumeButton from '~/components/VolumeButton';
 import Root from '~/components/Root';
 import styled from 'styled-components';
+import { PlayState } from '~/lib/Workspace';
+import { shouldPlaySFX } from '~/components/Ambience';
 
 const VolumeControlOuter = styled.div`
     display: flex;
@@ -79,6 +81,14 @@ const MainApp: FC = () => {
     const fileManager = useContext(FileManagerContext);
     const [blocked, setBlocked] = useState(false);
 
+    const [sfx, setSfx] = useState<PlayState | null>(null);
+
+    useEffect(() => {
+        if (shouldPlaySFX(state.sfx) || (sfx && (state.sfx.sfx?.id === sfx.id || state.sfx.sfx === null))) {
+            setSfx(state.sfx.sfx);
+        }
+    }, [state.sfx]);
+
     const players = [...state.ambience, ...(state.playing ? [state.playing] : [])].map((ps) => (
         <AudioControls
             state={ps}
@@ -116,7 +126,18 @@ const MainApp: FC = () => {
                 )}
             </MainContainer>
             <Fetchers>{fetchers}</Fetchers>
-            <Box display="none">{players}</Box>
+            <Box display="none">
+                {players}{' '}
+                {sfx && (
+                    <AudioControls
+                        state={sfx}
+                        resolver={() => {
+                            /* do nothing */
+                        }}
+                        onFinish={() => setSfx(null)}
+                    />
+                )}
+            </Box>
         </>
     );
 };

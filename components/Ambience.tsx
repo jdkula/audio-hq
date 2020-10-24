@@ -52,7 +52,7 @@ const AmbienceControlsContainer = styled(Paper)`
     text-align: center;
 `;
 
-const shouldPlaySFX = (sfx: SfxState): boolean => {
+export const shouldPlaySFX = (sfx: SfxState): boolean => {
     const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
     const valid = !!sfx.sfx && sfx.timeoutTimestamp > Date.now() && sfx.triggerTimestamp > lastTrigger;
 
