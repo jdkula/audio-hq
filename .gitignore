@@ -39,3 +39,4 @@ yarn-error.log*
 .vercel
 deploy.sh
 deploy-prod.sh
+cookies.txt

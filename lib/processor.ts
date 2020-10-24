@@ -39,6 +39,8 @@ const ytdlPath = ytdl.getYtdlBinary();
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
+// const cookiesPath = path.resolve(process.cwd(), 'cookies.txt');
+
 interface FileOptions {
     name: string;
     workspace: string;

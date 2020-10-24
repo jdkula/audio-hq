@@ -47,6 +47,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     const afterSubmit = (shouldClose = true) => {
         setUrl('');
         setTitle('');
+        setFile(null);
         setDescription('');
         setOptions({});
         optionsRef.current?.reset();

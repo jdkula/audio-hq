@@ -31,8 +31,8 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
 
     const [loading, setLoading] = useState(true);
 
-    const [hasInteracted, setHasInteracted] = useState(true);
-    const [blocked, setIsBlocked] = useState(true);
+    const [hasInteracted, setHasInteracted] = useState(false);
+    const [blocked, setIsBlocked] = useState(false);
 
     const handle = useRef<number | null>(null);
 
@@ -89,13 +89,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.onloadedmetadata = () => {
             console.log('audio.current.onloadedmetadata called');
             setDuration(audio.current.duration);
-            setInteractGate();
         };
 
         audio.current.oncanplay = () => {
             console.log('audio.current.oncanplay called');
             setLoading(false);
-            // TODO: Don't try to play until here, but try interaction blockers with onLoadedMetadata...?
         };
     }, [audio.current]);
 
@@ -163,7 +161,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
         audio.current.src = fileManager.track(state.id, (cached) => {
             audio.current.src = URL.createObjectURL(cached);
         });
-    }, [state.id]);
+    }, [audio.current, state.id]);
 
     useEffect(() => {
         console.log('Volume setter called');
@@ -172,7 +170,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.volume = (overrideVolume ?? state.volume) * globalVolume;
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, loading, overrideVolume, globalVolume]);
+    }, [audio.current, state.id, state.volume, loading, overrideVolume, globalVolume]);
 
     useEffect(() => {
         console.log('Seeker called');
@@ -181,7 +179,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
             audio.current.currentTime = getSeek() ?? 0;
             setTime(getSeek() ?? 0);
         }
-    }, [getSeek, loading, hasInteracted]);
+    }, [audio.current, state.id, getSeek, loading, hasInteracted]);
 
     useEffect(() => {
         console.log('Play/pauser called');
@@ -198,13 +196,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume }: Options = {
                 audio.current.pause();
             }
         }
-    }, [state.pauseTime, loading, blocked, setInteractGate]);
+    }, [audio.current, state.id, state.pauseTime, loading, blocked, setInteractGate]);
 
     useEffect(() => {
         if (!loading && !blocked) {
             audio.current.playbackRate = state.speed;
         }
-    }, [state.speed, audio.current, loading, blocked]);
+    }, [audio.current, state.id, state.speed, loading, blocked]);
 
     // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
     useEffect(() => {
