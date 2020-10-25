@@ -40,6 +40,7 @@ const EmptyContainer = styled.div`
     justify-content: center;
     align-content: center;
     align-items: center;
+    text-align: center;
 `;
 
 const AmbienceControlsContainer = styled(Paper)`
