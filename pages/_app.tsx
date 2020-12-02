@@ -22,6 +22,14 @@ const theme = createMuiTheme({
 });
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
+    // clear Server-Side injected CSS for Material-UI
+    useEffect(() => {
+        const jssStyles = document.querySelector('#jss-server-side');
+        if (jssStyles) {
+            jssStyles.parentElement?.removeChild(jssStyles);
+        }
+    }, []);
+
     return (
         <>
             <StylesProvider injectFirst>
