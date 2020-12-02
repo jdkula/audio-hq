@@ -39,7 +39,7 @@ export default class RealFSFileSystem implements FileSystem {
         const size = (await fs.stat(filepath)).size;
         let uploaded = 0;
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             fs.createReadStream(filepath)
                 .on('data', (chunk) => {
                     uploaded += chunk.length;

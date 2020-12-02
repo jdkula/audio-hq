@@ -153,7 +153,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                         v.jobId === id
                             ? {
                                   jobId: id as any,
-                                  name: name ?? 'Loading...',
+                                  name: v.name ?? 'Loading...',
                                   progress: null,
                                   status: 'saving',
                                   workspace: workspaceId,
@@ -297,7 +297,7 @@ const useFileManager = (workspaceId: string): FileManager => {
 
         for (const file of files) {
             if (!idSet.contains(file.id)) {
-                await new Promise((resolve) => {
+                await new Promise<void>((resolve) => {
                     console.log('Downloading', file.name, `(${file.id})`);
                     progress.started++;
                     onProgress?.(progress.started, progress.finished);

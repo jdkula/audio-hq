@@ -21,7 +21,7 @@ export default class MongoDBFileSystem implements FileSystem {
     async delete(id: string): Promise<void> {
         const fs = await mongofiles;
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             fs.delete(new ObjectId(id), (err) => {
                 if (err) reject(err);
                 else resolve();
@@ -38,7 +38,7 @@ export default class MongoDBFileSystem implements FileSystem {
         const size = (await fs.stat(filepath)).size;
         let uploaded = 0;
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             fs.createReadStream(filepath)
                 .on('data', (chunk) => {
                     uploaded += chunk.length;

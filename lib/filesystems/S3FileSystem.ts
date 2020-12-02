@@ -31,7 +31,7 @@ export default class S3FileSystem implements FileSystem {
     }
 
     async delete(id: string): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             S3.deleteObject(
                 {
                     ...defaultParams,
