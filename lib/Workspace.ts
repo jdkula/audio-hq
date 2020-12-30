@@ -33,10 +33,11 @@ export interface PlayState {
     volume: number;
     pauseTime: number | null;
     speed: number;
-    transitions: number;
+    crossfade: number;
+    fadeOut: boolean;
 }
 
-export type PlayStateResolver = (update: PlayStateUpdate | null) => void;
+export type PlayStateResolver = (update: PlayStateUpdate | null) => Promise<void> | void;
 
 export interface Suggestion {
     from: string;
@@ -90,7 +91,8 @@ export interface PlayStateUpdate {
     pauseTime?: number | null;
     timePlayed?: number;
     speed?: number;
-    transitions?: number;
+    crossfade?: number;
+    fadeOut?: boolean;
 }
 
 export interface WorkspaceUpdate {
@@ -125,7 +127,8 @@ export function updatePlayState(
                   startTimestamp: update.startTimestamp ?? Date.now(),
                   volume: update.volume ?? defaultVolume ?? 1,
                   speed: update.speed ?? 1,
-                  transitions: 0,
+                  crossfade: 0,
+                  fadeOut: false,
               }
             : { ...original };
 
@@ -172,8 +175,11 @@ export function updatePlayState(
                 console.warn('When updating speed, the timePlayed should be specified.');
             }
         }
-        if (typeof update.transitions === 'number') {
-            copy.transitions = update.transitions;
+        if (typeof update.crossfade === 'number') {
+            copy.crossfade = update.crossfade;
+        }
+        if (typeof update.fadeOut === 'boolean') {
+            copy.fadeOut = update.fadeOut;
         }
     }
 
