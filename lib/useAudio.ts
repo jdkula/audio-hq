@@ -65,7 +65,8 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     const stop = useCallback(
         (now?: boolean): GainNode => {
             let curGain = gainNode;
-            const transition = now ? 0 : state.transitions;
+            // FIXME: This is wonky, "now" doesn't actually force it (now is overridden by state.fadeOut)
+            const transition = now && !state.fadeOut ? 0 : state.crossfade;
             try {
                 console.log('Stop called.', transition);
                 audioBufferSource.stop(context.currentTime + transition);
@@ -81,7 +82,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             }
             return curGain;
         },
-        [gainNode, audioBufferSource, state.transitions, globalVolume],
+        [gainNode, audioBufferSource, state.crossfade, state.fadeOut, globalVolume],
     );
     stopRef.current = stop;
 
@@ -90,13 +91,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             const newSource = context.createBufferSource();
             newSource.buffer = audioBuffer;
             newSource.connect(curGain);
-            if (state.transitions && !now) {
+            if (state.crossfade && !now) {
                 console.log('Fading in...!');
                 curGain.gain.cancelScheduledValues(context.currentTime);
                 curGain.gain.setValueAtTime(0, context.currentTime);
                 curGain.gain.linearRampToValueAtTime(
                     (overrideVolume ?? state.volume) * globalVolume,
-                    context.currentTime + state.transitions,
+                    context.currentTime + state.crossfade,
                 );
             } else {
                 curGain.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
@@ -106,14 +107,14 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             setAudioBufferSource(newSource);
             startedRef.current = true;
         },
-        [audioBuffer, getSeek, state.transitions, globalVolume, state.volume],
+        [audioBuffer, getSeek, state.crossfade, globalVolume, state.volume],
     );
     startRef.current = start;
 
     useEffect(() => {
         return () => {
             console.log('onDismount effect ran');
-            stopRef.current(/* now = */ true);
+            stopRef.current();
         };
     }, []);
 
@@ -138,7 +139,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         idRef.current = state.id;
         loadingRef.current = true;
 
-        if (!state.transitions) {
+        if (!state.crossfade) {
             console.log('STOPPING!');
             stopRef.current();
         }
@@ -150,9 +151,9 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             );
             console.log('AudioBuffer done decoding.');
             if (idRef.current === state.id) {
-                if (state.transitions) {
+                if (state.crossfade) {
                     setTransitioning(true);
-                    window.setTimeout(() => setTransitioning(false), state.transitions * 1000);
+                    window.setTimeout(() => setTransitioning(false), state.crossfade * 1000);
                 }
                 setDuration(audioBuffer.duration);
                 loadingRef.current = false;

@@ -115,6 +115,11 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
         else resolver({ pauseTime: Date.now(), timePlayed: time });
     };
 
+    const onStop = async (e: React.MouseEvent) => {
+        if (e.shiftKey) await resolver({ fadeOut: true, crossfade: 5 });
+        resolver(null);
+    };
+
     return (
         <AudioControlsContainer>
             <ControlsContainer>
@@ -190,7 +195,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={() => resolver(null)}>
+                    <IconButton onClick={onStop}>
                         <StopIcon />
                     </IconButton>
                 </Tooltip>
