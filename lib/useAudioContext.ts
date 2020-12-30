@@ -7,7 +7,7 @@ const useAudioContext = (): { context: AudioContext; blocked: boolean } => {
 
     const [context, setContext] = useState<AudioContext>(new (AudioContext || (window as any).webkitAudioContext)());
 
-    const [isBlocked, setIsBlocked] = useState(true);
+    const [isBlocked, setIsBlocked] = useState(false);
 
     const onInteract = useCallback(() => {
         console.log('onInteract called');

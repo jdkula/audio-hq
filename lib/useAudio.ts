@@ -33,10 +33,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     const { context, blocked } = useContext(AudioContextContext);
 
     const [gainNode, setGainNode] = useState(context.createGain());
-    gainNode.connect(context.destination);
-
     const [audioBufferSource, setAudioBufferSource] = useState(context.createBufferSource());
-    audioBufferSource.connect(gainNode);
 
     const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
 
@@ -54,6 +51,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
     const stopRef = useRef<any>();
     const startRef = useRef<any>();
+    const startedRef = useRef(false);
 
     if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked, transitioning: true };
 
@@ -102,6 +100,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
                 );
             }
             setAudioBufferSource(newSource);
+            startedRef.current = true;
         },
         [audioBuffer, getSeek, state.transitions, globalVolume, state.volume],
     );
@@ -113,14 +112,6 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             stopRef.current();
         };
     }, []);
-
-    useEffect(() => {
-        audioBufferSource.onended = () => {
-            if (!loop) {
-                onFinish?.();
-            }
-        };
-    }, [audioBufferSource, onFinish, loop]);
 
     useEffect(() => {
         audioBufferSource.loop = loop ?? true;
@@ -196,6 +187,17 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             audioBufferSource.playbackRate.setValueAtTime(state.speed, context.currentTime);
         }
     }, [audioBufferSource, state.speed, loadingRef.current]);
+
+    useEffect(() => {
+        if (startedRef.current && (audioBufferSource.buffer?.duration ?? 0) > 0) {
+            console.log('Setting onEnded');
+            audioBufferSource.onended = () => {
+                if (!loop) {
+                    onFinish?.();
+                }
+            };
+        }
+    }, [audioBufferSource, onFinish, loop]);
 
     // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
     // useEffect(() => {
