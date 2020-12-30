@@ -1,7 +1,7 @@
 import { PlayState } from './Workspace';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { globalVolumeAtom } from './atoms';
 import AudioContextContext from './AudioContextContext';
 
@@ -47,8 +47,6 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     const idRef = useRef(''); // used to prevent race conditions with loading many tracks.
     const loadingRef = useRef(true);
 
-    const shadowPaused = globalVolume === 0;
-
     const stopRef = useRef<any>();
     const startRef = useRef<any>();
     const startedRef = useRef(false);
@@ -64,33 +62,35 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         return (timeElapsedMs % (duration * 1000)) / 1000;
     }, [state.startTimestamp, duration, state.speed, state.pauseTime]);
 
-    const stop = useCallback((): GainNode => {
-        let curGain = gainNode;
-        try {
-            console.log('Stop called.', state.transitions);
-            audioBufferSource.stop(context.currentTime + state.transitions);
-            gainNode.gain.cancelScheduledValues(context.currentTime);
-            gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0, context.currentTime + state.transitions);
-            curGain = context.createGain();
-            curGain.connect(context.destination);
+    const stop = useCallback(
+        (now?: boolean): GainNode => {
+            let curGain = gainNode;
+            const transition = now ? 0 : state.transitions;
+            try {
+                console.log('Stop called.', transition);
+                audioBufferSource.stop(context.currentTime + transition);
+                gainNode.gain.cancelScheduledValues(context.currentTime);
+                gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, context.currentTime + transition);
+                curGain = context.createGain();
+                curGain.connect(context.destination);
 
-            setGainNode(curGain);
-        } catch (e) {
-            console.warn(e);
-        }
-        return curGain;
-    }, [gainNode, audioBufferSource, state.transitions, globalVolume]);
+                setGainNode(curGain);
+            } catch (e) {
+                console.warn(e);
+            }
+            return curGain;
+        },
+        [gainNode, audioBufferSource, state.transitions, globalVolume],
+    );
     stopRef.current = stop;
 
     const start = useCallback(
-        (curGain: GainNode) => {
+        (curGain: GainNode, now?: boolean) => {
             const newSource = context.createBufferSource();
             newSource.buffer = audioBuffer;
             newSource.connect(curGain);
-            // TODO: getSeek in seconds...?
-            newSource.start(0, getSeek() ?? undefined);
-            if (state.transitions) {
+            if (state.transitions && !now) {
                 console.log('Fading in...!');
                 curGain.gain.cancelScheduledValues(context.currentTime);
                 curGain.gain.setValueAtTime(0, context.currentTime);
@@ -98,7 +98,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
                     (overrideVolume ?? state.volume) * globalVolume,
                     context.currentTime + state.transitions,
                 );
+            } else {
+                curGain.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
             }
+
+            newSource.start(0, getSeek() ?? undefined);
             setAudioBufferSource(newSource);
             startedRef.current = true;
         },
@@ -109,7 +113,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     useEffect(() => {
         return () => {
             console.log('onDismount effect ran');
-            stopRef.current();
+            stopRef.current(/* now = */ true);
         };
     }, []);
 
@@ -165,7 +169,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             if (state.pauseTime === null) {
                 startRef.current(stopRef.current());
             } else {
-                stopRef.current();
+                stopRef.current(/* now = */ true);
             }
             setTime(getSeek() ?? 0);
         }
@@ -175,14 +179,11 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         if (!loadingRef.current && !transitioning) {
             console.log('Volume setter called');
 
-            setGainNode((gainNode) => {
-                gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-                return gainNode;
-            });
+            gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
 
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, globalVolume, loadingRef.current, transitioning, overrideVolume]);
+    }, [state.volume, globalVolume, loadingRef.current, transitioning, overrideVolume, gainNode]);
 
     useEffect(() => {
         if (!loadingRef.current) {
@@ -200,20 +201,6 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             };
         }
     }, [audioBufferSource, onFinish, loop]);
-
-    // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
-    // useEffect(() => {
-    //     if (shadowPaused) {
-    //         audio.pause();
-    //     } else {
-    //         if (!loading && !blocked && !paused) {
-    //             if (state.startTimestamp) {
-    //                 audio.currentTime = getSeek()!;
-    //             }
-    //             audio.play();
-    //         }
-    //     }
-    // }, [shadowPaused]);
 
     return {
         duration,

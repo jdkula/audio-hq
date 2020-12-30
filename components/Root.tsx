@@ -11,7 +11,7 @@ const Root: FC<{
     const { workspace, resolve, loading } = useWorkspace(props.workspace);
     const fileManager = useFileManager(props.workspace);
 
-    const ctx = useAudioContext(workspace!, resolve);
+    const ctx = useAudioContext(workspace, resolve);
 
     if (!workspace?.state || loading) {
         return <LoadingPage workspace={props.workspace} />;
