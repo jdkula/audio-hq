@@ -69,7 +69,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         try {
             console.log('Stop called.', state.transitions);
             audioBufferSource.stop(context.currentTime + state.transitions);
-            gainNode.gain.cancelAndHoldAtTime(context.currentTime);
+            gainNode.gain.cancelScheduledValues(context.currentTime);
             gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
             gainNode.gain.linearRampToValueAtTime(0, context.currentTime + state.transitions);
             curGain = context.createGain();
@@ -80,7 +80,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             console.warn(e);
         }
         return curGain;
-    }, [gainNode, audioBufferSource, state.transitions]);
+    }, [gainNode, audioBufferSource, state.transitions, globalVolume]);
     stopRef.current = stop;
 
     const start = useCallback(
@@ -92,7 +92,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
             newSource.start(0, getSeek() ?? undefined);
             if (state.transitions) {
                 console.log('Fading in...!');
-                curGain.gain.cancelAndHoldAtTime(context.currentTime);
+                curGain.gain.cancelScheduledValues(context.currentTime);
                 curGain.gain.setValueAtTime(0, context.currentTime);
                 curGain.gain.linearRampToValueAtTime(
                     (overrideVolume ?? state.volume) * globalVolume,
@@ -141,7 +141,9 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
         fileManager.track(state.id, async (cached) => {
             console.log('AudioBuffer decoding...');
-            const audioBuffer = await context.decodeAudioData(cached);
+            const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) =>
+                context.decodeAudioData(cached, resolve, (e) => reject(e)),
+            );
             console.log('AudioBuffer done decoding.');
             if (idRef.current === state.id) {
                 if (state.transitions) {

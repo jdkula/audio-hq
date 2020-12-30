@@ -5,7 +5,9 @@ const useAudioContext = (): { context: AudioContext; blocked: boolean } => {
         return null as never; // SSR
     }
 
-    const [context, setContext] = useState<AudioContext>(new (AudioContext || (window as any).webkitAudioContext)());
+    const [context, setContext] = useState<AudioContext>(
+        new (window.AudioContext || (window as any).webkitAudioContext)(),
+    );
 
     const [isBlocked, setIsBlocked] = useState(false);
 
