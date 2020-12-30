@@ -33,6 +33,7 @@ export interface PlayState {
     volume: number;
     pauseTime: number | null;
     speed: number;
+    transitions: number;
 }
 
 export type PlayStateResolver = (update: PlayStateUpdate | null) => void;
@@ -89,6 +90,7 @@ export interface PlayStateUpdate {
     pauseTime?: number | null;
     timePlayed?: number;
     speed?: number;
+    transitions?: number;
 }
 
 export interface WorkspaceUpdate {
@@ -123,6 +125,7 @@ export function updatePlayState(
                   startTimestamp: update.startTimestamp ?? Date.now(),
                   volume: update.volume ?? defaultVolume ?? 1,
                   speed: update.speed ?? 1,
+                  transitions: 0,
               }
             : { ...original };
 
@@ -168,6 +171,9 @@ export function updatePlayState(
             } else {
                 console.warn('When updating speed, the timePlayed should be specified.');
             }
+        }
+        if (typeof update.transitions === 'number') {
+            copy.transitions = update.transitions;
         }
     }
 

@@ -63,7 +63,7 @@ const DownloadCacheButton: FC = () => {
                             color="secondary"
                             textColor="inherit"
                             value={downloadPercent}
-                            variant={!downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'static'}
+                            variant={!downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'determinate'}
                         />
                     </Tooltip>
                 </Box>

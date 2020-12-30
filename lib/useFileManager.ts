@@ -9,7 +9,7 @@ import { File as WSFile, Reorderable } from './Workspace';
 import ConvertOptions from './ConvertOptions';
 
 interface FileManager {
-    track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
+    track: (id: string, onCacheRetrieve?: (track: ArrayBuffer) => void) => string;
     reset: () => Promise<void>;
     import: (
         name: string,
@@ -43,7 +43,7 @@ async function* readBody(body: ReadableStream<Uint8Array>) {
 const useFileManager = (workspaceId: string): FileManager => {
     const cache = useRef(new PouchDB('cache'));
 
-    const fetchCallbacks: MutableRefObject<Map<string, Set<(track: Blob) => void>>> = useRef(new Map());
+    const fetchCallbacks: MutableRefObject<Map<string, Set<(track: ArrayBuffer) => void>>> = useRef(new Map());
 
     const [cached, setCached] = useState<Set<string>>(Set());
     const [fetching, setFetching] = useState<Set<Job>>(Set());
@@ -89,7 +89,7 @@ const useFileManager = (workspaceId: string): FileManager => {
         );
     };
 
-    const track = (id: string, onCacheRetrieve?: (track: Blob) => void): string => {
+    const track = (id: string, onCacheRetrieve?: (track: ArrayBuffer) => void): string => {
         // TODO: audio sets
         const url = `/api/files/${id}/download`;
         const inflight = fetchCallbacks.current.has(id);
@@ -103,7 +103,9 @@ const useFileManager = (workspaceId: string): FileManager => {
             .getAttachment(id, 'file')
             .then((data) => {
                 setCached((cached) => cached.add(id));
-                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(data as Blob));
+                (fetchCallbacks.current.get(id) ?? Set()).forEach(async (callback) =>
+                    callback(await (data as Blob).arrayBuffer()),
+                );
                 fetchCallbacks.current.delete(id);
             })
             .catch(async () => {
@@ -181,7 +183,9 @@ const useFileManager = (workspaceId: string): FileManager => {
                 }
                 setCached((cached) => cached.add(id));
                 setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
-                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(blob));
+                (fetchCallbacks.current.get(id) ?? Set()).forEach(async (callback) =>
+                    callback(await blob.arrayBuffer()),
+                );
                 fetchCallbacks.current.delete(id);
             });
 
