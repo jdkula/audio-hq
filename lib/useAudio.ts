@@ -182,7 +182,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, globalVolume, loadingRef.current, transitioning]);
+    }, [state.volume, globalVolume, loadingRef.current, transitioning, overrideVolume]);
 
     useEffect(() => {
         if (!loadingRef.current) {
