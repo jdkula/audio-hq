@@ -88,6 +88,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
     const start = useCallback(
         (curGain: GainNode, now?: boolean) => {
+            console.log('Start called.');
             const newSource = context.createBufferSource();
             newSource.buffer = audioBuffer;
             newSource.connect(curGain);
@@ -134,31 +135,29 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     }, [getSeek]);
 
     useEffect(() => {
-        console.log('Track getter called', context, state);
-
         idRef.current = state.id;
         loadingRef.current = true;
+
+        console.log('Track getter called', state.id, idRef.current);
 
         if (!state.crossfade) {
             console.log('STOPPING!');
             stopRef.current();
         }
 
-        fileManager.track(state.id, async (cached) => {
-            console.log('AudioBuffer decoding...');
-            const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) =>
-                context.decodeAudioData(cached, resolve, (e) => reject(e)),
-            );
-            console.log('AudioBuffer done decoding.');
-            if (idRef.current === state.id) {
-                if (state.crossfade) {
-                    setTransitioning(true);
-                    window.setTimeout(() => setTransitioning(false), state.crossfade * 1000);
+        fileManager.track(state.id, (buffer) => {
+            // Need to let other hooks run before this...?
+            window.requestAnimationFrame(() => {
+                if (idRef.current === state.id) {
+                    if (state.crossfade) {
+                        setTransitioning(true);
+                        window.setTimeout(() => setTransitioning(false), state.crossfade * 1000);
+                    }
+                    setDuration(buffer.duration);
+                    loadingRef.current = false;
+                    setAudioBuffer(buffer);
                 }
-                setDuration(audioBuffer.duration);
-                loadingRef.current = false;
-                setAudioBuffer(audioBuffer);
-            }
+            });
         });
     }, [state.id]);
 

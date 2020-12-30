@@ -9,7 +9,7 @@ const useAudioContext = (
     resolve: WorkspaceResolver,
 ): { context: AudioContext; blocked: boolean } => {
     if (typeof window === 'undefined') {
-        return null as never; // SSR
+        return { context: null, blocked: null } as never; // SSR
     }
 
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
