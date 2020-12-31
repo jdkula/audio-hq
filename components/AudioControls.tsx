@@ -116,7 +116,9 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
     };
 
     const onStop = async (e: React.MouseEvent) => {
-        if (e.shiftKey) await resolver({ fadeOut: true, crossfade: 5 });
+        if (e.shiftKey) {
+            if (!state.fadeOut) await resolver({ fadeOut: true, crossfade: 5 });
+        } else if (state.fadeOut) await resolver({ fadeOut: false });
         resolver(null);
     };
 

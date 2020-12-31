@@ -53,6 +53,8 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
     if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked, transitioning: true };
 
+    const lastStartTime = useRef(state.startTimestamp);
+
     const getSeek = useCallback(() => {
         if (!state.startTimestamp || !duration) return null;
         const timeElapsedMs = ((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed;
@@ -65,7 +67,13 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     const stop = useCallback(
         (now?: boolean): GainNode => {
             // FIXME: This is wonky, "now" doesn't actually force it (now is overridden by state.fadeOut)
-            const transition = now && !state.fadeOut ? 0 : state.crossfade;
+            let transition: number;
+            if (now) transition = 0;
+            else if (state.fadeOut) transition = state.crossfade;
+            else transition = 0;
+
+            console.log('Transition', { now, fadeOut: state.fadeOut, transition });
+
             console.log('Stop called.', transition);
             try {
                 audioBufferSource.stop(context.currentTime + transition);
@@ -165,9 +173,12 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         if (!loadingRef.current) {
             console.log('Play/pauser called');
 
+            const cut = state.startTimestamp !== lastStartTime.current;
+            lastStartTime.current = state.startTimestamp;
+
             setPaused(state.pauseTime !== null);
             if (state.pauseTime === null) {
-                startRef.current(stopRef.current());
+                startRef.current(stopRef.current(/* now = */ cut));
             } else {
                 stopRef.current(/* now = */ true);
             }

@@ -63,7 +63,9 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const onPlay = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         const transitions = e.shiftKey ? 5 : 0;
         const startTimestamp = transitions ? undefined : Date.now();
-        workspace.resolver({ playing: { id: file.id, startTimestamp, pauseTime: null, crossfade: transitions } });
+        workspace.resolver({
+            playing: { id: file.id, startTimestamp, pauseTime: null, crossfade: transitions, fadeOut: true },
+        });
     };
 
     const onSfx = async () => {
