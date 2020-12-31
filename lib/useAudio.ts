@@ -64,23 +64,23 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
 
     const stop = useCallback(
         (now?: boolean): GainNode => {
-            let curGain = gainNode;
             // FIXME: This is wonky, "now" doesn't actually force it (now is overridden by state.fadeOut)
             const transition = now && !state.fadeOut ? 0 : state.crossfade;
+            console.log('Stop called.', transition);
             try {
-                console.log('Stop called.', transition);
                 audioBufferSource.stop(context.currentTime + transition);
-                gainNode.gain.cancelScheduledValues(context.currentTime);
-                gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0, context.currentTime + transition);
-                curGain = context.createGain();
-                curGain.connect(context.destination);
-
-                setGainNode(curGain);
             } catch (e) {
                 console.warn(e);
             }
-            return curGain;
+            gainNode.gain.cancelScheduledValues(context.currentTime);
+            gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, context.currentTime + transition);
+            const newGain = context.createGain();
+            newGain.connect(context.destination);
+
+            setGainNode(newGain);
+
+            return newGain;
         },
         [gainNode, audioBufferSource, state.crossfade, state.fadeOut, globalVolume],
     );
