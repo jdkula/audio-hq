@@ -112,7 +112,8 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
                 curGain.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
             }
 
-            newSource.start(0, getSeek() ?? undefined);
+            const offset = getSeek() ?? undefined;
+            newSource.start(0, offset ? Math.max(0, offset) : undefined);
             setAudioBufferSource(newSource);
             startedRef.current = true;
         },
