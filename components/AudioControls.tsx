@@ -7,7 +7,7 @@
 
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, useEffect, useState } from 'react';
-import { CircularProgress, IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
+import { IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
 import VolumeButton from './VolumeButton';
@@ -85,7 +85,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
     const [volumeAnchorEl, serVolumeAnchor] = useState<HTMLButtonElement | null>(null);
     const [speedAnchorEl, setSpeedAnchor] = useState<HTMLButtonElement | null>(null);
 
-    const { duration, paused, time, volume, loading, blocked, transitioning } = useAudio(state, {
+    const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
         overrideVolume: tempVolume ?? undefined,
         loop: loop ?? true,
         onFinish: onFinish,
@@ -115,13 +115,6 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
         else resolver({ pauseTime: Date.now(), timePlayed: time });
     };
 
-    const onStop = async (e: React.MouseEvent) => {
-        if (e.shiftKey) {
-            if (!state.fadeOut) await resolver({ fadeOut: true, crossfade: 5 });
-        } else if (state.fadeOut) await resolver({ fadeOut: false });
-        resolver(null);
-    };
-
     return (
         <AudioControlsContainer>
             <ControlsContainer>
@@ -143,35 +136,29 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
                 </Spaced>
             </ControlsContainer>
             <ControlsContainer>
-                {transitioning ? (
-                    <CircularProgress />
-                ) : (
-                    <>
-                        <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
-                            <IconButton onClick={(e) => serVolumeAnchor(e.currentTarget)}>
-                                <VolumeButton volume={volume} />
-                            </IconButton>
-                        </Tooltip>
-                        <Popover
-                            open={!!volumeAnchorEl}
-                            onClose={() => serVolumeAnchor(null)}
-                            anchorEl={volumeAnchorEl}
-                            transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                        >
-                            <Slider
-                                value={volume ?? 0}
-                                min={0}
-                                max={1}
-                                step={0.01}
-                                onChangeCommitted={(_, v) => resolver({ volume: v as number })}
-                                onChange={(_, v) => setTempVolume(v as number)}
-                                orientation="vertical"
-                                style={{ minHeight: '10rem', margin: '1rem' }}
-                            />
-                        </Popover>
-                    </>
-                )}
+                <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
+                    <IconButton onClick={(e) => serVolumeAnchor(e.currentTarget)}>
+                        <VolumeButton volume={volume} />
+                    </IconButton>
+                </Tooltip>
+                <Popover
+                    open={!!volumeAnchorEl}
+                    onClose={() => serVolumeAnchor(null)}
+                    anchorEl={volumeAnchorEl}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Slider
+                        value={volume ?? 0}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        onChangeCommitted={(_, v) => resolver({ volume: v as number })}
+                        onChange={(_, v) => setTempVolume(v as number)}
+                        orientation="vertical"
+                        style={{ minHeight: '10rem', margin: '1rem' }}
+                    />
+                </Popover>
                 <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
                     <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
                         <SpeedIcon />
@@ -197,7 +184,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={onStop}>
+                    <IconButton onClick={() => resolver(null)}>
                         <StopIcon />
                     </IconButton>
                 </Tooltip>

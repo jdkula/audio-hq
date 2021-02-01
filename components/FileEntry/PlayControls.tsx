@@ -44,28 +44,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
         [],
     );
 
-    const onAmbience = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        if (e.shiftKey) {
-            workspace.resolver({
-                ambience: {
-                    id: file.id,
-                    volume: workspace.state.playing?.volume ?? undefined,
-                    startTimestamp: workspace.state.playing?.startTimestamp ?? Date.now(),
-                    pauseTime: null,
-                    crossfade: 5,
-                },
-            });
-        } else {
-            workspace.resolver({ ambience: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
-        }
+    const onAmbience = async () => {
+        workspace.resolver({ ambience: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
     };
 
-    const onPlay = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        const transitions = e.shiftKey ? 5 : 0;
-        const startTimestamp = transitions ? undefined : Date.now();
-        workspace.resolver({
-            playing: { id: file.id, startTimestamp, pauseTime: null, crossfade: transitions, fadeOut: true },
-        });
+    const onPlay = async () => {
+        workspace.resolver({ playing: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
     };
 
     const onSfx = async () => {

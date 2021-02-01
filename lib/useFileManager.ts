@@ -1,16 +1,15 @@
 import PouchDB from 'pouchdb';
 import Axios from 'axios';
-import { createContext, MutableRefObject, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { Set } from 'immutable';
 import { mutate } from 'swr';
 import Job from './Job';
 import { useFiles, useJobs } from './useWorkspace';
 import { File as WSFile, Reorderable } from './Workspace';
 import ConvertOptions from './ConvertOptions';
-import AudioContextContext from './AudioContextContext';
 
 interface FileManager {
-    track: (id: string, onCacheRetrieve?: (track: AudioBuffer) => void) => void;
+    track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
     reset: () => Promise<void>;
     import: (
         name: string,
@@ -41,12 +40,10 @@ async function* readBody(body: ReadableStream<Uint8Array>) {
     reader.releaseLock();
 }
 
-const useFileManager = (workspaceId: string, audioContext: AudioContext): FileManager => {
+const useFileManager = (workspaceId: string): FileManager => {
     const cache = useRef(new PouchDB('cache'));
 
-    const fetchCallbacks: MutableRefObject<Map<string, Set<(track: AudioBuffer) => void>>> = useRef(new Map());
-
-    const cachedAudioBuffers = useRef(new Map<string, AudioBuffer>());
+    const fetchCallbacks: MutableRefObject<Map<string, Set<(track: Blob) => void>>> = useRef(new Map());
 
     const [cached, setCached] = useState<Set<string>>(Set());
     const [fetching, setFetching] = useState<Set<Job>>(Set());
@@ -92,41 +89,21 @@ const useFileManager = (workspaceId: string, audioContext: AudioContext): FileMa
         );
     };
 
-    const getAudioBuffer = async (id: string, blob: Blob): Promise<AudioBuffer> => {
-        if (cachedAudioBuffers.current.has(id)) return cachedAudioBuffers.current.get(id)!;
-
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer = await new Promise<AudioBuffer>((resolve, reject) =>
-            audioContext.decodeAudioData(arrayBuffer, resolve, (e) => reject(e)),
-        );
-
-        cachedAudioBuffers.current.set(id, audioBuffer);
-
-        return audioBuffer;
-    };
-
-    const track = (id: string, onCacheRetrieve?: (track: AudioBuffer) => void): void => {
+    const track = (id: string, onCacheRetrieve?: (track: Blob) => void): string => {
         // TODO: audio sets
-        if (cachedAudioBuffers.current.has(id)) {
-            onCacheRetrieve?.(cachedAudioBuffers.current.get(id)!);
-            return;
-        }
-
         const url = `/api/files/${id}/download`;
         const inflight = fetchCallbacks.current.has(id);
         if (onCacheRetrieve) {
             fetchCallbacks.current.set(id, (fetchCallbacks.current.get(id) ?? Set()).add(onCacheRetrieve));
         }
 
-        if (inflight) return;
+        if (inflight) return url;
 
         cache.current
             .getAttachment(id, 'file')
             .then((data) => {
                 setCached((cached) => cached.add(id));
-                (fetchCallbacks.current.get(id) ?? Set()).forEach(async (callback) =>
-                    callback(await getAudioBuffer(id, data as Blob)),
-                );
+                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(data as Blob));
                 fetchCallbacks.current.delete(id);
             })
             .catch(async () => {
@@ -204,11 +181,11 @@ const useFileManager = (workspaceId: string, audioContext: AudioContext): FileMa
                 }
                 setCached((cached) => cached.add(id));
                 setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
-                (fetchCallbacks.current.get(id) ?? Set()).forEach(async (callback) =>
-                    callback(await getAudioBuffer(id, blob)),
-                );
+                (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(blob));
                 fetchCallbacks.current.delete(id);
             });
+
+        return url;
     };
 
     const imp = async (

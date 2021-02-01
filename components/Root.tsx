@@ -1,7 +1,6 @@
-import React, { FC, useEffect, useState } from 'react';
-import AudioContextContext from '~/lib/AudioContextContext';
-import useAudioContext from '~/lib/useAudioContext';
+import React, { FC } from 'react';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
+import useMediaSession from '~/lib/useMediaSession';
 import useWorkspace, { WorkspaceContext } from '~/lib/useWorkspace';
 import LoadingPage from './LoadingPage';
 
@@ -9,10 +8,9 @@ const Root: FC<{
     workspace: string;
 }> = (props) => {
     const { workspace, resolve, loading } = useWorkspace(props.workspace);
+    const fileManager = useFileManager(props.workspace);
 
-    const ctx = useAudioContext(workspace, resolve);
-
-    const fileManager = useFileManager(props.workspace, ctx?.context);
+    useMediaSession(workspace, resolve);
 
     if (!workspace?.state || loading) {
         return <LoadingPage workspace={props.workspace} />;
@@ -20,9 +18,7 @@ const Root: FC<{
 
     return (
         <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve }}>
-            <FileManagerContext.Provider value={fileManager}>
-                <AudioContextContext.Provider value={ctx}>{props.children}</AudioContextContext.Provider>
-            </FileManagerContext.Provider>
+            <FileManagerContext.Provider value={fileManager}>{props.children}</FileManagerContext.Provider>
         </WorkspaceContext.Provider>
     );
 };

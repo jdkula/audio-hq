@@ -65,7 +65,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                 {downloadJob && (
                     <Tooltip placement="left" title="Downloading..." arrow>
                         {downloadJob.progress ? (
-                            <CircularProgressWithLabel variant="determinate" value={downloadJob.progress * 100} />
+                            <CircularProgressWithLabel variant="static" value={downloadJob.progress * 100} />
                         ) : (
                             <CircularProgressWithLabel />
                         )}

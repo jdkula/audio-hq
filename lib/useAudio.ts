@@ -1,9 +1,8 @@
 import { PlayState } from './Workspace';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { globalVolumeAtom } from './atoms';
-import AudioContextContext from './AudioContextContext';
 
 interface AudioInfo {
     duration: number;
@@ -12,7 +11,6 @@ interface AudioInfo {
     paused: boolean;
     loading: boolean;
     blocked: boolean;
-    transitioning: boolean;
 }
 
 interface Options {
@@ -29,31 +27,112 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
     loop = loop ?? true;
     const fileManager = useContext(FileManagerContext);
     const globalVolume = useRecoilValue(globalVolumeAtom);
-
-    const { context, blocked } = useContext(AudioContextContext);
-
-    const [gainNode, setGainNode] = useState(context.createGain());
-    const [audioBufferSource, setAudioBufferSource] = useState(context.createBufferSource());
-
-    const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+    const audio = useRef(new Audio());
 
     const [volumeValue, setVolume] = useState(0);
     const [timeValue, setTime] = useState(0); // calculate later
     const [duration, setDuration] = useState(0); // calculate later
     const [paused, setPaused] = useState(true);
-    const [transitioning, setTransitioning] = useState(false);
+
+    const [loading, setLoading] = useState(true);
+
+    const [hasInteracted, setHasInteracted] = useState(false);
+    const [blocked, setIsBlocked] = useState(false);
 
     const handle = useRef<number | null>(null);
     const idRef = useRef(''); // used to prevent race conditions with loading many tracks.
-    const loadingRef = useRef(true);
 
-    const stopRef = useRef<any>();
-    const startRef = useRef<any>();
-    const startedRef = useRef(false);
+    const shadowPaused = globalVolume === 0;
 
-    if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked, transitioning: true };
+    useEffect(() => {
+        console.log('onMount effect ran');
+        return () => {
+            console.log('onDismount effect ran');
+            audio.current.onloadedmetadata = null;
+            audio.current.oncanplaythrough = null;
+            audio.current.ontimeupdate = null;
+            audio.current.onloadstart = null;
+            audio.current.onended = null;
+            audio.current.pause();
+            audio.current.src = '';
+            audio.current.load();
+            audio.current.remove();
+        };
+    }, []);
 
-    const lastStartTime = useRef(state.startTimestamp);
+    const onInteract = useCallback(() => {
+        console.log('onInteract called');
+        audio.current
+            .play()
+            .then(() => {
+                console.log('onInteract -> play() -> then called');
+                if (state === null || state.pauseTime !== null) {
+                    audio.current.pause();
+                }
+                setIsBlocked(false);
+                setHasInteracted(true);
+                clearInteractGate();
+                console.log('interaction gate removed');
+            })
+            .catch((e) => console.warn(e));
+    }, [audio.current, state?.pauseTime]);
+
+    const setInteractGate = useCallback(() => {
+        document.addEventListener('keyup', onInteract);
+        document.addEventListener('mouseup', onInteract);
+    }, [onInteract]);
+
+    const clearInteractGate = useCallback(() => {
+        document.removeEventListener('keyup', onInteract);
+        document.removeEventListener('mouseup', onInteract);
+    }, [onInteract]);
+
+    useEffect(() => {
+        console.log('Audio setup called');
+
+        audio.current.preload = 'auto';
+
+        audio.current.onloadstart = () => {
+            console.log('audio.current.onloadstart called');
+            setLoading(true);
+        };
+
+        audio.current.onloadedmetadata = () => {
+            console.log('audio.current.onloadedmetadata called');
+            setDuration(audio.current.duration);
+            if (isiOS()) {
+                console.log('Hello, I am iOS. Setting interact gate.');
+                setIsBlocked(true);
+                setInteractGate();
+            }
+        };
+
+        audio.current.oncanplay = () => {
+            console.log('audio.current.oncanplay called');
+            setLoading(false);
+        };
+    }, [audio.current]);
+
+    useEffect(() => {
+        audio.current.onended = () => {
+            if (!loop) {
+                onFinish?.();
+            }
+        };
+    }, [audio.current, onFinish, loop]);
+
+    useEffect(() => {
+        console.log('AudioTimeUpdate setter called');
+        audio.current.loop = loop ?? true;
+        audio.current.ontimeupdate = () => {
+            // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
+            if (loop && audio.current.currentTime > audio.current.duration - 0.44) {
+                audio.current.currentTime = 0;
+            }
+        };
+    }, [audio.current, loop]);
+
+    if (!state) return { duration: 0, paused: true, time: 0, volume: 0, loading: true, blocked: blocked };
 
     const getSeek = useCallback(() => {
         if (!state.startTimestamp || !duration) return null;
@@ -64,164 +143,94 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         return (timeElapsedMs % (duration * 1000)) / 1000;
     }, [state.startTimestamp, duration, state.speed, state.pauseTime]);
 
-    const stop = useCallback(
-        (now?: boolean): GainNode => {
-            // FIXME: This is wonky, "now" doesn't actually force it (now is overridden by state.fadeOut)
-            let transition: number;
-            if (now) transition = 0;
-            else if (state.fadeOut) transition = state.crossfade;
-            else transition = 0;
-
-            console.log('Transition', { now, fadeOut: state.fadeOut, transition });
-
-            console.log('Stop called.', transition);
-            try {
-                audioBufferSource.stop(context.currentTime + transition);
-            } catch (e) {
-                console.warn(e);
-            }
-            gainNode.gain.cancelScheduledValues(context.currentTime);
-            gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0, context.currentTime + transition);
-            const newGain = context.createGain();
-            newGain.connect(context.destination);
-
-            setGainNode(newGain);
-
-            return newGain;
-        },
-        [gainNode, audioBufferSource, state.crossfade, state.fadeOut, globalVolume],
-    );
-    stopRef.current = stop;
-
-    const start = useCallback(
-        (curGain: GainNode, now?: boolean) => {
-            console.log('Start called.');
-            const newSource = context.createBufferSource();
-            newSource.buffer = audioBuffer;
-            newSource.connect(curGain);
-            if (state.crossfade && !now) {
-                console.log('Fading in...!');
-                curGain.gain.cancelScheduledValues(context.currentTime);
-                curGain.gain.setValueAtTime(0, context.currentTime);
-                curGain.gain.linearRampToValueAtTime(
-                    (overrideVolume ?? state.volume) * globalVolume,
-                    context.currentTime + state.crossfade,
-                );
-            } else {
-                curGain.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-            }
-
-            const offset = getSeek() ?? undefined;
-            newSource.start(0, offset ? Math.max(0, offset) : undefined);
-            setAudioBufferSource(newSource);
-            startedRef.current = true;
-        },
-        [audioBuffer, getSeek, state.crossfade, globalVolume, state.volume],
-    );
-    startRef.current = start;
-
-    useEffect(() => {
-        return () => {
-            console.log('onDismount effect ran');
-            stopRef.current();
-        };
-    }, []);
-
-    useEffect(() => {
-        audioBufferSource.loop = loop ?? true;
-    }, [audioBufferSource, loop]);
-
     useEffect(() => {
         handle.current = window.setInterval(() => {
-            setTime(getSeek() ?? 0);
+            setTime(getSeek() ?? audio.current.currentTime);
         }, 500);
 
         return () => {
             if (handle.current) window.clearInterval(handle.current);
             handle.current = null;
         };
-    }, [getSeek]);
+    }, [getSeek, audio.current]);
 
     useEffect(() => {
+        console.log('Track getter called', audio, state);
+        if (audio.current.src?.includes('blob')) {
+            URL.revokeObjectURL(audio.current.src);
+        }
+        audio.current.src = '';
         idRef.current = state.id;
-        loadingRef.current = true;
-
-        console.log('Track getter called', state.id, idRef.current);
-
-        if (!state.crossfade) {
-            console.log('STOPPING!');
-            stopRef.current();
-        }
-
-        fileManager.track(state.id, (buffer) => {
-            // Need to let other hooks run before this...?
-            window.requestAnimationFrame(() => {
-                if (idRef.current === state.id) {
-                    if (state.crossfade) {
-                        setTransitioning(true);
-                        window.setTimeout(() => setTransitioning(false), state.crossfade * 1000);
-                    }
-                    setDuration(buffer.duration);
-                    loadingRef.current = false;
-                    setAudioBuffer(buffer);
-                }
-            });
-        });
-    }, [state.id]);
-
-    useEffect(() => {
-        if (!loadingRef.current) {
-            console.log('Play/pauser called');
-
-            const cut = state.startTimestamp !== lastStartTime.current;
-            lastStartTime.current = state.startTimestamp;
-
-            setPaused(state.pauseTime !== null);
-            if (state.pauseTime === null) {
-                startRef.current(stopRef.current(/* now = */ cut));
-            } else {
-                stopRef.current(/* now = */ true);
+        setLoading(true);
+        audio.current.src = fileManager.track(state.id, (cached) => {
+            if (idRef.current === state.id) {
+                audio.current.src = URL.createObjectURL(cached);
             }
-            setTime(getSeek() ?? 0);
-        }
-    }, [loadingRef.current, state.pauseTime, getSeek]);
+        });
+    }, [audio.current, state.id]);
 
     useEffect(() => {
-        if (!loadingRef.current && !transitioning) {
-            console.log('Volume setter called');
+        console.log('Volume setter called');
 
-            gainNode.gain.setValueAtTime((overrideVolume ?? state.volume) * globalVolume, context.currentTime);
-
+        if (!loading) {
+            audio.current.volume = (overrideVolume ?? state.volume) * globalVolume;
             setVolume(overrideVolume ?? state.volume);
         }
-    }, [state.volume, globalVolume, loadingRef.current, transitioning, overrideVolume, gainNode]);
+    }, [audio.current, state.volume, loading, overrideVolume, globalVolume]);
 
     useEffect(() => {
-        if (!loadingRef.current) {
-            audioBufferSource.playbackRate.setValueAtTime(state.speed, context.currentTime);
+        console.log('Seeker called');
+
+        if (!loading) {
+            audio.current.currentTime = getSeek() ?? 0;
+            setTime(getSeek() ?? 0);
         }
-    }, [audioBufferSource, state.speed, loadingRef.current]);
+    }, [audio.current, getSeek, loading, hasInteracted]);
 
     useEffect(() => {
-        if (startedRef.current && (audioBufferSource.buffer?.duration ?? 0) > 0) {
-            console.log('Setting onEnded');
-            audioBufferSource.onended = () => {
-                if (!loop) {
-                    onFinish?.();
+        console.log('Play/pauser called');
+
+        if (!loading && !blocked) {
+            setPaused(state.pauseTime !== null);
+            if (state.pauseTime === null) {
+                audio.current.play().catch((err) => {
+                    setIsBlocked(true);
+                    setInteractGate();
+                    console.warn(err);
+                });
+            } else {
+                audio.current.pause();
+            }
+        }
+    }, [audio.current, state.pauseTime, loading, blocked, setInteractGate]);
+
+    useEffect(() => {
+        if (!loading && !blocked) {
+            audio.current.playbackRate = state.speed;
+        }
+    }, [audio.current, state.speed, loading, blocked]);
+
+    // auto-pause when globalVolume is 0 to pretend to the browser that we're paused.
+    useEffect(() => {
+        if (shadowPaused) {
+            audio.current.pause();
+        } else {
+            if (!loading && !blocked && !paused) {
+                if (state.startTimestamp) {
+                    audio.current.currentTime = getSeek()!;
                 }
-            };
+                audio.current.play();
+            }
         }
-    }, [audioBufferSource, onFinish, loop]);
+    }, [shadowPaused]);
 
     return {
         duration,
         paused,
         time: timeValue,
         volume: volumeValue,
-        loading: loadingRef.current,
+        loading,
         blocked,
-        transitioning,
     };
 };
 
