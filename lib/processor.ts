@@ -123,7 +123,7 @@ export async function download(url: string, id?: string, options?: ConvertOption
     return new Promise<string>((resolve, reject) => {
         const ytdl = spawn(
             ytdlPath,
-            ['--ffmpeg-location', ffmpegPath, '-x', '-f', 'bestaudio/best', '-o', outPath, url],
+            ['--ffmpeg-location', ffmpegPath, '--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url],
             {
                 cwd: basedir,
             },
