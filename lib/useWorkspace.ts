@@ -40,6 +40,7 @@ const useWorkspaceState = (
     const { data, mutate } = useSWR<WorkspaceState>(`/api/${encodeURIComponent(workspaceId)}/state`, fetcher, {
         refreshInterval: 1000,
         refreshWhenHidden: true,
+        refreshWhenOffline: true,
     });
 
     const mutateState = (state: WorkspaceState) => {

@@ -7,5 +7,5 @@ export const pathAtom = atom<string[]>({
 
 export const globalVolumeAtom = atom({
     key: 'globalVolume',
-    default: 1,
+    default: 0.2,
 });
