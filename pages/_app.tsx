@@ -9,23 +9,18 @@ import { AppProps } from 'next/app';
 
 import Head from 'next/head';
 
-import { ReactElement, useEffect } from 'react';
-import { createMuiTheme, ThemeProvider as MuiThemeProvider, CssBaseline, StylesProvider } from '@material-ui/core';
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    createMuiTheme,
+    ThemeProvider as MuiThemeProvider,
+    CssBaseline,
+    StylesProvider,
+    useMediaQuery,
+} from '@material-ui/core';
 import { ThemeProvider } from 'styled-components';
 import { RecoilRoot } from 'recoil';
 import { amber } from '@material-ui/core/colors';
-
-const theme = createMuiTheme({
-    palette: {
-        type: 'light',
-        primary: { main: '#4fd2d6', contrastText: '#fff' },
-        secondary: amber
-    },
-    typography: {
-        htmlFontSize: 10,
-        fontSize: 10,
-    },
-});
+import { findSourceMap } from 'module';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
     // clear Server-Side injected CSS for Material-UI
@@ -35,6 +30,42 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
             jssStyles.parentElement?.removeChild(jssStyles);
         }
     }, []);
+
+    const [forceDark, setForceDark] = useState(false);
+
+    // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const prefersDarkMode = false;
+
+    const theme = useMemo(
+        () =>
+            createMuiTheme({
+                palette: {
+                    type: forceDark ? 'dark' : 'light',
+                    primary: { main: '#47BDC0', contrastText: '#fff' },
+                    secondary: amber,
+                },
+                typography: {
+                    htmlFontSize: 10,
+                    fontSize: 10,
+                },
+            }),
+        [prefersDarkMode, forceDark],
+    );
+
+    const forceModeListener = useCallback(
+        (ev: KeyboardEvent) => {
+            if (ev.code === 'KeyM' && (ev.ctrlKey || ev.metaKey)) {
+                ev.preventDefault();
+                setForceDark(!forceDark);
+            }
+        },
+        [forceDark, setForceDark],
+    );
+
+    useEffect(() => {
+        window.addEventListener('keydown', forceModeListener);
+        return () => window.removeEventListener('keydown', forceModeListener);
+    }, [forceModeListener]);
 
     return (
         <>
