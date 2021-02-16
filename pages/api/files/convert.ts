@@ -31,7 +31,7 @@ const Convert: NextApiHandler = async (req, res) => {
         const workspace: string = fields.workspace as string;
 
         const job = await processFile({ name, workspace, path: parsedPath, description }, (id) =>
-            convert(file.path, id, parsedOptions),
+            convert((file as formidable.File).path, id, parsedOptions),
         );
 
         res.status(200).send(job);
