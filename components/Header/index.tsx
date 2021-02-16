@@ -6,7 +6,7 @@
  * volume, cache all workspace songs, and add tracks.
  */
 
-import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden } from '@material-ui/core';
+import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden, Link } from '@material-ui/core';
 import AddFileDialog from '../AddFileDialog';
 import React, { useContext, FunctionComponent, useState, FC } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
@@ -20,6 +20,7 @@ import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
+import NextLink from 'next/link';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -79,13 +80,13 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Toolbar>
                 <ToolbarContent>
                     <Title>
-                        <Typography
-                            variant={isSmall ? 'h5' : 'h4'}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => router.push(`/?last=${encodeURIComponent(workspace.name)}`)}
-                        >
-                            Audio HQ – {workspace ? workspace.name : 'Loading...'}
-                        </Typography>
+                        <NextLink href={`/?last=${encodeURIComponent(workspace.name)}`}>
+                            <Link href={`/?last=${encodeURIComponent(workspace.name)}`}>
+                                <Typography variant={isSmall ? 'h5' : 'h4'}>
+                                    Audio HQ – {workspace ? workspace.name : 'Loading...'}
+                                </Typography>
+                            </Link>
+                        </NextLink>
                         {!isSmall && !host && (
                             <>
                                 <Spacer />
