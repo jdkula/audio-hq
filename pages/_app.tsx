@@ -41,7 +41,7 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
             createMuiTheme({
                 palette: {
                     type: forceDark ? 'dark' : 'light',
-                    primary: { main: '#47BDC0', contrastText: '#fff' },
+                    primary: { main: '#4fd2d6', contrastText: '#fff' },
                     secondary: amber,
                 },
                 typography: {
