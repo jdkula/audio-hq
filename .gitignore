@@ -34,7 +34,6 @@ yarn-error.log*
 /cache
 /storage
 /download
-/.vscode
 /.VSCodeCounter
 .vercel
 deploy.sh
