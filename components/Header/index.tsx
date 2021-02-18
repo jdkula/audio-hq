@@ -81,7 +81,11 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                 <ToolbarContent>
                     <Title>
                         <NextLink href={`/?last=${encodeURIComponent(workspace.name)}`}>
-                            <Link href={`/?last=${encodeURIComponent(workspace.name)}`} color="inherit">
+                            <Link
+                                href={`/?last=${encodeURIComponent(workspace.name)}`}
+                                color="inherit"
+                                underline="hover"
+                            >
                                 <Typography variant={isSmall ? 'h5' : 'h4'}>
                                     Audio HQ – {workspace ? workspace.name : 'Loading...'}
                                 </Typography>

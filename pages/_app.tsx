@@ -19,7 +19,7 @@ import {
 } from '@material-ui/core';
 import { ThemeProvider } from 'styled-components';
 import { RecoilRoot } from 'recoil';
-import { amber } from '@material-ui/core/colors';
+import { amber, cyan } from '@material-ui/core/colors';
 import { findSourceMap } from 'module';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
@@ -41,8 +41,8 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
             createMuiTheme({
                 palette: {
                     type: forceDark ? 'dark' : 'light',
-                    primary: { main: '#4fd2d6', contrastText: '#fff' },
-                    secondary: amber,
+                    primary: { main: cyan[400], contrastText: '#fff' },
+                    secondary: { main: amber.A400 },
                 },
                 typography: {
                     htmlFontSize: 10,
