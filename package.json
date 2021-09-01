@@ -40,7 +40,7 @@
         "immutable": "^4.0.0-rc.12",
         "mongodb": "^3.6.4",
         "multer": "^1.4.2",
-        "next": "10.0.7",
+        "next": "11.1.1",
         "pouchdb": "^7.2.1",
         "promise-fs": "^2.1.1",
         "pusher": "^4.0.2",
