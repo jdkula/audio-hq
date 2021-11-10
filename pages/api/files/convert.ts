@@ -4,10 +4,11 @@ import formidable from 'formidable';
 import ConvertOptions from '~/lib/ConvertOptions';
 
 const Convert: NextApiHandler = async (req, res) => {
-    //@ts-expect-error IncomingForm accepts a max file size parameter.
-    const form = new formidable.IncomingForm({ maxFileSize: 2048 * 1024 * 1024 }); // 2gb
-    form.uploadDir = '/tmp/audio-hq';
-    form.keepExtensions = true;
+    const form = new formidable.IncomingForm({
+        maxFileSize: 2048 * 1024 * 1024, // 2gb
+        uploadDir: '/tmp/audio-hq',
+        keepExtensions: true,
+    });
     const parsePromise = new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
         form.parse(req, async (err, fields, files) => {
             if (err) reject(err);
@@ -31,7 +32,7 @@ const Convert: NextApiHandler = async (req, res) => {
         const workspace: string = fields.workspace as string;
 
         const job = await processFile({ name, workspace, path: parsedPath, description }, (id) =>
-            convert((file as formidable.File).path, id, parsedOptions),
+            convert((file as formidable.File).filepath, id, parsedOptions),
         );
 
         res.status(200).send(job);

@@ -85,7 +85,7 @@ const useFileManager = (workspaceId: string): FileManager => {
 
     const updateFetching = (id: string, progress: number) => {
         setFetching((fetching) =>
-            fetching.map((v) => (((v.jobId as unknown) as string) === id ? { ...v, progress } : v)),
+            fetching.map((v) => ((v.jobId as unknown as string) === id ? { ...v, progress } : v)),
         );
     };
 
@@ -172,7 +172,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                             },
                         },
                     });
-                } catch (e) {
+                } catch (e: any) {
                     if (e?.status === 409) {
                         console.warn('Confict error... probably added in another tab?');
                     } else {
@@ -180,7 +180,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                     }
                 }
                 setCached((cached) => cached.add(id));
-                setFetching((fetching) => fetching.filterNot((v) => ((v.jobId as unknown) as string) === id));
+                setFetching((fetching) => fetching.filterNot((v) => (v.jobId as unknown as string) === id));
                 (fetchCallbacks.current.get(id) ?? Set()).forEach((callback) => callback(blob));
                 fetchCallbacks.current.delete(id);
             });

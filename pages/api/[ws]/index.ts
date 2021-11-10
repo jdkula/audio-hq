@@ -1,11 +1,11 @@
 import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { StoredWorkspace, Workspace } from '~/lib/Workspace';
-import { FindAndModifyWriteOpResultObject } from 'mongodb';
 import Jobs from '~/lib/Jobs';
+import { ModifyResult } from 'mongodb';
 
 export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
-    const workspace: FindAndModifyWriteOpResultObject<StoredWorkspace & { _id: any }> = await (
+    const workspace = await (
         await mongoworkspaces
     ).findOneAndUpdate(
         { _id: workspaceId },
@@ -30,11 +30,12 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
             } as Omit<StoredWorkspace, '_id'>,
         },
         {
-            returnOriginal: false,
+            returnDocument: 'before',
             upsert: true,
         },
     );
 
+    // @ts-expect-error
     delete workspace.value?._id;
 
     return { ...workspace.value!, jobs: Jobs.ofWorkspace(workspaceId) };

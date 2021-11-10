@@ -40,8 +40,6 @@ const ytdlPath: string = ytdl.getYtdlBinary();
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
-// const cookiesPath = path.resolve(process.cwd(), 'cookies.txt');
-
 interface FileOptions {
     name: string;
     workspace: string;
@@ -95,7 +93,7 @@ export function processFile(
             const filepath = await filePath(id);
             await addFile(id, filepath, { name, workspace, path, description });
             Jobs.set(id, (job) => ({ ...job, status: 'done', result: id }));
-        } catch (e) {
+        } catch (e: any) {
             Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: e.toString() }));
         }
     })();

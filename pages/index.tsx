@@ -22,7 +22,6 @@ import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
 import PouchDB from 'pouchdb';
-import { listen } from 'socket.io';
 
 const GlobalFull = createGlobalStyle`
     html {
