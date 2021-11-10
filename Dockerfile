@@ -1,12 +1,11 @@
 FROM node:17 AS deps-setup
 
 WORKDIR /audio-hq
-RUN apt-get update
-RUN apt-get install -y python3 python-is-python3
 COPY package.json yarn.lock ./
 
 FROM deps-setup AS deps
 WORKDIR /audio-hq
+RUN apt-get update && apt-get install -y python3 python-is-python3
 RUN yarn install --frozen-lockfile --network-timeout 1000000
 
 FROM deps AS deps-prod
