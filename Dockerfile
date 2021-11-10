@@ -1,31 +1,31 @@
-FROM node:17 AS deps-setup
+FROM node:17-alpine AS deps-setup
 
 WORKDIR /audio-hq
 COPY package.json yarn.lock ./
 
 FROM deps-setup AS deps
 WORKDIR /audio-hq
-RUN apt-get update && apt-get install -y python3 python-is-python3
+RUN apk add --update --no-cache python3 libc6-compat && ln -sf python3 /usr/bin/python
 RUN yarn install --frozen-lockfile --network-timeout 1000000
 
 FROM deps AS deps-prod
 WORKDIR /audio-hq
 RUN yarn install --production --ignore-scripts --prefer-offline --frozen-lockfile --network-timeout 1000000
 
-FROM node:17 AS builder
+FROM node:17-alpine AS builder
 WORKDIR /audio-hq
 COPY . ./
 COPY --from=deps /audio-hq/package.json ./package.json
 COPY --from=deps /audio-hq/node_modules ./node_modules
 RUN yarn build
 
-FROM node:17 AS runner
+FROM node:17-alpine AS runner
 WORKDIR /audio-hq
 
 ENV NODE_ENV production
 
-RUN addgroup -gid 1001 --system nodejs
-RUN adduser --system nextjs -u 1001
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
 
 COPY --from=deps-prod /audio-hq/node_modules ./node_modules
 COPY --from=builder /audio-hq ./
