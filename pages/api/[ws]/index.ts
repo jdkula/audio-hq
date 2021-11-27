@@ -38,7 +38,16 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
     // @ts-expect-error
     delete workspace.value?._id;
 
-    return { ...workspace.value!, jobs: Jobs.ofWorkspace(workspaceId) };
+    let files = workspace.value!.files;
+
+    for (const id of workspace.value!.extends ?? []) {
+        const extendsWs = await (await mongoworkspaces).findOne({ _id: id });
+        if (extendsWs) {
+            files = files.concat(extendsWs.files);
+        }
+    }
+
+    return { ...workspace.value!, jobs: Jobs.ofWorkspace(workspaceId), files };
 }
 
 const get: NextApiHandler = async (req, res) => {

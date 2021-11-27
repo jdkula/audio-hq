@@ -69,6 +69,7 @@ export interface StoredWorkspace {
     name: string;
     files: File[];
     state: WorkspaceState;
+    extends?: ID[];
 }
 
 export interface Workspace extends StoredWorkspace {
