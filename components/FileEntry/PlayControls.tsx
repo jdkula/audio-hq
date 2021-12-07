@@ -54,10 +54,10 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
 
     const onSfx = async () => {
         setSfxHighlight(true);
-        sfxHighlightTimeoutHandle.current = (setTimeout(() => {
+        sfxHighlightTimeoutHandle.current = setTimeout(() => {
             setSfxHighlight(false);
             sfxHighlightTimeoutHandle.current = null;
-        }, 2000) as unknown as number);
+        }, 2000) as unknown as number;
 
         workspace.resolver({
             sfx: {

@@ -10,18 +10,6 @@ interface WorkspaceHookResult {
     resolve: WorkspaceResolver;
 }
 
-enum LoadingState {
-    LOADING = 'LOADING',
-    STORING = 'STORING',
-    CACHED = 'CACHED',
-}
-
-interface LoadingDetail {
-    fileId: string;
-    state: LoadingState;
-    progress: number;
-}
-
 const fetcher = (url: string) => Axios.get(url).then((res) => res.data);
 
 export const useFiles = (workspaceId: string): { files: File[]; changeFiles: () => void; loading: boolean } => {

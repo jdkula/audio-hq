@@ -22,5 +22,6 @@
         "plugin:@typescript-eslint/recommended",
         "plugin:prettier/recommended",
         "plugin:@next/next/recommended"
-    ]
+    ],
+    "ignorePatterns": ["next.config.js"]
 }

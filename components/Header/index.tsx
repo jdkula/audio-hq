@@ -14,7 +14,6 @@ import Head from 'next/head';
 import { Add } from '@material-ui/icons';
 import { useRecoilValue } from 'recoil';
 
-import { useRouter } from 'next/router';
 import { pathAtom } from '~/lib/atoms';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from 'styled-components';
@@ -57,7 +56,6 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => (
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
-    const router = useRouter();
 
     const [adding, setAdding] = useState(false);
 

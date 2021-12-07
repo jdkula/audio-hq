@@ -119,7 +119,7 @@ const del: NextApiHandler = async (req, res) => {
         return;
     }
 
-    res.status(204).send('Deleted.');
+    res.status(204).end();
 };
 
 const put: NextApiHandler = async (req, res) => {

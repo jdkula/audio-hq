@@ -10,7 +10,7 @@ import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
-import { PlayState, PlayStateResolver, SfxState, updatePlayState } from '../lib/Workspace';
+import { PlayState, PlayStateResolver, SfxState } from '../lib/Workspace';
 
 import AddIcon from '@material-ui/icons/Add';
 import { BlurOn } from '@material-ui/icons';

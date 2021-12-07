@@ -41,7 +41,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     const fileManager = useContext(FileManagerContext);
 
     const cached = fileManager.cached.has(file.id);
-    const downloadJob = fileManager.fetching.find((job) => ((job.jobId as unknown) as string) === file.id);
+    const downloadJob = fileManager.fetching.find((job) => (job.jobId as unknown as string) === file.id);
 
     const download = async () => {
         fileManager.track(file.id);

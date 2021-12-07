@@ -109,7 +109,7 @@ const useFileManager = (workspaceId: string): FileManager => {
             .catch(async () => {
                 setFetching((fetching) =>
                     fetching.add({
-                        jobId: id as any,
+                        jobId: id,
                         name: 'Loading...',
                         progress: 0,
                         status: 'downloading',
@@ -152,7 +152,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                     fetching.map((v) =>
                         v.jobId === id
                             ? {
-                                  jobId: id as any,
+                                  jobId: id,
                                   name: v.name ?? 'Loading...',
                                   progress: null,
                                   status: 'saving',

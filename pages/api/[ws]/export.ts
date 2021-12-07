@@ -1,6 +1,5 @@
 import Axios from 'axios';
 import { NextApiHandler } from 'next';
-import { Readable } from 'stream';
 import { AppFS, isRedirect } from '~/lib/filesystems/FileSystem';
 import { findOrCreateWorkspace } from './index';
 import archiver from 'archiver';

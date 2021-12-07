@@ -1,7 +1,7 @@
 import { PlayState } from './Workspace';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { FileManagerContext } from './useFileManager';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { globalVolumeAtom } from './atoms';
 
 interface AudioInfo {
@@ -217,7 +217,7 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         } else {
             if (!loading && !blocked && !paused) {
                 if (state.startTimestamp) {
-                    audio.current.currentTime = getSeek()!;
+                    audio.current.currentTime = getSeek() ?? 0;
                 }
                 audio.current.play();
             }

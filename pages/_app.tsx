@@ -10,17 +10,10 @@ import { AppProps } from 'next/app';
 import Head from 'next/head';
 
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-    createMuiTheme,
-    ThemeProvider as MuiThemeProvider,
-    CssBaseline,
-    StylesProvider,
-    useMediaQuery,
-} from '@material-ui/core';
+import { createTheme, ThemeProvider as MuiThemeProvider, CssBaseline, StylesProvider } from '@material-ui/core';
 import { ThemeProvider } from 'styled-components';
 import { RecoilRoot } from 'recoil';
 import { amber, cyan } from '@material-ui/core/colors';
-import { findSourceMap } from 'module';
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
     // clear Server-Side injected CSS for Material-UI
@@ -38,7 +31,7 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
 
     const theme = useMemo(
         () =>
-            createMuiTheme({
+            createTheme({
                 palette: {
                     type: forceDark ? 'dark' : 'light',
                     primary: { main: cyan[400], contrastText: '#fff' },

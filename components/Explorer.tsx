@@ -62,7 +62,7 @@ const PlaceholderContainer = styled.div`
 `;
 
 const JobsContainer = styled.div`
-    max-height: 200px;
+    height: 400px;
     overflow: auto;
 `;
 
@@ -235,10 +235,12 @@ export const Explorer: FC = () => {
                     </DragDropContext>
                 </FileListScrollContainer>
             </FileListContainer>
-            <JobsContainer>
-                <Divider />
-                {runningJobs}
-            </JobsContainer>
+            {runningJobs.size > 0 && (
+                <JobsContainer>
+                    <Divider />
+                    {runningJobs}
+                </JobsContainer>
+            )}
         </ExplorerContainer>
     );
 };

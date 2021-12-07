@@ -2,7 +2,6 @@ import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
 import { StoredWorkspace, Workspace } from '~/lib/Workspace';
 import Jobs from '~/lib/Jobs';
-import { ModifyResult } from 'mongodb';
 
 export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
     const workspace = await (
@@ -35,7 +34,7 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
         },
     );
 
-    // @ts-expect-error
+    // @ts-expect-error  We don't want _id to be returned below.
     delete workspace.value?._id;
 
     let files = workspace.value!.files;

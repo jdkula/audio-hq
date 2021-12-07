@@ -1,5 +1,3 @@
-import { GridFSBucketReadStream, ObjectId } from 'mongodb';
-import { mongofiles } from '~/lib/db';
 import { NextApiHandler } from 'next';
 import { AppFS, isRedirect } from '~/lib/filesystems/FileSystem';
 
