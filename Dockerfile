@@ -19,13 +19,16 @@ COPY --from=deps /audio-hq/package.json ./package.json
 COPY --from=deps /audio-hq/node_modules ./node_modules
 RUN yarn build
 
-FROM node:17-alpine AS runner
-WORKDIR /audio-hq
-
+FROM node:17-alpine AS runner-base
 ENV NODE_ENV production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
+RUN apk add --update --no-cache ffmpeg python3 py3-pip alpine-sdk build-base libc6-compat && ln -sf python3 /usr/bin/python
+RUN python3 -m pip install --upgrade yt-dlp
+
+FROM runner-base AS runner
+WORKDIR /audio-hq
 
 COPY --from=deps-prod /audio-hq/node_modules ./node_modules
 COPY --from=builder /audio-hq ./

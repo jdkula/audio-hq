@@ -1,14 +1,9 @@
 import fs from 'promise-fs';
 import path from 'path';
-import ytdl from 'youtube-dl';
-
-import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
-import { path as ffprobePath } from '@ffprobe-installer/ffprobe';
 
 import { v4 as uuidv4 } from 'uuid';
 import ffmpeg, { FilterSpecification } from 'fluent-ffmpeg';
 import { ObjectId } from 'mongodb';
-import getAudioDurationInSeconds from 'get-audio-duration';
 import { findOrCreateWorkspace } from '~/pages/api/[ws]';
 import mongoworkspaces from './db/mongoworkspaces';
 import { File } from './Workspace';
@@ -18,6 +13,7 @@ import Jobs from './Jobs';
 import Job from './Job';
 import { AppFS } from './filesystems/FileSystem';
 import ConvertOptions from './ConvertOptions';
+import which from 'which';
 
 if (typeof global === undefined) {
     throw new Error('processor.ts should never be imported in client side code!');
@@ -35,10 +31,12 @@ try {
     // do nothing; already exists.
 }
 
-//@ts-expect-error The typings are incorrect for ytdl; getYtdlBinary retrieves the path as a string.
-const ytdlPath: string = ytdl.getYtdlBinary();
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
+const _found_path = which.sync('yt-dlp', { nothrow: true }) ?? which.sync('youtube-dl', { nothrow: true });
+if (!_found_path) {
+    throw new Error('Youtube-DL not found!');
+}
+
+const ytdlPath: string = _found_path;
 
 interface FileOptions {
     name: string;
@@ -119,13 +117,9 @@ export async function download(url: string, id?: string, options?: ConvertOption
     id && Jobs.set(id, (job) => ({ ...job, status: 'downloading' }));
 
     return new Promise<string>((resolve, reject) => {
-        const ytdl = spawn(
-            ytdlPath,
-            ['--ffmpeg-location', ffmpegPath, '--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url],
-            {
-                cwd: basedir,
-            },
-        );
+        const ytdl = spawn(ytdlPath, ['--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url], {
+            cwd: basedir,
+        });
 
         ytdl.stdout.on('data', (data: string) => {
             console.log('ytdl stdout: ' + data);
@@ -243,4 +237,45 @@ export async function convert(input: string, id?: string, options?: ConvertOptio
 function fromTimestamp(ffmpegTimestamp: string): number {
     const [hour, minute, seconds] = ffmpegTimestamp.split(':').map(parseFloat);
     return hour * 3600 + minute * 60 + seconds;
+}
+
+async function getAudioDurationInSeconds(filepath: string): Promise<number> {
+    const ffprobe = await new Promise<string>((resolve, reject) => {
+        which('ffprobe', (err, path) => {
+            if (err || !path) {
+                reject(err);
+            } else {
+                resolve(path);
+            }
+        });
+    });
+
+    return new Promise<number>((resolve, reject) => {
+        const child = spawn(ffprobe, [
+            '-v',
+            'error',
+            '-select_streams',
+            'a:0',
+            '-show_format',
+            '-show_streams',
+            '-i',
+            filepath,
+        ]);
+        let result = '';
+        child.stdout.on('data', function (data) {
+            result += data.toString();
+        });
+        child.on('close', () => {
+            const search = 'duration=';
+            let idx = result.indexOf(search);
+            if (idx === -1) {
+                reject();
+                return;
+            }
+            idx += search.length;
+            const eol = result.indexOf('\n', idx);
+            const subs = result.substring(idx, eol);
+            resolve(parseFloat(subs));
+        });
+    });
 }

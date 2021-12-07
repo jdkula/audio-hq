@@ -7,21 +7,19 @@
         "strict": true,
         "forceConsistentCasingInFileNames": true,
         "noEmit": true,
+        "incremental": true,
         "esModuleInterop": true,
         "module": "esnext",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,
+        "downlevelIteration": true,
         "jsx": "preserve",
         "baseUrl": ".",
-        "downlevelIteration": true,
-        "experimentalDecorators": true,
         "paths": {
             "~/*": ["./*"]
-        },
-        "incremental": true
+        }
     },
-    "files": ["./lib/globals.d.ts", "./lib/shims.d.ts"],
-    "exclude": ["node_modules", "server"],
-    "include": ["next-env.d.ts", "graphql-file.d.ts", "./**/*.ts", "./**/*.tsx"]
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "exclude": ["node_modules"]
 }

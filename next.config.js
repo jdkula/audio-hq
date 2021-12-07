@@ -1,16 +1,7 @@
-const path = require("path");
-
 module.exports = {
-    webpack: config => {
-        config.resolve.alias["~"] = path.resolve(__dirname);
-        config.resolve.alias["@graphql"] = path.resolve(__dirname, "graphql", "docs");
-
-        config.module.rules.push({
-            test: /\.graphql$/,
-            use: [{
-                loader: 'graphql-tag/loader'
-            }]
-        });
-        return config;
-    }
-}
+    eslint: {
+        // Warning: This allows production builds to successfully complete even if
+        // your project has ESLint errors.
+        ignoreDuringBuilds: true,
+    },
+};
