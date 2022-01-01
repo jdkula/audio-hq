@@ -27,8 +27,7 @@ export interface AudioSet extends File {
 }
 
 export interface PlayState {
-    id: ID;
-    fileId: ID;
+    queue: ID[];
     startTimestamp: number | null;
     volume: number;
     pauseTime: number | null;
@@ -83,8 +82,7 @@ export interface PlayerStateUpdate {
 }
 
 export interface PlayStateUpdate {
-    id?: ID;
-    fileId?: ID;
+    queue?: ID[];
     startTimestamp?: number | null;
     volume?: number;
     pauseTime?: number | null;
@@ -99,7 +97,7 @@ export interface WorkspaceUpdate {
     sfxMerge?: boolean;
     suggestion?: Suggestion;
     users?: PlayerState;
-    delAmbience?: ID;
+    delAmbience?: ID[];
     delSuggestion?: ID;
     delUser?: string;
 }
@@ -113,13 +111,12 @@ export function updatePlayState(
 ): PlayState | null {
     if (update === undefined) return original;
     if (update === null) return null;
-    if (update.id === undefined && original === null) return null;
+    if (update.queue === undefined && original === null) return null;
 
     const copy: PlayState =
         original === null
             ? {
-                  id: update.id as string,
-                  fileId: update.fileId ?? (update.id as string),
+                  queue: update.queue as string[],
                   pauseTime: update.pauseTime ?? update.startTimestamp ?? Date.now(),
                   startTimestamp: update.startTimestamp ?? Date.now(),
                   volume: update.volume ?? defaultVolume ?? 1,
@@ -128,8 +125,8 @@ export function updatePlayState(
             : { ...original };
 
     if (update) {
-        if (update.id) {
-            copy.id = update.id;
+        if (update.queue) {
+            copy.queue = [...update.queue];
         }
         if (update.startTimestamp !== undefined) {
             copy.startTimestamp = update.startTimestamp;

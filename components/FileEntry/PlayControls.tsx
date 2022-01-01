@@ -45,11 +45,11 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        workspace.resolver({ ambience: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ ambience: { queue: [file.id], startTimestamp: Date.now(), pauseTime: null } });
     };
 
     const onPlay = async () => {
-        workspace.resolver({ playing: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ playing: { queue: [file.id], startTimestamp: Date.now(), pauseTime: null } });
     };
 
     const onSfx = async () => {
@@ -61,7 +61,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
 
         workspace.resolver({
             sfx: {
-                id: file.id,
+                queue: [file.id],
                 startTimestamp: Date.now(),
                 pauseTime: null,
             },
@@ -74,13 +74,17 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
-                        <PlayArrow color={workspace.state.playing?.id === file.id ? 'primary' : undefined} />
+                        <PlayArrow color={workspace.state.playing?.queue.includes(file.id) ? 'primary' : undefined} />
                     )}
                 </IconButton>
             </Tooltip>
             <Tooltip title="Play File As Ambience" placement="left" arrow>
                 <IconButton onClick={onAmbience}>
-                    <AddIcon color={workspace.state.ambience.find((ps) => ps.id === file.id) ? 'primary' : undefined} />
+                    <AddIcon
+                        color={
+                            workspace.state.ambience.find((ps) => ps.queue.includes(file.id)) ? 'primary' : undefined
+                        }
+                    />
                 </IconButton>
             </Tooltip>
             <Tooltip title="Play File As SFX" placement="left" arrow>

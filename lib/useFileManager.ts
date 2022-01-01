@@ -5,10 +5,10 @@ import { Set } from 'immutable';
 import { mutate } from 'swr';
 import Job from './Job';
 import { useFiles, useJobs } from './useWorkspace';
-import { File as WSFile, Reorderable } from './Workspace';
+import { File as WSFile, PlayState, Reorderable } from './Workspace';
 import ConvertOptions from './ConvertOptions';
 
-interface FileManager {
+export interface FileManager {
     track: (id: string, onCacheRetrieve?: (track: Blob) => void) => string;
     reset: () => Promise<void>;
     import: (

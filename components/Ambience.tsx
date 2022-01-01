@@ -67,29 +67,29 @@ export const Ambience: FunctionComponent = () => {
     const workspace = useContext(WorkspaceContext);
     const [sfx, setSfx] = useState<PlayState | null>(null);
 
-    const makeResolver = (id: string): PlayStateResolver => {
+    const makeResolver = (queue: string[]): PlayStateResolver => {
         return (update) => {
             if (update === null) {
-                workspace.resolver({ delAmbience: id });
+                workspace.resolver({ delAmbience: queue });
             } else {
                 workspace.resolver({
-                    ambience: { ...update, id },
+                    ambience: { ...update, queue: queue },
                 });
             }
         };
     };
 
     const controls = [...workspace.state.ambience].map((ps) => (
-        <AmbienceControlsContainer key={ps.id}>
-            <Typography variant="h5">{workspace.files.find((f) => f.id === ps.id)?.name ?? 'Loading...'}</Typography>
-            <AudioControls state={ps} resolver={makeResolver(ps.id)} />
+        <AmbienceControlsContainer key={ps.queue[0]}>
+            <Typography variant="h5">{workspace.getCurrentTrackFrom(ps)?.file.name ?? 'Loading...'}</Typography>
+            <AudioControls state={ps} resolver={makeResolver(ps.queue)} />
         </AmbienceControlsContainer>
     ));
 
     useEffect(() => {
         if (
             shouldPlaySFX(workspace.state.sfx) ||
-            (sfx && (workspace.state.sfx.sfx?.id === sfx.id || workspace.state.sfx.sfx === null))
+            (sfx && (workspace.state.sfx.sfx?.queue[0] === sfx.queue[0] || workspace.state.sfx.sfx === null))
         ) {
             setSfx(workspace.state.sfx.sfx);
         }
@@ -132,7 +132,7 @@ export const Ambience: FunctionComponent = () => {
                             <BlurOn />
                         </Tooltip>
                         <Typography variant="h5">
-                            {workspace.files.find((f) => f.id === sfx.id)?.name ?? 'Loading...'}
+                            {workspace.getCurrentTrackFrom(sfx)?.file.name ?? 'Loading...'}
                         </Typography>
                         <AudioControls state={sfx} resolver={sfxResolver} loop={false} onFinish={() => setSfx(null)} />
                     </AmbienceControlsContainer>

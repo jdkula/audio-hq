@@ -1,9 +1,23 @@
 import { NextApiHandler } from 'next';
 import mongoworkspaces from '~/lib/db/mongoworkspaces';
-import { StoredWorkspace, Workspace } from '~/lib/Workspace';
+import { File, StoredWorkspace, Workspace } from '~/lib/Workspace';
 import Jobs from '~/lib/Jobs';
 
 export async function findOrCreateWorkspace(workspaceId: string): Promise<Workspace> {
+    const defaultState = {
+        ambience: [],
+        live: false,
+        playing: null,
+        queued: null,
+        suggestions: [],
+        users: [],
+        startVolume: 1,
+        sfx: {
+            sfx: null,
+            timeoutTimestamp: 0,
+            triggerTimestamp: 0,
+        },
+    };
     const workspace = await (
         await mongoworkspaces
     ).findOneAndUpdate(
@@ -12,20 +26,7 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
             $setOnInsert: {
                 files: [],
                 name: workspaceId,
-                state: {
-                    ambience: [],
-                    live: false,
-                    playing: null,
-                    queued: null,
-                    suggestions: [],
-                    users: [],
-                    startVolume: 1,
-                    sfx: {
-                        sfx: null,
-                        timeoutTimestamp: 0,
-                        triggerTimestamp: 0,
-                    },
-                },
+                state: defaultState,
             } as Omit<StoredWorkspace, '_id'>,
         },
         {
@@ -37,16 +38,26 @@ export async function findOrCreateWorkspace(workspaceId: string): Promise<Worksp
     // @ts-expect-error  We don't want _id to be returned below.
     delete workspace.value?._id;
 
-    let files = workspace.value!.files;
+    let files: File[] = [];
 
-    for (const id of workspace.value!.extends ?? []) {
-        const extendsWs = await (await mongoworkspaces).findOne({ _id: id });
-        if (extendsWs) {
-            files = files.concat(extendsWs.files);
+    if (workspace.value) {
+        files = workspace.value.files;
+
+        for (const id of workspace.value.extends ?? []) {
+            const extendsWs = await (await mongoworkspaces).findOne({ _id: id });
+            if (extendsWs) {
+                files = files.concat(extendsWs.files);
+            }
         }
     }
 
-    return { ...workspace.value!, jobs: Jobs.ofWorkspace(workspaceId), files };
+    return {
+        name: workspace.value?.name ?? workspaceId,
+        state: workspace.value?.state ?? defaultState,
+        extends: workspace.value?.extends ?? undefined,
+        jobs: Jobs.ofWorkspace(workspaceId),
+        files,
+    };
 }
 
 const get: NextApiHandler = async (req, res) => {
