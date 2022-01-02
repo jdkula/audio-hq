@@ -6,7 +6,7 @@
  * as well as is the interface by which users may play music.
  */
 
-import { Breadcrumbs, Button, Divider, IconButton, Paper } from '@material-ui/core';
+import { Breadcrumbs, Button, Divider, IconButton, Paper, Tooltip } from '@material-ui/core';
 import React, { FC, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { File as WSFile, Workspace } from '~/lib/Workspace';
@@ -26,7 +26,9 @@ import { useRecoilState } from 'recoil';
 import { pathAtom } from '~/lib/atoms';
 import SearchBar from './SearchBar';
 import useFavorites from '~/lib/useFavorites';
-import { Favorite, FavoriteBorder } from '@material-ui/icons';
+import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@material-ui/icons';
+import useAlt from '~/lib/useAlt';
+import _ from 'lodash';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -119,6 +121,8 @@ export const Explorer: FC = () => {
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
 
+    const altKey = useAlt();
+
     const currentFiles = viewingFavorites
         ? (favs.favorites
               .toArray()
@@ -127,6 +131,21 @@ export const Explorer: FC = () => {
         : getFiles(workspace, path, searching ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
+
+    const playCurrent = () => {
+        let queue = currentFiles.map((f) => f.id);
+        if (altKey) {
+            queue = _.shuffle(queue);
+        }
+        workspace.resolver({
+            playing: {
+                pauseTime: null,
+                queue: queue,
+                speed: 1,
+                timePlayed: 0,
+            },
+        });
+    };
 
     // Finishes searching, optionally changing the current path to a selected folder.
     const finishSearch = (path?: string[]) => {
@@ -222,9 +241,18 @@ export const Explorer: FC = () => {
                         setSearching={(searching) => (searching ? setSearching(true) : finishSearch())}
                     />
                 )}
-                <IconButton onClick={() => setViewingFavorites(!viewingFavorites)}>
-                    {viewingFavorites ? <Favorite color="primary" /> : <FavoriteBorder />}
-                </IconButton>
+                <Tooltip arrow placement="bottom" title="Show only favorites">
+                    <IconButton onClick={() => setViewingFavorites(!viewingFavorites)}>
+                        {viewingFavorites ? <Favorite color="primary" /> : <FavoriteBorder />}
+                    </IconButton>
+                </Tooltip>
+                <Tooltip
+                    arrow
+                    placement="bottom"
+                    title={altKey ? 'Shuffle folder' : 'Play and loop folder (alt/option to shuffle)'}
+                >
+                    <IconButton onClick={playCurrent}>{altKey ? <Shuffle /> : <PlaylistPlay />}</IconButton>
+                </Tooltip>
             </ExplorerToolbar>
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />
 

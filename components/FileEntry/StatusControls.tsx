@@ -17,7 +17,7 @@ import DownloadIcon from '@material-ui/icons/CloudDownload';
 import EditIcon from '@material-ui/icons/Edit';
 import OfflinePinIcon from '@material-ui/icons/OfflinePin';
 import useAlt from '~/lib/useAlt';
-import { Favorite } from '@material-ui/icons';
+import { Favorite, FavoriteBorder } from '@material-ui/icons';
 import useFavorites from '~/lib/useFavorites';
 
 const StatusContainerPlacer = styled.div`
@@ -107,11 +107,8 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                     </Tooltip>
                 ) : (
                     <Tooltip placement="left" title="Favorite (alt/option to delete)" arrow>
-                        <IconButton
-                            onClick={toggleFavorite}
-                            color={favs.favorites.has(file.id) ? 'primary' : undefined}
-                        >
-                            <Favorite />
+                        <IconButton onClick={toggleFavorite}>
+                            {favs.favorites.has(file.id) ? <Favorite /> : <FavoriteBorder />}
                         </IconButton>
                     </Tooltip>
                 )}

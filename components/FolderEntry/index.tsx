@@ -207,37 +207,6 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
             </Tooltip>
         </ControlsContainer>
     );
-
-    const onShuffle: MouseEventHandler = (ev) => {
-        ev.stopPropagation();
-        const pathToUse = up ? path : fullPath;
-        const queue = _.shuffle(workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id));
-        workspace.resolver({
-            playing: {
-                timePlayed: 0,
-                pauseTime: null,
-                speed: 1,
-                queue: queue,
-            },
-        });
-        ev.stopPropagation();
-    };
-
-    const onPlayFolder: MouseEventHandler = (ev) => {
-        ev.stopPropagation();
-        const pathToUse = up ? path : fullPath;
-        const queue = workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id);
-        console.log('Playing folder', queue);
-        workspace.resolver({
-            playing: {
-                timePlayed: 0,
-                pauseTime: null,
-                speed: 1,
-                queue: queue,
-            },
-        });
-    };
-
     return (
         <Droppable droppableId={up ? '___back___' : `___folder_${name}`}>
             {(provided, snapshot) => (
@@ -251,19 +220,6 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                     <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
                         <MainContainer>
                             <FolderButton dragging={snapshot.isDraggingOver} up={up} />
-                            {altKey ? (
-                                <Tooltip arrow placement="left" title="Shuffle folder">
-                                    <IconButton onClick={onShuffle}>
-                                        <Shuffle />
-                                    </IconButton>
-                                </Tooltip>
-                            ) : (
-                                <Tooltip arrow placement="left" title="Play and loop folder (alt/option to shuffle)">
-                                    <IconButton onClick={onPlayFolder}>
-                                        <PlaylistPlay />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
                             {main}
                         </MainContainer>
                         <div style={{ display: 'none' }}>{provided.placeholder}</div>
