@@ -7,7 +7,7 @@
  * rename a folder.
  */
 
-import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
+import React, { FC, KeyboardEvent, MouseEvent, MouseEventHandler, useContext, useState } from 'react';
 import FolderIcon from '@material-ui/icons/Folder';
 import { Droppable } from 'react-beautiful-dnd';
 
@@ -27,9 +27,11 @@ import {
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { DeleteForever } from '@material-ui/icons';
+import { DeleteForever, PlaylistPlay, Shuffle } from '@material-ui/icons';
 import styled from 'styled-components';
 import FolderDeleteDialog from './FolderDeleteDialog';
+import useAlt from '~/lib/useAlt';
+import _ from 'lodash';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -89,7 +91,7 @@ const FolderButton: FC<FolderButtonProps> = ({ dragging, up, ...props }) => {
     }
 
     return (
-        <Tooltip title="Click to enter folder" placement="left">
+        <Tooltip title="Click to enter folder" placement="left" arrow>
             <IconButton {...props}>{icon}</IconButton>
         </Tooltip>
     );
@@ -103,6 +105,8 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
+
+    const altKey = useAlt();
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
@@ -169,7 +173,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const editor = (
         <ClickAwayListener onClickAway={stopRenaming}>
             <EditorContainer onClick={(e) => e.stopPropagation()}>
-                <Tooltip title="Pro tip: Enter the name of another folder to merge them!" placement="top">
+                <Tooltip title="Pro tip: Enter the name of another folder to merge them!" placement="top" arrow>
                     <TextField
                         id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
                         fullWidth
@@ -204,6 +208,36 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         </ControlsContainer>
     );
 
+    const onShuffle: MouseEventHandler = (ev) => {
+        ev.stopPropagation();
+        const pathToUse = up ? path : fullPath;
+        const queue = _.shuffle(workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id));
+        workspace.resolver({
+            playing: {
+                timePlayed: 0,
+                pauseTime: null,
+                speed: 1,
+                queue: queue,
+            },
+        });
+        ev.stopPropagation();
+    };
+
+    const onPlayFolder: MouseEventHandler = (ev) => {
+        ev.stopPropagation();
+        const pathToUse = up ? path : fullPath;
+        const queue = workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id);
+        console.log('Playing folder', queue);
+        workspace.resolver({
+            playing: {
+                timePlayed: 0,
+                pauseTime: null,
+                speed: 1,
+                queue: queue,
+            },
+        });
+    };
+
     return (
         <Droppable droppableId={up ? '___back___' : `___folder_${name}`}>
             {(provided, snapshot) => (
@@ -217,6 +251,19 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                     <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
                         <MainContainer>
                             <FolderButton dragging={snapshot.isDraggingOver} up={up} />
+                            {altKey ? (
+                                <Tooltip arrow placement="left" title="Shuffle folder">
+                                    <IconButton onClick={onShuffle}>
+                                        <Shuffle />
+                                    </IconButton>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip arrow placement="left" title="Play and loop folder (alt/option to shuffle)">
+                                    <IconButton onClick={onPlayFolder}>
+                                        <PlaylistPlay />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                             {main}
                         </MainContainer>
                         <div style={{ display: 'none' }}>{provided.placeholder}</div>

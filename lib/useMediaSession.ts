@@ -1,16 +1,22 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useContext } from 'react';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom } from './atoms';
-import { Workspace, WorkspaceResolver } from './Workspace';
+import { WorkspaceContext } from './useWorkspace';
+import { File } from './Workspace';
 
-const useMediaSession = (workspace: Workspace | null, resolver: WorkspaceResolver): void => {
+const useMediaSession = (): void => {
+    const workspace = useContext(WorkspaceContext);
+
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
 
-    const currentlyPlaying = workspace?.files.find(
-        (file) =>
-            file.id === (workspace.state.playing?.id ?? workspace.state.ambience[0]?.id ?? workspace.state.sfx.sfx?.id),
-    );
+    let currentlyPlaying: File | null = null;
+    if (workspace.state.playing) {
+        const track = workspace.getCurrentTrackFrom(workspace.state.playing)?.file;
+        if (track) {
+            currentlyPlaying = track;
+        }
+    }
 
     useEffect(() => {
         if (navigator.mediaSession) {
@@ -24,11 +30,15 @@ const useMediaSession = (workspace: Workspace | null, resolver: WorkspaceResolve
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.setActionHandler('pause', () => {
-                previousVolumeValue.current = globalVolume;
-                setGlobalVolume(0);
+                if (globalVolume === 0) {
+                    setGlobalVolume(previousVolumeValue.current ?? 1);
+                } else {
+                    previousVolumeValue.current = globalVolume;
+                    setGlobalVolume(0);
+                }
             });
             navigator.mediaSession.setActionHandler('stop', () => {
-                resolver({ playing: null });
+                workspace.resolver({ playing: null });
             });
 
             navigator.mediaSession.setActionHandler('play', () => {
@@ -37,10 +47,10 @@ const useMediaSession = (workspace: Workspace | null, resolver: WorkspaceResolve
                 }
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
-                resolver({ playing: { startTimestamp: Date.now(), pauseTime: null } });
+                workspace.resolver({ playing: { timePlayed: 0, pauseTime: null } });
             });
         }
-    }, [resolver, globalVolume, setGlobalVolume]);
+    }, [workspace.resolver, globalVolume, setGlobalVolume]);
 };
 
 export default useMediaSession;

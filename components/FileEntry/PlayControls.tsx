@@ -16,6 +16,7 @@ import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { Tooltip, IconButton } from '@material-ui/core';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { BlurOn } from '@material-ui/icons';
+import useAlt from '~/lib/useAlt';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -33,6 +34,8 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const workspace = useContext(WorkspaceContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
 
+    const altKey = useAlt();
+
     const sfxHighlightTimeoutHandle = useRef<number | null>(null);
 
     useEffect(
@@ -45,11 +48,11 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        workspace.resolver({ ambience: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ ambience: { queue: [file.id], timePlayed: 0, pauseTime: null } });
     };
 
     const onPlay = async () => {
-        workspace.resolver({ playing: { id: file.id, startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ playing: { queue: [file.id], timePlayed: 0, pauseTime: null } });
     };
 
     const onSfx = async () => {
@@ -61,8 +64,8 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
 
         workspace.resolver({
             sfx: {
-                id: file.id,
-                startTimestamp: Date.now(),
+                queue: [file.id],
+                timePlayed: 0,
                 pauseTime: null,
             },
         });
@@ -74,20 +77,29 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
-                        <PlayArrow color={workspace.state.playing?.id === file.id ? 'primary' : undefined} />
+                        <PlayArrow color={workspace.state.playing?.queue.includes(file.id) ? 'primary' : undefined} />
                     )}
                 </IconButton>
             </Tooltip>
-            <Tooltip title="Play File As Ambience" placement="left" arrow>
-                <IconButton onClick={onAmbience}>
-                    <AddIcon color={workspace.state.ambience.find((ps) => ps.id === file.id) ? 'primary' : undefined} />
-                </IconButton>
-            </Tooltip>
-            <Tooltip title="Play File As SFX" placement="left" arrow>
-                <IconButton onClick={onSfx}>
-                    <BlurOn color={highlightingSfx ? 'primary' : undefined} />
-                </IconButton>
-            </Tooltip>
+            {altKey ? (
+                <Tooltip title="Play File As SFX" placement="left" arrow>
+                    <IconButton onClick={onSfx}>
+                        <BlurOn color={highlightingSfx ? 'primary' : undefined} />
+                    </IconButton>
+                </Tooltip>
+            ) : (
+                <Tooltip title="Play File As Ambience (alt/option to play as SFX)" placement="left" arrow>
+                    <IconButton onClick={onAmbience}>
+                        <AddIcon
+                            color={
+                                workspace.state.ambience.find((ps) => ps.queue.includes(file.id))
+                                    ? 'primary'
+                                    : undefined
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+            )}
         </PlayControlsContainer>
     );
 };

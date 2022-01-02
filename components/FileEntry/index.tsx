@@ -82,7 +82,7 @@ const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
                         <StatusControls
                             file={file}
                             editing={editing}
-                            setEditing={(editing) => (editing ? cancelEdits() : startEditing())}
+                            setEditing={(editing) => (editing ? startEditing() : cancelEdits())}
                             setDelete={(deleting) => setDelete(deleting)}
                         />
                     </FileContainer>

@@ -27,9 +27,8 @@ export interface AudioSet extends File {
 }
 
 export interface PlayState {
-    id: ID;
-    fileId: ID;
-    startTimestamp: number | null;
+    queue: ID[];
+    startTimestamp: number | null; // These timestamps are in ms
     volume: number;
     pauseTime: number | null;
     speed: number;
@@ -83,12 +82,10 @@ export interface PlayerStateUpdate {
 }
 
 export interface PlayStateUpdate {
-    id?: ID;
-    fileId?: ID;
-    startTimestamp?: number | null;
+    queue?: ID[];
     volume?: number;
     pauseTime?: number | null;
-    timePlayed?: number;
+    timePlayed?: number; //  in seconds
     speed?: number;
 }
 
@@ -99,7 +96,7 @@ export interface WorkspaceUpdate {
     sfxMerge?: boolean;
     suggestion?: Suggestion;
     users?: PlayerState;
-    delAmbience?: ID;
+    delAmbience?: ID[];
     delSuggestion?: ID;
     delUser?: string;
 }
@@ -113,26 +110,27 @@ export function updatePlayState(
 ): PlayState | null {
     if (update === undefined) return original;
     if (update === null) return null;
-    if (update.id === undefined && original === null) return null;
+    if (update.queue === undefined && original === null) return null;
+
+    const newStartTimestamp = update.timePlayed !== undefined ? Date.now() - update.timePlayed * 1000 : null;
 
     const copy: PlayState =
         original === null
             ? {
-                  id: update.id as string,
-                  fileId: update.fileId ?? (update.id as string),
-                  pauseTime: update.pauseTime ?? update.startTimestamp ?? Date.now(),
-                  startTimestamp: update.startTimestamp ?? Date.now(),
+                  queue: update.queue as string[],
+                  pauseTime: update.pauseTime ?? null,
+                  startTimestamp: newStartTimestamp ?? Date.now(),
                   volume: update.volume ?? defaultVolume ?? 1,
                   speed: update.speed ?? 1,
               }
             : { ...original };
 
     if (update) {
-        if (update.id) {
-            copy.id = update.id;
+        if (update.queue) {
+            copy.queue = [...update.queue];
         }
-        if (update.startTimestamp !== undefined) {
-            copy.startTimestamp = update.startTimestamp;
+        if (update.timePlayed !== undefined) {
+            copy.startTimestamp = newStartTimestamp;
             if (copy.pauseTime !== null && update.pauseTime === undefined) {
                 copy.pauseTime = Date.now(); // update pause time to reflect seek.
             }

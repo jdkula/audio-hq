@@ -6,7 +6,7 @@
  */
 
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
 import useAudio from '~/lib/useAudio';
 import styled from 'styled-components';
@@ -17,6 +17,7 @@ import PauseIcon from '@material-ui/icons/Pause';
 import StopIcon from '@material-ui/icons/Stop';
 import SpeedIcon from '@material-ui/icons/Speed';
 import toTimestamp from '~/lib/toTimestamp';
+import { WorkspaceContext } from '~/lib/useWorkspace';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -63,20 +64,9 @@ const Timestamp = styled.div`
 interface AudioControlsProps {
     state: PlayState;
     resolver: PlayStateResolver;
-    loop?: boolean;
-    onBlocked?: (blocked: boolean) => void;
-    onLoading?: (loading: boolean) => void;
-    onFinish?: () => void;
 }
 
-export const AudioControls: FunctionComponent<AudioControlsProps> = ({
-    state,
-    resolver,
-    loop,
-    onBlocked,
-    onLoading,
-    onFinish,
-}) => {
+export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, resolver }) => {
     // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
@@ -85,20 +75,19 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
     const [volumeAnchorEl, serVolumeAnchor] = useState<HTMLButtonElement | null>(null);
     const [speedAnchorEl, setSpeedAnchor] = useState<HTMLButtonElement | null>(null);
 
-    const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
-        overrideVolume: tempVolume ?? undefined,
-        loop: loop ?? true,
-        onFinish: onFinish,
-    });
+    const { duration, paused, time, volume } = useAudio(state);
+
+    const workspace = useContext(WorkspaceContext);
 
     // propagate blocked and/or loading state up (if the parent wants it)
-    useEffect(() => onBlocked?.(blocked), [blocked]);
-    useEffect(() => onLoading?.(loading), [loading]);
     useEffect(() => setTempSpeed(state.speed), [state.speed]);
 
     const finishSeek = (to: number) => {
+        const currentTrackInfo = workspace.getCurrentTrackFrom(state);
+        const prev = currentTrackInfo?.totalTimeBefore ?? 0;
+        console.log('Seeking... with CTI', currentTrackInfo);
         resolver({
-            startTimestamp: Date.now() - (to * 1000) / state.speed,
+            timePlayed: (prev + to) / state.speed,
         });
         setTempSeek(null);
     };
@@ -107,8 +96,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
         return <div>Waiting for Audio to Load</div>;
     }
 
-    if (blocked) return <AudioControlsContainer>Please click on the page to allow audio.</AudioControlsContainer>;
-    if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
+    // if (blocked) return <AudioControlsContainer>Please click on the page to allow audio.</AudioControlsContainer>;
+    // if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
 
     const onPlayPause = () => {
         if (paused) resolver({ pauseTime: null });
@@ -149,11 +138,14 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
                     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     <Slider
-                        value={volume ?? 0}
+                        value={tempVolume ?? volume ?? 0}
                         min={0}
                         max={1}
                         step={0.01}
-                        onChangeCommitted={(_, v) => resolver({ volume: v as number })}
+                        onChangeCommitted={(_, v) => {
+                            resolver({ volume: v as number });
+                            setTempVolume(null);
+                        }}
                         onChange={(_, v) => setTempVolume(v as number)}
                         orientation="vertical"
                         style={{ minHeight: '10rem', margin: '1rem' }}

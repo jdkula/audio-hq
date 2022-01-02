@@ -6,13 +6,14 @@
  */
 
 import { Typography, Box } from '@material-ui/core';
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
+import { FileManagerContext } from '~/lib/useFileManager';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -51,7 +52,18 @@ export const MainPlayer: FunctionComponent<{
 
     const ws = useContext(WorkspaceContext);
 
-    const trackName = ws.files.find((f) => f.id === ws.state.playing?.id)?.name;
+    const [n, setN] = useState(0);
+    const [trackName, setTrackName] = useState('Loading...');
+
+    useEffect(() => {
+        const handle = window.setInterval(() => setN((n) => n + 1), 500);
+        return () => window.clearInterval(handle);
+    }, []);
+
+    useEffect(() => {
+        const trackName = ws.getCurrentTrackFrom(state)?.file.name;
+        setTrackName(trackName ?? 'Loading...');
+    }, [n, state]);
 
     return (
         <MainPlayerContainer>
