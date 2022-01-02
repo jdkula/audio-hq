@@ -30,12 +30,8 @@ const useMediaSession = (): void => {
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.setActionHandler('pause', () => {
-                if (globalVolume === 0) {
-                    setGlobalVolume(previousVolumeValue.current ?? 1);
-                } else {
-                    previousVolumeValue.current = globalVolume;
-                    setGlobalVolume(0);
-                }
+                previousVolumeValue.current = globalVolume;
+                setGlobalVolume(0);
             });
             navigator.mediaSession.setActionHandler('stop', () => {
                 workspace.resolver({ playing: null });
