@@ -7,7 +7,7 @@
  * rename a folder.
  */
 
-import React, { FC, KeyboardEvent, MouseEvent, MouseEventHandler, useContext, useState } from 'react';
+import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
 import FolderIcon from '@material-ui/icons/Folder';
 import { Droppable } from 'react-beautiful-dnd';
 
@@ -27,11 +27,9 @@ import {
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { DeleteForever, PlaylistPlay, Shuffle } from '@material-ui/icons';
+import { DeleteForever } from '@material-ui/icons';
 import styled from 'styled-components';
 import FolderDeleteDialog from './FolderDeleteDialog';
-import useAlt from '~/lib/useAlt';
-import _ from 'lodash';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -105,8 +103,6 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
-
-    const altKey = useAlt();
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
