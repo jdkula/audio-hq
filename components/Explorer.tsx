@@ -66,7 +66,7 @@ const PlaceholderContainer = styled.div`
 `;
 
 const JobsContainer = styled.div`
-    height: 400px;
+    height: 250px;
     overflow: auto;
 `;
 
