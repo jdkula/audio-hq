@@ -1,10 +1,11 @@
 import { useCallback, useContext, useDebugValue, useEffect, useRef, useState } from 'react';
-import { constSelector, useRecoilState } from 'recoil';
-import { globalVolumeAtom } from './atoms';
+import { constSelector, useRecoilState, useRecoilValue } from 'recoil';
+import { globalVolumeAtom, sfxAtom } from './atoms';
 import { FileManager, FileManagerContext } from './useFileManager';
 import useWorkspace, { WorkspaceContext, WorkspaceContextType } from './useWorkspace';
 import { PlayState, Workspace } from './Workspace';
 import _ from 'lodash';
+import { shouldPlaySFX } from './playUtils';
 
 interface AudioManager {
     blocked: boolean;
@@ -16,6 +17,7 @@ class Track {
 
     private _media: HTMLMediaElement;
     private _node: AudioNode;
+    private _gain: GainNode;
 
     constructor(
         state: PlayState,
@@ -38,6 +40,8 @@ class Track {
 
         this._media = new Audio(url);
         this._node = ctx.createMediaElementSource(this._media);
+        this._gain = ctx.createGain();
+        this._node.connect(this._gain);
         console.log(this._media);
         console.log(this._node);
 
@@ -94,10 +98,12 @@ class Track {
                 }
             }
         };
+
+        this._gain.gain.value = state.volume;
     }
 
     connect(node: AudioNode) {
-        this._node.connect(node);
+        this._gain.connect(node);
     }
 
     play() {
@@ -118,6 +124,9 @@ class Track {
     reconcile(newState: PlayState): boolean {
         if (!this.isReferentFor(newState)) return false;
 
+        this._state.volume = newState.volume;
+        this._gain.gain.value = newState.volume;
+
         return _.isEqual(this._state, newState);
     }
 
@@ -132,10 +141,13 @@ export default function useAudioManager(): AudioManager {
     const ws = useContext(WorkspaceContext);
     const fm = useContext(FileManagerContext);
 
-    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+    const globalVolume = useRecoilValue(globalVolumeAtom);
+    const mainTrack = useRef<Track | null>(null);
+    const ambientTracks = useRef<Track[]>([]);
+    const sfxTrack = useRef<Track | null>(null);
 
+    const [sfx, setSfx] = useRecoilState(sfxAtom);
     const [blocked, setBlocked] = useState(false);
-    const [mainTrack, setMainTrack] = useState<Track | null>(null);
 
     const ac = useRef<AudioContext>(null as never);
     const masterGain = useRef<GainNode>(null as never);
@@ -162,9 +174,9 @@ export default function useAudioManager(): AudioManager {
 
     useEffect(() => {
         if (!blocked && !ws.state.playing?.pauseTime) {
-            mainTrack?.play();
+            mainTrack.current?.play();
         }
-    }, [blocked, mainTrack, ws.state.playing?.pauseTime]);
+    }, [blocked, ws.state.playing?.pauseTime]);
 
     // useEffect(() => {
     //     if (ac.current.state === 'suspended') {
@@ -176,25 +188,81 @@ export default function useAudioManager(): AudioManager {
     useEffect(() => {
         if (!ws) return;
         if (ws.state.playing) {
-            setMainTrack((track) => {
-                if (ws.state.playing && track?.reconcile(ws.state.playing)) {
-                    return track;
-                }
+            if (ws.state.playing && mainTrack.current?.reconcile(ws.state.playing)) {
+                return;
+            }
 
-                track?.destroy();
-                const tr = new Track(ws.state.playing!, fm, ac.current, ws.getCurrentTrackFrom, undefined, () =>
-                    setBlocked(true),
-                );
-                tr.connect(masterGain.current);
-                return tr;
-            });
+            mainTrack.current?.destroy();
+            const tr = new Track(ws.state.playing!, fm, ac.current, ws.getCurrentTrackFrom, undefined, () =>
+                setBlocked(true),
+            );
+            tr.connect(masterGain.current);
+            mainTrack.current = tr;
         } else if (!ws.state.playing) {
-            setMainTrack((track) => {
-                track?.destroy();
-                return null;
-            });
+            mainTrack.current?.destroy();
+            mainTrack.current = null;
         }
     }, [ws?.state]);
+
+    useEffect(() => {
+        for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
+            const track = ambientTracks.current[i];
+            const matchedState = ws.state.ambience.find((ps) => track.isReferentFor(ps));
+            if (!matchedState) {
+                track.destroy();
+                ambientTracks.current.splice(i, 1);
+            } else if (!track.reconcile(matchedState)) {
+                track.destroy();
+                const tr = new Track(matchedState, fm, ac.current, ws.getCurrentTrackFrom, undefined, () => {
+                    setBlocked(true);
+                });
+                ambientTracks.current[i] = tr;
+                tr.connect(masterGain.current);
+            }
+        }
+
+        for (const amb of ws.state.ambience) {
+            const matchedTrack = ambientTracks.current.find((track) => track.isReferentFor(amb));
+            if (!matchedTrack) {
+                const tr = new Track(amb, fm, ac.current, ws.getCurrentTrackFrom, undefined, () => {
+                    setBlocked(true);
+                });
+                ambientTracks.current.push(tr);
+                tr.connect(masterGain.current);
+            }
+        }
+    }, [ws?.state]);
+
+    useEffect(() => {
+        if (
+            shouldPlaySFX(ws.state.sfx) ||
+            (sfx && (ws.state.sfx.sfx?.queue[0] === sfx?.sfx?.queue[0] || ws.state.sfx.sfx === null))
+        ) {
+            setSfx(ws.state.sfx);
+        }
+    }, [ws?.state]);
+
+    useEffect(() => {
+        sfxTrack.current?.destroy();
+        sfxTrack.current = null;
+        if (sfx?.sfx) {
+            const tr = new Track(
+                sfx?.sfx,
+                fm,
+                ac.current,
+                ws.getCurrentTrackFrom,
+                () => {
+                    setSfx(null);
+                },
+                () => {
+                    setBlocked(true);
+                },
+                false,
+            );
+            sfxTrack.current = tr;
+            tr.connect(masterGain.current);
+        }
+    }, [sfx]);
 
     useEffect(() => {
         // TODO: Shadow pausing

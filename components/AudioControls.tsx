@@ -63,20 +63,9 @@ const Timestamp = styled.div`
 interface AudioControlsProps {
     state: PlayState;
     resolver: PlayStateResolver;
-    loop?: boolean;
-    onBlocked?: (blocked: boolean) => void;
-    onLoading?: (loading: boolean) => void;
-    onFinish?: () => void;
 }
 
-export const AudioControls: FunctionComponent<AudioControlsProps> = ({
-    state,
-    resolver,
-    loop,
-    onBlocked,
-    onLoading,
-    onFinish,
-}) => {
+export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, resolver }) => {
     // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
@@ -85,15 +74,9 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
     const [volumeAnchorEl, serVolumeAnchor] = useState<HTMLButtonElement | null>(null);
     const [speedAnchorEl, setSpeedAnchor] = useState<HTMLButtonElement | null>(null);
 
-    const { duration, paused, time, volume, loading, blocked } = useAudio(state, {
-        overrideVolume: tempVolume ?? undefined,
-        loop: loop ?? true,
-        onFinish: onFinish,
-    });
+    const { duration, paused, time, volume, loading, blocked } = useAudio(state);
 
     // propagate blocked and/or loading state up (if the parent wants it)
-    useEffect(() => onBlocked?.(blocked), [blocked]);
-    useEffect(() => onLoading?.(loading), [loading]);
     useEffect(() => setTempSpeed(state.speed), [state.speed]);
 
     const finishSeek = (to: number) => {
@@ -149,11 +132,14 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({
                     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 >
                     <Slider
-                        value={volume ?? 0}
+                        value={tempVolume ?? volume ?? 0}
                         min={0}
                         max={1}
                         step={0.01}
-                        onChangeCommitted={(_, v) => resolver({ volume: v as number })}
+                        onChangeCommitted={(_, v) => {
+                            resolver({ volume: v as number });
+                            setTempVolume(null);
+                        }}
                         onChange={(_, v) => setTempVolume(v as number)}
                         orientation="vertical"
                         style={{ minHeight: '10rem', margin: '1rem' }}

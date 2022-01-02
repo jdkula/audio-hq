@@ -6,14 +6,16 @@
  */
 
 import { Paper, Tooltip, Typography } from '@material-ui/core';
-import { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { FunctionComponent, useContext } from 'react';
 import styled from 'styled-components';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
-import { PlayState, PlayStateResolver, SfxState } from '../lib/Workspace';
+import { PlayStateResolver } from '../lib/Workspace';
 
 import AddIcon from '@material-ui/icons/Add';
 import { BlurOn } from '@material-ui/icons';
+import { useRecoilValue } from 'recoil';
+import { sfxAtom } from '~/lib/atoms';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -53,19 +55,9 @@ const AmbienceControlsContainer = styled(Paper)`
     text-align: center;
 `;
 
-export const shouldPlaySFX = (sfx: SfxState): boolean => {
-    const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
-    const valid = !!sfx.sfx && sfx.timeoutTimestamp > Date.now() && sfx.triggerTimestamp > lastTrigger;
-
-    if (valid) {
-        localStorage.setItem('__AHQ_LAST_SFX', JSON.stringify(sfx.triggerTimestamp));
-    }
-    return valid;
-};
-
 export const Ambience: FunctionComponent = () => {
     const workspace = useContext(WorkspaceContext);
-    const [sfx, setSfx] = useState<PlayState | null>(null);
+    const sfx = useRecoilValue(sfxAtom);
 
     const makeResolver = (queue: string[]): PlayStateResolver => {
         return (update) => {
@@ -85,15 +77,6 @@ export const Ambience: FunctionComponent = () => {
             <AudioControls state={ps} resolver={makeResolver(ps.queue)} />
         </AmbienceControlsContainer>
     ));
-
-    useEffect(() => {
-        if (
-            shouldPlaySFX(workspace.state.sfx) ||
-            (sfx && (workspace.state.sfx.sfx?.queue[0] === sfx.queue[0] || workspace.state.sfx.sfx === null))
-        ) {
-            setSfx(workspace.state.sfx.sfx);
-        }
-    }, [workspace.state.sfx]);
 
     const sfxResolver: PlayStateResolver = (update) => {
         if (update === null) {
@@ -126,15 +109,15 @@ export const Ambience: FunctionComponent = () => {
         <AmbienceContainer>
             <AmbienceScrollContainer>
                 {controls}
-                {sfx && (
+                {sfx?.sfx && (
                     <AmbienceControlsContainer>
                         <Tooltip title="Playing as SFX" arrow>
                             <BlurOn />
                         </Tooltip>
                         <Typography variant="h5">
-                            {workspace.getCurrentTrackFrom(sfx)?.file.name ?? 'Loading...'}
+                            {workspace.getCurrentTrackFrom(sfx.sfx)?.file.name ?? 'Loading...'}
                         </Typography>
-                        <AudioControls state={sfx} resolver={sfxResolver} loop={false} onFinish={() => setSfx(null)} />
+                        <AudioControls state={sfx.sfx} resolver={sfxResolver} />
                     </AmbienceControlsContainer>
                 )}
             </AmbienceScrollContainer>

@@ -1,8 +1,5 @@
 import { PlayState } from './Workspace';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { FileManagerContext } from './useFileManager';
-import { useRecoilValue } from 'recoil';
-import { globalVolumeAtom } from './atoms';
+import { useContext, useEffect, useState } from 'react';
 import { WorkspaceContext } from './useWorkspace';
 
 interface AudioInfo {
@@ -14,17 +11,11 @@ interface AudioInfo {
     blocked: boolean;
 }
 
-interface Options {
-    loop?: boolean;
-    overrideVolume?: number;
-    onFinish?: () => void;
-}
-
 const isiOS = () =>
     navigator.userAgent.match(/(iPod|iPhone|iPad)/) ||
     (navigator.userAgent.match(/Safari/) && !navigator.userAgent.match(/Chrome/) && navigator.maxTouchPoints > 0);
 
-const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: Options = {}): AudioInfo => {
+const useAudio = (state: PlayState | null): AudioInfo => {
     const ws = useContext(WorkspaceContext);
     const [seek, setSeek] = useState(0);
 
@@ -35,38 +26,23 @@ const useAudio = (state: PlayState | null, { loop, overrideVolume, onFinish }: O
         return () => window.clearInterval(handle);
     }, []);
 
-    if (!state) {
-        return {
-            duration: 2,
-            paused: false,
-            time: 1,
-            volume: 0.5,
-            loading: false,
-            blocked: false,
-        };
-    }
-
-    const f = ws.getCurrentTrackFrom(state)?.file;
+    const f = state ? ws.getCurrentTrackFrom(state)?.file : null;
 
     useEffect(() => {
-        if (!f || !state.startTimestamp) {
+        if (!f || !state || !state.startTimestamp) {
             return;
         }
         const timeElapsedMs = ((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed;
-        let seek = 0;
-        if (timeElapsedMs > f.length * 1000 && !loop) {
-            seek = f.length;
-        }
-        seek = (timeElapsedMs % (f.length * 1000)) / 1000;
+        const seek = (timeElapsedMs % (f.length * 1000)) / 1000;
 
         setSeek(seek);
     }, [state, n]);
 
     return {
         duration: f?.length ?? 2,
-        paused: state.pauseTime !== null,
+        paused: !!state?.pauseTime,
         time: seek,
-        volume: state.volume,
+        volume: state?.volume ?? 0,
         loading: false,
         blocked: false,
     };

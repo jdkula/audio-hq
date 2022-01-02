@@ -1,4 +1,5 @@
 import { atom } from 'recoil';
+import { SfxState } from './Workspace';
 
 export const pathAtom = atom<string[]>({
     key: 'current_path',
@@ -6,6 +7,11 @@ export const pathAtom = atom<string[]>({
 });
 
 export const globalVolumeAtom = atom({
-    key: 'globalVolume',
+    key: 'global_volume',
     default: 0.2,
+});
+
+export const sfxAtom = atom<SfxState | null>({
+    key: 'current_sfx',
+    default: null,
 });
