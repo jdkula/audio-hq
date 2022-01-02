@@ -15,10 +15,11 @@ import { createContext } from 'react';
 interface CurrentFileInfo {
     file: WSFile;
     duration: number; // in s
+    totalTimeBefore: number; // in s
 }
 interface WorkspaceHookResult {
     workspace: Workspace | null;
-    getCurrentTrackFrom: (state: PlayState) => CurrentFileInfo | null;
+    getCurrentTrackFrom: (state: PlayState, idx?: number) => CurrentFileInfo | null;
     loading: boolean;
     resolve: WorkspaceResolver;
 }
@@ -115,7 +116,7 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
         return true;
     };
 
-    const getCurrentTrackFrom = (state: PlayState) => {
+    const getCurrentTrackFrom = (state: PlayState, idx?: number) => {
         // debugger;
         const files = state.queue.map(getFile);
         if (!allNonNull<WSFile>(files) || state.startTimestamp === null) {
@@ -126,11 +127,23 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
         const curTs = state.pauseTime ?? Date.now();
         const curDuration = ((curTs - state.startTimestamp) * state.speed) % (totalTime * 1000); // in ms
         let elapsed = 0;
-        for (const file of files) {
+
+        if (idx !== undefined) {
+            if (idx < 0) return null;
+            idx %= files.length;
+
+            const totalTimeBefore = files.slice(0, idx).reduce((sum, f) => sum + f.length, 0) * 1000; // in ms
+            const duration = (curDuration - totalTimeBefore) / 1000;
+            return { file: files[idx], duration: duration, totalTimeBefore };
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             const prevElapsed = elapsed;
             elapsed += file.length * 1000; // in ms
             if (curDuration < elapsed) {
-                return { file, duration: (curDuration - prevElapsed) / 1000 };
+                const duration = (curDuration - prevElapsed) / 1000;
+                return { file, duration, totalTimeBefore: prevElapsed / 1000 };
             }
         }
 
@@ -156,6 +169,6 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
 export default useWorkspace;
 
 export type WorkspaceContextType = Workspace & { resolver: WorkspaceResolver } & {
-    getCurrentTrackFrom: (state: PlayState) => CurrentFileInfo | null;
+    getCurrentTrackFrom: (state: PlayState, idx?: number) => CurrentFileInfo | null;
 };
 export const WorkspaceContext = createContext<WorkspaceContextType>(null as never);

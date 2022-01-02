@@ -63,7 +63,7 @@ export const MainPlayer: FunctionComponent<{
     useEffect(() => {
         const trackName = ws.getCurrentTrackFrom(state)?.file.name;
         setTrackName(trackName ?? 'Loading...');
-    }, [n]);
+    }, [n, state]);
 
     return (
         <MainPlayerContainer>

@@ -45,11 +45,11 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        workspace.resolver({ ambience: { queue: [file.id], startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ ambience: { queue: [file.id], timePlayed: 0, pauseTime: null } });
     };
 
     const onPlay = async () => {
-        workspace.resolver({ playing: { queue: [file.id], startTimestamp: Date.now(), pauseTime: null } });
+        workspace.resolver({ playing: { queue: [file.id], timePlayed: 0, pauseTime: null } });
     };
 
     const onSfx = async () => {
@@ -62,7 +62,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
         workspace.resolver({
             sfx: {
                 queue: [file.id],
-                startTimestamp: Date.now(),
+                timePlayed: 0,
                 pauseTime: null,
             },
         });

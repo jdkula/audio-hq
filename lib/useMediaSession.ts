@@ -1,9 +1,8 @@
 import { useRef, useEffect, useContext } from 'react';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom } from './atoms';
-import { FileManager } from './useFileManager';
-import { WorkspaceContext, WorkspaceContextType } from './useWorkspace';
-import { File, Workspace, WorkspaceResolver } from './Workspace';
+import { WorkspaceContext } from './useWorkspace';
+import { File } from './Workspace';
 
 const useMediaSession = (): void => {
     const workspace = useContext(WorkspaceContext);
@@ -48,7 +47,7 @@ const useMediaSession = (): void => {
                 }
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
-                workspace.resolver({ playing: { startTimestamp: Date.now(), pauseTime: null } });
+                workspace.resolver({ playing: { timePlayed: 0, pauseTime: null } });
             });
         }
     }, [workspace.resolver, globalVolume, setGlobalVolume]);

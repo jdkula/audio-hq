@@ -83,7 +83,6 @@ export interface PlayerStateUpdate {
 
 export interface PlayStateUpdate {
     queue?: ID[];
-    startTimestamp?: number | null;
     volume?: number;
     pauseTime?: number | null;
     timePlayed?: number; //  in seconds
@@ -113,12 +112,14 @@ export function updatePlayState(
     if (update === null) return null;
     if (update.queue === undefined && original === null) return null;
 
+    const newStartTimestamp = update.timePlayed !== undefined ? Date.now() - update.timePlayed * 1000 : null;
+
     const copy: PlayState =
         original === null
             ? {
                   queue: update.queue as string[],
-                  pauseTime: update.pauseTime ?? update.startTimestamp ?? Date.now(),
-                  startTimestamp: update.startTimestamp ?? Date.now(),
+                  pauseTime: update.pauseTime ?? null,
+                  startTimestamp: newStartTimestamp ?? Date.now(),
                   volume: update.volume ?? defaultVolume ?? 1,
                   speed: update.speed ?? 1,
               }
@@ -128,8 +129,8 @@ export function updatePlayState(
         if (update.queue) {
             copy.queue = [...update.queue];
         }
-        if (update.startTimestamp !== undefined) {
-            copy.startTimestamp = update.startTimestamp;
+        if (update.timePlayed !== undefined) {
+            copy.startTimestamp = newStartTimestamp;
             if (copy.pauseTime !== null && update.pauseTime === undefined) {
                 copy.pauseTime = Date.now(); // update pause time to reflect seek.
             }

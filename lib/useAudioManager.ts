@@ -20,7 +20,7 @@ class Track {
     private _node: AudioNode;
     private _gain: GainNode;
 
-    private _currentlyPlayingFile = '';
+    private _curQueueIdx = 0;
 
     constructor(
         state: PlayState,
@@ -36,10 +36,10 @@ class Track {
         this._state = state;
         this._getFileInfo = fileGetter;
 
-        const track = fileGetter(state);
+        const track = fileGetter(state, 0);
         if (!track) throw new Error("No track found, but we're loading one??");
 
-        this._currentlyPlayingFile = track.file.id;
+        this._curQueueIdx = 0;
         const url = fm.track(track.file.id, (blob) => {
             this._media.src = URL.createObjectURL(blob);
         });
@@ -53,27 +53,28 @@ class Track {
 
         this._media.preload = 'auto';
 
+        let isTransitioning = false;
+
         this._media.onloadstart = () => {
             console.log('audio.current.onloadstart called');
         };
 
         this._media.onloadedmetadata = () => {
             console.log('audio.current.onloadedmetadata called');
-            const inf = fileGetter(this._state);
+            const inf = fileGetter(this._state, this._curQueueIdx);
             if (!inf) {
                 return;
             }
             this._media.currentTime = inf.duration;
         };
 
-        let initialPlay = false;
         this._media.oncanplay = () => {
             console.log('audio.current.oncanplay called');
-            if (!state.pauseTime && !initialPlay) {
-                initialPlay = true;
+            if (!this._state.pauseTime) {
+                isTransitioning = false;
                 console.log('Playing', this._media);
-                this._media.play().catch(() => {
-                    console.log('Blocked');
+                this._media.play().catch((e) => {
+                    console.log('Blocked', e);
                     onBlocked?.();
                 });
             }
@@ -85,28 +86,37 @@ class Track {
             }
         };
 
-        this._media.loop = loop ?? true;
+        this._media.loop = this._state.queue.length === 1;
         this._media.ontimeupdate = () => {
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
-            if (this._media.currentTime > this._media.duration - 0.44) {
-                if (loop && state.queue.length == 1) {
+            if (this._media.duration - this._media.currentTime < 0.44 && !isTransitioning) {
+                console.log('Looping/ending');
+                if (this._state.queue.length === 1) {
                     this._media.currentTime = 0;
                 } else if (state.queue.length > 1) {
-                    const track = fileGetter(state);
-                    if (!track) throw new Error("No track found, but we're loading it??");
-
-                    this._currentlyPlayingFile = track.file.id;
-                    const url = fm.track(track.file.id, (blob) => {
-                        this._media.src = URL.createObjectURL(blob);
-                    });
-                    this._media.src = url;
+                    this._curQueueIdx++;
+                    console.log('Moving to next file', this._curQueueIdx);
+                    const track = fileGetter(this._state, this._curQueueIdx);
+                    if (!track) throw new Error('Tried to get next index, failed');
+                    isTransitioning = true;
+                    const assign = () => {
+                        console.log('Assigning source now', this._curQueueIdx);
+                        const url = fm.track(track.file.id, (blob) => {
+                            this._media.src = URL.createObjectURL(blob);
+                        });
+                        this._media.src = url;
+                    };
+                    if (track.duration < 0) {
+                        window.setTimeout(assign, -track.duration * 1000);
+                    } else {
+                        assign();
+                    }
                 }
             }
         };
 
         this._gain.gain.value = state.volume;
         this._media.playbackRate = state.speed;
-        this._media.autoplay = true;
     }
 
     connect(node: AudioNode) {
@@ -141,7 +151,7 @@ class Track {
         this._state.pauseTime = newState.pauseTime;
         if (this._state.pauseTime && !this._media.paused) {
             this._media.pause();
-        } else if (this._media.paused) {
+        } else if (!this._state.pauseTime && this._media.paused) {
             this._media.play().catch((e) => console.warn(e));
         }
         const inf = this._getFileInfo(this._state);
@@ -150,7 +160,8 @@ class Track {
         }
 
         this._media.currentTime = inf.duration;
-        if (this._currentlyPlayingFile !== inf.file.id) {
+        if (this._state.queue[this._curQueueIdx % this._state.queue.length] !== inf.file.id) {
+            this._curQueueIdx = this._state.queue.findIndex((id) => id === inf.file.id);
             this._media.src = this._fm.track(inf.file.id, (blob) => {
                 this._media.src = URL.createObjectURL(blob);
             });

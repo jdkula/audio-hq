@@ -210,11 +210,11 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 
     const onShuffle: MouseEventHandler = (ev) => {
         ev.stopPropagation();
-        const queue = workspace.files.filter((f) => _.isEqual(f.path, fullPath)).map((f) => f.id);
-        // TODO: shuffle queue.
+        const pathToUse = up ? path : fullPath;
+        const queue = _.shuffle(workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id));
         workspace.resolver({
             playing: {
-                startTimestamp: Date.now(),
+                timePlayed: 0,
                 pauseTime: null,
                 speed: 1,
                 queue: queue,
@@ -225,11 +225,12 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 
     const onPlayFolder: MouseEventHandler = (ev) => {
         ev.stopPropagation();
-        const queue = workspace.files.filter((f) => _.isEqual(f.path, fullPath)).map((f) => f.id);
+        const pathToUse = up ? path : fullPath;
+        const queue = workspace.files.filter((f) => _.isEqual(f.path, pathToUse)).map((f) => f.id);
         console.log('Playing folder', queue);
         workspace.resolver({
             playing: {
-                startTimestamp: Date.now(),
+                timePlayed: 0,
                 pauseTime: null,
                 speed: 1,
                 queue: queue,

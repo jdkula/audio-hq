@@ -218,7 +218,7 @@ export const Explorer: FC = () => {
                             <FolderEntry
                                 name="Back"
                                 up
-                                path={[]}
+                                path={path}
                                 onClick={() => setPath(path.slice(0, path.length - 1))}
                             />
                         )}
