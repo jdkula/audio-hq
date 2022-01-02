@@ -51,14 +51,14 @@ const BreadcrumbsContainer = styled.div`
 
 const FileListContainer = styled.div`
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
     flex-grow: 1;
     position: relative;
     margin: 1px;
 `;
 
 const FileListScrollContainer = styled.div`
-    height: 100%;
+    height: 99%;
 `;
 
 const PlaceholderContainer = styled.div`
