@@ -21,7 +21,7 @@ const useAudio = (state: PlayState | null): AudioInfo => {
     const [n, setN] = useState(0);
 
     useEffect(() => {
-        const handle = window.setInterval(() => setN((n) => n + 1), 1000);
+        const handle = window.setInterval(() => setN((n) => n + 1), 500);
         return () => window.clearInterval(handle);
     }, []);
 

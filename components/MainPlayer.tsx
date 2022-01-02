@@ -56,7 +56,7 @@ export const MainPlayer: FunctionComponent<{
     const [trackName, setTrackName] = useState('Loading...');
 
     useEffect(() => {
-        const handle = window.setInterval(() => setN((n) => n + 1), 1000);
+        const handle = window.setInterval(() => setN((n) => n + 1), 500);
         return () => window.clearInterval(handle);
     }, []);
 
