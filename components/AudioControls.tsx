@@ -101,7 +101,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
 
     const onPlayPause = () => {
         if (paused) resolver({ pauseTime: null });
-        else resolver({ pauseTime: Date.now(), timePlayed: time });
+        else resolver({ pauseTime: Date.now() });
     };
 
     return (
