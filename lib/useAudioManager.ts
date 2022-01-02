@@ -86,10 +86,10 @@ class Track {
             }
         };
 
-        this._media.loop = this._state.queue.length === 1;
+        this._media.loop = loop && this._state.queue.length === 1;
         this._media.ontimeupdate = () => {
             // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
-            if (this._media.duration - this._media.currentTime < 0.44 && !isTransitioning) {
+            if (this._media.duration - this._media.currentTime < 0.44 && !isTransitioning && loop) {
                 console.log('Looping/ending');
                 if (this._state.queue.length === 1) {
                     this._media.currentTime = 0;
