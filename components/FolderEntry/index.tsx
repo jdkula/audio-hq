@@ -173,7 +173,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const editor = (
         <ClickAwayListener onClickAway={stopRenaming}>
             <EditorContainer onClick={(e) => e.stopPropagation()}>
-                <Tooltip title="Pro tip: Enter the name of another folder to merge them!" placement="top">
+                <Tooltip title="Pro tip: Enter the name of another folder to merge them!" placement="top" arrow>
                     <TextField
                         id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
                         fullWidth
@@ -252,13 +252,13 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                         <MainContainer>
                             <FolderButton dragging={snapshot.isDraggingOver} up={up} />
                             {altKey ? (
-                                <Tooltip placement="left" title="Shuffle folder">
+                                <Tooltip arrow placement="left" title="Shuffle folder">
                                     <IconButton onClick={onShuffle}>
                                         <Shuffle />
                                     </IconButton>
                                 </Tooltip>
                             ) : (
-                                <Tooltip placement="left" title="Play and loop folder (alt/option to shuffle)">
+                                <Tooltip arrow placement="left" title="Play and loop folder (alt/option to shuffle)">
                                     <IconButton onClick={onPlayFolder}>
                                         <PlaylistPlay />
                                     </IconButton>

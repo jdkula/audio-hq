@@ -106,7 +106,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                         </IconButton>
                     </Tooltip>
                 ) : (
-                    <Tooltip placement="left" title="Favorite (alt/option to delete)">
+                    <Tooltip placement="left" title="Favorite (alt/option to delete)" arrow>
                         <IconButton
                             onClick={toggleFavorite}
                             color={favs.favorites.has(file.id) ? 'primary' : undefined}
