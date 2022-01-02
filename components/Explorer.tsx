@@ -6,7 +6,7 @@
  * as well as is the interface by which users may play music.
  */
 
-import { Breadcrumbs, Button, Divider, Paper } from '@material-ui/core';
+import { Breadcrumbs, Button, Divider, IconButton, Paper } from '@material-ui/core';
 import React, { FC, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { File as WSFile, Workspace } from '~/lib/Workspace';
@@ -25,6 +25,8 @@ import JobEntry from './JobEntry';
 import { useRecoilState } from 'recoil';
 import { pathAtom } from '~/lib/atoms';
 import SearchBar from './SearchBar';
+import useFavorites from '~/lib/useFavorites';
+import { Favorite, FavoriteBorder, Loyalty } from '@material-ui/icons';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -68,12 +70,9 @@ const JobsContainer = styled.div`
 
 /** Retrieves all WSFiles given a current path and an optional search string. */
 const getFiles = (workspace: Workspace, path: string[], searchText?: string): WSFile[] => {
+    const re = new RegExp(`.*${searchText}.*`, 'i');
     if (searchText !== undefined)
-        return workspace.files.filter(
-            (file) =>
-                !!file.name.match(new RegExp(`.*${searchText}.*`, 'i')) ||
-                !!file.description?.match(new RegExp(`.*${searchText}.*`, 'i')),
-        );
+        return workspace.files.filter((file) => !!file.name.match(re) || !!file.description?.match(re));
     return (
         workspace.files.filter(
             (file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v),
@@ -111,14 +110,21 @@ const getFolders = (workspace: Workspace, currentPath: string[]): Set<string> =>
 export const Explorer: FC = () => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
+    const favs = useFavorites();
 
+    const [viewingFavorites, setViewingFavorites] = useState(false);
     const [path, setPath] = useRecoilState(pathAtom);
     const [combining, setCombining] = useState<WSFile[]>([]);
 
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
 
-    const currentFiles = getFiles(workspace, path, searching ? searchText : undefined);
+    const currentFiles = viewingFavorites
+        ? (favs.favorites
+              .toArray()
+              .map((id) => workspace.files.find((file) => file.id === id))
+              .filter((file) => !!file) as WSFile[])
+        : getFiles(workspace, path, searching ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
@@ -129,7 +135,9 @@ export const Explorer: FC = () => {
         if (path) setPath(path);
     };
 
-    const folders = searching
+    const folders = viewingFavorites
+        ? []
+        : searching
         ? getSearchFolders(workspace, searchText).map((path, i) => (
               <FolderEntry
                   name={path[path.length - 1]}
@@ -200,21 +208,30 @@ export const Explorer: FC = () => {
         <ExplorerContainer>
             <ExplorerToolbar square variant="elevation" color="primary">
                 <BreadcrumbsContainer>
-                    <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
+                    {viewingFavorites ? (
+                        <Button>Favorites</Button>
+                    ) : (
+                        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>{breadcrumbs}</Breadcrumbs>
+                    )}
                 </BreadcrumbsContainer>
-                <SearchBar
-                    searching={searching}
-                    searchText={searchText}
-                    setSearchText={setSearchText}
-                    setSearching={(searching) => (searching ? setSearching(true) : finishSearch())}
-                />
+                {!viewingFavorites && (
+                    <SearchBar
+                        searching={searching}
+                        searchText={searchText}
+                        setSearchText={setSearchText}
+                        setSearching={(searching) => (searching ? setSearching(true) : finishSearch())}
+                    />
+                )}
+                <IconButton onClick={() => setViewingFavorites(!viewingFavorites)}>
+                    {viewingFavorites ? <Favorite color="primary" /> : <FavoriteBorder />}
+                </IconButton>
             </ExplorerToolbar>
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />
 
             <FileListContainer>
                 <FileListScrollContainer>
                     <DragDropContext onDragEnd={handleDrag}>
-                        {!searching && path.length > 0 && (
+                        {!searching && !viewingFavorites && path.length > 0 && (
                             <FolderEntry
                                 name="Back"
                                 up
@@ -224,7 +241,7 @@ export const Explorer: FC = () => {
                         )}
                         {folders}
                         <Divider />
-                        <Droppable isCombineEnabled droppableId="___current___">
+                        <Droppable isDropDisabled={viewingFavorites} isCombineEnabled droppableId="___current___">
                             {(provided) => (
                                 <div {...provided.droppableProps} ref={provided.innerRef}>
                                     {fileButtons}

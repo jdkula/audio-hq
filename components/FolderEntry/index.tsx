@@ -258,7 +258,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                                     </IconButton>
                                 </Tooltip>
                             ) : (
-                                <Tooltip placement="left" title="Play and loop folder">
+                                <Tooltip placement="left" title="Play and loop folder (alt/option to shuffle)">
                                     <IconButton onClick={onPlayFolder}>
                                         <PlaylistPlay />
                                     </IconButton>

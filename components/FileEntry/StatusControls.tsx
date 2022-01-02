@@ -16,6 +16,9 @@ import DeleteForever from '@material-ui/icons/DeleteForever';
 import DownloadIcon from '@material-ui/icons/CloudDownload';
 import EditIcon from '@material-ui/icons/Edit';
 import OfflinePinIcon from '@material-ui/icons/OfflinePin';
+import useAlt from '~/lib/useAlt';
+import { Favorite } from '@material-ui/icons';
+import useFavorites from '~/lib/useFavorites';
 
 const StatusContainerPlacer = styled.div`
     display: flex;
@@ -39,6 +42,8 @@ interface StatusControlsProps {
 
 const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, setDelete }) => {
     const fileManager = useContext(FileManagerContext);
+    const favs = useFavorites();
+    const altKey = useAlt();
 
     const cached = fileManager.cached.has(file.id);
     const downloadJob = fileManager.fetching.find((job) => (job.jobId as unknown as string) === file.id);
@@ -52,6 +57,14 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank', 'norel noreferrer');
         });
+    };
+
+    const toggleFavorite = () => {
+        if (favs.favorites.has(file.id)) {
+            favs.addFavorite(file.id);
+        } else {
+            favs.removeFavorite(file.id);
+        }
     };
 
     return (
@@ -86,11 +99,22 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                     </Tooltip>
                 )}
 
-                <Tooltip placement="left" title="Delete" arrow>
-                    <IconButton onClick={() => setDelete(true)}>
-                        <DeleteForever />
-                    </IconButton>
-                </Tooltip>
+                {altKey ? (
+                    <Tooltip placement="left" title="Delete" arrow>
+                        <IconButton onClick={() => setDelete(true)}>
+                            <DeleteForever />
+                        </IconButton>
+                    </Tooltip>
+                ) : (
+                    <Tooltip placement="left" title="Favorite (alt/option to delete)">
+                        <IconButton
+                            onClick={toggleFavorite}
+                            color={favs.favorites.has(file.id) ? 'primary' : undefined}
+                        >
+                            <Favorite />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </StatusContainer>
         </StatusContainerPlacer>
     );

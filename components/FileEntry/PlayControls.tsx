@@ -16,6 +16,7 @@ import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { Tooltip, IconButton } from '@material-ui/core';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { BlurOn } from '@material-ui/icons';
+import useAlt from '~/lib/useAlt';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -32,6 +33,8 @@ interface PlayControlsProps {
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const workspace = useContext(WorkspaceContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
+
+    const altKey = useAlt();
 
     const sfxHighlightTimeoutHandle = useRef<number | null>(null);
 
@@ -78,20 +81,25 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     )}
                 </IconButton>
             </Tooltip>
-            <Tooltip title="Play File As Ambience" placement="left" arrow>
-                <IconButton onClick={onAmbience}>
-                    <AddIcon
-                        color={
-                            workspace.state.ambience.find((ps) => ps.queue.includes(file.id)) ? 'primary' : undefined
-                        }
-                    />
-                </IconButton>
-            </Tooltip>
-            <Tooltip title="Play File As SFX" placement="left" arrow>
-                <IconButton onClick={onSfx}>
-                    <BlurOn color={highlightingSfx ? 'primary' : undefined} />
-                </IconButton>
-            </Tooltip>
+            {altKey ? (
+                <Tooltip title="Play File As SFX" placement="left" arrow>
+                    <IconButton onClick={onSfx}>
+                        <BlurOn color={highlightingSfx ? 'primary' : undefined} />
+                    </IconButton>
+                </Tooltip>
+            ) : (
+                <Tooltip title="Play File As Ambience (alt/option to play as SFX)" placement="left" arrow>
+                    <IconButton onClick={onAmbience}>
+                        <AddIcon
+                            color={
+                                workspace.state.ambience.find((ps) => ps.queue.includes(file.id))
+                                    ? 'primary'
+                                    : undefined
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+            )}
         </PlayControlsContainer>
     );
 };
