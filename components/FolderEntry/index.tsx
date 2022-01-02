@@ -7,7 +7,7 @@
  * rename a folder.
  */
 
-import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
+import React, { FC, KeyboardEvent, MouseEvent, MouseEventHandler, useContext, useState } from 'react';
 import FolderIcon from '@material-ui/icons/Folder';
 import { Droppable } from 'react-beautiful-dnd';
 
@@ -27,9 +27,11 @@ import {
 } from '@material-ui/core';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { DeleteForever } from '@material-ui/icons';
+import { DeleteForever, PlaylistPlay, Shuffle } from '@material-ui/icons';
 import styled from 'styled-components';
 import FolderDeleteDialog from './FolderDeleteDialog';
+import useAlt from '~/lib/useAlt';
+import _ from 'lodash';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -89,7 +91,7 @@ const FolderButton: FC<FolderButtonProps> = ({ dragging, up, ...props }) => {
     }
 
     return (
-        <Tooltip title="Click to enter folder" placement="left">
+        <Tooltip title="Click to enter folder" placement="left" arrow>
             <IconButton {...props}>{icon}</IconButton>
         </Tooltip>
     );
@@ -103,6 +105,8 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 }) => {
     const workspace = useContext(WorkspaceContext);
     const fileManager = useContext(FileManagerContext);
+
+    const altKey = useAlt();
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
@@ -204,6 +208,35 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         </ControlsContainer>
     );
 
+    const onShuffle: MouseEventHandler = (ev) => {
+        ev.stopPropagation();
+        const queue = workspace.files.filter((f) => _.isEqual(f.path, fullPath)).map((f) => f.id);
+        // TODO: shuffle queue.
+        workspace.resolver({
+            playing: {
+                startTimestamp: Date.now(),
+                pauseTime: null,
+                speed: 1,
+                queue: queue,
+            },
+        });
+        ev.stopPropagation();
+    };
+
+    const onPlayFolder: MouseEventHandler = (ev) => {
+        ev.stopPropagation();
+        const queue = workspace.files.filter((f) => _.isEqual(f.path, fullPath)).map((f) => f.id);
+        console.log('Playing folder', queue);
+        workspace.resolver({
+            playing: {
+                startTimestamp: Date.now(),
+                pauseTime: null,
+                speed: 1,
+                queue: queue,
+            },
+        });
+    };
+
     return (
         <Droppable droppableId={up ? '___back___' : `___folder_${name}`}>
             {(provided, snapshot) => (
@@ -217,6 +250,19 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
                     <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
                         <MainContainer>
                             <FolderButton dragging={snapshot.isDraggingOver} up={up} />
+                            {altKey ? (
+                                <Tooltip placement="left" title="Shuffle folder">
+                                    <IconButton onClick={onShuffle}>
+                                        <Shuffle />
+                                    </IconButton>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip placement="left" title="Play and loop folder">
+                                    <IconButton onClick={onPlayFolder}>
+                                        <PlaylistPlay />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                             {main}
                         </MainContainer>
                         <div style={{ display: 'none' }}>{provided.placeholder}</div>

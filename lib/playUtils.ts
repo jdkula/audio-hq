@@ -1,6 +1,6 @@
-import { SfxState } from './Workspace';
+import { PlayState, SfxState } from './Workspace';
 
-export const shouldPlaySFX = (sfx: SfxState): boolean => {
+export function shouldPlaySFX(sfx: SfxState): boolean {
     const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
     const valid = !!sfx.sfx && sfx.timeoutTimestamp > Date.now() && sfx.triggerTimestamp > lastTrigger;
 
@@ -8,4 +8,4 @@ export const shouldPlaySFX = (sfx: SfxState): boolean => {
         localStorage.setItem('__AHQ_LAST_SFX', JSON.stringify(sfx.triggerTimestamp));
     }
     return valid;
-};
+}

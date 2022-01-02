@@ -28,7 +28,7 @@ export interface AudioSet extends File {
 
 export interface PlayState {
     queue: ID[];
-    startTimestamp: number | null;
+    startTimestamp: number | null; // These timestamps are in ms
     volume: number;
     pauseTime: number | null;
     speed: number;
@@ -86,7 +86,7 @@ export interface PlayStateUpdate {
     startTimestamp?: number | null;
     volume?: number;
     pauseTime?: number | null;
-    timePlayed?: number;
+    timePlayed?: number; //  in seconds
     speed?: number;
 }
 

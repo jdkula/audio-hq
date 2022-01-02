@@ -14,10 +14,13 @@ interface AudioManager {
 class Track {
     private _fm: FileManager;
     private _state: PlayState;
+    private _getFileInfo: WorkspaceContextType['getCurrentTrackFrom'];
 
     private _media: HTMLMediaElement;
     private _node: AudioNode;
     private _gain: GainNode;
+
+    private _currentlyPlayingFile = '';
 
     constructor(
         state: PlayState,
@@ -28,12 +31,15 @@ class Track {
         onBlocked?: () => void,
         loop = true,
     ) {
+        console.log('<<constructor running>>');
         this._fm = fm;
         this._state = state;
+        this._getFileInfo = fileGetter;
 
         const track = fileGetter(state);
         if (!track) throw new Error("No track found, but we're loading one??");
 
+        this._currentlyPlayingFile = track.file.id;
         const url = fm.track(track.file.id, (blob) => {
             this._media.src = URL.createObjectURL(blob);
         });
@@ -53,20 +59,18 @@ class Track {
 
         this._media.onloadedmetadata = () => {
             console.log('audio.current.onloadedmetadata called');
-            if (!state.startTimestamp || !this._media.duration) return null;
-            const timeElapsedMs = ((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed;
-            let seek = 0;
-            if (timeElapsedMs > this._media.duration * 1000 && !loop) {
-                seek = this._media.duration;
+            const inf = fileGetter(this._state);
+            if (!inf) {
+                return;
             }
-            seek = (timeElapsedMs % (this._media.duration * 1000)) / 1000;
-
-            this._media.currentTime = seek;
+            this._media.currentTime = inf.duration;
         };
 
+        let initialPlay = false;
         this._media.oncanplay = () => {
             console.log('audio.current.oncanplay called');
-            if (!state.pauseTime) {
+            if (!state.pauseTime && !initialPlay) {
+                initialPlay = true;
                 console.log('Playing', this._media);
                 this._media.play().catch(() => {
                     console.log('Blocked');
@@ -91,6 +95,7 @@ class Track {
                     const track = fileGetter(state);
                     if (!track) throw new Error("No track found, but we're loading it??");
 
+                    this._currentlyPlayingFile = track.file.id;
                     const url = fm.track(track.file.id, (blob) => {
                         this._media.src = URL.createObjectURL(blob);
                     });
@@ -100,6 +105,8 @@ class Track {
         };
 
         this._gain.gain.value = state.volume;
+        this._media.playbackRate = state.speed;
+        this._media.autoplay = true;
     }
 
     connect(node: AudioNode) {
@@ -127,10 +134,37 @@ class Track {
         this._state.volume = newState.volume;
         this._gain.gain.value = newState.volume;
 
+        this._state.speed = newState.speed;
+        this._media.playbackRate = newState.speed;
+
+        this._state.startTimestamp = newState.startTimestamp;
+        this._state.pauseTime = newState.pauseTime;
+        if (this._state.pauseTime && !this._media.paused) {
+            this._media.pause();
+        } else if (this._media.paused) {
+            this._media.play().catch((e) => console.warn(e));
+        }
+        const inf = this._getFileInfo(this._state);
+        if (!inf) {
+            return false;
+        }
+
+        this._media.currentTime = inf.duration;
+        if (this._currentlyPlayingFile !== inf.file.id) {
+            this._media.src = this._fm.track(inf.file.id, (blob) => {
+                this._media.src = URL.createObjectURL(blob);
+            });
+        }
+
         return _.isEqual(this._state, newState);
     }
 
+    rereconcile(): boolean {
+        return this.reconcile(this._state);
+    }
+
     destroy() {
+        console.log('Destroying...');
         this._node.disconnect();
         this._media.pause();
         this._media.src = '';
@@ -187,7 +221,7 @@ export default function useAudioManager(): AudioManager {
 
     useEffect(() => {
         if (!ws) return;
-        if (ws.state.playing) {
+        if (ws.state.playing && ws.state.playing.queue.length > 0) {
             if (ws.state.playing && mainTrack.current?.reconcile(ws.state.playing)) {
                 return;
             }
@@ -266,13 +300,23 @@ export default function useAudioManager(): AudioManager {
 
     useEffect(() => {
         // TODO: Shadow pausing
-        if (globalVolume === 0) {
-            ac.current.suspend();
-        } else if (globalVolume > 0 && ac.current.state === 'suspended') {
-            ac.current.resume();
-        }
         masterGain.current.gain.value = globalVolume;
-    }, [globalVolume]);
+        if (globalVolume === 0 && ac.current.state === 'running') {
+            mainTrack.current?.pause();
+            for (const track of ambientTracks.current) {
+                track.pause();
+            }
+            sfxTrack.current?.pause();
+            ac.current.suspend();
+        } else if (ac.current.state === 'suspended') {
+            ac.current.resume();
+            mainTrack.current?.rereconcile();
+            for (const track of ambientTracks.current) {
+                track.rereconcile();
+            }
+            sfxTrack.current?.rereconcile();
+        }
+    }, [globalVolume, ws.state]);
 
     return {
         blocked,

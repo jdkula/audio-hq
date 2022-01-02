@@ -6,7 +6,7 @@
  */
 
 import { Typography, Box } from '@material-ui/core';
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
@@ -52,7 +52,18 @@ export const MainPlayer: FunctionComponent<{
 
     const ws = useContext(WorkspaceContext);
 
-    const trackName = ws.getCurrentTrackFrom(state)?.file.name;
+    const [n, setN] = useState(0);
+    const [trackName, setTrackName] = useState('Loading...');
+
+    useEffect(() => {
+        const handle = window.setInterval(() => setN((n) => n + 1), 1000);
+        return () => window.clearInterval(handle);
+    }, []);
+
+    useEffect(() => {
+        const trackName = ws.getCurrentTrackFrom(state)?.file.name;
+        setTrackName(trackName ?? 'Loading...');
+    }, [n]);
 
     return (
         <MainPlayerContainer>

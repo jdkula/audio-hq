@@ -7,8 +7,7 @@ interface AudioInfo {
     volume: number;
     time: number;
     paused: boolean;
-    loading: boolean;
-    blocked: boolean;
+    name: string;
 }
 
 const isiOS = () =>
@@ -26,25 +25,22 @@ const useAudio = (state: PlayState | null): AudioInfo => {
         return () => window.clearInterval(handle);
     }, []);
 
-    const f = state ? ws.getCurrentTrackFrom(state)?.file : null;
+    const f = state ? ws.getCurrentTrackFrom(state) : null;
 
     useEffect(() => {
+        const f = state ? ws.getCurrentTrackFrom(state) : null;
         if (!f || !state || !state.startTimestamp) {
             return;
         }
-        const timeElapsedMs = ((state.pauseTime ?? Date.now()) - state.startTimestamp) * state.speed;
-        const seek = (timeElapsedMs % (f.length * 1000)) / 1000;
-
-        setSeek(seek);
+        setSeek(f.duration);
     }, [state, n]);
 
     return {
-        duration: f?.length ?? 2,
+        duration: f?.file.length ?? 2,
         paused: !!state?.pauseTime,
         time: seek,
         volume: state?.volume ?? 0,
-        loading: false,
-        blocked: false,
+        name: f?.file.name ?? 'Loading...',
     };
 };
 

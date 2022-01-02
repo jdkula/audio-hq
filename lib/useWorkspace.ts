@@ -14,7 +14,7 @@ import { createContext } from 'react';
 
 interface CurrentFileInfo {
     file: WSFile;
-    duration: number;
+    duration: number; // in s
 }
 interface WorkspaceHookResult {
     workspace: Workspace | null;
@@ -116,19 +116,21 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
     };
 
     const getCurrentTrackFrom = (state: PlayState) => {
+        // debugger;
         const files = state.queue.map(getFile);
         if (!allNonNull<WSFile>(files) || state.startTimestamp === null) {
             return null;
         }
 
-        const totalTime = files.reduce((prev, cur) => prev + cur.length, 0);
-        const curDuration = (Date.now() - state.startTimestamp) % totalTime;
+        const totalTime = files.reduce((prev, cur) => prev + cur.length, 0); // in seconds
+        const curTs = state.pauseTime ?? Date.now();
+        const curDuration = ((curTs - state.startTimestamp) * state.speed) % (totalTime * 1000); // in ms
         let elapsed = 0;
         for (const file of files) {
             const prevElapsed = elapsed;
-            elapsed += file.length;
+            elapsed += file.length * 1000; // in ms
             if (curDuration < elapsed) {
-                return { file, duration: curDuration - prevElapsed };
+                return { file, duration: (curDuration - prevElapsed) / 1000 };
             }
         }
 
