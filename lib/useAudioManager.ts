@@ -203,6 +203,14 @@ export default function useAudioManager(): AudioManager {
         ac.current.onstatechange = () => console.log(ac.current.state);
         masterGain.current = ac.current.createGain();
         masterGain.current.connect(ac.current.destination);
+        return () => {
+            mainTrack.current?.destroy();
+            for (const track of ambientTracks.current) {
+                track.destroy();
+            }
+            sfxTrack.current?.destroy();
+            ac.current.close();
+        };
     }, []);
 
     const unblock = useCallback(() => {
