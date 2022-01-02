@@ -10,10 +10,6 @@ interface AudioInfo {
     name: string;
 }
 
-const isiOS = () =>
-    navigator.userAgent.match(/(iPod|iPhone|iPad)/) ||
-    (navigator.userAgent.match(/Safari/) && !navigator.userAgent.match(/Chrome/) && navigator.maxTouchPoints > 0);
-
 const useAudio = (state: PlayState | null): AudioInfo => {
     const ws = useContext(WorkspaceContext);
     const [seek, setSeek] = useState(0);

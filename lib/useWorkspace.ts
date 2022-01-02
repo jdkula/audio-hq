@@ -78,6 +78,7 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
             for (let i = 0; i < copy.ambience.length; i++) {
                 if (copy.ambience[i].queue.every((id, idx) => id === update.ambience?.queue?.[idx])) {
                     // both non-null, output will be non-null.
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     copy.ambience[i] = updatePlayState(update.ambience, copy.ambience[i], copy.startVolume)!;
                     updated = true;
                 }

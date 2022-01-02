@@ -13,7 +13,6 @@ import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { FileManagerContext } from '~/lib/useFileManager';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;

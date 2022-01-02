@@ -15,8 +15,8 @@ export default function useFavorites(): Favorites {
     const [favorites, setFavorites] = useRecoilState(favoritesAtom);
 
     useEffect(() => {
-        if (!(window as any).__AHQ_LOADED_FAVORITES) {
-            (window as any).__AHQ_LOADED_FAVORITES = true;
+        if (!window.__AHQ_LOADED_FAVORITES) {
+            window.__AHQ_LOADED_FAVORITES = true;
             setFavorites(Set(JSON.parse(localStorage.getItem(kFavoriteKey) ?? '[]')));
         }
     }, []);

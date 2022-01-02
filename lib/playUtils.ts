@@ -1,4 +1,4 @@
-import { PlayState, SfxState } from './Workspace';
+import { SfxState } from './Workspace';
 
 export function shouldPlaySFX(sfx: SfxState): boolean {
     const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');

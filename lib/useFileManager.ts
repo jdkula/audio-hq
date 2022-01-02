@@ -5,7 +5,7 @@ import { Set } from 'immutable';
 import { mutate } from 'swr';
 import Job from './Job';
 import { useFiles, useJobs } from './useWorkspace';
-import { File as WSFile, PlayState, Reorderable } from './Workspace';
+import { File as WSFile, Reorderable } from './Workspace';
 import ConvertOptions from './ConvertOptions';
 
 export interface FileManager {
@@ -123,8 +123,9 @@ const useFileManager = (workspaceId: string): FileManager => {
                     },
                 });
 
-                if (resp.headers.get('X-Redirect-Location')) {
-                    resp = await fetch(resp.headers.get('X-Redirect-Location')!, {
+                const redirect = resp.headers.get('X-Redirect-Location');
+                if (redirect) {
+                    resp = await fetch(redirect, {
                         headers: {
                             Accept: 'audio/mp3',
                         },

@@ -26,7 +26,7 @@ import { useRecoilState } from 'recoil';
 import { pathAtom } from '~/lib/atoms';
 import SearchBar from './SearchBar';
 import useFavorites from '~/lib/useFavorites';
-import { Favorite, FavoriteBorder, Loyalty } from '@material-ui/icons';
+import { Favorite, FavoriteBorder } from '@material-ui/icons';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;

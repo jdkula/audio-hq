@@ -1,9 +1,9 @@
-import { useCallback, useContext, useDebugValue, useEffect, useRef, useState } from 'react';
-import { constSelector, useRecoilState, useRecoilValue } from 'recoil';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { globalVolumeAtom, sfxAtom } from './atoms';
 import { FileManager, FileManagerContext } from './useFileManager';
-import useWorkspace, { WorkspaceContext, WorkspaceContextType } from './useWorkspace';
-import { PlayState, Workspace } from './Workspace';
+import { WorkspaceContext, WorkspaceContextType } from './useWorkspace';
+import { PlayState } from './Workspace';
 import _ from 'lodash';
 import { shouldPlaySFX } from './playUtils';
 
@@ -198,7 +198,7 @@ export default function useAudioManager(): AudioManager {
     const masterGain = useRef<GainNode>(null as never);
 
     useEffect(() => {
-        const AudioContext = window.AudioContext ?? (window as any)?.webkitAudioContext;
+        const AudioContext = window.AudioContext ?? window.webkitAudioContext;
         ac.current = new AudioContext();
         ac.current.onstatechange = () => console.log(ac.current.state);
         masterGain.current = ac.current.createGain();
@@ -238,7 +238,7 @@ export default function useAudioManager(): AudioManager {
             }
 
             mainTrack.current?.destroy();
-            const tr = new Track(ws.state.playing!, fm, ac.current, ws.getCurrentTrackFrom, undefined, () =>
+            const tr = new Track(ws.state.playing, fm, ac.current, ws.getCurrentTrackFrom, undefined, () =>
                 setBlocked(true),
             );
             tr.connect(masterGain.current);
