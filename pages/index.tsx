@@ -10,8 +10,12 @@ import {
     DialogProps,
     DialogTitle,
     Divider,
+    FormControl,
+    FormControlLabel,
     Hidden,
     Link,
+    Radio,
+    RadioGroup,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -24,6 +28,7 @@ import PouchDB from 'pouchdb';
 import useLocalRecents from '~/lib/useLocalRecents';
 import ListHeader from '~/components/ListHeader';
 import { css, Global } from '@emotion/react';
+import useColorMode, { ColorMode } from '~/lib/useColorMode';
 
 const GlobalFull = () => (
     <Global
@@ -152,6 +157,7 @@ export default function Home(): React.ReactElement {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [colorMode, setColorMode] = useColorMode();
 
     const go = (workspace = text) => {
         setLoading(true);
@@ -216,6 +222,32 @@ export default function Home(): React.ReactElement {
                     </Box>
                 ))}
             </InnerContainer>
+            <Tooltip arrow placement="top" title="Press Alt/Option+M at any time to toggle light and dark modes">
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="center"
+                    alignItems="center"
+                    textAlign="center"
+                >
+                    <ListHeader>Color Mode</ListHeader>
+                    <Box my="0.5rem" />
+                    <FormControl component="fieldset">
+                        <RadioGroup
+                            row
+                            aria-label="color"
+                            name="row-radio-buttons-group"
+                            value={colorMode}
+                            onChange={(_, mode) => setColorMode(mode as ColorMode)}
+                        >
+                            <FormControlLabel value="auto" control={<Radio />} label="Auto" labelPlacement="top" />
+                            <FormControlLabel value="light" control={<Radio />} label="Light" labelPlacement="top" />
+                            <FormControlLabel value="dark" control={<Radio />} label="Dark" labelPlacement="top" />
+                        </RadioGroup>
+                    </FormControl>
+                </Box>
+            </Tooltip>
+
             <Box m={2}>
                 <Box display="grid" gridTemplateColumns="1fr auto 1fr" gridTemplateRows="auto" alignItems="center">
                     <Box m={2} justifySelf="end" textAlign="center">

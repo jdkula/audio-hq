@@ -22,7 +22,8 @@ const DropRoot = styled.div<{ isDragActive?: boolean }>`
     border-radius: 2px;
     border-color: ${({ isDragActive }) => (isDragActive ? '#2196f3' : '#eeeeee')};
     border-style: dashed;
-    background-color: #fafafa;
+
+    background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#101010' : '#fafafa')};
     color: #bdbdbd;
     outline: none;
     transition: border 0.24s ease-in-out;

@@ -5,3 +5,5 @@ declare var webkitAudioContext: {
     new (contextOptions?: AudioContextOptions | undefined): AudioContext;
     prototype: AudioContext;
 };
+
+declare var __AHQ_COLOR_MODE_LISTENERS: ((cm: 'auto' | 'light' | 'dark') => void)[];

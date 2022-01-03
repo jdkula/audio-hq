@@ -47,7 +47,7 @@ const FolderContainer = styled(Paper)`
     min-height: 50px;
 
     &:hover {
-        background-color: #eee;
+        background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#333' : '#eee')};
     }
 `;
 

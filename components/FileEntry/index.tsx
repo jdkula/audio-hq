@@ -34,7 +34,7 @@ export const FileContainer = styled(Paper)`
     min-height: 50px;
 
     &:hover {
-        background-color: #eee;
+        background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#333' : '#eee')};
     }
 
     ${({ theme }) => theme.breakpoints.down('sm')} {

@@ -9,13 +9,14 @@ import { AppProps } from 'next/app';
 
 import Head from 'next/head';
 
-import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo } from 'react';
 import {
     createTheme,
     ThemeProvider as MuiThemeProvider,
     Theme,
     StyledEngineProvider,
     CssBaseline,
+    useMediaQuery,
 } from '@mui/material';
 import StylesProvider from '@mui/styles/StylesProvider';
 import { RecoilRoot } from 'recoil';
@@ -23,6 +24,7 @@ import { amber, cyan } from '@mui/material/colors';
 import '@emotion/react';
 import { DefaultTheme } from '@mui/styles';
 import { ThemeProvider } from '@emotion/react';
+import useColorMode from '~/lib/useColorMode';
 
 declare module '@mui/styles/defaultTheme' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -43,16 +45,14 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
         }
     }, []);
 
-    const [forceDark, setForceDark] = useState(false);
-
-    // const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-    const prefersDarkMode = false;
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const [colorMode, setColorMode] = useColorMode();
 
     const theme = useMemo(
         () =>
             createTheme({
                 palette: {
-                    mode: forceDark ? 'dark' : 'light',
+                    mode: colorMode === 'auto' ? (prefersDarkMode ? 'dark' : 'light') : colorMode,
                     primary: { main: cyan[400], contrastText: '#fff' },
                     secondary: { main: amber.A400 },
                 },
@@ -61,17 +61,23 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
                     fontSize: 10,
                 },
             }),
-        [prefersDarkMode, forceDark],
+        [colorMode, prefersDarkMode],
     );
 
     const forceModeListener = useCallback(
         (ev: KeyboardEvent) => {
-            if (ev.code === 'KeyM' && (ev.ctrlKey || ev.metaKey)) {
+            if (ev.code === 'KeyM' && ev.altKey) {
                 ev.preventDefault();
-                setForceDark(!forceDark);
+                if (colorMode === 'auto') {
+                    setColorMode(prefersDarkMode ? 'light' : 'dark');
+                } else if (colorMode === 'light') {
+                    setColorMode('dark');
+                } else {
+                    setColorMode('light');
+                }
             }
         },
-        [forceDark, setForceDark],
+        [colorMode, setColorMode, prefersDarkMode],
     );
 
     useEffect(() => {
