@@ -1,7 +1,7 @@
-import { Typography, Box, CircularProgress } from '@material-ui/core';
+import { Typography, Box, CircularProgress } from '@mui/material';
 import Head from 'next/head';
 import React, { FC } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const LoadingBase = styled.div`
     display: grid;

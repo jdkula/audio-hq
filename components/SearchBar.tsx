@@ -4,12 +4,12 @@
  * Provides a search bar for the explorer!
  */
 
-import { TextField, InputAdornment, Tooltip, IconButton } from '@material-ui/core';
+import { TextField, InputAdornment, Tooltip, IconButton } from '@mui/material';
 import React, { FC } from 'react';
 
-import SearchIcon from '@material-ui/icons/Search';
-import CloseIcon from '@material-ui/icons/Close';
-import styled from 'styled-components';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import styled from '@emotion/styled';
 
 const SearchContainer = styled.div`
     display: flex;
@@ -42,14 +42,14 @@ const SearchBar: FC<SearchBarProps> = ({ searching, searchText, setSearching, se
                 }}
             />
             <Tooltip placement="bottom" title="Close search" arrow>
-                <IconButton onClick={() => setSearching(false)}>
+                <IconButton onClick={() => setSearching(false)} size="large">
                     <CloseIcon />
                 </IconButton>
             </Tooltip>
         </SearchContainer>
     ) : (
         <Tooltip placement="left" title="Search all files and folders" arrow>
-            <IconButton onClick={() => setSearching(true)}>
+            <IconButton onClick={() => setSearching(true)} size="large">
                 <SearchIcon />
             </IconButton>
         </Tooltip>

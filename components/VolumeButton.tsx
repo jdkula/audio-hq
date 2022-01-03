@@ -5,7 +5,7 @@
  */
 
 import React, { FC } from 'react';
-import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@material-ui/icons';
+import { VolumeUp, VolumeDown, VolumeMute, VolumeOff } from '@mui/icons-material';
 
 const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;

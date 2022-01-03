@@ -5,19 +5,19 @@
  * download, or delete a song.
  */
 
-import { Tooltip, IconButton } from '@material-ui/core';
+import { Tooltip, IconButton } from '@mui/material';
 import React, { FC, useContext } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { File } from '~/lib/Workspace';
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
 
-import DeleteForever from '@material-ui/icons/DeleteForever';
-import DownloadIcon from '@material-ui/icons/CloudDownload';
-import EditIcon from '@material-ui/icons/Edit';
-import OfflinePinIcon from '@material-ui/icons/OfflinePin';
+import DeleteForever from '@mui/icons-material/DeleteForever';
+import DownloadIcon from '@mui/icons-material/CloudDownload';
+import EditIcon from '@mui/icons-material/Edit';
+import OfflinePinIcon from '@mui/icons-material/OfflinePin';
 import useAlt from '~/lib/useAlt';
-import { Favorite, FavoriteBorder } from '@material-ui/icons';
+import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import useFavorites from '~/lib/useFavorites';
 
 const StatusContainerPlacer = styled.div`
@@ -71,14 +71,14 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
         <StatusContainerPlacer>
             <StatusContainer>
                 <Tooltip placement="left" title="Rename" arrow>
-                    <IconButton onClick={() => setEditing(!editing)}>
+                    <IconButton onClick={() => setEditing(!editing)} size="large">
                         <EditIcon color={editing ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
                 {downloadJob && (
                     <Tooltip placement="left" title="Downloading..." arrow>
                         {downloadJob.progress ? (
-                            <CircularProgressWithLabel variant="static" value={downloadJob.progress * 100} />
+                            <CircularProgressWithLabel variant="determinate" value={downloadJob.progress * 100} />
                         ) : (
                             <CircularProgressWithLabel />
                         )}
@@ -86,14 +86,14 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                 )}
                 {cached && (
                     <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
-                        <IconButton onClick={save}>
+                        <IconButton onClick={save} size="large">
                             <OfflinePinIcon />
                         </IconButton>
                     </Tooltip>
                 )}
                 {!downloadJob && !cached && (
                     <Tooltip placement="left" title="Audio on the cloud (click to cache)" arrow>
-                        <IconButton onClick={download}>
+                        <IconButton onClick={download} size="large">
                             <DownloadIcon />
                         </IconButton>
                     </Tooltip>
@@ -101,13 +101,13 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
 
                 {altKey ? (
                     <Tooltip placement="left" title="Delete" arrow>
-                        <IconButton onClick={() => setDelete(true)}>
+                        <IconButton onClick={() => setDelete(true)} size="large">
                             <DeleteForever />
                         </IconButton>
                     </Tooltip>
                 ) : (
                     <Tooltip placement="left" title="Favorite (alt/option to delete)" arrow>
-                        <IconButton onClick={toggleFavorite}>
+                        <IconButton onClick={toggleFavorite} size="large">
                             {favs.favorites.has(file.id) ? <Favorite /> : <FavoriteBorder />}
                         </IconButton>
                     </Tooltip>

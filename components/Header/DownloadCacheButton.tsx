@@ -6,13 +6,13 @@
  * updates as they are downloading.
  */
 
-import { Box, IconButton, Tooltip } from '@material-ui/core';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import React, { useContext, useState, FC } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
-import { GetApp } from '@material-ui/icons';
+import { GetApp } from '@mui/icons-material';
 
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const DownloadButtonContainer = styled.div`
     color: white;
@@ -51,7 +51,7 @@ const DownloadCacheButton: FC = () => {
         <DownloadButtonContainer>
             {!downloading && (
                 <Tooltip arrow placement="bottom" title="Preload all tracks">
-                    <IconButton color="inherit" onClick={onDownload}>
+                    <IconButton color="inherit" onClick={onDownload} size="large">
                         <GetApp />
                     </IconButton>
                 </Tooltip>
@@ -63,7 +63,7 @@ const DownloadCacheButton: FC = () => {
                             color="secondary"
                             textColor="inherit"
                             value={downloadPercent}
-                            variant={!downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'static'}
+                            variant={!downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'determinate'}
                         />
                     </Tooltip>
                 </Box>

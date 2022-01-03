@@ -5,7 +5,7 @@
  * truly wants to delete the given file.
  */
 
-import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { File as WSFile } from '~/lib/Workspace';

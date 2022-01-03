@@ -7,7 +7,7 @@
 
 import React, { FC } from 'react';
 
-import { Button, Dialog, DialogProps, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
+import { Button, Dialog, DialogProps, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 const FolderDeleteDialog: FC<DialogProps & { folder: string; onConfirm: () => void }> = ({
     folder,

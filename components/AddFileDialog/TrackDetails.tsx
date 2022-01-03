@@ -7,9 +7,9 @@
  * Optionally displays a placeholder with the file's name.
  */
 
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import React, { FC, RefObject } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const TrackDetailsBase = styled.div`
     display: grid;

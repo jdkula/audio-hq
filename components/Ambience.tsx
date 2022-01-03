@@ -5,15 +5,15 @@
  * Displays controls for all ambient tracks playing in the workspace.
  */
 
-import { Paper, Tooltip, Typography } from '@material-ui/core';
+import { Paper, Tooltip, Typography } from '@mui/material';
 import { FunctionComponent, useContext } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver } from '../lib/Workspace';
 
-import AddIcon from '@material-ui/icons/Add';
-import { BlurOn } from '@material-ui/icons';
+import AddIcon from '@mui/icons-material/Add';
+import { BlurOn } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 import { sfxAtom } from '~/lib/atoms';
 

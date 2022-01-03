@@ -6,16 +6,16 @@
  * as well as is the interface by which users may play music.
  */
 
-import { Breadcrumbs, Button, Divider, IconButton, Paper, Tooltip } from '@material-ui/core';
+import { Breadcrumbs, Button, Divider, IconButton, Paper, Tooltip } from '@mui/material';
 import React, { FC, useContext, useState } from 'react';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import { File as WSFile, Workspace } from '~/lib/Workspace';
 
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import { FileManagerContext } from '~/lib/useFileManager';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { mutate } from 'swr';
 import { Set, List } from 'immutable';
 import FileEntry from './FileEntry';
@@ -26,7 +26,7 @@ import { useRecoilState } from 'recoil';
 import { pathAtom } from '~/lib/atoms';
 import SearchBar from './SearchBar';
 import useFavorites from '~/lib/useFavorites';
-import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@material-ui/icons';
+import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
 import useAlt from '~/lib/useAlt';
 import _ from 'lodash';
 
@@ -181,7 +181,7 @@ export const Explorer: FC = () => {
     const breadcrumbs = ['Home', ...path].map((el, i) => {
         const partial = path.slice(0, i);
         return (
-            <Button key={i} onClick={() => setPath(partial)}>
+            <Button key={i} onClick={() => setPath(partial)} color={i === path.length ? 'primary' : 'inherit'}>
                 {el}
             </Button>
         );
@@ -242,7 +242,7 @@ export const Explorer: FC = () => {
                     />
                 )}
                 <Tooltip arrow placement="bottom" title="Show only favorites">
-                    <IconButton onClick={() => setViewingFavorites(!viewingFavorites)}>
+                    <IconButton onClick={() => setViewingFavorites(!viewingFavorites)} size="large">
                         {viewingFavorites ? <Favorite color="primary" /> : <FavoriteBorder />}
                     </IconButton>
                 </Tooltip>
@@ -251,7 +251,9 @@ export const Explorer: FC = () => {
                     placement="bottom"
                     title={altKey ? 'Shuffle folder' : 'Play and loop folder (alt/option to shuffle)'}
                 >
-                    <IconButton onClick={playCurrent}>{altKey ? <Shuffle /> : <PlaylistPlay />}</IconButton>
+                    <IconButton onClick={playCurrent} size="large">
+                        {altKey ? <Shuffle /> : <PlaylistPlay />}
+                    </IconButton>
                 </Tooltip>
             </ExplorerToolbar>
             <FolderAddDialog files={combining} cancel={() => setCombining([])} />

@@ -6,10 +6,10 @@
  * of Audio HQ's personal global volume.
  */
 
-import { Typography, Popover, Slider, IconButton, Tooltip, useMediaQuery, useTheme } from '@material-ui/core';
+import { Typography, Popover, Slider, IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import React, { useState, FC } from 'react';
 import { useRecoilState } from 'recoil';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 import { globalVolumeAtom } from '~/lib/atoms';
 import VolumeButton from '../VolumeButton';
@@ -27,7 +27,7 @@ const SliderContainer = styled.div`
 
 const GlobalVolumeSlider: FC = () => {
     const theme = useTheme();
-    const isXSmall = useMediaQuery(theme.breakpoints.down('xs'));
+    const isXSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const [volumeOpen, setVolumeOpen] = useState(false);
@@ -37,7 +37,12 @@ const GlobalVolumeSlider: FC = () => {
         <Container>
             {!isXSmall && <Typography variant="body1">Your Volume Controls</Typography>}
             <Tooltip title="Your Volume" placement="bottom" arrow>
-                <IconButton color="inherit" ref={(r) => setAnchorEl(r)} onClick={() => setVolumeOpen(true)}>
+                <IconButton
+                    color="inherit"
+                    ref={(r) => setAnchorEl(r)}
+                    onClick={() => setVolumeOpen(true)}
+                    size="large"
+                >
                     <VolumeButton volume={globalVolume} />
                 </IconButton>
             </Tooltip>

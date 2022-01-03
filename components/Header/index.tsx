@@ -6,17 +6,17 @@
  * volume, cache all workspace songs, and add tracks.
  */
 
-import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden, Link } from '@material-ui/core';
+import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden, Link } from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
 import React, { useContext, FunctionComponent, useState, FC } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
-import { Add } from '@material-ui/icons';
+import { Add } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 
 import { pathAtom } from '~/lib/atoms';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
@@ -40,7 +40,7 @@ const Spacer = styled.div`
 
 const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => (
     <>
-        <Hidden xsDown>
+        <Hidden smDown>
             <Button variant="contained" color="secondary" onClick={startAdding} startIcon={<Add />}>
                 Add a Track
             </Button>
@@ -64,7 +64,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const allCached = fileManager.cached.size === workspace.files.length;
 
     const theme = useTheme();
-    const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSmall = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <AppBar position="static" style={{ gridArea: 'header' }}>

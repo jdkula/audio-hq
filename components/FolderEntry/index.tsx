@@ -7,13 +7,13 @@
  * rename a folder.
  */
 
-import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
-import FolderIcon from '@material-ui/icons/Folder';
+import React, { FC, forwardRef, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
+import FolderIcon from '@mui/icons-material/Folder';
 import { Droppable } from 'react-beautiful-dnd';
 
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import EditIcon from '@material-ui/icons/Edit';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 
 import {
     Button,
@@ -24,11 +24,12 @@ import {
     Paper,
     ClickAwayListener,
     IconButtonProps,
-} from '@material-ui/core';
+    ButtonProps,
+} from '@mui/material';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { DeleteForever } from '@material-ui/icons';
-import styled from 'styled-components';
+import { DeleteForever } from '@mui/icons-material';
+import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
 
 const FolderContainer = styled(Paper)`
@@ -64,9 +65,11 @@ const EditorContainer = styled.div`
     margin: 0.5rem;
 `;
 
-const SaveButton = styled(Button).attrs({ variant: 'outlined', color: 'primary' })`
+const SaveButtonBase = styled(Button)`
     margin: 0 0.75rem;
 `;
+
+const SaveButton: FC<ButtonProps> = (props) => <SaveButtonBase {...props} variant="outlined" color="primary" />;
 
 const MainContainer = styled.div`
     display: flex;
@@ -90,7 +93,9 @@ const FolderButton: FC<FolderButtonProps> = ({ dragging, up, ...props }) => {
 
     return (
         <Tooltip title="Click to enter folder" placement="left" arrow>
-            <IconButton {...props}>{icon}</IconButton>
+            <IconButton {...props} size="large">
+                {icon}
+            </IconButton>
         </Tooltip>
     );
 };
@@ -192,12 +197,12 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const controls = (
         <ControlsContainer>
             <Tooltip placement="left" title="Rename" arrow>
-                <IconButton onClick={startRenaming}>
+                <IconButton onClick={startRenaming} size="large">
                     <EditIcon color={renaming ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
             <Tooltip placement="left" title="Delete Folder" arrow>
-                <IconButton onClick={onDeleteInitiate}>
+                <IconButton onClick={onDeleteInitiate} size="large">
                     <DeleteForever />
                 </IconButton>
             </Tooltip>

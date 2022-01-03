@@ -65,13 +65,14 @@ export interface WorkspaceState {
 }
 
 export interface StoredWorkspace {
+    _id: string;
     name: string;
     files: File[];
     state: WorkspaceState;
     extends?: ID[];
 }
 
-export interface Workspace extends StoredWorkspace {
+export interface Workspace extends Omit<StoredWorkspace, '_id'> {
     jobs: Job[];
 }
 

@@ -4,11 +4,11 @@
  * Provides fields to accept a URL to import or file to upload.
  */
 
-import { Accordion, AccordionSummary, AccordionDetails, TextField, Typography } from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+import { Accordion, AccordionSummary, AccordionDetails, TextField, Typography } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
 import React, { FC } from 'react';
 import { useDropzone } from 'react-dropzone';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 /** Container to drag a file on top of. */
 const DropRoot = styled.div<{ isDragActive?: boolean }>`

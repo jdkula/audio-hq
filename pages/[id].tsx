@@ -5,8 +5,8 @@ import { Explorer } from '~/components/Explorer';
 import { Ambience } from '~/components/Ambience';
 import { GetServerSideProps } from 'next';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import styled from 'styled-components';
-import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@material-ui/core';
+import styled from '@emotion/styled';
+import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
 import Root from '~/components/Root';
 import useLocalRecents from '~/lib/useLocalRecents';
 
@@ -24,7 +24,7 @@ const TabContainer = styled.div`
 const MainApp: FC = () => {
     const { state, resolver } = useContext(WorkspaceContext);
     const theme = useTheme();
-    const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSmall = useMediaQuery(theme.breakpoints.down('md'));
 
     const [tabValue, setTabValue] = useState(0);
 
@@ -74,7 +74,7 @@ const Container = styled.div`
         'ambience   explorer explorer';
     height: 100vh;
 
-    ${({ theme }) => theme.breakpoints.down('sm')} {
+    ${({ theme }) => theme.breakpoints.down('md')} {
         grid-template-columns: 100%;
         grid-template-rows: 65px 45px auto;
         grid-template-areas:

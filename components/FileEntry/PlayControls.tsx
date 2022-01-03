@@ -5,17 +5,17 @@
  * or as ambience.
  */
 
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { File } from '~/lib/Workspace';
 
-import PlayArrow from '@material-ui/icons/PlayArrow';
-import AddIcon from '@material-ui/icons/Add';
-import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
+import PlayArrow from '@mui/icons-material/PlayArrow';
+import AddIcon from '@mui/icons-material/Add';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { Tooltip, IconButton } from '@material-ui/core';
+import { Tooltip, IconButton } from '@mui/material';
 import { WorkspaceContext } from '~/lib/useWorkspace';
-import { BlurOn } from '@material-ui/icons';
+import { BlurOn } from '@mui/icons-material';
 import useAlt from '~/lib/useAlt';
 
 const PlayControlsContainer = styled.div`
@@ -73,7 +73,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     return (
         <PlayControlsContainer>
             <Tooltip title="Play File" placement="left" arrow>
-                <IconButton onClick={onPlay}>
+                <IconButton onClick={onPlay} size="large">
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
@@ -83,13 +83,13 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             </Tooltip>
             {altKey ? (
                 <Tooltip title="Play File As SFX" placement="left" arrow>
-                    <IconButton onClick={onSfx}>
+                    <IconButton onClick={onSfx} size="large">
                         <BlurOn color={highlightingSfx ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
             ) : (
                 <Tooltip title="Play File As Ambience (alt/option to play as SFX)" placement="left" arrow>
-                    <IconButton onClick={onAmbience}>
+                    <IconButton onClick={onAmbience} size="large">
                         <AddIcon
                             color={
                                 workspace.state.ambience.find((ps) => ps.queue.includes(file.id))

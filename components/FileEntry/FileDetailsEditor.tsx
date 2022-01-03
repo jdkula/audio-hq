@@ -4,9 +4,9 @@
  * Provides an editor for the track details of a given file.
  */
 
-import { ClickAwayListener, TextField, Divider, Button } from '@material-ui/core';
+import { ClickAwayListener, TextField, Divider, Button, Box } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import { FileManagerContext } from '~/lib/useFileManager';
 import { File } from '~/lib/Workspace';
 
@@ -94,13 +94,13 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
                         onKeyDown={handleKeyDown}
                     />
                 </TextFieldContainer>
-                <Divider variant="middle" orientation="vertical" flexItem />
+                <Box mx="4px" />
                 <ControlsContainer>
                     <Button fullWidth onClick={saveEdits} variant="outlined" color="primary">
                         Save
                     </Button>
                     <Spacer space="0.25rem" />
-                    <Button fullWidth onClick={finishEditing} variant="outlined">
+                    <Button fullWidth onClick={finishEditing} variant="outlined" color="inherit">
                         Cancel
                     </Button>
                 </ControlsContainer>

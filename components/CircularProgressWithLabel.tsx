@@ -5,7 +5,7 @@
  * Displays a percentage inside a circular progress indicator.
  */
 
-import { Box, CircularProgress, CircularProgressProps, Typography, TypographyProps } from '@material-ui/core';
+import { Box, CircularProgress, CircularProgressProps, Typography, TypographyProps } from '@mui/material';
 import React, { FC, forwardRef } from 'react';
 
 const CircularProgressWithLabel: FC<CircularProgressProps & { textColor?: TypographyProps['color'] }> = forwardRef(

@@ -77,8 +77,8 @@ const useFileManager = (workspaceId: string): FileManager => {
     useEffect(() => {
         Promise.all(jobs.filter((j) => j.status === 'done').map((j) => Axios.delete(`/api/jobs/${j.jobId}`))).then(
             () => {
-                mutate(`/api/${workspaceId}/files`);
-                mutate(`/api/${workspaceId}/jobs`);
+                mutate(`/api/${encodeURIComponent(workspaceId)}/files`);
+                mutate(`/api/${encodeURIComponent(workspaceId)}/jobs`);
             },
         );
     }, [jobs]);
@@ -204,7 +204,7 @@ const useFileManager = (workspaceId: string): FileManager => {
             description: description,
             options: options,
         });
-        mutate(`/api/${workspaceId}/jobs`);
+        mutate(`/api/${encodeURIComponent(workspaceId)}/jobs`);
         return res.data;
     };
 
@@ -235,7 +235,7 @@ const useFileManager = (workspaceId: string): FileManager => {
                         ),
                     ),
             });
-            mutate(`/api/${workspaceId}/jobs`, (jobs: Job[]) => [...jobs, res.data]);
+            mutate(`/api/${encodeURIComponent(workspaceId)}/jobs`, (jobs: Job[]) => [...jobs, res.data]);
             return res.data;
         } finally {
             setWorking((working) => working.filterNot((v) => v.jobId === name));
@@ -250,15 +250,20 @@ const useFileManager = (workspaceId: string): FileManager => {
             // ignore
         }
         setCached((cached) => cached.remove(id));
-        mutate(`/api/${workspaceId}/files`, (files?: WSFile[]) => files?.filter((f) => f.id !== id), false);
+        mutate(
+            `/api/${encodeURIComponent(workspaceId)}/files`,
+            (files?: WSFile[]) => files?.filter((f) => f.id !== id),
+            false,
+        );
         await Axios.delete(`/api/files/${id}`);
-        mutate(`/api/${workspaceId}/files`);
+        mutate(`/api/${encodeURIComponent(workspaceId)}/files`);
     };
 
     const update = async (id: string, update: Partial<WSFile & Reorderable>) => {
         mutate(
-            `/api/${workspaceId}/files`,
-            (files: WSFile[]) => {
+            `/api/${encodeURIComponent(workspaceId)}/files`,
+            (files: WSFile[] | undefined) => {
+                if (!files) return;
                 files = files.map((file) => (file.id !== id ? file : { ...file, ...update }));
                 if (update.reorder) {
                     const target = update.reorder.before || update.reorder.after;
@@ -278,7 +283,7 @@ const useFileManager = (workspaceId: string): FileManager => {
             false,
         );
         await Axios.put(`/api/files/${id}`, update);
-        mutate(`/api/${workspaceId}/files`);
+        mutate(`/api/${encodeURIComponent(workspaceId)}/files`);
     };
 
     const downloadAll = async (
@@ -290,7 +295,7 @@ const useFileManager = (workspaceId: string): FileManager => {
             await cache.current.allDocs<{ workspace?: string }>({ include_docs: true })
         ).rows.filter((row) => (row.doc?.workspace ?? workspaceId) === workspaceId);
         const idSet = Set(alreadyDownloaded.map((doc) => doc.id));
-        const files: WSFile[] = (await Axios.get(`/api/${workspaceId}/files`)).data;
+        const files: WSFile[] = (await Axios.get(`/api/${encodeURIComponent(workspaceId)}/files`)).data;
         console.log('Already cached ', alreadyDownloaded.length, 'of', files.length, 'total');
         onStart?.(alreadyDownloaded.length, files.length);
 

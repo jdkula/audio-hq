@@ -8,7 +8,7 @@
 import React, { FC, useState, useContext, KeyboardEvent } from 'react';
 
 import { File as WSFile } from '~/lib/Workspace';
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
 import { FileManagerContext } from '~/lib/useFileManager';
 
 const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, cancel }) => {

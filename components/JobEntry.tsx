@@ -5,13 +5,13 @@
  * of jobs processing on the server.
  */
 
-import { Box, IconButton, LinearProgress, Paper, Tooltip, Typography } from '@material-ui/core';
+import { Box, IconButton, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import Axios from 'axios';
 import { FC } from 'react';
 import Job from '~/lib/Job';
 
-import CloseIcon from '@material-ui/icons/Close';
-import styled from 'styled-components';
+import CloseIcon from '@mui/icons-material/Close';
+import styled from '@emotion/styled';
 
 const JobContainer = styled(Paper)`
     border-radius: 1rem;
@@ -54,7 +54,7 @@ const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job, onCanceled }
                         <Typography variant="button">{percent}%</Typography>
                     </Box>
                     <Tooltip placement="top" title="Hide job" arrow>
-                        <IconButton onClick={cancelJob}>
+                        <IconButton onClick={cancelJob} size="large">
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>

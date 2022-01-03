@@ -7,15 +7,15 @@
 
 import { PlayState, PlayStateResolver } from '~/lib/Workspace';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { IconButton, Popover, Slider, Tooltip, Typography } from '@material-ui/core';
+import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material';
 import useAudio from '~/lib/useAudio';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import VolumeButton from './VolumeButton';
 
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import PauseIcon from '@material-ui/icons/Pause';
-import StopIcon from '@material-ui/icons/Stop';
-import SpeedIcon from '@material-ui/icons/Speed';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import StopIcon from '@mui/icons-material/Stop';
+import SpeedIcon from '@mui/icons-material/Speed';
 import toTimestamp from '~/lib/toTimestamp';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 
@@ -108,7 +108,9 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
         <AudioControlsContainer>
             <ControlsContainer>
                 <Tooltip title={paused ? 'Play' : 'Pause'} placement="bottom" arrow>
-                    <IconButton onClick={onPlayPause}>{paused ? <PlayArrowIcon /> : <PauseIcon />}</IconButton>
+                    <IconButton onClick={onPlayPause} size="large">
+                        {paused ? <PlayArrowIcon /> : <PauseIcon />}
+                    </IconButton>
                 </Tooltip>
                 <Slider
                     value={tempSeek ?? time}
@@ -126,7 +128,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
             </ControlsContainer>
             <ControlsContainer>
                 <Tooltip title="Volume (for everyone!)" placement="bottom" arrow>
-                    <IconButton onClick={(e) => serVolumeAnchor(e.currentTarget)}>
+                    <IconButton onClick={(e) => serVolumeAnchor(e.currentTarget)} size="large">
                         <VolumeButton volume={volume} />
                     </IconButton>
                 </Tooltip>
@@ -152,7 +154,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
                     />
                 </Popover>
                 <Tooltip title="Speed (for everyone!)" placement="bottom" arrow>
-                    <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)}>
+                    <IconButton onClick={(e) => setSpeedAnchor(e.currentTarget)} size="large">
                         <SpeedIcon />
                     </IconButton>
                 </Tooltip>
@@ -176,7 +178,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={() => resolver(null)}>
+                    <IconButton onClick={() => resolver(null)} size="large">
                         <StopIcon />
                     </IconButton>
                 </Tooltip>

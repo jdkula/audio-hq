@@ -10,10 +10,10 @@
  * Shift+Enter anywhere submits the form, resets it, and focuses the title input.
  */
 
-import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { ClipboardEvent, FC, KeyboardEvent, useContext, useRef, useState } from 'react';
 import { FileManagerContext } from '~/lib/useFileManager';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import ConvertOptions from '~/lib/ConvertOptions';
 import TrackOptions, { TrackRef } from './TrackOptions';
 import TrackImportDetails from './TrackImportDetails';

@@ -3,6 +3,7 @@ import { mongofiles } from '../db';
 import { ObjectId } from 'mongodb';
 
 import fs from 'promise-fs';
+import { WriteStream } from 'fs';
 
 export default class MongoDBFileSystem implements FileSystem {
     async read(id: string): Promise<FileInfo> {
@@ -44,7 +45,7 @@ export default class MongoDBFileSystem implements FileSystem {
                     uploaded += chunk.length;
                     onProgress?.(size / uploaded);
                 })
-                .pipe(upload)
+                .pipe(upload as unknown as WriteStream)
                 .on('error', (error) => {
                     if (error) reject(error);
                 })

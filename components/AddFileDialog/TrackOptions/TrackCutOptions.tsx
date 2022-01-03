@@ -5,9 +5,9 @@
  * relating to cutting a track to a given start/end time.
  */
 
-import { Accordion, Typography, AccordionDetails, InputAdornment, TextField } from '@material-ui/core';
+import { Accordion, Typography, AccordionDetails, InputAdornment, TextField } from '@mui/material';
 import React, { FC } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import AccordionCheckboxHeader from './AccordionCheckboxHeader';
 import TrackOptionsContainer from './TrackOptionsContainer';
 
@@ -25,7 +25,7 @@ const TimeOptionsContainer = styled.div`
     justify-content: center;
     width: 100%;
 
-    ${({ theme }) => theme.breakpoints.down('xs')} {
+    ${({ theme }) => theme.breakpoints.down('sm')} {
         flex-direction: column;
     }
 `;

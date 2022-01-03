@@ -1,6 +1,6 @@
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { FC } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const ListHeader: FC = ({ children }) => (
     <div style={{ borderBottom: '1px solid #ddd' }}>

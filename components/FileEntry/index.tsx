@@ -7,11 +7,11 @@
  * display file information.
  */
 
-import { Paper } from '@material-ui/core';
+import { Paper } from '@mui/material';
 import React, { FC, useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { File as WSFile } from '~/lib/Workspace';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
@@ -37,7 +37,7 @@ export const FileContainer = styled(Paper)`
         background-color: #eee;
     }
 
-    ${({ theme }) => theme.breakpoints.down('xs')} {
+    ${({ theme }) => theme.breakpoints.down('sm')} {
         grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto;
         grid-template-areas:

@@ -5,7 +5,7 @@
  * the AccordionDetails for all options.
  */
 
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const TrackOptionsContainer = styled.div`
     display: flex;

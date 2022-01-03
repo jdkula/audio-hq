@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import {
     Box,
     CircularProgress,
@@ -14,27 +14,32 @@ import {
     Link,
     Tooltip,
     Typography,
-} from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
+} from '@mui/material';
+import TextField from '@mui/material/TextField';
 import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
-import styled, { createGlobalStyle } from 'styled-components';
+import styled from '@emotion/styled';
 import PouchDB from 'pouchdb';
 import useLocalRecents from '~/lib/useLocalRecents';
 import ListHeader from '~/components/ListHeader';
+import { css, Global } from '@emotion/react';
 
-const GlobalFull = createGlobalStyle`
-    html {
-        height: 100%;
-    }
-    body {
-        height: 100%;
-    }
-    #__next {
-        height: 100%;
-    }
-`;
+const GlobalFull = () => (
+    <Global
+        styles={css`
+            html {
+                height: 100%;
+            }
+            body {
+                height: 100%;
+            }
+            #__next {
+                height: 100%;
+            }
+        `}
+    />
+);
 
 const OuterContainer = styled(Container)`
     height: 100%;
@@ -173,7 +178,7 @@ export default function Home(): React.ReactElement {
             <InnerContainer>
                 <Tooltip placement="top" arrow title="Double-click/tap to delete audio cache" enterDelay={500}>
                     <Logo onDoubleClick={() => setDeleting(true)}>
-                        <Hidden xsDown>
+                        <Hidden smDown>
                             <Typography variant="h1">Audio HQ</Typography>
                         </Hidden>
                         <Hidden smUp>

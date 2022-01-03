@@ -4,10 +4,10 @@
  * Provides an AccordionSummary with a checkbox.
  */
 
-import { AccordionSummary, Checkbox, Typography } from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+import { AccordionSummary, Checkbox, Typography } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
 import React, { FC } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 
 const AccordionCheckboxContainer = styled.div`
     display: flex;

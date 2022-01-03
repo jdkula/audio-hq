@@ -5,10 +5,10 @@
  * conversion options, such as cutting tracks or fading them in/out.
  */
 
-import { Accordion, AccordionDetails, AccordionSummary } from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
 import React, { forwardRef, ForwardRefRenderFunction, useEffect, useImperativeHandle, useState } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import ConvertOptions from '~/lib/ConvertOptions';
 import TrackCutOptions from './TrackCutOptions';
 import TrackFadeOptions from './TrackFadeOptions';

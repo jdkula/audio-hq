@@ -6,38 +6,31 @@
  */
 
 import Document, { DocumentContext, DocumentInitialProps } from 'next/document';
-import { ServerStyleSheet } from 'styled-components';
 import { resetServerContext } from 'react-beautiful-dnd';
 import React from 'react';
-import { ServerStyleSheets } from '@material-ui/core';
+import ServerStyleSheets from '@mui/styles/ServerStyleSheets';
 
 class MyDocument extends Document {
     static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
-        const sheet = new ServerStyleSheet();
         const muiSheets = new ServerStyleSheets();
         resetServerContext();
         const originalRenderPage = ctx.renderPage;
 
-        try {
-            ctx.renderPage = () =>
-                originalRenderPage({
-                    enhanceApp: (App) => (props) => sheet.collectStyles(muiSheets.collect(<App {...props} />)),
-                });
+        ctx.renderPage = () =>
+            originalRenderPage({
+                enhanceApp: (App) => (props) => muiSheets.collect(<App {...props} />),
+            });
 
-            const initialProps = await Document.getInitialProps(ctx);
-            return {
-                ...initialProps,
-                styles: (
-                    <>
-                        {initialProps.styles}
-                        {muiSheets.getStyleElement()}
-                        {sheet.getStyleElement()}
-                    </>
-                ),
-            };
-        } finally {
-            sheet.seal();
-        }
+        const initialProps = await Document.getInitialProps(ctx);
+        return {
+            ...initialProps,
+            styles: (
+                <>
+                    {initialProps.styles}
+                    {muiSheets.getStyleElement()}
+                </>
+            ),
+        };
     }
 }
 

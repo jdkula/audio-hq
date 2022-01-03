@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle } from '@material-ui/core';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import React, { FC } from 'react';
 import useAudioManager from '~/lib/useAudioManager';
 import useFileManager, { FileManagerContext } from '~/lib/useFileManager';

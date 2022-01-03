@@ -5,13 +5,13 @@
  * audio controls for the primary track.
  */
 
-import { Typography, Box, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { Typography, Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { FunctionComponent, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
-import styled from 'styled-components';
-import PlayIcon from '@material-ui/icons/PlayArrow';
+import styled from '@emotion/styled';
+import PlayIcon from '@mui/icons-material/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import usePeriodicEffect from '~/lib/usePeriodicEffect';
 import ListHeader from './ListHeader';
@@ -23,7 +23,7 @@ const MainPlayerContainer = styled.div`
     overflow: hidden;
 
     display: grid;
-    grid-template-rows: min-content min-content min-content;
+    grid-template-rows: min-content min-content auto auto;
     grid-template-columns: auto;
     row-gap: 1rem;
     border: 1px solid black;
@@ -34,6 +34,12 @@ const MainPlayerContainer = styled.div`
     text-align: center;
 `;
 
+const PlayTypography = styled(Typography)`
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+`;
+
 export const MainPlayer: FunctionComponent<{
     state: PlayState | null;
     resolver: PlayStateResolver;
@@ -42,11 +48,9 @@ export const MainPlayer: FunctionComponent<{
         return (
             <MainPlayerContainer>
                 <Typography variant="h4">Nothing Playing</Typography>
-                <Box clone display="flex" alignItems="center" mt="0.5rem">
-                    <Typography variant="subtitle1">
-                        Use the <PlayIcon /> button to add some!
-                    </Typography>
-                </Box>
+                <PlayTypography variant="subtitle1">
+                    Use the <PlayIcon /> button to add some!
+                </PlayTypography>
             </MainPlayerContainer>
         );
     }
@@ -89,7 +93,12 @@ export const MainPlayer: FunctionComponent<{
             {tracksQueued.length > 1 && (
                 <>
                     <ListHeader>Up Next</ListHeader>
-                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    <div
+                        style={{
+                            overflowY: 'auto',
+                            placeSelf: 'stretch',
+                        }}
+                    >
                         <List>
                             {tracksQueued.map((trackName, idx) => (
                                 <ListItem button key={idx} onClick={() => skipTo(currIdx + idx)}>

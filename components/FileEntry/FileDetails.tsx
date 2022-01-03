@@ -5,9 +5,9 @@
  * that can be double-clicked to reveal an editor.
  */
 
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import React, { FC } from 'react';
-import styled from 'styled-components';
+import styled from '@emotion/styled';
 import toTimestamp from '~/lib/toTimestamp';
 import { File } from '~/lib/Workspace';
 import FileDetailsEditor from './FileDetailsEditor';
