@@ -1,5 +1,6 @@
 FROM --platform=$BUILDPLATFORM node:17-alpine AS deps-builder
 WORKDIR /audio-hq
+ENV YARN_CACHE_FOLDER=/yarn-cache
 COPY package.json yarn.lock ./
 RUN apk add --update --no-cache python3 libc6-compat && ln -sf python3 /usr/bin/python
 RUN yarn install --frozen-lockfile --network-timeout 1000000
@@ -14,9 +15,12 @@ RUN yarn build
 
 FROM node:17-alpine AS deps
 WORKDIR /audio-hq
+ENV YARN_CACHE_FOLDER=/yarn-cache
 COPY package.json yarn.lock ./
+COPY --from=deps-builder /yarn-cache /yarn-cache
+COPY --from=deps-builder /audio-hq/node_modules ./node_modules
 RUN apk add --update --no-cache python3 libc6-compat && ln -sf python3 /usr/bin/python
-RUN yarn install --frozen-lockfile --network-timeout 1000000
+RUN yarn install --frozen-lockfile --prefer-offline --network-timeout 1000000
 
 FROM deps AS deps-prod
 WORKDIR /audio-hq
