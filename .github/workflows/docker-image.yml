@@ -25,4 +25,4 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_PASSWORD }}
             - name: Build the Docker image
-              run: docker buildx build --platform linux/arm64,linux/amd64 -t jdkula/audio-hq:latest -t jdkula/audio-hq:$(date +%Y-%m-%d.%H-%M-%S) -t jdkula/audio-hq:master --push .
+              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:$(date +%Y-%m-%d.%H-%M-%S) -t jdkula/audio-hq:master --push .
