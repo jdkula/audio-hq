@@ -5,7 +5,7 @@
  * audio controls for the primary track.
  */
 
-import { Typography, Box } from '@material-ui/core';
+import { Typography, Box, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
 import { FunctionComponent, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
@@ -14,6 +14,7 @@ import styled from 'styled-components';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import usePeriodicEffect from '~/lib/usePeriodicEffect';
+import ListHeader from './ListHeader';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -22,7 +23,7 @@ const MainPlayerContainer = styled.div`
     overflow: hidden;
 
     display: grid;
-    grid-template-rows: min-content min-content;
+    grid-template-rows: min-content min-content min-content;
     grid-template-columns: auto;
     row-gap: 1rem;
     border: 1px solid black;
@@ -59,6 +60,17 @@ export const MainPlayer: FunctionComponent<{
 
     const [currIdx, setCurrIdx] = useState(0);
 
+    const tracksQueued = useMemo(
+        () => [...trackNames.slice(currIdx + 1), ...trackNames.slice(0, currIdx + 1)],
+        [trackNames, currIdx],
+    );
+
+    const skipTo = (idx: number) => {
+        ws.resolver({
+            playing: { queue: [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)], timePlayed: 0 },
+        });
+    };
+
     usePeriodicEffect(
         500,
         () => {
@@ -70,8 +82,27 @@ export const MainPlayer: FunctionComponent<{
 
     return (
         <MainPlayerContainer>
-            <Typography variant="h5">{trackNames[currIdx] ?? 'Loading...'}</Typography>
+            <Typography variant="h5" component="span">
+                {trackNames[currIdx] ?? 'Loading...'}
+            </Typography>
             <AudioControls state={state} resolver={resolver} />
+            {tracksQueued.length > 1 && (
+                <>
+                    <ListHeader>Up Next</ListHeader>
+                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        <List>
+                            {tracksQueued.map((trackName, idx) => (
+                                <ListItem button key={idx} onClick={() => skipTo(currIdx + idx)}>
+                                    <ListItemIcon>
+                                        <PlayIcon />
+                                    </ListItemIcon>
+                                    <ListItemText>{trackName}</ListItemText>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </div>
+                </>
+            )}
         </MainPlayerContainer>
     );
 };

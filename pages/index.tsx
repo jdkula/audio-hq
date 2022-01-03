@@ -22,6 +22,7 @@ import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
 import PouchDB from 'pouchdb';
 import useLocalRecents from '~/lib/useLocalRecents';
+import ListHeader from '~/components/ListHeader';
 
 const GlobalFull = createGlobalStyle`
     html {
@@ -200,11 +201,7 @@ export default function Home(): React.ReactElement {
                     </Button>
                 )}
                 <Box mt="3em" />
-                {recents.length > 0 && (
-                    <div style={{ borderBottom: '1px solid #ddd' }}>
-                        <Typography variant="overline">Recent Workspaces</Typography>
-                    </div>
-                )}
+                {recents.length > 0 && <ListHeader>Recent Workspaces</ListHeader>}
                 <Box mt="1rem" />
                 {recents.map((recent) => (
                     <Box m="5px" key={recent}>
