@@ -7,7 +7,7 @@
  * rename a folder.
  */
 
-import React, { FC, forwardRef, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
+import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
 import FolderIcon from '@mui/icons-material/Folder';
 import { Droppable } from 'react-beautiful-dnd';
 

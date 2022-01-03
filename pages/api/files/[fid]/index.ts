@@ -45,10 +45,12 @@ async function updateFile(id: string, info: Partial<File & Reorderable>): Promis
     delete info.length;
     delete info.type;
 
-    const set: any = {};
+    const infoObj = info as Record<string, unknown>;
+
+    const set: Record<string, unknown> = {};
 
     for (const key of Object.keys(info)) {
-        set[`files.$.${key}`] = (info as any)[key];
+        set[`files.$.${key}`] = infoObj[key];
     }
 
     await (
@@ -82,7 +84,7 @@ async function delFile(id: string): Promise<void> {
                         files: {
                             id: id,
                         },
-                    } as any, // needed for some reason... the pull query works.
+                    },
                 },
             },
         },

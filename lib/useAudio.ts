@@ -1,5 +1,5 @@
 import { PlayState } from './Workspace';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { WorkspaceContext } from './useWorkspace';
 import usePeriodicEffect from './usePeriodicEffect';
 

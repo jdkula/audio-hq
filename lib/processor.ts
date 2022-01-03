@@ -91,8 +91,9 @@ export function processFile(
             const filepath = await filePath(id);
             await addFile(id, filepath, { name, workspace, path, description });
             Jobs.set(id, (job) => ({ ...job, status: 'done', result: id }));
-        } catch (e: any) {
-            Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: e.toString() }));
+        } catch (e: unknown) {
+            const err = e as Error;
+            Jobs.set(id, (job) => ({ ...job, status: 'error', errorInfo: err.toString() }));
         }
     })();
 

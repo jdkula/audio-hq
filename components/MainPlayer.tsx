@@ -5,8 +5,8 @@
  * audio controls for the primary track.
  */
 
-import { Typography, Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { FunctionComponent, useContext, useEffect, useMemo, useState } from 'react';
+import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { FunctionComponent, useContext, useMemo, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';

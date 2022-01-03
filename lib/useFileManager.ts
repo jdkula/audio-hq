@@ -173,8 +173,8 @@ const useFileManager = (workspaceId: string): FileManager => {
                             },
                         },
                     });
-                } catch (e: any) {
-                    if (e?.status === 409) {
+                } catch (e: unknown) {
+                    if (Axios.isAxiosError(e) && e.response?.status === 409) {
                         console.warn('Confict error... probably added in another tab?');
                     } else {
                         throw e;

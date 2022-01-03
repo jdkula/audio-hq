@@ -4,7 +4,7 @@
  * Provides an editor for the track details of a given file.
  */
 
-import { ClickAwayListener, TextField, Divider, Button, Box } from '@mui/material';
+import { ClickAwayListener, TextField, Button, Box } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { FileManagerContext } from '~/lib/useFileManager';
