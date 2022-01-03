@@ -21,6 +21,7 @@ import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled, { createGlobalStyle } from 'styled-components';
 import PouchDB from 'pouchdb';
+import useLocalRecents from '~/lib/useLocalRecents';
 
 const GlobalFull = createGlobalStyle`
     html {
@@ -140,26 +141,22 @@ const ConfirmDeleteAllDialog: FC<DialogProps> = (props) => {
 
 export default function Home(): React.ReactElement {
     const router = useRouter();
-    const last = router.query.last;
+    const [recents] = useLocalRecents();
 
     const [text, setText] = useState('');
-
-    useEffect(() => {
-        last && setText(last as string);
-    }, [router]);
-
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    const go = (minimal: boolean) => {
+    const go = (workspace = text) => {
         setLoading(true);
-        router.push(`/[id]${minimal ? '/minimal' : ''}`, `/${encodeURIComponent(text)}${minimal ? '/minimal' : ''}`);
+        setText(workspace);
+        router.push('/[id]', `/${encodeURIComponent(workspace)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
             e.preventDefault();
-            go(false);
+            go();
         }
     };
 
@@ -198,23 +195,24 @@ export default function Home(): React.ReactElement {
                 {loading ? (
                     <CircularProgress variant="indeterminate" />
                 ) : (
-                    <Box
-                        gridArea="button"
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="center"
-                        width="100%"
-                        mt="1rem"
-                    >
-                        <Button fullWidth size="large" variant="contained" color="primary" onClick={() => go(false)}>
-                            Join
-                        </Button>
-                        <Box m="0.5rem" />
-                        <Button size="small" variant="outlined" onClick={() => go(true)}>
-                            Join Minimal View
+                    <Button fullWidth size="large" variant="contained" color="primary" onClick={() => go()}>
+                        Join
+                    </Button>
+                )}
+                <Box mt="3em" />
+                {recents.length > 0 && (
+                    <div style={{ borderBottom: '1px solid #ddd' }}>
+                        <Typography variant="overline">Recent Workspaces</Typography>
+                    </div>
+                )}
+                <Box mt="1rem" />
+                {recents.map((recent) => (
+                    <Box m="5px" key={recent}>
+                        <Button onClick={() => go(recent)} variant="outlined">
+                            {recent}
                         </Button>
                     </Box>
-                )}
+                ))}
             </InnerContainer>
             <Box m={2}>
                 <Box display="grid" gridTemplateColumns="1fr auto 1fr" gridTemplateRows="auto" alignItems="center">

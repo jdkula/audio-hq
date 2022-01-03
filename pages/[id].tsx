@@ -1,4 +1,4 @@
-import React, { FC, FunctionComponent, useContext, useState } from 'react';
+import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Header } from '~/components/Header';
 import { MainPlayer } from '~/components/MainPlayer';
 import { Explorer } from '~/components/Explorer';
@@ -8,6 +8,7 @@ import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from 'styled-components';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@material-ui/core';
 import Root from '~/components/Root';
+import useLocalRecents from '~/lib/useLocalRecents';
 
 const TabContainer = styled.div`
     grid-area: tabcontent;
@@ -89,13 +90,23 @@ const Container = styled.div`
 
 const Host: FunctionComponent<{
     workspace: string;
-}> = ({ workspace }) => (
-    <Root workspace={workspace}>
-        <Container>
-            <MainApp />
-        </Container>
-    </Root>
-);
+}> = ({ workspace }) => {
+    const [, addRecents] = useLocalRecents();
+
+    useEffect(() => {
+        if (workspace) {
+            addRecents(workspace);
+        }
+    }, [workspace]);
+
+    return (
+        <Root workspace={workspace}>
+            <Container>
+                <MainApp />
+            </Container>
+        </Root>
+    );
+};
 
 export default Host;
 

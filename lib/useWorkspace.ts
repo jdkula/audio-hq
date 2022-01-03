@@ -14,6 +14,7 @@ import { createContext } from 'react';
 
 interface CurrentFileInfo {
     file: WSFile;
+    index: number;
     duration: number; // in s
     totalTimeBefore: number; // in s
 }
@@ -135,7 +136,7 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
 
             const totalTimeBefore = files.slice(0, idx).reduce((sum, f) => sum + f.length, 0) * 1000; // in ms
             const duration = (curDuration - totalTimeBefore) / 1000;
-            return { file: files[idx], duration: duration, totalTimeBefore };
+            return { file: files[idx], duration: duration, totalTimeBefore, index: idx };
         }
 
         for (let i = 0; i < files.length; i++) {
@@ -144,7 +145,7 @@ const useWorkspace = (workspaceId: string): WorkspaceHookResult => {
             elapsed += file.length * 1000; // in ms
             if (curDuration < elapsed) {
                 const duration = (curDuration - prevElapsed) / 1000;
-                return { file, duration, totalTimeBefore: prevElapsed / 1000 };
+                return { file, duration, totalTimeBefore: prevElapsed / 1000, index: i };
             }
         }
 

@@ -1,6 +1,7 @@
 import { PlayState } from './Workspace';
 import { useContext, useEffect, useState } from 'react';
 import { WorkspaceContext } from './useWorkspace';
+import usePeriodicEffect from './usePeriodicEffect';
 
 interface AudioInfo {
     duration: number;
@@ -14,22 +15,19 @@ const useAudio = (state: PlayState | null): AudioInfo => {
     const ws = useContext(WorkspaceContext);
     const [seek, setSeek] = useState(0);
 
-    const [n, setN] = useState(0);
-
-    useEffect(() => {
-        const handle = window.setInterval(() => setN((n) => n + 1), 500);
-        return () => window.clearInterval(handle);
-    }, []);
-
     const f = state ? ws.getCurrentTrackFrom(state) : null;
 
-    useEffect(() => {
-        const f = state ? ws.getCurrentTrackFrom(state) : null;
-        if (!f || !state || !state.startTimestamp) {
-            return;
-        }
-        setSeek(f.duration);
-    }, [state, n]);
+    usePeriodicEffect(
+        500,
+        () => {
+            const f = state ? ws.getCurrentTrackFrom(state) : null;
+            if (!f || !state || !state.startTimestamp) {
+                return;
+            }
+            setSeek(f.duration);
+        },
+        [state],
+    );
 
     return {
         duration: f?.file.length ?? 2,

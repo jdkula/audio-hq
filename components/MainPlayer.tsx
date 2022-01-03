@@ -6,13 +6,14 @@
  */
 
 import { Typography, Box } from '@material-ui/core';
-import { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { FunctionComponent, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
 import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from 'styled-components';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import { WorkspaceContext } from '~/lib/useWorkspace';
+import usePeriodicEffect from '~/lib/usePeriodicEffect';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -51,22 +52,25 @@ export const MainPlayer: FunctionComponent<{
 
     const ws = useContext(WorkspaceContext);
 
-    const [n, setN] = useState(0);
-    const [trackName, setTrackName] = useState('Loading...');
+    const trackNames = useMemo(
+        () => state.queue.map((id) => ws.files.find((f) => f.id === id)).map((f) => f?.name ?? 'Loading...'),
+        [state],
+    );
 
-    useEffect(() => {
-        const handle = window.setInterval(() => setN((n) => n + 1), 500);
-        return () => window.clearInterval(handle);
-    }, []);
+    const [currIdx, setCurrIdx] = useState(0);
 
-    useEffect(() => {
-        const trackName = ws.getCurrentTrackFrom(state)?.file.name;
-        setTrackName(trackName ?? 'Loading...');
-    }, [n, state]);
+    usePeriodicEffect(
+        500,
+        () => {
+            const idx = ws.getCurrentTrackFrom(state)?.index;
+            setCurrIdx(idx ?? 0);
+        },
+        [state],
+    );
 
     return (
         <MainPlayerContainer>
-            <Typography variant="h5">{trackName ?? 'Loading...'}</Typography>
+            <Typography variant="h5">{trackNames[currIdx] ?? 'Loading...'}</Typography>
             <AudioControls state={state} resolver={resolver} />
         </MainPlayerContainer>
     );
