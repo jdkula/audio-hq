@@ -6,6 +6,7 @@ import { Ambience } from '~/components/Ambience';
 import { GetServerSideProps } from 'next';
 import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from '@emotion/styled';
+import { css } from '@emotion/react';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
 import Root from '~/components/Root';
 import useLocalRecents from '~/lib/useLocalRecents';
@@ -58,20 +59,32 @@ const MainApp: FC = () => {
             <Header host />
             {nowPlaying}
             <Explorer />
-            <Ambience />
+            {state.ambience.length > 0 && <Ambience />}
         </>
     );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ hideAmbience?: boolean }>`
     display: grid;
     grid-template-columns: 50% 30% 20%;
     grid-template-rows: 65px 40% auto 40%;
-    grid-template-areas:
-        'header     header   header  '
-        'nowplaying explorer explorer'
-        'ambience   explorer explorer'
-        'ambience   explorer explorer';
+    ${({ hideAmbience }) =>
+        hideAmbience
+            ? css`
+                  grid-template-areas:
+                      'header     header   header  '
+                      'nowplaying explorer explorer'
+                      'nowplaying   explorer explorer'
+                      'nowplaying   explorer explorer';
+              `
+            : css`
+                  grid-template-areas:
+                      'header     header   header  '
+                      'nowplaying explorer explorer'
+                      'ambience   explorer explorer'
+                      'ambience   explorer explorer';
+              `}
+
     height: 100vh;
 
     ${({ theme }) => theme.breakpoints.down('md')} {
@@ -88,6 +101,15 @@ const Container = styled.div`
     }
 `;
 
+const Sub: FC = () => {
+    const { state } = useContext(WorkspaceContext);
+    return (
+        <Container hideAmbience={state.ambience.length === 0}>
+            <MainApp />
+        </Container>
+    );
+};
+
 const Host: FunctionComponent<{
     workspace: string;
 }> = ({ workspace }) => {
@@ -101,9 +123,7 @@ const Host: FunctionComponent<{
 
     return (
         <Root workspace={workspace}>
-            <Container>
-                <MainApp />
-            </Container>
+            <Sub />
         </Root>
     );
 };

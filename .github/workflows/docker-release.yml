@@ -1,15 +1,17 @@
-name: Docker Image CI
+name: Docker Image CI Release
 
 on:
     push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+        tags:
+            - 'release_*'
+
 jobs:
     build:
         runs-on: ubuntu-latest
         environment: dockerhub
         steps:
+            - name: Get Release Tag
+              run: echo "TAG_NAME=${${{ github.event.ref }}/refs\/tags\/release_/} >> $GITHUB_ENV"
             - name: Checkout
               uses: actions/checkout@v2
             - name: Set up QEMU
@@ -25,4 +27,4 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_PASSWORD }}
             - name: Build the Docker image
-              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:$(date +%Y-%m-%d.%H-%M-%S) -t jdkula/audio-hq:master --push .
+              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push .
