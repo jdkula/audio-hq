@@ -11,7 +11,7 @@ jobs:
         environment: dockerhub
         steps:
             - name: Get Release Tag
-              run: echo "TAG_NAME=${${{ github.event.ref }}/refs\/tags\/release_/} >> $GITHUB_ENV"
+              run: echo "TAG_NAME=${{ github.event.ref }}" | sed "s/refs\/tags\/release_//" >> $GITHUB_ENV
             - name: Checkout
               uses: actions/checkout@v2
             - name: Set up QEMU
