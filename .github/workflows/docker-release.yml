@@ -27,4 +27,4 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_PASSWORD }}
             - name: Build the Docker image
-              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push .
+              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push ./frontend

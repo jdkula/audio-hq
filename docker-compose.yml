@@ -1,13 +1,15 @@
 version: '3.9'
 volumes:
   db_data:
+  localstack_tmp:
+  localstack_data:
 services:
   audio-hq:
-    build: .
+    build: ./frontend
     ports:
       - "127.0.0.1:3000:3000"
     env_file:
-      - ".env.local"
+      - ".env"
     profiles:
       - prod-test
   postgres:
