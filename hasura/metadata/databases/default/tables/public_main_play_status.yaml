@@ -1,0 +1,3 @@
+table:
+  schema: public
+  name: main_play_status

@@ -1,27 +1,27 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaVersion": 2020,
-        "sourceType": "module",
-        "ecmaFeatures": {
-            "jsx": true
-        }
-    },
-    "settings": {
-        "react": {
-            "version": "detect"
-        }
-    },
-    "rules": {
-        "react/react-in-jsx-scope": "off",
-        "react/prop-types": "off"
-    },
     "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended",
+        "next/core-web-vitals",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
-        "plugin:@next/next/recommended"
+        "prettier"
     ],
-    "ignorePatterns": ["next.config.js"]
+    "plugins": [
+        "prettier",
+        "testing-library"
+    ],
+    "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "prettier/prettier": "warn"
+    },
+    "overrides": [
+        // Only uses Testing Library lint rules in test files
+        {
+            "files": [
+                "**/__tests2__/**/*.[jt]s?(x)",
+                "**/?(*.)+(spec|test).[jt]s?(x)"
+            ],
+            "extends": [
+                "plugin:testing-library/react"
+            ]
+        }
+    ]
 }

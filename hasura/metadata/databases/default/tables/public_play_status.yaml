@@ -1,0 +1,15 @@
+table:
+  schema: public
+  name: play_status
+object_relationships:
+  - name: workspace
+    using:
+      foreign_key_constraint_on: workspace_id
+array_relationships:
+  - name: queue
+    using:
+      foreign_key_constraint_on:
+        column: status_id
+        table:
+          schema: public
+          name: play_queue

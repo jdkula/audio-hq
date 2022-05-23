@@ -31,7 +31,7 @@ ENV NODE_ENV production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
-RUN apk add --update --no-cache ffmpeg python3 py3-pip alpine-sdk build-base libc6-compat py3-pycryptodomex py3-websockets py3-mutagen && ln -sf python3 /usr/bin/python
+RUN apk add --update --no-cache ffmpeg python3 py3-pip alpine-sdk build-base libc6-compat py3-pycryptodomex py3-websockets py3-mutagen py3-brotli && ln -sf python3 /usr/bin/python
 RUN python3 -m pip install --upgrade yt-dlp
 
 FROM runner-base AS runner

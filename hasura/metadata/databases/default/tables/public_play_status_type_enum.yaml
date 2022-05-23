@@ -1,0 +1,4 @@
+table:
+  schema: public
+  name: play_status_type_enum
+is_enum: true
