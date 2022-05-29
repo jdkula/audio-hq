@@ -1,33 +1,28 @@
 table:
   schema: public
   name: workspace
-object_relationships:
-  - name: main
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: main_status
-        insertion_order: null
-        column_mapping:
-          id: workspace_id
 array_relationships:
-  - name: ambience
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: ambience
-        insertion_order: null
-        column_mapping:
-          id: workspace_id
   - name: files
     using:
       foreign_key_constraint_on:
         column: workspace_id
         table:
           schema: public
-          name: files
+          name: file
+  - name: jobs
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: job
+  - name: play_statuses
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: play_status
 computed_fields:
   - name: main_play_id
     definition:
@@ -35,3 +30,23 @@ computed_fields:
         schema: public
         name: get_workspace_main_id
     comment: Gets the main play id of this workspace (if it exists)
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns: []
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - created_at
+        - updated_at
+      computed_fields:
+        - main_play_id
+      filter: {}
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}

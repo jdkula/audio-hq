@@ -1,0 +1,29 @@
+table:
+  schema: public
+  name: delete_job
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - file_id
+      backend_only: false
+select_permissions:
+  - role: worker
+    permission:
+      columns:
+        - assigned_worker
+        - file_id
+        - id
+      filter: {}
+update_permissions:
+  - role: worker
+    permission:
+      columns:
+        - assigned_worker
+      filter: {}
+      check: null
+delete_permissions:
+  - role: worker
+    permission:
+      filter: {}

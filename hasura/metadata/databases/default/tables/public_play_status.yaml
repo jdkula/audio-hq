@@ -12,4 +12,42 @@ array_relationships:
         column: status_id
         table:
           schema: public
-          name: play_queue
+          name: play_queue_entry
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - type
+        - volume
+        - workspace_id
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - type
+        - volume
+        - workspace_id
+      filter: {}
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - volume
+      filter: {}
+      check: null
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}

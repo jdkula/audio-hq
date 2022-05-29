@@ -1,0 +1,62 @@
+table:
+  schema: public
+  name: file
+object_relationships:
+  - name: workspace
+    using:
+      foreign_key_constraint_on: workspace_id
+insert_permissions:
+  - role: worker
+    permission:
+      check: {}
+      columns:
+        - description
+        - download_url
+        - length
+        - name
+        - path
+        - type
+        - workspace_id
+        - ordering
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - description
+        - download_url
+        - id
+        - length
+        - name
+        - path
+        - type
+        - workspace_id
+        - ordering
+      filter: {}
+  - role: worker
+    permission:
+      columns:
+        - path
+        - length
+        - description
+        - download_url
+        - name
+        - type
+        - workspace_id
+        - id
+        - ordering
+      filter: {}
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - description
+        - name
+        - path
+        - ordering
+      filter: {}
+      check: null
+delete_permissions:
+  - role: worker
+    permission:
+      filter: {}
