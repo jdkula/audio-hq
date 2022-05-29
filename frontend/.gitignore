@@ -40,3 +40,9 @@ yarn-error.log*
 deploy.sh
 deploy-prod.sh
 cookies.txt
+
+lib/generated
+schema.graphql
+graphql.schema.json
+tsconfig.tsbuildinfo
+.idea
