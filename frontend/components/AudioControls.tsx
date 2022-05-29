@@ -5,10 +5,9 @@
  * and controls for it (play/pause, seek, speed, volume).
  */
 
-import { PlayState, PlayStateResolver } from '~/lib/Workspace';
-import { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useContext, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material';
-import useAudio from '~/lib/useAudio';
+import useAudio from '../lib/audio/useAudio';
 import styled from '@emotion/styled';
 import VolumeButton from './VolumeButton';
 
@@ -16,8 +15,10 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import SpeedIcon from '@mui/icons-material/Speed';
-import toTimestamp from '~/lib/toTimestamp';
-import { WorkspaceContext } from '~/lib/useWorkspace';
+import { getTrackInfo, toTimestamp } from '../lib/utility';
+import { Play_Status_Minimum } from '../lib/graphql_type_helper';
+import { UpdateTrackMutationVariables, useStopTrackMutation, useUpdateTrackMutation } from '../lib/generated/graphql';
+import { sub } from 'date-fns';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -62,11 +63,10 @@ const Timestamp = styled.div`
 `;
 
 interface AudioControlsProps {
-    state: PlayState;
-    resolver: PlayStateResolver;
+    state: Play_Status_Minimum;
 }
 
-export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, resolver }) => {
+export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) => {
     // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
@@ -77,21 +77,27 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
 
     const { duration, paused, time, volume } = useAudio(state);
 
-    const workspace = useContext(WorkspaceContext);
+    const [, updateStatusInternal] = useUpdateTrackMutation();
+    const [, stopPlaying] = useStopTrackMutation();
+
+    const updateStatus = useCallback(
+        (update: UpdateTrackMutationVariables['update']) => updateStatusInternal({ trackId: state.id, update }),
+        [state, updateStatusInternal],
+    );
 
     // propagate blocked and/or loading state up (if the parent wants it)
     useEffect(() => setTempSpeed(state.speed), [state.speed]);
 
     const finishSeek = (to: number) => {
-        const currentTrackInfo = workspace.getCurrentTrackFrom(state);
+        const currentTrackInfo = getTrackInfo(state);
         const prev = currentTrackInfo?.totalTimeBefore ?? 0;
+        const destinationSeek = (prev + to) / state.speed;
         console.log('Seeking... with CTI', currentTrackInfo);
-        resolver({
-            timePlayed: (prev + to) / state.speed,
+        updateStatus({
+            start_timestamp: sub(new Date(), { seconds: destinationSeek }),
         });
         setTempSeek(null);
     };
-
     if (!state) {
         return <div>Waiting for Audio to Load</div>;
     }
@@ -100,8 +106,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
     // if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
 
     const onPlayPause = () => {
-        if (paused) resolver({ pauseTime: null });
-        else resolver({ pauseTime: Date.now() });
+        if (paused) updateStatus({ pause_timestamp: null });
+        else updateStatus({ pause_timestamp: new Date() });
     };
 
     return (
@@ -145,7 +151,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
                         max={1}
                         step={0.01}
                         onChangeCommitted={(_, v) => {
-                            resolver({ volume: v as number });
+                            updateStatus({ volume: v as number });
                             setTempVolume(null);
                         }}
                         onChange={(_, v) => setTempVolume(v as number)}
@@ -171,14 +177,19 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state, re
                         max={3}
                         step={null}
                         marks={speedMarks}
-                        onChangeCommitted={(_, v) => resolver({ speed: v as number, timePlayed: time })}
+                        onChangeCommitted={(_, v) =>
+                            updateStatus({
+                                speed: v as number,
+                                start_timestamp: sub(new Date(), { seconds: 0 /* TODO */ }),
+                            })
+                        }
                         onChange={(_, v) => setTempSpeed(v as number)}
                         orientation="vertical"
                         style={{ minHeight: '10rem', margin: '1rem 2.5rem 1rem 1rem' }}
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={() => resolver(null)} size="large">
+                    <IconButton onClick={() => stopPlaying({ trackId: state.id })} size="large">
                         <StopIcon />
                     </IconButton>
                 </Tooltip>

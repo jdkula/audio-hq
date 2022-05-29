@@ -7,13 +7,19 @@
 
 import React, { FC, useState, useContext, KeyboardEvent } from 'react';
 
-import { File as WSFile } from '~/lib/Workspace';
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
-import { FileManagerContext } from '~/lib/useFileManager';
+import { File_Minimum } from '../lib/graphql_type_helper';
+import useFileManager from '../lib/useFileManager';
+import { WorkspaceIdContext } from '../lib/utility';
+import { useSetFilesPathMutation } from '../lib/generated/graphql';
+import { useRecoilValue } from 'recoil';
+import { pathAtom } from '../lib/atoms';
 
-const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, cancel }) => {
+const FolderAddDialog: FC<{ files: File_Minimum[]; cancel: () => void }> = ({ files, cancel }) => {
     const [name, setName] = useState('');
-    const fileManager = useContext(FileManagerContext);
+    const currentPath = useRecoilValue(pathAtom);
+
+    const [, setPath] = useSetFilesPathMutation();
 
     const onCancel = () => {
         setName('');
@@ -25,7 +31,7 @@ const FolderAddDialog: FC<{ files: WSFile[]; cancel: () => void }> = ({ files, c
 
         // We can assign all files to a new folder by just adding the name on.
         // The captured value of "name" is unaffected by the call to onCancel above.
-        await Promise.all(files.map((file) => fileManager.update(file.id, { path: [...file.path, name] })));
+        await setPath({ files: files.map((f) => f.id), path: [...currentPath, name] });
     };
 
     const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {

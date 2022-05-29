@@ -24,12 +24,7 @@ class MyDocument extends Document {
         const initialProps = await Document.getInitialProps(ctx);
         return {
             ...initialProps,
-            styles: (
-                <>
-                    {initialProps.styles}
-                    {muiSheets.getStyleElement()}
-                </>
-            ),
+            styles: [initialProps.styles, muiSheets.getStyleElement()],
         };
     }
 }

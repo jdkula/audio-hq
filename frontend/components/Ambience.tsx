@@ -8,14 +8,11 @@
 import { Paper, Tooltip, Typography } from '@mui/material';
 import { FunctionComponent, useContext } from 'react';
 import styled from '@emotion/styled';
-import { WorkspaceContext } from '~/lib/useWorkspace';
 import { AudioControls } from './AudioControls';
-import { PlayStateResolver } from '../lib/Workspace';
 
 import AddIcon from '@mui/icons-material/Add';
 import { BlurOn } from '@mui/icons-material';
-import { useRecoilValue } from 'recoil';
-import { sfxAtom } from '~/lib/atoms';
+import { getTrackInfo, useWorkspaceStatuses, WorkspaceIdContext } from '../lib/utility';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -56,41 +53,17 @@ const AmbienceControlsContainer = styled(Paper)`
 `;
 
 export const Ambience: FunctionComponent = () => {
-    const workspace = useContext(WorkspaceContext);
-    const sfx = useRecoilValue(sfxAtom);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const { ambience, sfx } = useWorkspaceStatuses(workspaceId);
 
-    const makeResolver = (queue: string[]): PlayStateResolver => {
-        return (update) => {
-            if (update === null) {
-                workspace.resolver({ delAmbience: queue });
-            } else {
-                workspace.resolver({
-                    ambience: { ...update, queue: queue },
-                });
-            }
-        };
-    };
-
-    const controls = [...workspace.state.ambience].map((ps) => (
-        <AmbienceControlsContainer key={ps.queue[0]}>
-            <Typography variant="h5">{workspace.getCurrentTrackFrom(ps)?.file.name ?? 'Loading...'}</Typography>
-            <AudioControls state={ps} resolver={makeResolver(ps.queue)} />
+    const controls = ambience.map((ps) => (
+        <AmbienceControlsContainer key={ps.id}>
+            <Typography variant="h5">
+                {getTrackInfo(ps)?.file.name ?? ps.queue[0]?.file.name ?? 'Loading...'}
+            </Typography>
+            <AudioControls state={ps} />
         </AmbienceControlsContainer>
     ));
-
-    const sfxResolver: PlayStateResolver = (update) => {
-        if (update === null) {
-            workspace.resolver({
-                sfx: null,
-                sfxMerge: true,
-            });
-        } else {
-            workspace.resolver({
-                sfx: update,
-                sfxMerge: true,
-            });
-        }
-    };
 
     if (controls.length === 0 && !sfx) {
         return (
@@ -107,20 +80,7 @@ export const Ambience: FunctionComponent = () => {
 
     return (
         <AmbienceContainer>
-            <AmbienceScrollContainer>
-                {controls}
-                {sfx?.sfx && (
-                    <AmbienceControlsContainer>
-                        <Tooltip title="Playing as SFX" arrow>
-                            <BlurOn />
-                        </Tooltip>
-                        <Typography variant="h5">
-                            {workspace.getCurrentTrackFrom(sfx.sfx)?.file.name ?? 'Loading...'}
-                        </Typography>
-                        <AudioControls state={sfx.sfx} resolver={sfxResolver} />
-                    </AmbienceControlsContainer>
-                )}
-            </AmbienceScrollContainer>
+            <AmbienceScrollContainer>{controls}</AmbienceScrollContainer>
         </AmbienceContainer>
     );
 };

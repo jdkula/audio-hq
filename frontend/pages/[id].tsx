@@ -4,18 +4,18 @@ import { MainPlayer } from '~/components/MainPlayer';
 import { Explorer } from '~/components/Explorer';
 import { Ambience } from '~/components/Ambience';
 import { GetServerSideProps } from 'next';
-import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
 import Root from '~/components/Root';
-import useLocalRecents from '~/lib/useLocalRecents';
+import { useLocalRecents, useWorkspaceStatuses, WorkspaceIdContext } from '../lib/utility';
 
 const TabContainer = styled.div`
     grid-area: tabcontent;
     display: grid;
     grid-template-rows: auto;
     grid-template-columns: auto;
+
     & > * {
         grid-area: unset;
         overflow: auto;
@@ -23,13 +23,13 @@ const TabContainer = styled.div`
 `;
 
 const MainApp: FC = () => {
-    const { state, resolver } = useContext(WorkspaceContext);
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
 
     const [tabValue, setTabValue] = useState(0);
 
-    const nowPlaying = <MainPlayer resolver={(update) => resolver({ playing: update })} state={state.playing} />;
+    const workspaceId = useContext(WorkspaceIdContext);
+    const { main, ambience, sfx } = useWorkspaceStatuses(workspaceId);
 
     if (isSmall) {
         return (
@@ -43,7 +43,9 @@ const MainApp: FC = () => {
                     </Tabs>
                 </AppBar>
                 <TabContainer>
-                    <TabContainer style={{ display: tabValue === 0 ? undefined : 'none' }}>{nowPlaying}</TabContainer>
+                    <TabContainer style={{ display: tabValue === 0 ? undefined : 'none' }}>
+                        <MainPlayer state={main} />
+                    </TabContainer>
                     <TabContainer style={{ display: tabValue === 1 ? undefined : 'none' }}>
                         <Ambience />
                     </TabContainer>
@@ -57,9 +59,9 @@ const MainApp: FC = () => {
     return (
         <>
             <Header host />
-            {nowPlaying}
+            <MainPlayer state={main} />
             <Explorer />
-            {state.ambience.length > 0 && <Ambience />}
+            {ambience.length > 0 && <Ambience />}
         </>
     );
 };
@@ -102,9 +104,11 @@ const Container = styled.div<{ hideAmbience?: boolean }>`
 `;
 
 const Sub: FC = () => {
-    const { state } = useContext(WorkspaceContext);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const { ambience } = useWorkspaceStatuses(workspaceId);
+
     return (
-        <Container hideAmbience={state.ambience.length === 0}>
+        <Container hideAmbience={ambience.length === 0}>
             <MainApp />
         </Container>
     );
@@ -119,7 +123,7 @@ const Host: FunctionComponent<{
         if (workspace) {
             addRecents(workspace);
         }
-    }, [workspace]);
+    }, [addRecents, workspace]);
 
     return (
         <Root workspace={workspace}>

@@ -24,7 +24,9 @@ import { amber, cyan } from '@mui/material/colors';
 import '@emotion/react';
 import { DefaultTheme } from '@mui/styles';
 import { ThemeProvider } from '@emotion/react';
-import useColorMode from '~/lib/useColorMode';
+import { Provider } from 'urql';
+import { useUrqlClient } from '../lib/urql';
+import { useColorMode } from '../lib/utility';
 
 declare module '@mui/styles/defaultTheme' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -37,6 +39,8 @@ declare module '@emotion/react' {
 }
 
 export default function App({ Component, pageProps }: AppProps): ReactElement {
+    const { client } = useUrqlClient();
+
     // clear Server-Side injected CSS for Material-UI
     useEffect(() => {
         const jssStyles = document.querySelector('#jss-server-side');
@@ -111,7 +115,9 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
                             </Head>
                             <CssBaseline />
                             <RecoilRoot>
-                                <Component {...pageProps} />
+                                <Provider value={client}>
+                                    <Component {...pageProps} />
+                                </Provider>
                             </RecoilRoot>
                         </ThemeProvider>
                     </MuiThemeProvider>

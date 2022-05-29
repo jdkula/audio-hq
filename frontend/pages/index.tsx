@@ -25,10 +25,9 @@ import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import PouchDB from 'pouchdb';
-import useLocalRecents from '~/lib/useLocalRecents';
 import ListHeader from '~/components/ListHeader';
 import { css, Global } from '@emotion/react';
-import useColorMode, { ColorMode } from '~/lib/useColorMode';
+import { ColorMode, useColorMode, useLocalRecents } from '../lib/utility';
 
 const GlobalFull = () => (
     <Global

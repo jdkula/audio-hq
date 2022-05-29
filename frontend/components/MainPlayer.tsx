@@ -9,12 +9,12 @@ import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/mat
 import { FunctionComponent, useContext, useMemo, useState } from 'react';
 
 import { AudioControls } from './AudioControls';
-import { PlayStateResolver, PlayState } from '~/lib/Workspace';
 import styled from '@emotion/styled';
 import PlayIcon from '@mui/icons-material/PlayArrow';
-import { WorkspaceContext } from '~/lib/useWorkspace';
-import usePeriodicEffect from '~/lib/usePeriodicEffect';
 import ListHeader from './ListHeader';
+import { Play_Status_Minimum } from '../lib/graphql_type_helper';
+import useAudio from '../lib/audio/useAudio';
+import { useSetQueueMutation } from '../lib/generated/graphql';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -41,9 +41,22 @@ const PlayTypography = styled(Typography)`
 `;
 
 export const MainPlayer: FunctionComponent<{
-    state: PlayState | null;
-    resolver: PlayStateResolver;
-}> = ({ state, resolver }) => {
+    state: Play_Status_Minimum | null;
+}> = ({ state }) => {
+    const audioInfo = useAudio(state);
+
+    const [, setQueue] = useSetQueueMutation();
+
+    const trackNames = state?.queue.map((qe) => qe.file.name);
+
+    const tracksQueued = useMemo(
+        () =>
+            !audioInfo || !trackNames
+                ? []
+                : [...trackNames.slice(audioInfo.index + 1), ...trackNames.slice(0, audioInfo.index + 1)],
+        [trackNames, audioInfo],
+    );
+
     if (!state) {
         return (
             <MainPlayerContainer>
@@ -55,41 +68,20 @@ export const MainPlayer: FunctionComponent<{
         );
     }
 
-    const ws = useContext(WorkspaceContext);
-
-    const trackNames = useMemo(
-        () => state.queue.map((id) => ws.files.find((f) => f.id === id)).map((f) => f?.name ?? 'Loading...'),
-        [state],
-    );
-
-    const [currIdx, setCurrIdx] = useState(0);
-
-    const tracksQueued = useMemo(
-        () => [...trackNames.slice(currIdx + 1), ...trackNames.slice(0, currIdx + 1)],
-        [trackNames, currIdx],
-    );
-
     const skipTo = (idx: number) => {
-        ws.resolver({
-            playing: { queue: [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)], timePlayed: 0 },
+        const newQueue = [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)];
+        setQueue({
+            trackId: state.id,
+            newQueue: newQueue.map((qe) => ({ file_id: qe.file.id, status_id: state.id })),
         });
     };
-
-    usePeriodicEffect(
-        500,
-        () => {
-            const idx = ws.getCurrentTrackFrom(state)?.index;
-            setCurrIdx(idx ?? 0);
-        },
-        [state],
-    );
 
     return (
         <MainPlayerContainer>
             <Typography variant="h5" component="span">
-                {trackNames[currIdx] ?? 'Loading...'}
+                {trackNames?.[audioInfo.index] ?? 'Loading...'}
             </Typography>
-            <AudioControls state={state} resolver={resolver} />
+            <AudioControls state={state} />
             {tracksQueued.length > 1 && (
                 <>
                     <ListHeader>Up Next</ListHeader>
@@ -101,7 +93,7 @@ export const MainPlayer: FunctionComponent<{
                     >
                         <List>
                             {tracksQueued.map((trackName, idx) => (
-                                <ListItem button key={idx} onClick={() => skipTo(currIdx + idx)}>
+                                <ListItem button key={idx} onClick={() => skipTo(audioInfo.index + idx)}>
                                     <ListItemIcon>
                                         <PlayIcon />
                                     </ListItemIcon>

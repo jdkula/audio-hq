@@ -1,14 +1,14 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import React, { FC } from 'react';
-import useAudioManager from '~/lib/useAudioManager';
-import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
-import useMediaSession from '~/lib/useMediaSession';
-import useWorkspace, { WorkspaceContext } from '~/lib/useWorkspace';
+import React, { FC, useContext } from 'react';
+import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
+import useAudioManager from '../lib/audio/useAudioManager';
+import { WorkspaceIdContext } from '../lib/utility';
 
-const Subroot: FC = (props) => {
-    useMediaSession();
-    const { blocked } = useAudioManager();
+const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
+    const workspaceId = useContext(WorkspaceIdContext);
+    useMediaSession(workspaceId);
+    const { blocked } = useAudioManager(workspaceId);
 
     return (
         <>
@@ -22,21 +22,17 @@ const Subroot: FC = (props) => {
 };
 
 const Root: FC<{
-    workspace: string;
+    workspace?: string | null;
+    children?: React.ReactNode;
 }> = (props) => {
-    const { workspace, resolve, loading, getCurrentTrackFrom } = useWorkspace(props.workspace);
-    const fileManager = useFileManager(props.workspace);
-
-    if (!workspace?.state || loading) {
-        return <LoadingPage workspace={props.workspace} />;
+    if (!props.workspace) {
+        return <LoadingPage workspace={props.workspace ?? '...'} />;
     }
 
     return (
-        <WorkspaceContext.Provider value={{ ...workspace, resolver: resolve, getCurrentTrackFrom }}>
-            <FileManagerContext.Provider value={fileManager}>
-                <Subroot>{props.children}</Subroot>
-            </FileManagerContext.Provider>
-        </WorkspaceContext.Provider>
+        <WorkspaceIdContext.Provider value={props.workspace}>
+            <Subroot>{props.children}</Subroot>
+        </WorkspaceIdContext.Provider>
     );
 };
 export default Root;

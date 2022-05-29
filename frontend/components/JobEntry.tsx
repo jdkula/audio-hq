@@ -8,10 +8,11 @@
 import { Box, IconButton, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
 import Axios from 'axios';
 import { FC } from 'react';
-import Job from '~/lib/Job';
 
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
+import { Job } from '../lib/generated/graphql';
+import { Job_Minimum } from '../lib/graphql_type_helper';
 
 const JobContainer = styled(Paper)`
     border-radius: 1rem;
@@ -28,15 +29,15 @@ const JobInnerContainer = styled.div`
     align-items: center;
 `;
 
-const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job, onCanceled }) => {
+const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job, onCanceled }) => {
     const percent = Math.floor((job.progress ?? 0) * 1000) / 10;
 
-    const cancelJob = () => Axios.delete(`/api/jobs/${job.jobId}`).then(() => onCanceled?.());
+    // TODO: Cancel
 
     const hasValue =
         job.progress !== null &&
-        job.status !== 'started' &&
-        job.status !== 'done' &&
+        job.progress_stage !== 'started' &&
+        job.progress_stage !== 'done' &&
         job.progress !== 0 &&
         job.progress !== 100;
 
@@ -47,22 +48,22 @@ const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job, onCanceled }
                     <Typography variant="h6">{job.name}</Typography>
                 </Box>
                 <Box flexGrow={1} justifySelf="center">
-                    <Typography variant="button">{job.status}</Typography>
+                    <Typography variant="button">{job.progress_stage}</Typography>
                 </Box>
                 <Box flexGrow={1} display="flex" alignItems="center" justifySelf="end">
                     <Box>
                         <Typography variant="button">{percent}%</Typography>
                     </Box>
                     <Tooltip placement="top" title="Hide job" arrow>
-                        <IconButton onClick={cancelJob} size="large">
+                        <IconButton size="large">
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>
                 </Box>
             </JobInnerContainer>
             {hasValue && <LinearProgress variant="determinate" value={percent} />}
-            {!hasValue && job.status !== 'error' && <LinearProgress variant="indeterminate" />}
-            {!hasValue && job.status === 'error' && (
+            {!hasValue && job.progress_stage !== 'error' && <LinearProgress variant="indeterminate" />}
+            {!hasValue && job.progress_stage === 'error' && (
                 <LinearProgress color="secondary" variant="determinate" value={100} />
             )}
         </JobContainer>
