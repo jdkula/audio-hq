@@ -3,14 +3,22 @@ schema:
   - "http://localhost:8080/v1/graphql":
       headers:
         "X-Hasura-Admin-Secret": "${HASURA_GRAPHQL_ADMIN_SECRET}"
-        "X-Hasura-Role": "user"
+        "X-Hasura-Role": "anonymous"
 documents: "graphql/**/*.graphql"
 generates:
   lib/generated/graphql.tsx:
+    config:
+      defaultScalarType: unknown
+      scalars:
+        bytea: string | ArrayBuffer
+        jsonb: any
+        numeric: number
+        timestamptz: Date
+        uuid: string
     plugins:
       - "typescript"
       - "typescript-operations"
-      - "typescript-react-apollo"
+      - "typescript-urql"
   schema.graphql:
     plugins:
       - "schema-ast"
