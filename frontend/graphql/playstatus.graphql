@@ -1,0 +1,37 @@
+fragment QueuedInfo on play_queue_entry {
+    id
+    created_at
+    file {
+        id
+        type
+        name
+        description
+        length
+        path
+        download_url
+        ordering
+    }
+}
+
+fragment PlayStatusInfo on play_status {
+    id
+    type
+
+    volume
+    speed
+    pause_timestamp
+    start_timestamp
+
+    queue {
+        ...QueuedInfo
+    }
+}
+
+subscription PlayStatuses($workspaceId: String!, $type: play_status_type_enum_enum!) {
+    play_status(where: {workspace_id: {_eq: $workspaceId}, type: {_eq: $type}}) {
+        ...PlayStatusInfo
+    }
+}
+
+
+

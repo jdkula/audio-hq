@@ -1,0 +1,23 @@
+subscription WorkspaceJobs($workspaceId: String!) {
+    job(where: {workspace_id: {_eq: $workspaceId}}) {
+        id
+        url
+        name
+        description
+        path
+
+        progress
+        progress_stage
+        assigned_worker
+    }
+}
+
+mutation AddJob($job: job_insert_input!) {
+    insert_job_one(object: $job) {
+        id
+        url
+        name
+        description
+        path
+    }
+}

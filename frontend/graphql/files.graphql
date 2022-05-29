@@ -1,0 +1,31 @@
+subscription WorkspaceFiles($workspaceId: String!) {
+    file(where: {workspace_id: {_eq: $workspaceId}}) {
+        id
+        type
+        path
+
+        name
+        description
+        length
+
+        download_url
+    }
+}
+
+mutation UpdateFile($id: uuid!, $update: file_set_input!) {
+    update_file_by_pk(_set: $update, pk_columns: {id: $id}) {
+        id
+    }
+}
+
+mutation DeleteFile($job: delete_job_insert_input!) {
+    insert_delete_job(objects: [$job]) {
+        affected_rows
+    }
+}
+
+mutation setFilesPath($files: [uuid!]!, $path: jsonb) {
+    update_file(where: {id: {_in: $files}}, _set: {path: $path}) {
+        affected_rows
+    }
+}

@@ -1,0 +1,26 @@
+mutation StopTrack($trackId: uuid!) {
+    delete_play_status_by_pk(id: $trackId) {
+        id
+    }
+}
+
+mutation UpdateTrack($trackId: uuid!, $update: play_status_set_input!) {
+    update_play_status_by_pk(pk_columns: {id: $trackId}, _set: $update) {
+        ...PlayStatusInfo
+    }
+}
+
+mutation SetQueue($trackId: uuid!, $newQueue: [play_queue_entry_insert_input!]!) {
+    delete_play_queue_entry(where: {status: {id: {_eq: $trackId}}}) {
+        affected_rows
+    }
+    insert_play_queue_entry(objects: $newQueue) {
+        affected_rows
+    }
+}
+
+mutation PlayTrack($track: play_status_insert_input!) {
+    insert_play_status_one(object: $track, on_conflict: {constraint: idx_type_workspace_unique, update_columns: [start_timestamp, pause_timestamp, speed, volume]}) {
+        ...PlayStatusInfo
+    }
+}
