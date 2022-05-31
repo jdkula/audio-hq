@@ -3,7 +3,7 @@ import { useStopTrackMutation, useUpdateTrackMutation } from '../generated/graph
 import { getTrackInfo, useWorkspaceStatuses, WorkspaceNameContext } from '../utility';
 import { File_Minimum } from '../graphql_type_helper';
 import { useLocalReactiveValue } from '../local_reactive';
-import { globalVolumeLRV } from '../atoms';
+import { globalVolumeLRV } from '../global_lrv';
 
 const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);

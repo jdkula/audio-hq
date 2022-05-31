@@ -12,7 +12,7 @@ import styled from '@emotion/styled';
 
 import VolumeButton from '../VolumeButton';
 import { useLocalReactiveValue } from '../../lib/local_reactive';
-import { globalVolumeLRV } from '../../lib/atoms';
+import { globalVolumeLRV } from '../../lib/global_lrv';
 
 const Container = styled.div`
     color: white;

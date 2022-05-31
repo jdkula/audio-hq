@@ -31,7 +31,7 @@ import {
 } from '../lib/generated/graphql';
 import useFileManager from '../lib/useFileManager';
 import { useLocalReactiveValue } from '../lib/local_reactive';
-import { currentPathLRV } from '../lib/atoms';
+import { currentPathLRV } from '../lib/global_lrv';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -129,10 +129,7 @@ export const Explorer: FC = () => {
     const [, updateFile] = useUpdateFileMutation();
 
     const currentFiles = viewingFavorites
-        ? favs.favorites
-              .toArray()
-              .map((id) => files.find((file) => file.id === id))
-              .filter<File_Minimum>(nonNull)
+        ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(nonNull)
         : getFiles(files, path, searching ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);

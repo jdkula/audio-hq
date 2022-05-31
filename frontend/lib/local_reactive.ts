@@ -19,6 +19,19 @@ export class LocalReactiveValue<T> extends EventEmitter {
     }
 }
 
+export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
+    constructor(key: string, defaultValue: T) {
+        super(
+            typeof window === 'undefined'
+                ? defaultValue
+                : JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue,
+        );
+        this.on('set', (value) => {
+            localStorage.setItem(key, JSON.stringify(value));
+        });
+    }
+}
+
 export function useLocalReactiveValue<T>(lrv: LocalReactiveValue<T>): [T, Dispatch<SetStateAction<T>>] {
     const [localValue, setValueInternal] = useState(lrv.value);
 

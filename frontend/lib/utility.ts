@@ -13,6 +13,7 @@ import { File_Minimum, Play_Status_Minimum } from './graphql_type_helper';
 import { Play_Status_Type_Enum_Enum, useEventsSubscription, usePlayStatusesQuery } from './generated/graphql';
 import { useRouter } from 'next/router';
 import { getUnixTime } from 'date-fns';
+import { LocalStorageReactiveValue, useLocalReactiveValue } from './local_reactive';
 
 interface CurrentFileInfo {
     file: File_Minimum;
@@ -129,72 +130,30 @@ function getLocalStorage<T>(key: string, defaultValue?: T): T | null {
     return JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue ?? null;
 }
 
-export function useLocalStorage<T>(key: string): [value: T | null, setValue: Dispatch<SetStateAction<T | null>>];
-export function useLocalStorage<T>(key: string, defaultValue: T): [value: T, setValue: Dispatch<SetStateAction<T>>];
-export function useLocalStorage<T>(
-    key: string,
-    defaultValue?: T,
-): [value: T | null, setValue: Dispatch<SetStateAction<T | null>>] {
-    const [value, setValueInternal] = useState<T | null>(getLocalStorage<T>(key, defaultValue));
-
-    useEffect(() => {
-        setValueInternal(getLocalStorage<T>(key, defaultValue));
-    }, [key, defaultValue]);
-
-    useEffect(() => {
-        if (localStorageListeners[key] === undefined) {
-            localStorageListeners[key] = [];
-        }
-
-        localStorageListeners[key].push(setValueInternal as Dispatch<SetStateAction<unknown>>);
-        return () => {
-            const idx = localStorageListeners[key].indexOf(setValueInternal as Dispatch<SetStateAction<unknown>>);
-            localStorageListeners[key].splice(idx, 1);
-        };
-    }, [key, setValueInternal]);
-
-    const setValue = useCallback(
-        (newValue: SetStateAction<T | null>) => {
-            const curVal = getLocalStorage(key, defaultValue);
-            const newValueInternal = newValue instanceof Function ? newValue(curVal) : newValue;
-
-            window.localStorage.setItem(key, JSON.stringify(newValueInternal));
-            for (const listener of localStorageListeners[key] ?? []) {
-                listener(newValueInternal);
-            }
-        },
-        [key, defaultValue],
-    );
-
-    return [value, setValue];
-}
-
 const kColorModeKey = '__AHQ_SAVED_COLOR_MODE';
-
 export type ColorMode = 'auto' | 'light' | 'dark';
-type ColorModeHook = [mode: ColorMode, setColorMode: (cm: ColorMode) => void];
+export const colorModeLRV = new LocalStorageReactiveValue<ColorMode>(kColorModeKey, 'auto');
 
-export function useColorMode(): ColorModeHook {
-    const [cm, setCm] = useLocalStorage<ColorMode>(kColorModeKey);
-
-    return [cm ?? 'auto', setCm];
+export function useColorMode() {
+    return useLocalReactiveValue(colorModeLRV);
 }
 
 interface Favorites {
-    favorites: Set<string>;
+    favorites: string[];
     removeFavorite: (id: string) => void;
     addFavorite: (id: string) => void;
 }
 
 const kFavoriteKey = '__AHQ_FAVORITES';
+export const favoritesLRV = new LocalStorageReactiveValue<string[]>(kFavoriteKey, []);
 
 export function useFavorites(): Favorites {
-    const [favorites, setFavorites] = useLocalStorage<Set<string>>(kFavoriteKey, Set());
+    const [favorites, setFavorites] = useLocalReactiveValue(favoritesLRV);
 
     return {
         favorites,
-        removeFavorite: (id) => setFavorites((s) => s.add(id)),
-        addFavorite: (id) => setFavorites((s) => s.remove(id)),
+        removeFavorite: (id) => setFavorites((s) => s.filter((fav) => fav !== id)),
+        addFavorite: (id) => setFavorites((s) => [...s.filter((fav) => fav !== id), id]),
     };
 }
 
@@ -202,9 +161,10 @@ const kLocalRecentKey = '__AHQ_RECENT_WORKSPACES';
 const kMaxRecents = 5;
 
 type LocalRecents = [recents: string[], addRecent: (workspace: string) => void];
+export const localRecentsLRV = new LocalStorageReactiveValue<string[]>(kLocalRecentKey, []);
 
 export function useLocalRecents(): LocalRecents {
-    const [recents, setRecentsInternal] = useLocalStorage<string[]>(kLocalRecentKey);
+    const [recents, setRecentsInternal] = useLocalReactiveValue(localRecentsLRV);
 
     const setRecents = useCallback(
         (workspace: string) =>

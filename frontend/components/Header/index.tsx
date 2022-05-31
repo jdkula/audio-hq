@@ -19,7 +19,7 @@ import { WorkspaceIdContext, WorkspaceNameContext } from '../../lib/utility';
 import useFileManager from '../../lib/useFileManager';
 import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 import { useLocalReactiveValue } from '../../lib/local_reactive';
-import { currentPathLRV } from '../../lib/atoms';
+import { currentPathLRV } from '../../lib/global_lrv';
 
 const ToolbarContent = styled.div`
     display: flex;

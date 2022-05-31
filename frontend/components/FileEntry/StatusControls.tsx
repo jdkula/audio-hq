@@ -63,7 +63,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     };
 
     const toggleFavorite = () => {
-        if (favs.favorites.has(file.id)) {
+        if (!favs.favorites.includes(file.id)) {
             favs.addFavorite(file.id);
         } else {
             favs.removeFavorite(file.id);
@@ -111,7 +111,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                 ) : (
                     <Tooltip placement="left" title="Favorite (alt/option to delete)" arrow>
                         <IconButton onClick={toggleFavorite} size="large">
-                            {favs.favorites.has(file.id) ? <Favorite /> : <FavoriteBorder />}
+                            {favs.favorites.includes(file.id) ? <Favorite /> : <FavoriteBorder />}
                         </IconButton>
                     </Tooltip>
                 )}

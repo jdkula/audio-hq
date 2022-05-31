@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { Play_Status_Minimum, Queue_Entry_Minimum } from '../graphql_type_helper';
 import { FileManager } from '../useFileManager';
 import { differenceInMilliseconds } from 'date-fns';
-import { globalVolumeLRV } from '../atoms';
+import { globalVolumeLRV } from '../global_lrv';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
