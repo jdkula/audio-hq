@@ -33,7 +33,7 @@ interface PlayControlsProps {
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
-    const { main, sfx, ambience } = useWorkspaceStatuses(workspaceId);
+    const { main, ambience } = useWorkspaceStatuses(workspaceId);
 
     const altKey = useAlt();
 
@@ -102,13 +102,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
-                        <PlayArrow
-                            color={
-                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
-                                    ? 'primary'
-                                    : undefined
-                            }
-                        />
+                        <PlayArrow color={main?.queue.find((qe) => qe.file.id === file.id) ? 'primary' : undefined} />
                     )}
                 </IconButton>
             </Tooltip>
@@ -123,7 +117,9 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     <IconButton onClick={onAmbience} size="large">
                         <AddIcon
                             color={
-                                sfx.find((ps) => ps.queue.map((q) => q.id).includes(file.id)) ? 'primary' : undefined
+                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
+                                    ? 'primary'
+                                    : undefined
                             }
                         />
                     </IconButton>

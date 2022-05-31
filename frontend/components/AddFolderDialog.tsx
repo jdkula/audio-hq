@@ -5,12 +5,10 @@
  * multiple files together into a new folder.
  */
 
-import React, { FC, useState, useContext, KeyboardEvent } from 'react';
+import React, { FC, useState, KeyboardEvent } from 'react';
 
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
 import { File_Minimum } from '../lib/graphql_type_helper';
-import useFileManager from '../lib/useFileManager';
-import { WorkspaceIdContext } from '../lib/utility';
 import { useSetFilesPathMutation } from '../lib/generated/graphql';
 import { useRecoilValue } from 'recoil';
 import { pathAtom } from '../lib/atoms';

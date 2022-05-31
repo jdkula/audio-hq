@@ -1,20 +1,22 @@
 import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useState } from 'react';
-import {
-    Client,
-    defaultExchanges,
-    subscriptionExchange,
-    errorExchange,
-    dedupExchange,
-    fetchExchange,
-    cacheExchange as documentCacheExchange,
-} from 'urql';
+import { Client, subscriptionExchange, errorExchange, dedupExchange, fetchExchange } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
-import { cacheExchange } from '@urql/exchange-graphcache';
+import { cacheExchange, Cache } from '@urql/exchange-graphcache';
 import customScalarsExchange from 'urql-custom-scalars-exchange';
 import schema from '~/graphql.schema.json';
-import { Play_Status, PlayTrackMutation } from './generated/graphql';
+import { IntrospectionQuery } from 'graphql';
 import { IntrospectionData } from '@urql/exchange-graphcache/dist/types/ast';
+
+function invalidateRootField(cache: Cache, fieldName: string) {
+    cache
+        .inspectFields('query_root')
+        .filter((field) => field.fieldName === fieldName)
+        .forEach((field) => {
+            console.log('Invalidating in mutation', field);
+            cache.invalidate('query_root', field.fieldKey);
+        });
+}
 
 function createUrqlClient(): Client {
     if (typeof window === 'undefined') {
@@ -34,33 +36,27 @@ function createUrqlClient(): Client {
                     console.warn(error, operation);
                 },
             }),
-            customScalarsExchange({ schema: schema as any, scalars: { timestamptz: (value) => new Date(value) } }),
+            customScalarsExchange({
+                schema: schema as unknown as IntrospectionQuery,
+                scalars: { timestamptz: (value) => new Date(value) },
+            }),
             dedupExchange,
             // documentCacheExchange,
             cacheExchange({
                 schema: schema as IntrospectionData,
                 updates: {
                     Mutation: {
-                        insert_play_status_one(_result, args, cache, _info) {
-                            cache
-                                .inspectFields('query_root')
-                                .filter((field) => field.fieldName === 'play_status')
-                                .forEach((field) => {
-                                    console.log('Invalidating in mutation', field);
-                                    cache.invalidate('query_root', field.fieldKey);
-                                });
+                        insert_play_status_one(_result, _args, cache) {
+                            invalidateRootField(cache, 'play_status');
+                        },
+                        insert_play_queue_entry(_result, _args, cache) {
+                            invalidateRootField(cache, 'play_status');
                         },
                     },
                     Subscription: {
-                        event(_result, args, cache, _info) {
-                            const invalidator = ((_result.event as any)?.[0]?.invalidate as string) ?? undefined;
-                            cache
-                                .inspectFields('query_root')
-                                .filter((field) => field.fieldName === invalidator)
-                                .forEach((field) => {
-                                    console.log('Invalidating in subscription', field);
-                                    cache.invalidate('query_root', field.fieldKey);
-                                });
+                        event(result, args, cache) {
+                            const invalidatedField = (result.event as Array<{ invalidate: string }>)[0]?.invalidate;
+                            invalidateRootField(cache, invalidatedField);
                         },
                     },
                 },

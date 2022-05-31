@@ -6,7 +6,7 @@
  */
 
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
-import React, { FC, useContext } from 'react';
+import React, { FC } from 'react';
 import { File_Minimum } from '../../lib/graphql_type_helper';
 import { useDeleteFileMutation } from '../../lib/generated/graphql';
 

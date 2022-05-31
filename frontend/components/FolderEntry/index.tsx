@@ -30,8 +30,7 @@ import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
 import { WorkspaceIdContext } from '../../lib/utility';
-import useFileManager from '../../lib/useFileManager';
-import { useSetFilesPathMutation, useUpdateFileMutation, useWorkspaceFilesQuery } from '../../lib/generated/graphql';
+import { useSetFilesPathMutation, useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -108,12 +107,10 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     up,
 }) => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const fileManager = useFileManager(workspaceId);
 
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = filesRaw?.file ?? [];
 
-    const [, updateFile] = useUpdateFileMutation();
     const [, updatePath] = useSetFilesPathMutation();
 
     const [renaming, setRenaming] = useState(false);

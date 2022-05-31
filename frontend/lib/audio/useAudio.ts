@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { getTrackInfo, usePeriodicEffect } from '../utility';
-import { Play_Status } from '../generated/graphql';
 import { Play_Status_Minimum } from '../graphql_type_helper';
 
 interface AudioInfo {

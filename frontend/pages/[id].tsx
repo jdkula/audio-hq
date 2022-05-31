@@ -61,7 +61,7 @@ const MainApp: FC = () => {
             <Header host />
             <MainPlayer state={main} />
             <Explorer />
-            {ambience.length > 0 && <Ambience />}
+            {(ambience.length > 0 || sfx.length > 0) && <Ambience />}
         </>
     );
 };

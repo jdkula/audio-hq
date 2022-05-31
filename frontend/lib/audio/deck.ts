@@ -27,8 +27,6 @@ export class Deck extends EventEmitter {
             this._tracks.push(tr);
             tr.on('blocked', () => this.emit('blocked'));
         }
-
-        (window as any).__DECK = this;
     }
 
     connect(node: AudioNode) {

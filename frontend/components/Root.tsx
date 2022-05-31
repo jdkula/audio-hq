@@ -4,11 +4,7 @@ import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
 import { WorkspaceIdContext, WorkspaceNameContext } from '../lib/utility';
-import {
-    useCreateWorkspaceMutation,
-    useEventsSubscription,
-    useWorkspaceDetailByNameQuery,
-} from '../lib/generated/graphql';
+import { useCreateWorkspaceMutation, useWorkspaceDetailByNameQuery } from '../lib/generated/graphql';
 
 const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);

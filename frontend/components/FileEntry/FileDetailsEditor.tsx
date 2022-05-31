@@ -5,10 +5,8 @@
  */
 
 import { ClickAwayListener, TextField, Button, Box } from '@mui/material';
-import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import useFileManager from '../../lib/useFileManager';
-import { WorkspaceIdContext } from '../../lib/utility';
 import { File_Minimum } from '../../lib/graphql_type_helper';
 import { useUpdateFileMutation } from '../../lib/generated/graphql';
 
@@ -42,8 +40,6 @@ interface FileDetailsEditorProps {
 }
 
 const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocusTitle, file }) => {
-    const workspaceId = useContext(WorkspaceIdContext);
-
     const [editName, setEditName] = useState(file.name);
     const [editDescription, setEditDescription] = useState(file.description);
 

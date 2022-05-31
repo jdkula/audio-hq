@@ -5,8 +5,8 @@
  * audio controls for the primary track.
  */
 
-import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { FunctionComponent, useContext, useMemo, useState } from 'react';
+import { Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton } from '@mui/material';
+import { FunctionComponent, useMemo } from 'react';
 
 import { AudioControls } from './AudioControls';
 import styled from '@emotion/styled';
@@ -93,12 +93,12 @@ export const MainPlayer: FunctionComponent<{
                     >
                         <List>
                             {tracksQueued.map((trackName, idx) => (
-                                <ListItem button key={idx} onClick={() => skipTo(audioInfo.index + idx)}>
+                                <ListItemButton key={idx} onClick={() => skipTo(audioInfo.index + idx)}>
                                     <ListItemIcon>
                                         <PlayIcon />
                                     </ListItemIcon>
                                     <ListItemText>{trackName}</ListItemText>
-                                </ListItem>
+                                </ListItemButton>
                             ))}
                         </List>
                     </div>

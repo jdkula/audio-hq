@@ -118,7 +118,7 @@ export function nonNull<T>(elem: T | null | undefined): elem is T {
     return elem !== null && elem !== undefined;
 }
 
-const localStorageListeners: Record<string, Dispatch<SetStateAction<any | null>>[]> = {};
+const localStorageListeners: Record<string, Dispatch<SetStateAction<unknown | null>>[]> = {};
 
 function getLocalStorage<T>(key: string, defaultValue?: T): T | null;
 function getLocalStorage<T>(key: string, defaultValue: T): T;
@@ -146,9 +146,9 @@ export function useLocalStorage<T>(
             localStorageListeners[key] = [];
         }
 
-        localStorageListeners[key].push(setValueInternal);
+        localStorageListeners[key].push(setValueInternal as Dispatch<SetStateAction<unknown>>);
         return () => {
-            const idx = localStorageListeners[key].indexOf(setValueInternal);
+            const idx = localStorageListeners[key].indexOf(setValueInternal as Dispatch<SetStateAction<unknown>>);
             localStorageListeners[key].splice(idx, 1);
         };
     }, [key, setValueInternal]);
@@ -211,7 +211,7 @@ export function useLocalRecents(): LocalRecents {
             setRecentsInternal((recents) =>
                 [workspace, ...(recents ?? []).filter((ws) => ws !== workspace)].slice(0, kMaxRecents),
             ),
-        [],
+        [setRecentsInternal],
     );
 
     return [recents ?? [], setRecents];

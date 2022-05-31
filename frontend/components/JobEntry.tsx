@@ -6,12 +6,10 @@
  */
 
 import { Box, IconButton, LinearProgress, Paper, Tooltip, Typography } from '@mui/material';
-import Axios from 'axios';
 import { FC } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
-import { Job } from '../lib/generated/graphql';
 import { Job_Minimum } from '../lib/graphql_type_helper';
 
 const JobContainer = styled(Paper)`
@@ -29,7 +27,7 @@ const JobInnerContainer = styled.div`
     align-items: center;
 `;
 
-const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job, onCanceled }) => {
+const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) => {
     const percent = Math.floor((job.progress ?? 0) * 1000) / 10;
 
     // TODO: Cancel

@@ -58,7 +58,7 @@ const TrackOptions: ForwardRefRenderFunction<TrackRef, TrackOptionsProps> = ({ s
         const fadeIn = !shouldFadeIn ? null : fadeInTime;
         const fadeOut = !shouldFadeOut ? null : fadeOutTime;
         setOptions({ cut, fadeIn, fadeOut });
-    }, [shouldCut, startTime, endTime, shouldFadeIn, fadeInTime, shouldFadeOut, fadeOutTime]);
+    }, [shouldCut, startTime, endTime, shouldFadeIn, fadeInTime, shouldFadeOut, fadeOutTime, setOptions]);
 
     useImperativeHandle(ref, () => ({ reset }));
 

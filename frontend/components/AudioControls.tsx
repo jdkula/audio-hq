@@ -5,7 +5,7 @@
  * and controls for it (play/pause, seek, speed, volume).
  */
 
-import { FunctionComponent, useCallback, useContext, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material';
 import useAudio from '../lib/audio/useAudio';
 import styled from '@emotion/styled';

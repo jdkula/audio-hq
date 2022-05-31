@@ -29,7 +29,7 @@ const useMediaSession = (workspaceId: string): void => {
                 artist: `Audio HQ - ${workspaceName ?? ''}`,
             });
         }
-    }, [workspaceId, currentlyPlaying]);
+    }, [workspaceId, currentlyPlaying, workspaceName]);
 
     useEffect(() => {
         if (navigator.mediaSession) {

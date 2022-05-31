@@ -5,13 +5,12 @@
  * Displays controls for all ambient tracks playing in the workspace.
  */
 
-import { Paper, Tooltip, Typography } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import { FunctionComponent, useContext } from 'react';
 import styled from '@emotion/styled';
 import { AudioControls } from './AudioControls';
 
 import AddIcon from '@mui/icons-material/Add';
-import { BlurOn } from '@mui/icons-material';
 import { getTrackInfo, useWorkspaceStatuses, WorkspaceIdContext } from '../lib/utility';
 
 const AmbienceContainer = styled.div`

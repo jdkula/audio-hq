@@ -63,7 +63,7 @@ const useFileManager = (() => {
             await cache.destroy();
             cache = new PouchDB('cache');
             setCached(Set());
-        }, [cache]);
+        }, []);
 
         const updateFetching = (id: string, progress: number) => {
             setFetching((fetching) => fetching.map((v) => (v.id === id ? { ...v, progress } : v)));
@@ -139,7 +139,7 @@ const useFileManager = (() => {
             }
         }, [reset]);
 
-        const fileManager = {
+        return {
             cached,
             fetching,
             uploading,
@@ -253,7 +253,6 @@ const useFileManager = (() => {
                 console.log('Done.');
             },
         };
-        return fileManager;
     };
 })();
 
