@@ -19,8 +19,16 @@ mutation SetQueue($trackId: uuid!, $newQueue: [play_queue_entry_insert_input!]!)
     }
 }
 
-mutation PlayTrack($track: play_status_insert_input!) {
-    insert_play_status_one(object: $track, on_conflict: {constraint: idx_type_workspace_unique, update_columns: [start_timestamp, pause_timestamp, speed, volume]}) {
+mutation PlayTrack($workspaceId: uuid!, $track: play_status_insert_input!, $isMain: Boolean! = false) {
+    delete_play_queue_entry(where: {
+        status: {
+            workspace_id: {_eq: $workspaceId},
+            type: {_eq: main},
+        }
+    }) @include(if: $isMain) {
+        affected_rows
+    }
+    insert_play_status_one(object: $track) {
         ...PlayStatusInfo
     }
 }

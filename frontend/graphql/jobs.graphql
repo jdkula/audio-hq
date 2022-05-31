@@ -1,4 +1,4 @@
-subscription WorkspaceJobs($workspaceId: String!) {
+query WorkspaceJobs($workspaceId: uuid!) {
     job(where: {workspace_id: {_eq: $workspaceId}}) {
         id
         url

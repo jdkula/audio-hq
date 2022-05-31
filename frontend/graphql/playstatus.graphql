@@ -27,11 +27,9 @@ fragment PlayStatusInfo on play_status {
     }
 }
 
-subscription PlayStatuses($workspaceId: String!, $type: play_status_type_enum_enum!) {
-    play_status(where: {workspace_id: {_eq: $workspaceId}, type: {_eq: $type}}) {
+query PlayStatuses($workspaceId: uuid!) {
+    play_status(where: {workspace_id: {_eq: $workspaceId}}) {
         ...PlayStatusInfo
     }
 }
-
-
 

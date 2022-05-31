@@ -1,0 +1,8 @@
+subscription Events($workspaceId: uuid!) {
+    event(where: {workspace_id: {_eq: $workspaceId}}, limit: 1, order_by: [{time: desc}]) {
+        id
+        invalidate
+        workspace_id
+        time
+    }
+}

@@ -1,4 +1,4 @@
-subscription WorkspaceFiles($workspaceId: String!) {
+query WorkspaceFiles($workspaceId: uuid!) {
     file(where: {workspace_id: {_eq: $workspaceId}}) {
         id
         type
@@ -24,7 +24,7 @@ mutation DeleteFile($job: delete_job_insert_input!) {
     }
 }
 
-mutation setFilesPath($files: [uuid!]!, $path: jsonb) {
+mutation SetFilesPath($files: [uuid!]!, $path: jsonb) {
     update_file(where: {id: {_in: $files}}, _set: {path: $path}) {
         affected_rows
     }
