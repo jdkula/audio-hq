@@ -34,19 +34,24 @@ insert_permissions:
   - role: anonymous
     permission:
       check: {}
-      columns: []
+      columns:
+        - name
       backend_only: false
 select_permissions:
   - role: anonymous
     permission:
       columns:
-        - id
         - created_at
+        - id
+        - name
         - updated_at
       computed_fields:
         - main_play_id
       filter: {}
-delete_permissions:
+update_permissions:
   - role: anonymous
     permission:
+      columns:
+        - name
       filter: {}
+      check: null
