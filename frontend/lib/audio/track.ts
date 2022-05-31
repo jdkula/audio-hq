@@ -2,20 +2,19 @@ import { EventEmitter } from 'events';
 import { Play_Status_Minimum, Queue_Entry_Minimum } from '../graphql_type_helper';
 import { FileManager } from '../useFileManager';
 import { differenceInMilliseconds } from 'date-fns';
+import { globalVolumeLRV } from '../atoms';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
-    private readonly _node: MediaElementAudioSourceNode;
-    private readonly _localGain: GainNode;
 
     private _ready = false;
 
+    private readonly _globalVolumeListener: () => void;
+
     constructor(
         private _status: Play_Status_Minimum,
-        private readonly _ctx: AudioContext,
         private readonly _qe: Queue_Entry_Minimum,
         private readonly _fm: FileManager,
-        destination: AudioNode,
     ) {
         super();
 
@@ -24,40 +23,26 @@ export class Track extends EventEmitter {
         this._audio.loop = false;
         this._audio.autoplay = true;
 
-        // this._audio.onloadedmetadata = this.onloadedmetadata.bind(this);
-        this._audio.oncanplay = this.oncanplay.bind(this);
-        this._audio.ontimeupdate = this.ontimeupdate.bind(this);
+        this.once('internal_audioplayable', this.oncanplay.bind(this));
+        this._audio.oncanplay = () => this.emit('internal_audioplayable');
 
         const info = _fm.track(this._qe.file);
 
         this._audio.src = info.remoteUrl;
         info.data().then((blob) => {
             this._ready = false;
-            this._audio.oncanplay = this.oncanplay.bind(this);
+            this.once('internal_audioplayable', this.oncanplay.bind(this));
             this._audio.src = URL.createObjectURL(blob);
         });
 
-        this._node = this._ctx.createMediaElementSource(this._audio);
-        this._localGain = this._ctx.createGain();
-        this._node.connect(this._localGain);
-        this._localGain.connect(destination);
+        this._globalVolumeListener = () => this.update(this._status);
+        globalVolumeLRV.on('set', this._globalVolumeListener);
     }
 
     private oncanplay() {
         console.log('oncanplay triggered');
         this._ready = true;
         this.update(this._status);
-        this._audio.oncanplay = null;
-    }
-
-    private ontimeupdate() {
-        return;
-        if (this._status.queue.length !== 1) return;
-
-        // Provides a tight loop. 0.44 is an arbitrary amount that seems to work nicely for this end.
-        if (this._audio.duration - this._audio.currentTime < 0.44) {
-            this._audio.currentTime = 0;
-        }
     }
 
     private _startTime = 0;
@@ -139,7 +124,7 @@ export class Track extends EventEmitter {
                     this.emit('blocked', e);
                 });
             }
-            this._audio.volume = 1;
+            this._audio.volume = this._status.volume * globalVolumeLRV.value;
             const targetTime = times.secondsIntoLoop - times.startTime;
             if (Math.abs(this._audio.currentTime - targetTime) > 0.5) {
                 // only update if we're off by more than half a second. Prevents skipping with
@@ -173,8 +158,7 @@ export class Track extends EventEmitter {
 
         this._audio.pause();
         this._audio.src = '';
-        this._node.disconnect();
-        this._localGain.disconnect();
+        globalVolumeLRV.off('set', this._globalVolumeListener);
     }
 
     public async unblock() {

@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRecoilValue } from 'recoil';
-import { globalVolumeAtom } from '../atoms';
 import useFileManager from '../useFileManager';
 import { Deck } from './deck';
 import { Play_Status_Minimum } from '../graphql_type_helper';
 import { useWorkspaceStatuses } from '../utility';
+import { useLocalReactiveValue } from '../local_reactive';
+import { globalVolumeLRV } from '../atoms';
 
 const useAudioManager = (() => {
     // <== Static Members ==>
     let initialized = false;
-    let ac = null as never as AudioContext;
-    let masterGain = null as never as GainNode;
 
     // <== Static Functions ==>
 
@@ -19,12 +17,6 @@ const useAudioManager = (() => {
         useEffect(() => {
             if (initialized) return;
             initialized = true;
-            const AudioContext = window.AudioContext ?? window.webkitAudioContext;
-            ac = new AudioContext();
-            ac.onstatechange = () => console.log(ac.state);
-
-            masterGain = ac.createGain();
-            masterGain.connect(ac.destination);
         }, []);
 
         // <== Local State ==>
@@ -32,7 +24,6 @@ const useAudioManager = (() => {
 
         const { main, ambience, sfx } = useWorkspaceStatuses(workspaceId);
 
-        const globalVolume = useRecoilValue(globalVolumeAtom);
         const mainTrack = useRef<Deck | null>(null);
         const ambientTracks = useRef<Deck[]>([]);
 
@@ -41,7 +32,6 @@ const useAudioManager = (() => {
         // <== Private Functions ==>
 
         const unblock = useCallback(() => {
-            ac.resume();
             setBlocked(false);
             document.removeEventListener('click', unblock);
         }, []);
@@ -53,11 +43,10 @@ const useAudioManager = (() => {
 
         const createTrack = useCallback(
             (state: Play_Status_Minimum) => {
-                const tr: Deck = new Deck(state, fileManager, ac);
+                const tr: Deck = new Deck(state, fileManager);
                 tr.on('loop', onFinish);
                 tr.on('next', onFinish);
                 tr.on('blocked', () => setBlocked(true));
-                tr.connect(masterGain);
                 return tr;
             },
             [fileManager, onFinish],
@@ -130,24 +119,6 @@ const useAudioManager = (() => {
                 }
             }
         }, [ambience, sfx, fileManager, createTrack]);
-
-        useEffect(() => {
-            // TODO: Shadow pausing
-            masterGain.gain.value = globalVolume;
-            if (globalVolume === 0 && ac.state === 'running') {
-                // mainTrack.current?.pause();
-                // for (const track of ambientTracks.current) {
-                //     track.pause();
-                // }
-                ac.suspend();
-            } else if (ac.state === 'suspended') {
-                ac.resume();
-                mainTrack.current?.rereconcile();
-                for (const track of ambientTracks.current) {
-                    track.rereconcile();
-                }
-            }
-        }, [globalVolume]);
 
         return {
             blocked,

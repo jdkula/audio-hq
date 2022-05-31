@@ -10,12 +10,12 @@ import React, { FC, useState, KeyboardEvent } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
 import { File_Minimum } from '../lib/graphql_type_helper';
 import { useSetFilesPathMutation } from '../lib/generated/graphql';
-import { useRecoilValue } from 'recoil';
-import { pathAtom } from '../lib/atoms';
+import { useLocalReactiveValue } from '../lib/local_reactive';
+import { currentPathLRV } from '../lib/atoms';
 
 const FolderAddDialog: FC<{ files: File_Minimum[]; cancel: () => void }> = ({ files, cancel }) => {
     const [name, setName] = useState('');
-    const currentPath = useRecoilValue(pathAtom);
+    const [currentPath] = useLocalReactiveValue(currentPathLRV);
 
     const [, setPath] = useSetFilesPathMutation();
 

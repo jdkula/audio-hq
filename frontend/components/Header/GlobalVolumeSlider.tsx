@@ -8,11 +8,11 @@
 
 import { Typography, Popover, Slider, IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import React, { useState, FC } from 'react';
-import { useRecoilState } from 'recoil';
 import styled from '@emotion/styled';
 
-import { globalVolumeAtom } from '~/lib/atoms';
 import VolumeButton from '../VolumeButton';
+import { useLocalReactiveValue } from '../../lib/local_reactive';
+import { globalVolumeLRV } from '../../lib/atoms';
 
 const Container = styled.div`
     color: white;
@@ -29,7 +29,7 @@ const GlobalVolumeSlider: FC = () => {
     const theme = useTheme();
     const isXSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+    const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 

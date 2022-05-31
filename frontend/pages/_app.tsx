@@ -19,7 +19,6 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import StylesProvider from '@mui/styles/StylesProvider';
-import { RecoilRoot } from 'recoil';
 import { amber, cyan } from '@mui/material/colors';
 import '@emotion/react';
 import { DefaultTheme } from '@mui/styles';
@@ -114,11 +113,9 @@ export default function App({ Component, pageProps }: AppProps): ReactElement {
                                 <meta name="theme-color" content="#ffffff" />
                             </Head>
                             <CssBaseline />
-                            <RecoilRoot>
-                                <Provider value={client}>
-                                    <Component {...pageProps} />
-                                </Provider>
-                            </RecoilRoot>
+                            <Provider value={client}>
+                                <Component {...pageProps} />
+                            </Provider>
                         </ThemeProvider>
                     </MuiThemeProvider>
                 </StyledEngineProvider>

@@ -11,9 +11,6 @@ import AddFileDialog from '../AddFileDialog';
 import React, { useContext, FunctionComponent, useState, FC } from 'react';
 import Head from 'next/head';
 import { Add } from '@mui/icons-material';
-import { useRecoilValue } from 'recoil';
-
-import { pathAtom } from '~/lib/atoms';
 import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
@@ -21,6 +18,8 @@ import NextLink from 'next/link';
 import { WorkspaceIdContext, WorkspaceNameContext } from '../../lib/utility';
 import useFileManager from '../../lib/useFileManager';
 import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
+import { useLocalReactiveValue } from '../../lib/local_reactive';
+import { currentPathLRV } from '../../lib/atoms';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -64,7 +63,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [adding, setAdding] = useState(false);
 
-    const path = useRecoilValue(pathAtom);
+    const [path] = useLocalReactiveValue(currentPathLRV);
 
     const allCached = fileManager.cached.size === files.length;
 

@@ -1,9 +1,9 @@
 import { useContext, useEffect, useRef } from 'react';
-import { useRecoilState } from 'recoil';
-import { globalVolumeAtom } from '../atoms';
 import { useStopTrackMutation, useUpdateTrackMutation } from '../generated/graphql';
 import { getTrackInfo, useWorkspaceStatuses, WorkspaceNameContext } from '../utility';
 import { File_Minimum } from '../graphql_type_helper';
+import { useLocalReactiveValue } from '../local_reactive';
+import { globalVolumeLRV } from '../atoms';
 
 const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);
@@ -11,7 +11,7 @@ const useMediaSession = (workspaceId: string): void => {
     const [, delTrack] = useStopTrackMutation();
     const [, updateTrack] = useUpdateTrackMutation();
 
-    const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
+    const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
     const previousVolumeValue = useRef<number | null>(null);
 
     let currentlyPlaying: File_Minimum | null = null;

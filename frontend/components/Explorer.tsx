@@ -18,8 +18,6 @@ import FileEntry from './FileEntry';
 import FolderAddDialog from './AddFolderDialog';
 import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
-import { useRecoilState } from 'recoil';
-import { pathAtom } from '~/lib/atoms';
 import SearchBar from './SearchBar';
 import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
 import _ from 'lodash';
@@ -32,6 +30,8 @@ import {
     useWorkspaceFilesQuery,
 } from '../lib/generated/graphql';
 import useFileManager from '../lib/useFileManager';
+import { useLocalReactiveValue } from '../lib/local_reactive';
+import { currentPathLRV } from '../lib/atoms';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -112,7 +112,7 @@ export const Explorer: FC = () => {
 
     const favs = useFavorites();
     const [viewingFavorites, setViewingFavorites] = useState(false);
-    const [path, setPath] = useRecoilState(pathAtom);
+    const [path, setPath] = useLocalReactiveValue(currentPathLRV);
     const [combining, setCombining] = useState<File_Minimum[]>([]);
 
     const [searching, setSearching] = useState(false);

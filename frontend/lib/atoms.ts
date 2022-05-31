@@ -1,11 +1,4 @@
-import { atom } from 'recoil';
+import { LocalReactiveValue } from './local_reactive';
 
-export const pathAtom = atom<string[]>({
-    key: 'current_path',
-    default: [],
-});
-
-export const globalVolumeAtom = atom({
-    key: 'global_volume',
-    default: 0.2,
-});
+export const currentPathLRV = new LocalReactiveValue<string[]>([]);
+export const globalVolumeLRV = new LocalReactiveValue<number>(0.2);
