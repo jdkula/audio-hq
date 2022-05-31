@@ -15,6 +15,7 @@ generates:
         numeric: number
         timestamptz: Date
         uuid: string
+        bigint: number
     plugins:
       - "typescript"
       - "typescript-operations"
