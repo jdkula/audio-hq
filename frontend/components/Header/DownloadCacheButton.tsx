@@ -8,11 +8,12 @@
 
 import { Box, IconButton, Tooltip } from '@mui/material';
 import React, { useContext, useState, FC } from 'react';
-import { FileManagerContext } from '~/lib/useFileManager';
 import { GetApp } from '@mui/icons-material';
 
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
 import styled from '@emotion/styled';
+import useFileManager from '../../lib/useFileManager';
+import { WorkspaceIdContext } from '../../lib/utility';
 
 const DownloadButtonContainer = styled.div`
     color: white;
@@ -20,7 +21,8 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const DownloadCacheButton: FC = () => {
-    const fileManager = useContext(FileManagerContext);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const fileManager = useFileManager(workspaceId);
 
     const [downloading, setDownloading] = useState(false);
     const [downloadTotal, setDownloadTotal] = useState(0);
@@ -28,10 +30,7 @@ const DownloadCacheButton: FC = () => {
     const filePartial =
         fileManager.fetching.size === 0
             ? 0
-            : fileManager.fetching
-                  .map((j) => (j.status === 'saving' ? { ...j, progress: 1 } : j))
-                  .filter((j) => j.progress !== null)
-                  .reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.size;
+            : fileManager.fetching.reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.size;
     const downloadPercent =
         downloadTotal === 0
             ? undefined

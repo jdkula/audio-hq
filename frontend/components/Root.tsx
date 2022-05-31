@@ -1,9 +1,14 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useEffect } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
-import { WorkspaceIdContext } from '../lib/utility';
+import { WorkspaceIdContext, WorkspaceNameContext } from '../lib/utility';
+import {
+    useCreateWorkspaceMutation,
+    useEventsSubscription,
+    useWorkspaceDetailByNameQuery,
+} from '../lib/generated/graphql';
 
 const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
@@ -25,13 +30,29 @@ const Root: FC<{
     workspace?: string | null;
     children?: React.ReactNode;
 }> = (props) => {
-    if (!props.workspace) {
-        return <LoadingPage workspace={props.workspace ?? '...'} />;
+    const [{ data: workspaceRaw, ...query }, refetch] = useWorkspaceDetailByNameQuery({
+        variables: { workspaceName: props.workspace ?? '' },
+        pause: !props.workspace,
+    });
+    const [, createWorkspace] = useCreateWorkspaceMutation();
+    const workspaceId = workspaceRaw?.workspace?.[0]?.id;
+    const workspaceName = workspaceRaw?.workspace?.[0]?.name;
+
+    useEffect(() => {
+        if (!workspaceRaw && props.workspace && !query.stale && !query.fetching && !query.error) {
+            createWorkspace({ name: props.workspace }).then(() => refetch());
+        }
+    }, [createWorkspace, refetch, workspaceRaw, query, props.workspace]);
+
+    if (!props.workspace || !workspaceName || !workspaceId) {
+        return <LoadingPage workspace={workspaceName ?? props.workspace ?? '...'} />;
     }
 
     return (
-        <WorkspaceIdContext.Provider value={props.workspace}>
-            <Subroot>{props.children}</Subroot>
+        <WorkspaceIdContext.Provider value={workspaceId}>
+            <WorkspaceNameContext.Provider value={workspaceName}>
+                <Subroot>{props.children}</Subroot>
+            </WorkspaceNameContext.Provider>
         </WorkspaceIdContext.Provider>
     );
 };

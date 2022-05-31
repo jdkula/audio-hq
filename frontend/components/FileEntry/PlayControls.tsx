@@ -6,17 +6,17 @@
  */
 
 import styled from '@emotion/styled';
-import { File } from '~/lib/Workspace';
 
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
-import { Tooltip, IconButton } from '@mui/material';
-import { WorkspaceContext } from '~/lib/useWorkspace';
+import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
-import useAlt from '~/lib/useAlt';
+import { useAlt, useWorkspaceStatuses, WorkspaceIdContext } from '../../lib/utility';
+import { Play_Status_Type_Enum_Enum, usePlayTrackMutation } from '../../lib/generated/graphql';
+import { File_Minimum } from '../../lib/graphql_type_helper';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -27,16 +27,19 @@ const PlayControlsContainer = styled.div`
 
 interface PlayControlsProps {
     snapshot: DraggableStateSnapshot;
-    file: File;
+    file: File_Minimum;
 }
 
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
-    const workspace = useContext(WorkspaceContext);
+    const workspaceId = useContext(WorkspaceIdContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
+    const { main, sfx, ambience } = useWorkspaceStatuses(workspaceId);
 
     const altKey = useAlt();
 
     const sfxHighlightTimeoutHandle = useRef<number | null>(null);
+
+    const [, playSong] = usePlayTrackMutation();
 
     useEffect(
         () => () => {
@@ -48,11 +51,30 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        workspace.resolver({ ambience: { queue: [file.id], timePlayed: 0, pauseTime: null } });
+        playSong({
+            workspaceId,
+            track: {
+                workspace_id: workspaceId,
+                queue: { data: [{ file_id: file.id }] },
+                type: Play_Status_Type_Enum_Enum.Ambience,
+                pause_timestamp: null,
+                start_timestamp: new Date(),
+            },
+        });
     };
 
     const onPlay = async () => {
-        workspace.resolver({ playing: { queue: [file.id], timePlayed: 0, pauseTime: null } });
+        playSong({
+            workspaceId,
+            isMain: true,
+            track: {
+                workspace_id: workspaceId,
+                queue: { data: [{ file_id: file.id }] },
+                type: Play_Status_Type_Enum_Enum.Main,
+                pause_timestamp: null,
+                start_timestamp: new Date(),
+            },
+        });
     };
 
     const onSfx = async () => {
@@ -62,11 +84,14 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             sfxHighlightTimeoutHandle.current = null;
         }, 2000) as unknown as number;
 
-        workspace.resolver({
-            sfx: {
-                queue: [file.id],
-                timePlayed: 0,
-                pauseTime: null,
+        playSong({
+            workspaceId,
+            track: {
+                workspace_id: workspaceId,
+                queue: { data: [{ file_id: file.id }] },
+                type: Play_Status_Type_Enum_Enum.Sfx,
+                pause_timestamp: null,
+                start_timestamp: new Date(),
             },
         });
     };
@@ -77,7 +102,13 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
-                        <PlayArrow color={workspace.state.playing?.queue.includes(file.id) ? 'primary' : undefined} />
+                        <PlayArrow
+                            color={
+                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
+                                    ? 'primary'
+                                    : undefined
+                            }
+                        />
                     )}
                 </IconButton>
             </Tooltip>
@@ -92,9 +123,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     <IconButton onClick={onAmbience} size="large">
                         <AddIcon
                             color={
-                                workspace.state.ambience.find((ps) => ps.queue.includes(file.id))
-                                    ? 'primary'
-                                    : undefined
+                                sfx.find((ps) => ps.queue.map((q) => q.id).includes(file.id)) ? 'primary' : undefined
                             }
                         />
                     </IconButton>

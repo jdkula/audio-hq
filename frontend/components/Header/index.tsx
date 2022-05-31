@@ -9,17 +9,18 @@
 import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden, Link } from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
 import React, { useContext, FunctionComponent, useState, FC } from 'react';
-import { FileManagerContext } from '~/lib/useFileManager';
 import Head from 'next/head';
 import { Add } from '@mui/icons-material';
 import { useRecoilValue } from 'recoil';
 
 import { pathAtom } from '~/lib/atoms';
-import { WorkspaceContext } from '~/lib/useWorkspace';
 import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
+import { WorkspaceIdContext, WorkspaceNameContext } from '../../lib/utility';
+import useFileManager from '../../lib/useFileManager';
+import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -54,14 +55,18 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => (
 );
 
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
-    const workspace = useContext(WorkspaceContext);
-    const fileManager = useContext(FileManagerContext);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const workspaceName = useContext(WorkspaceNameContext);
+    const fileManager = useFileManager(workspaceId);
+
+    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
+    const files = filesRaw?.file ?? [];
 
     const [adding, setAdding] = useState(false);
 
     const path = useRecoilValue(pathAtom);
 
-    const allCached = fileManager.cached.size === workspace.files.length;
+    const allCached = fileManager.cached.size === files.length;
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
@@ -71,7 +76,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
             <Head>
                 <title>
-                    Audio HQ – {workspace ? workspace.name : 'Loading...'}
+                    Audio HQ – {workspaceName || 'Loading...'}
                     {!host ? ' – Minimal View' : ''}
                 </title>
             </Head>
@@ -81,7 +86,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         <NextLink href={'/'}>
                             <Link href={'/'} color="inherit" underline="hover">
                                 <Typography variant={isSmall ? 'h5' : 'h4'}>
-                                    Audio HQ – {workspace ? workspace.name : 'Loading...'}
+                                    Audio HQ – {workspaceName || 'Loading...'}
                                 </Typography>
                             </Link>
                         </NextLink>

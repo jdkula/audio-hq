@@ -10,13 +10,13 @@
 import { Paper } from '@mui/material';
 import React, { FC, useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
-import { File as WSFile } from '~/lib/Workspace';
 import styled from '@emotion/styled';
 
 import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
+import { File_Minimum } from '../../lib/graphql_type_helper';
 
 export const FileContainer = styled(Paper)`
     display: grid;
@@ -47,7 +47,7 @@ export const FileContainer = styled(Paper)`
     }
 `;
 
-const FileEntry: FC<{ file: WSFile; index: number }> = ({ file, index }) => {
+const FileEntry: FC<{ file: File_Minimum; index: number }> = ({ file, index }) => {
     const [showDelete, setDelete] = useState(false);
 
     const [editing, setEditing] = useState(false);

@@ -7,14 +7,14 @@
 
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { FC, useContext } from 'react';
-import { FileManagerContext } from '~/lib/useFileManager';
-import { File as WSFile } from '~/lib/Workspace';
+import { File_Minimum } from '../../lib/graphql_type_helper';
+import { useDeleteFileMutation } from '../../lib/generated/graphql';
 
-const FileDeleteDialog: FC<DialogProps & { file: WSFile }> = ({ file, ...props }) => {
-    const fileManager = useContext(FileManagerContext);
+const FileDeleteDialog: FC<DialogProps & { file: File_Minimum }> = ({ file, ...props }) => {
+    const [, deleteFile] = useDeleteFileMutation();
 
     const doDelete = () => {
-        fileManager.delete(file.id);
+        deleteFile({ job: { file_id: file.id } });
         props.onClose?.({}, 'escapeKeyDown');
     };
 

@@ -8,9 +8,9 @@
 import { Typography } from '@mui/material';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
-import toTimestamp from '~/lib/toTimestamp';
-import { File } from '~/lib/Workspace';
 import FileDetailsEditor from './FileDetailsEditor';
+import { File_Minimum } from '../../lib/graphql_type_helper';
+import { toTimestamp } from '../../lib/utility';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -32,7 +32,9 @@ const TextContainer = styled.div`
     cursor: text;
 `;
 
-const TimestampContainer = styled(Typography)<{ $editing?: boolean }>`
+const TimestampContainer = styled(Typography, {
+    shouldForwardProp: (propName) => !(propName as string).startsWith('$'),
+})<{ $editing?: boolean }>`
     padding-left: 1rem;
     text-align: right;
     ${({ $editing }) => ($editing ? '' : 'flex-grow: 1;')}
@@ -44,7 +46,7 @@ interface FileDetailsProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: File;
+    file: File_Minimum;
 }
 
 const FileDetails: FC<FileDetailsProps> = (props) => {

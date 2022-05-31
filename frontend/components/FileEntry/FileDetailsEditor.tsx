@@ -7,8 +7,10 @@
 import { ClickAwayListener, TextField, Button, Box } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import { FileManagerContext } from '~/lib/useFileManager';
-import { File } from '~/lib/Workspace';
+import useFileManager from '../../lib/useFileManager';
+import { WorkspaceIdContext } from '../../lib/utility';
+import { File_Minimum } from '../../lib/graphql_type_helper';
+import { useUpdateFileMutation } from '../../lib/generated/graphql';
 
 const EditorContainer = styled.div`
     display: flex;
@@ -36,14 +38,16 @@ interface FileDetailsEditorProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: File;
+    file: File_Minimum;
 }
 
 const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocusTitle, file }) => {
-    const fileManager = useContext(FileManagerContext);
+    const workspaceId = useContext(WorkspaceIdContext);
 
     const [editName, setEditName] = useState(file.name);
     const [editDescription, setEditDescription] = useState(file.description);
+
+    const [, updateFile] = useUpdateFileMutation();
 
     useEffect(() => {
         setEditName(file.name);
@@ -52,9 +56,12 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
 
     const saveEdits = () => {
         finishEditing();
-        fileManager.update(file.id, {
-            name: editName,
-            description: editDescription,
+        updateFile({
+            id: file.id,
+            update: {
+                name: editName,
+                description: editDescription,
+            },
         });
     };
 

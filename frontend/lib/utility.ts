@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { Set } from 'immutable';
 import { File_Minimum, Play_Status_Minimum } from './graphql_type_helper';
-import { Play_Status_Type_Enum_Enum, usePlayStatusesSubscription } from './generated/graphql';
+import { Play_Status_Type_Enum_Enum, useEventsSubscription, usePlayStatusesQuery } from './generated/graphql';
 import { useRouter } from 'next/router';
 import { getUnixTime } from 'date-fns';
 
@@ -124,6 +124,8 @@ function getLocalStorage<T>(key: string, defaultValue?: T): T | null;
 function getLocalStorage<T>(key: string, defaultValue: T): T;
 function getLocalStorage<T>(key: string): T | null;
 function getLocalStorage<T>(key: string, defaultValue?: T): T | null {
+    if (typeof window === 'undefined') return defaultValue ?? null;
+
     return JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue ?? null;
 }
 
@@ -134,6 +136,10 @@ export function useLocalStorage<T>(
     defaultValue?: T,
 ): [value: T | null, setValue: Dispatch<SetStateAction<T | null>>] {
     const [value, setValueInternal] = useState<T | null>(getLocalStorage<T>(key, defaultValue));
+
+    useEffect(() => {
+        setValueInternal(getLocalStorage<T>(key, defaultValue));
+    }, [key, defaultValue]);
 
     useEffect(() => {
         if (localStorageListeners[key] === undefined) {
@@ -198,13 +204,17 @@ const kMaxRecents = 5;
 type LocalRecents = [recents: string[], addRecent: (workspace: string) => void];
 
 export function useLocalRecents(): LocalRecents {
-    const [recents, setRecents] = useLocalStorage<string[]>(kLocalRecentKey, []);
+    const [recents, setRecentsInternal] = useLocalStorage<string[]>(kLocalRecentKey);
 
-    return [
-        recents,
+    const setRecents = useCallback(
         (workspace: string) =>
-            setRecents((recents) => [workspace, ...recents.filter((ws) => ws !== workspace)].slice(0, kMaxRecents)),
-    ];
+            setRecentsInternal((recents) =>
+                [workspace, ...(recents ?? []).filter((ws) => ws !== workspace)].slice(0, kMaxRecents),
+            ),
+        [],
+    );
+
+    return [recents ?? [], setRecents];
 }
 
 export function usePeriodicEffect(
@@ -226,19 +236,17 @@ export function useWorkspaceStatuses(workspaceId: string): {
     ambience: Play_Status_Minimum[];
     sfx: Play_Status_Minimum[];
 } {
-    const [{ data: mainPlayStatusRaw }] = usePlayStatusesSubscription({
-        variables: { workspaceId, type: Play_Status_Type_Enum_Enum.Main },
-    });
-    const [{ data: ambPlayStatusRaw }] = usePlayStatusesSubscription({
-        variables: { workspaceId, type: Play_Status_Type_Enum_Enum.Ambience },
-    });
-    const [{ data: sfxPlayStatusRaw }] = usePlayStatusesSubscription({
-        variables: { workspaceId, type: Play_Status_Type_Enum_Enum.Sfx },
+    useEventsSubscription({
+        variables: { workspaceId: workspaceId },
     });
 
-    const main = mainPlayStatusRaw?.play_status[0] ?? null;
-    const ambience = ambPlayStatusRaw?.play_status ?? [];
-    const sfx = sfxPlayStatusRaw?.play_status ?? [];
+    const [{ data: statusData }] = usePlayStatusesQuery({
+        variables: { workspaceId },
+    });
+
+    const main = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Main)[0] ?? null;
+    const ambience = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Ambience) ?? [];
+    const sfx = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Sfx) ?? [];
 
     return { main, ambience, sfx };
 }
@@ -250,3 +258,4 @@ export function useQueryParameter(id: string): string | null {
 }
 
 export const WorkspaceIdContext = createContext('');
+export const WorkspaceNameContext = createContext('');

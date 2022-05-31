@@ -5,12 +5,11 @@ import { Set } from 'immutable';
 import ConvertOptions from './ConvertOptions';
 import {
     useAddJobMutation,
-    useWorkspaceFilesSubscription,
-    useWorkspaceJobsSubscription,
     useDeleteFileMutation,
-    File as AHQFile,
-    WorkspaceFilesSubscription,
-    WorkspaceJobsSubscription,
+    useWorkspaceFilesQuery,
+    useWorkspaceJobsQuery,
+    WorkspaceFilesQuery,
+    WorkspaceJobsQuery,
 } from './generated/graphql';
 import { File_Minimum } from './graphql_type_helper';
 
@@ -41,16 +40,16 @@ const useFileManager = (() => {
 
     return (workspaceId: string) => {
         // <== State ==>
-        const [filesData] = useWorkspaceFilesSubscription({ variables: { workspaceId } });
-        const [jobsData] = useWorkspaceJobsSubscription({ variables: { workspaceId } });
+        const [filesData] = useWorkspaceFilesQuery({ variables: { workspaceId } });
+        const [jobsData] = useWorkspaceJobsQuery({ variables: { workspaceId } });
 
         const [, addJob] = useAddJobMutation();
         const [, delFile] = useDeleteFileMutation();
 
-        const files = new Map<string, WorkspaceFilesSubscription['file'][number]>(
+        const files = new Map<string, WorkspaceFilesQuery['file'][number]>(
             (filesData.data?.file ?? []).map((file) => [file.id, { ...file }]),
         );
-        const jobs = new Map<string, WorkspaceJobsSubscription['job'][number]>(
+        const jobs = new Map<string, WorkspaceJobsQuery['job'][number]>(
             (jobsData.data?.job ?? []).map((job) => [job.id, job]),
         );
 
@@ -175,32 +174,35 @@ const useFileManager = (() => {
                 await delFile({ job: { file_id: id } });
             },
             reset,
-            track: (file: File_Minimum): { remoteUrl: string; data: Promise<Blob> } => {
+            track: (file: File_Minimum): { remoteUrl: string; data: () => Promise<Blob> } => {
                 const inflight = fetchCallbacks.has(file.id);
 
-                if (inflight)
+                if (inflight) {
+                    const promise = new Promise<Blob>((resolve) => addFetchCallback(file.id, resolve));
                     return {
                         remoteUrl: file.download_url,
-                        data: new Promise((resolve) => addFetchCallback(file.id, resolve)),
+                        data: () => promise,
                     };
-                else
+                } else {
+                    const promise = cache
+                        .getAttachment(file.id, 'file')
+                        .then((data) => {
+                            setCached((cached) => cached.add(file.id));
+                            fetchCallbacks.get(file.id)?.forEach((cb) => cb(data as Blob));
+                            fetchCallbacks.delete(file.id);
+                            return data as Blob;
+                        })
+                        .catch(() =>
+                            retrieveFile(file.id, file.download_url).then((blob) => {
+                                cacheFile(file.id, blob);
+                                return blob;
+                            }),
+                        );
                     return {
                         remoteUrl: file.download_url,
-                        data: cache
-                            .getAttachment(file.id, 'file')
-                            .then((data) => {
-                                setCached((cached) => cached.add(file.id));
-                                fetchCallbacks.get(file.id)?.forEach((cb) => cb(data as Blob));
-                                fetchCallbacks.delete(file.id);
-                                return data as Blob;
-                            })
-                            .catch(() =>
-                                retrieveFile(file.id, file.download_url).then((blob) => {
-                                    cacheFile(file.id, blob);
-                                    return blob;
-                                }),
-                            ),
+                        data: () => promise,
                     };
+                }
             },
             upload: async (
                 name: string,

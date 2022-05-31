@@ -29,7 +29,7 @@ import {
     Play_Status_Type_Enum_Enum,
     usePlayTrackMutation,
     useUpdateFileMutation,
-    useWorkspaceFilesSubscription,
+    useWorkspaceFilesQuery,
 } from '../lib/generated/graphql';
 import useFileManager from '../lib/useFileManager';
 
@@ -122,7 +122,7 @@ export const Explorer: FC = () => {
 
     const fileManager = useFileManager(workspaceId);
 
-    const [{ data: filesRaw }] = useWorkspaceFilesSubscription({ variables: { workspaceId } });
+    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = filesRaw?.file ?? [];
 
     const [, playTrack] = usePlayTrackMutation();
@@ -143,6 +143,7 @@ export const Explorer: FC = () => {
             queue = _.shuffle(queue);
         }
         playTrack({
+            workspaceId: workspaceId,
             track: {
                 workspace_id: workspaceId,
                 speed: 1,

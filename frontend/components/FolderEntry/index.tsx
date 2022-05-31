@@ -26,11 +26,12 @@ import {
     IconButtonProps,
     ButtonProps,
 } from '@mui/material';
-import { FileManagerContext } from '~/lib/useFileManager';
-import { WorkspaceContext } from '~/lib/useWorkspace';
 import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
+import { WorkspaceIdContext } from '../../lib/utility';
+import useFileManager from '../../lib/useFileManager';
+import { useSetFilesPathMutation, useUpdateFileMutation, useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -106,8 +107,14 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     onClick,
     up,
 }) => {
-    const workspace = useContext(WorkspaceContext);
-    const fileManager = useContext(FileManagerContext);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const fileManager = useFileManager(workspaceId);
+
+    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
+    const files = filesRaw?.file ?? [];
+
+    const [, updateFile] = useUpdateFileMutation();
+    const [, updatePath] = useSetFilesPathMutation();
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
@@ -130,7 +137,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     };
 
     const subfiles = () =>
-        workspace.files.filter(
+        files.filter(
             (file) =>
                 file.path.length >= fullPath.length && fullPath.every((pathElement, i) => pathElement === file.path[i]),
         );
@@ -138,14 +145,20 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const onRename = () => {
         console.log('subfiles', subfiles(), 'path', path, 'fullPath', fullPath);
         subfiles().forEach((file) =>
-            fileManager.update(file.id, { path: [...path, newName, ...file.path.slice(fullPath.length)] }),
+            updatePath({
+                path: [...path, newName, ...file.path.slice(fullPath.length)],
+                files: [file.id],
+            }),
         );
         setRenaming(false);
     };
 
     const onDelete = () => {
         subfiles().forEach((file) =>
-            fileManager.update(file.id, { path: [...path, ...file.path.slice(fullPath.length)] }),
+            updatePath({
+                path: [...path, ...file.path.slice(fullPath.length)],
+                files: [file.id],
+            }),
         );
     };
 

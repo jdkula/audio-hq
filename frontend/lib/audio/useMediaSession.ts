@@ -1,23 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import { globalVolumeAtom } from '../atoms';
-import {
-    Play_Status_Type_Enum_Enum,
-    usePlayStatusesSubscription,
-    useStopTrackMutation,
-    useUpdateTrackMutation,
-} from '../generated/graphql';
-import { getTrackInfo } from '../utility';
+import { useStopTrackMutation, useUpdateTrackMutation } from '../generated/graphql';
+import { getTrackInfo, useWorkspaceStatuses, WorkspaceNameContext } from '../utility';
 import { File_Minimum } from '../graphql_type_helper';
 
 const useMediaSession = (workspaceId: string): void => {
-    const [{ data: rawMainStatuses }] = usePlayStatusesSubscription({
-        variables: { workspaceId, type: Play_Status_Type_Enum_Enum.Main },
-    });
+    const workspaceName = useContext(WorkspaceNameContext);
+    const { main } = useWorkspaceStatuses(workspaceId);
     const [, delTrack] = useStopTrackMutation();
     const [, updateTrack] = useUpdateTrackMutation();
-
-    const main = rawMainStatuses?.play_status[0] ?? null;
 
     const [globalVolume, setGlobalVolume] = useRecoilState(globalVolumeAtom);
     const previousVolumeValue = useRef<number | null>(null);
@@ -34,7 +26,7 @@ const useMediaSession = (workspaceId: string): void => {
         if (navigator.mediaSession) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentlyPlaying?.name ?? 'Nothing Playing',
-                artist: `Audio HQ - ${workspaceId ?? ''}`,
+                artist: `Audio HQ - ${workspaceName ?? ''}`,
             });
         }
     }, [workspaceId, currentlyPlaying]);

@@ -8,17 +8,16 @@
 import { Tooltip, IconButton } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import styled from '@emotion/styled';
-import { FileManagerContext } from '~/lib/useFileManager';
-import { File } from '~/lib/Workspace';
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
 
 import DeleteForever from '@mui/icons-material/DeleteForever';
 import DownloadIcon from '@mui/icons-material/CloudDownload';
 import EditIcon from '@mui/icons-material/Edit';
 import OfflinePinIcon from '@mui/icons-material/OfflinePin';
-import useAlt from '~/lib/useAlt';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import useFavorites from '~/lib/useFavorites';
+import useFileManager from '../../lib/useFileManager';
+import { useAlt, useFavorites, WorkspaceIdContext } from '../../lib/utility';
+import { File_Minimum } from '../../lib/graphql_type_helper';
 
 const StatusContainerPlacer = styled.div`
     display: flex;
@@ -34,29 +33,33 @@ const StatusContainer = styled.div`
 `;
 
 interface StatusControlsProps {
-    file: File;
+    file: File_Minimum;
     editing: boolean;
     setEditing: (editing: boolean) => void;
     setDelete: (deleting: boolean) => void;
 }
 
 const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, setDelete }) => {
-    const fileManager = useContext(FileManagerContext);
+    const workspaceId = useContext(WorkspaceIdContext);
+    const fileManager = useFileManager(workspaceId);
     const favs = useFavorites();
     const altKey = useAlt();
 
     const cached = fileManager.cached.has(file.id);
-    const downloadJob = fileManager.fetching.find((job) => (job.jobId as unknown as string) === file.id);
+    const downloadJob = fileManager.fetching.find((job) => job.id === file.id);
 
     const download = async () => {
-        fileManager.track(file.id);
+        fileManager.track(file);
     };
 
     const save = async () => {
-        fileManager.track(file.id, (blob) => {
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank', 'norel noreferrer');
-        });
+        fileManager
+            .track(file)
+            .data()
+            .then((blob) => {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank', 'norel noreferrer');
+            });
     };
 
     const toggleFavorite = () => {
