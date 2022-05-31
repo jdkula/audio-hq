@@ -25,16 +25,7 @@ const useAudio = (status: Play_Status_Minimum | null): AudioInfo => {
         setSeek(f.duration);
     }, [status]);
 
-    useEffect(() => {
-        const info = status ? getTrackInfo(status) : null;
-        if (info) {
-            const remaining = info.file.length - info.duration;
-            const handle = setTimeout(updateData, remaining * 1000);
-            return () => {
-                clearTimeout(handle);
-            };
-        }
-    }, [status, updateData]);
+    usePeriodicEffect(500, updateData);
 
     return {
         duration: f?.file.length ?? 2,

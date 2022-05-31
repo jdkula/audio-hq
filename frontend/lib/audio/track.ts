@@ -1,171 +1,188 @@
-import { FileManager } from '../useFileManager';
-import { getTrackInfo } from '../utility';
-import _ from 'lodash';
-import { Play_Status_Minimum } from '../graphql_type_helper';
 import { EventEmitter } from 'events';
+import { Play_Status_Minimum, Queue_Entry_Minimum } from '../graphql_type_helper';
+import { FileManager } from '../useFileManager';
+import { differenceInMilliseconds } from 'date-fns';
 
 export class Track extends EventEmitter {
-    private _fm: FileManager;
-    private readonly _status: Play_Status_Minimum;
+    private readonly _audio: HTMLAudioElement;
+    private readonly _node: MediaElementAudioSourceNode;
+    private readonly _localGain: GainNode;
 
-    private readonly _media: HTMLMediaElement;
-    private readonly _node: AudioNode;
-    private readonly _gain: GainNode;
+    private _ready = false;
 
-    private _curQueueIdx = 0;
-
-    constructor(state: Play_Status_Minimum, fm: FileManager, ctx: AudioContext, loop = true) {
+    constructor(
+        private _status: Play_Status_Minimum,
+        private readonly _ctx: AudioContext,
+        private readonly _qe: Queue_Entry_Minimum,
+        private readonly _fm: FileManager,
+        destination: AudioNode,
+    ) {
         super();
 
-        console.log('<<constructor running>>');
-        this._fm = fm;
-        this._status = state;
+        this._audio = new Audio();
+        this._audio.volume = 0;
+        this._audio.loop = false;
+        this._audio.autoplay = true;
 
-        const track = getTrackInfo(state, 0);
-        if (!track) throw new Error("No track found, but we're loading one??");
+        // this._audio.onloadedmetadata = this.onloadedmetadata.bind(this);
+        this._audio.oncanplay = this.oncanplay.bind(this);
+        this._audio.ontimeupdate = this.ontimeupdate.bind(this);
 
-        this._curQueueIdx = 0;
-        const info = fm.track(track.file);
-        info.data.then((blob) => (this._media.src = URL.createObjectURL(blob)));
+        const info = _fm.track(this._qe.file);
 
-        this._media = new Audio(info.remoteUrl);
-        this._node = ctx.createMediaElementSource(this._media);
-        this._gain = ctx.createGain();
-        this._node.connect(this._gain);
-        console.log(this._media);
-        console.log(this._node);
+        this._audio.src = info.remoteUrl;
+        info.data().then((blob) => {
+            this._ready = false;
+            this._audio.oncanplay = this.oncanplay.bind(this);
+            this._audio.src = URL.createObjectURL(blob);
+        });
 
-        this._media.preload = 'auto';
+        this._node = this._ctx.createMediaElementSource(this._audio);
+        this._localGain = this._ctx.createGain();
+        this._node.connect(this._localGain);
+        this._localGain.connect(destination);
+    }
 
-        let isTransitioning = false;
+    private oncanplay() {
+        console.log('oncanplay triggered');
+        this._ready = true;
+        this.update(this._status);
+        this._audio.oncanplay = null;
+    }
 
-        this._media.onloadstart = () => {
-            console.log('audio.current.onloadstart called');
-        };
+    private ontimeupdate() {
+        return;
+        if (this._status.queue.length !== 1) return;
 
-        this._media.onloadedmetadata = () => {
-            console.log('audio.current.onloadedmetadata called');
-            const inf = getTrackInfo(this._status, this._curQueueIdx);
-            if (!inf) {
-                return;
+        // Provides a tight loop. 0.44 is an arbitrary amount that seems to work nicely for this end.
+        if (this._audio.duration - this._audio.currentTime < 0.44) {
+            this._audio.currentTime = 0;
+        }
+    }
+
+    private _startTime = 0;
+    private _endTime = 0;
+
+    private getTimes(status: Play_Status_Minimum): {
+        startTime: number;
+        endTime: number;
+        secondsIntoLoop: number;
+        totalSeconds: number;
+        myTurn: boolean;
+    } {
+        // TODO: Keep track of speed, too.
+        const secondsSinceStart = differenceInMilliseconds(new Date(), status.start_timestamp) / 1000;
+        let startTime = 0;
+        let endTime = 0;
+        let found = false;
+        const totalSeconds = status.queue.reduce((prev, cur) => {
+            if (cur.id === this._qe.id) {
+                found = true;
+                startTime = prev;
+                endTime = prev + cur.file.length;
             }
-            this._media.currentTime = inf.duration;
-        };
+            return prev + cur.file.length;
+        }, 0);
 
-        this._media.oncanplay = () => {
-            console.log('audio.current.oncanplay called');
-            if (!this._status.pause_timestamp) {
-                isTransitioning = false;
-                console.log('Playing', this._media);
-                this._media.play().catch((e) => {
-                    console.log('Blocked', e);
-                    this.emit('blocked');
+        if (!found) {
+            throw new Error("This track wasn't found in the current play status!");
+        }
+
+        const secondsIntoLoop = secondsSinceStart % totalSeconds;
+
+        return {
+            startTime,
+            endTime,
+            secondsIntoLoop,
+            myTurn: startTime <= secondsIntoLoop && secondsIntoLoop <= endTime,
+            totalSeconds,
+        };
+    }
+
+    private onstart() {
+        console.log('onstart called');
+        if (this._audio.paused) {
+            this._audio.play().catch((e) => {
+                console.warn(e);
+                this.emit('blocked', e);
+            });
+        }
+        this.update(this._status);
+    }
+
+    private onend() {
+        console.log('onend called');
+        this.update(this._status);
+    }
+
+    private _stopTimeouts: (() => void) | null = null;
+
+    public update(status: Play_Status_Minimum) {
+        this._status = status;
+
+        this._stopTimeouts?.();
+        this._stopTimeouts = null;
+
+        if (!this._ready) return;
+
+        const times = this.getTimes(status);
+        this._startTime = times.startTime;
+        this._endTime = times.endTime;
+
+        const nextStart = (times.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
+        const nextEnd = (times.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
+
+        if (times.myTurn) {
+            if (this._audio.paused) {
+                this._audio.play().catch((e) => {
+                    console.warn(e);
+                    this.emit('blocked', e);
                 });
             }
-        };
-
-        this._media.onended = () => {
-            if (!loop) {
-                this.emit('end');
+            this._audio.volume = 1;
+            const targetTime = times.secondsIntoLoop - times.startTime;
+            if (Math.abs(this._audio.currentTime - targetTime) > 0.5) {
+                // only update if we're off by more than half a second. Prevents skipping with
+                // extra updates.
+                this._audio.currentTime = targetTime;
             }
-        };
-
-        this._media.loop = loop && this._status.queue.length === 1;
-        this._media.ontimeupdate = () => {
-            // 0.44 is an arbitrary buffer time where timeupdate will be able to seek before hitting the end.
-            if (this._media.duration - this._media.currentTime < 0.44 && !isTransitioning && loop) {
-                console.log('Looping/ending');
-                if (this._status.queue.length === 1) {
-                    this.emit('loop');
-                    this._media.currentTime = 0;
-                } else if (state.queue.length > 1) {
-                    this._curQueueIdx++;
-                    console.log('Moving to next file', this._curQueueIdx);
-                    const track = getTrackInfo(this._status, this._curQueueIdx);
-                    if (!track) throw new Error('Tried to get next index, failed');
-                    isTransitioning = true;
-                    const assign = () => {
-                        console.log('Assigning source now', this._curQueueIdx);
-                        const info = fm.track(track.file);
-                        info.data.then((blob) => (this._media.src = URL.createObjectURL(blob)));
-
-                        this._media.src = info.remoteUrl;
-                        this.emit('next');
-                    };
-                    if (track.duration < 0) {
-                        window.setTimeout(assign, -track.duration * 1000);
-                    } else {
-                        assign();
-                    }
-                }
-            }
-        };
-
-        this._gain.gain.value = state.volume;
-        this._media.playbackRate = state.speed;
-    }
-
-    connect(node: AudioNode) {
-        this._gain.connect(node);
-    }
-
-    play() {
-        this._media.play().catch((e) => console.warn(e));
-    }
-
-    pause() {
-        this._media.pause();
-    }
-
-    isReferentFor(state: Play_Status_Minimum): boolean {
-        return (
-            state.queue.length === this._status.queue.length &&
-            this._status.queue.every((id, idx) => id === state.queue[idx])
-        );
-    }
-
-    reconcile(newState: Play_Status_Minimum): boolean {
-        if (!this.isReferentFor(newState)) return false;
-
-        this._status.volume = newState.volume;
-        this._gain.gain.value = newState.volume;
-
-        this._status.speed = newState.speed;
-        this._media.playbackRate = newState.speed;
-
-        this._status.start_timestamp = newState.start_timestamp;
-        this._status.pause_timestamp = newState.pause_timestamp;
-        if (this._status.pause_timestamp && !this._media.paused) {
-            this._media.pause();
-        } else if (!this._status.pause_timestamp && this._media.paused) {
-            this._media.play().catch((e) => console.warn(e));
-        }
-        const inf = getTrackInfo(this._status);
-        if (!inf) {
-            return false;
+        } else {
+            this._audio.volume = 0;
         }
 
-        this._media.currentTime = inf.duration;
-        if (this._status.queue[this._curQueueIdx % this._status.queue.length].file.id !== inf.file.id) {
-            this._curQueueIdx = this._status.queue.findIndex((entry) => entry.file.id === inf.file.id);
-            const info = this._fm.track(inf.file);
-            info.data.then((blob) => (this._media.src = URL.createObjectURL(blob)));
-
-            this._media.src = info.remoteUrl;
+        if (status.queue.length != 1) {
+            const startHandle = setTimeout(this.onstart.bind(this), nextStart * 1000);
+            const endHandle = setTimeout(this.onend.bind(this), nextEnd * 1000);
+            this._stopTimeouts = () => {
+                clearTimeout(startHandle);
+                clearTimeout(endHandle);
+            };
+            console.log('Set timeouts: ', { nextStart, nextEnd });
+        } else {
+            const startHandle = setTimeout(this.onstart.bind(this), nextStart * 1000);
+            this._stopTimeouts = () => {
+                clearTimeout(startHandle);
+            };
+            console.log('Set timeouts: ', { nextStart });
         }
-
-        return _.isEqual(this._status, newState);
     }
 
-    rereconcile(): boolean {
-        return this.reconcile(this._status);
-    }
+    public destroy() {
+        this._stopTimeouts?.();
+        this._stopTimeouts = null;
 
-    destroy() {
-        console.log('Destroying...');
+        this._audio.pause();
+        this._audio.src = '';
         this._node.disconnect();
-        this._media.pause();
-        this._media.src = '';
-        this.removeAllListeners();
+        this._localGain.disconnect();
+    }
+
+    public async unblock() {
+        try {
+            await this._audio.play();
+            this.update(this._status);
+        } catch (e) {
+            this.emit('blocked', e);
+        }
     }
 }
