@@ -28,6 +28,7 @@ select_permissions:
         - progress_stage
         - url
         - workspace_id
+        - created_at
       filter: {}
   - role: worker
     permission:
@@ -43,6 +44,7 @@ select_permissions:
         - progress_stage
         - url
         - workspace_id
+        - created_at
       filter: {}
 update_permissions:
   - role: worker

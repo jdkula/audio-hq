@@ -1,0 +1,41 @@
+subscription NewJobsSubscription {
+    job(where: {assigned_worker: {_is_null: true}}, order_by: [{created_at: asc}]) {
+        id
+    }
+}
+
+subscription MyJobsSubscription($myId: uuid!) {
+    job(where: {assigned_worker: {_eq: $myId}}, order_by: [{created_at: asc}]) {
+        id
+    }
+}
+
+fragment FullJob on job {
+    id
+    workspace_id
+    url
+    file_upload
+
+    progress
+    progress_stage
+
+    name
+    description
+    path
+    options
+}
+
+mutation ClaimJob($myId: uuid!, $jobId: uuid!) {
+    update_job(where: {id: {_eq: $jobId}, assigned_worker: {_is_null: true}}, _set: {assigned_worker: $myId}) {
+        affected_rows
+        returning {
+            ...FullJob
+        }
+    }
+}
+
+mutation UpdateJobProgress($jobId: uuid!, $progressStage: String!, $progress: numeric!) {
+    update_job_by_pk(pk_columns: {id: $jobId}, _set: {progress_stage: $progressStage, progress: $progress}) {
+        ...FullJob
+    }
+}

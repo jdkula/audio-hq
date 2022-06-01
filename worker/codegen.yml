@@ -3,10 +3,10 @@ schema:
   - "http://localhost:8080/v1/graphql":
       headers:
         "X-Hasura-Admin-Secret": "${HASURA_GRAPHQL_ADMIN_SECRET}"
-        "X-Hasura-Role": "anonymous"
+        "X-Hasura-Role": "worker"
 documents: "graphql/**/*.graphql"
 generates:
-  lib/generated/graphql.tsx:
+  src/generated/graphql.ts:
     config:
       defaultScalarType: unknown
       scalars:
@@ -16,6 +16,8 @@ generates:
         timestamptz: Date
         uuid: string
         bigint: number
+      withHooks: false
+      gqlImport: '@urql/core#gql'
     plugins:
       - "typescript"
       - "typescript-operations"

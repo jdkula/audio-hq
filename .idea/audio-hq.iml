@@ -4,7 +4,9 @@
     <content url="file://$MODULE_DIR$/frontend" />
     <content url="file://$MODULE_DIR$/hasura" />
     <content url="file://$MODULE_DIR$/migration" />
-    <content url="file://$MODULE_DIR$/worker" />
+    <content url="file://$MODULE_DIR$/worker">
+      <excludeFolder url="file://$MODULE_DIR$/worker/dist" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
