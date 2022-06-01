@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Play_Status_Minimum, Queue_Entry_Minimum } from '../graphql_type_helper';
+import { Deck_Minimum, Track_Minimum } from '../graphql_type_helper';
 import { FileManager } from '../useFileManager';
 import { differenceInMilliseconds } from 'date-fns';
 import { globalVolumeLRV } from '../global_lrv';
@@ -11,11 +11,7 @@ export class Track extends EventEmitter {
 
     private readonly _globalVolumeListener: () => void;
 
-    constructor(
-        private _status: Play_Status_Minimum,
-        private readonly _qe: Queue_Entry_Minimum,
-        private readonly _fm: FileManager,
-    ) {
+    constructor(private _status: Deck_Minimum, private readonly _qe: Track_Minimum, private readonly _fm: FileManager) {
         super();
 
         this._audio = new Audio();
@@ -48,7 +44,7 @@ export class Track extends EventEmitter {
     private _startTime = 0;
     private _endTime = 0;
 
-    private getTimes(status: Play_Status_Minimum): {
+    private getTimes(status: Deck_Minimum): {
         startTime: number;
         endTime: number;
         secondsIntoLoop: number;
@@ -64,9 +60,9 @@ export class Track extends EventEmitter {
             if (cur.id === this._qe.id) {
                 found = true;
                 startTime = prev;
-                endTime = prev + cur.file.length;
+                endTime = prev + cur.file.length / status.speed;
             }
-            return prev + cur.file.length;
+            return prev + cur.file.length / status.speed;
         }, 0);
 
         if (!found) {
@@ -102,7 +98,7 @@ export class Track extends EventEmitter {
 
     private _stopTimeouts: (() => void) | null = null;
 
-    public update(status: Play_Status_Minimum) {
+    public update(status: Deck_Minimum) {
         this._status = status;
 
         this._stopTimeouts?.();
@@ -117,20 +113,21 @@ export class Track extends EventEmitter {
         const nextStart = (times.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
         const nextEnd = (times.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
 
-        if (times.myTurn) {
+        if (times.myTurn && !status.pause_timestamp) {
             if (this._audio.paused) {
                 this._audio.play().catch((e) => {
                     console.warn(e);
                     this.emit('blocked', e);
                 });
             }
-            this._audio.volume = this._status.volume * globalVolumeLRV.value;
-            const targetTime = times.secondsIntoLoop - times.startTime;
+            const targetTime = (times.secondsIntoLoop - times.startTime) * this._status.speed;
             if (Math.abs(this._audio.currentTime - targetTime) > 0.5) {
                 // only update if we're off by more than half a second. Prevents skipping with
                 // extra updates.
                 this._audio.currentTime = targetTime;
             }
+            this._audio.volume = this._status.volume * globalVolumeLRV.value;
+            this._audio.playbackRate = this._status.speed;
         } else {
             this._audio.volume = 0;
         }
