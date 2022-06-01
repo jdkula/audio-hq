@@ -211,14 +211,23 @@ const useFileManager = (() => {
                 description?: string,
                 options?: ConvertOptions,
             ) => {
-                const ab = await file.arrayBuffer();
+                const base64 = await new Promise<string>((resolve, reject) => {
+                    const fr = new FileReader();
+                    fr.onload = () => {
+                        resolve(fr.result as string);
+                    };
+                    fr.onerror = (e) => {
+                        reject(e);
+                    };
+                    fr.readAsDataURL(file);
+                });
 
                 const job = {
                     name,
                     description,
                     options,
                     url: null,
-                    file_upload: ab,
+                    file_upload: base64,
                     path: currentPath,
                     workspace_id: workspaceId,
                 };

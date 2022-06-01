@@ -57,20 +57,21 @@ CREATE TABLE public.track
 
 CREATE TABLE public.job
 (
-    id              uuid    NOT NULL DEFAULT gen_random_uuid(),
-    name            text    NOT NULL,
-    description     text    NOT NULL default '',
-    path            jsonb   NOT NULL default json_build_array(),
+    id              uuid  NOT NULL DEFAULT gen_random_uuid(),
+    name            text  NOT NULL,
+    description     text  NOT NULL default '',
+    path            jsonb NOT NULL default json_build_array(),
     url             text,
     file_upload     bytea,
-    options         jsonb   NOT NULL default json_build_object(),
-    assigned_worker uuid             DEFAULT NULL,
-    progress        numeric NOT NULL,
-    progress_stage  text    NOT NULL,
-    workspace_id    uuid    NOT NULL,
+    options         jsonb NOT NULL default json_build_object(),
+    assigned_worker uuid           DEFAULT NULL,
+    progress        numeric        DEFAULT NULL,
+    progress_stage  text  NOT NULL DEFAULT 'waiting',
+    workspace_id    uuid  NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (workspace_id) REFERENCES public.workspace (id) ON UPDATE restrict ON DELETE restrict,
-    CONSTRAINT no_empty_jobs CHECK ((file_upload IS NULL) != (url IS NULL))
+    CONSTRAINT no_empty_jobs CHECK ((file_upload IS NULL) != (url IS NULL)),
+    CONSTRAINT file_maximum CHECK ( length(file_upload) <= 1024 * 1024 * 200 ) -- 200MiB
 );
 
 CREATE TABLE public.delete_job

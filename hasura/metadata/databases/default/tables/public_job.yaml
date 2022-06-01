@@ -20,7 +20,6 @@ select_permissions:
       columns:
         - assigned_worker
         - description
-        - file_upload
         - id
         - name
         - options
