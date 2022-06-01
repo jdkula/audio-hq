@@ -1,4 +1,4 @@
-fragment QueuedInfo on play_queue_entry {
+fragment TrackInfo on track {
     id
     created_at
     file {
@@ -13,7 +13,7 @@ fragment QueuedInfo on play_queue_entry {
     }
 }
 
-fragment PlayStatusInfo on play_status {
+fragment DeckInfo on deck {
     id
     type
 
@@ -23,13 +23,13 @@ fragment PlayStatusInfo on play_status {
     start_timestamp
 
     queue {
-        ...QueuedInfo
+        ...TrackInfo
     }
 }
 
-query PlayStatuses($workspaceId: uuid!) {
-    play_status(where: {workspace_id: {_eq: $workspaceId}}) {
-        ...PlayStatusInfo
+query Decks($workspaceId: uuid!) {
+    deck(where: {workspace_id: {_eq: $workspaceId}}) {
+        ...DeckInfo
     }
 }
 

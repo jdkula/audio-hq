@@ -8,7 +8,7 @@ import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
 import Root from '~/components/Root';
-import { useLocalRecents, useWorkspaceStatuses, WorkspaceIdContext } from '../lib/utility';
+import { useLocalRecents, useWorkspaceDecks, WorkspaceIdContext } from '../lib/utility';
 
 const TabContainer = styled.div`
     grid-area: tabcontent;
@@ -29,7 +29,7 @@ const MainApp: FC = () => {
     const [tabValue, setTabValue] = useState(0);
 
     const workspaceId = useContext(WorkspaceIdContext);
-    const { main, ambience, sfx } = useWorkspaceStatuses(workspaceId);
+    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
     if (isSmall) {
         return (
@@ -105,7 +105,7 @@ const Container = styled.div<{ hideAmbience?: boolean }>`
 
 const Sub: FC = () => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const { ambience } = useWorkspaceStatuses(workspaceId);
+    const { ambience } = useWorkspaceDecks(workspaceId);
 
     return (
         <Container hideAmbience={ambience.length === 0}>

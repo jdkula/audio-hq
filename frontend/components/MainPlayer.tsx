@@ -12,7 +12,7 @@ import { AudioControls } from './AudioControls';
 import styled from '@emotion/styled';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import ListHeader from './ListHeader';
-import { Play_Status_Minimum } from '../lib/graphql_type_helper';
+import { Deck_Minimum } from '../lib/graphql_type_helper';
 import useAudio from '../lib/audio/useAudio';
 import { useSetQueueMutation } from '../lib/generated/graphql';
 
@@ -41,7 +41,7 @@ const PlayTypography = styled(Typography)`
 `;
 
 export const MainPlayer: FunctionComponent<{
-    state: Play_Status_Minimum | null;
+    state: Deck_Minimum | null;
 }> = ({ state }) => {
     const audioInfo = useAudio(state);
 
@@ -71,7 +71,7 @@ export const MainPlayer: FunctionComponent<{
     const skipTo = (idx: number) => {
         const newQueue = [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)];
         setQueue({
-            trackId: state.id,
+            deckId: state.id,
             newQueue: newQueue.map((qe) => ({ file_id: qe.file.id, status_id: state.id })),
         });
     };

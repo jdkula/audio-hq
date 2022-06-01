@@ -46,17 +46,17 @@ function createUrqlClient(): Client {
                 schema: schema as IntrospectionData,
                 updates: {
                     Mutation: {
-                        insert_play_status_one(_result, _args, cache) {
-                            invalidateRootField(cache, 'play_status');
+                        insert_deck_one(_result, _args, cache) {
+                            invalidateRootField(cache, 'deck');
                         },
-                        insert_play_queue_entry(_result, _args, cache) {
-                            invalidateRootField(cache, 'play_status');
+                        insert_track(_result, _args, cache) {
+                            invalidateRootField(cache, 'deck');
                         },
                     },
                     Subscription: {
                         event(result, args, cache) {
-                            const invalidatedField = (result.event as Array<{ invalidate: string }>)[0]?.invalidate;
-                            invalidateRootField(cache, invalidatedField);
+                            // TODO
+                            invalidateRootField(cache, 'deck');
                         },
                     },
                 },

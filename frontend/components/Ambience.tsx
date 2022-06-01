@@ -11,7 +11,7 @@ import styled from '@emotion/styled';
 import { AudioControls } from './AudioControls';
 
 import AddIcon from '@mui/icons-material/Add';
-import { getTrackInfo, useWorkspaceStatuses, WorkspaceIdContext } from '../lib/utility';
+import { getTrackInfo, useWorkspaceDecks, WorkspaceIdContext } from '../lib/utility';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -53,7 +53,7 @@ const AmbienceControlsContainer = styled(Paper)`
 
 export const Ambience: FunctionComponent = () => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const { ambience, sfx } = useWorkspaceStatuses(workspaceId);
+    const { ambience, sfx } = useWorkspaceDecks(workspaceId);
 
     const controls = ambience.map((ps) => (
         <AmbienceControlsContainer key={ps.id}>

@@ -16,9 +16,9 @@ import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import SpeedIcon from '@mui/icons-material/Speed';
 import { getTrackInfo, toTimestamp } from '../lib/utility';
-import { Play_Status_Minimum } from '../lib/graphql_type_helper';
-import { UpdateTrackMutationVariables, useStopTrackMutation, useUpdateTrackMutation } from '../lib/generated/graphql';
+import { Deck_Minimum } from '../lib/graphql_type_helper';
 import { sub } from 'date-fns';
+import { UpdateDeckMutationVariables, useStopDeckMutation, useUpdateDeckMutation } from '../lib/generated/graphql';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -63,7 +63,7 @@ const Timestamp = styled.div`
 `;
 
 interface AudioControlsProps {
-    state: Play_Status_Minimum;
+    state: Deck_Minimum;
 }
 
 export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) => {
@@ -77,12 +77,12 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
 
     const { duration, paused, time, volume } = useAudio(state);
 
-    const [, updateStatusInternal] = useUpdateTrackMutation();
-    const [, stopPlaying] = useStopTrackMutation();
+    const [, updateDeckInternal] = useUpdateDeckMutation();
+    const [, stopPlaying] = useStopDeckMutation();
 
-    const updateStatus = useCallback(
-        (update: UpdateTrackMutationVariables['update']) => updateStatusInternal({ trackId: state.id, update }),
-        [state, updateStatusInternal],
+    const updateDeck = useCallback(
+        (update: UpdateDeckMutationVariables['update']) => updateDeckInternal({ deckId: state.id, update }),
+        [state, updateDeckInternal],
     );
 
     // propagate blocked and/or loading state up (if the parent wants it)
@@ -93,7 +93,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
         const prev = currentTrackInfo?.totalTimeBefore ?? 0;
         const destinationSeek = (prev + to) / state.speed;
         console.log('Seeking... with CTI', currentTrackInfo);
-        updateStatus({
+        updateDeck({
             start_timestamp: sub(new Date(), { seconds: destinationSeek }),
         });
         setTempSeek(null);
@@ -106,8 +106,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
     // if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
 
     const onPlayPause = () => {
-        if (paused) updateStatus({ pause_timestamp: null });
-        else updateStatus({ pause_timestamp: new Date() });
+        if (paused) updateDeck({ pause_timestamp: null });
+        else updateDeck({ pause_timestamp: new Date() });
     };
 
     return (
@@ -151,7 +151,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                         max={1}
                         step={0.01}
                         onChangeCommitted={(_, v) => {
-                            updateStatus({ volume: v as number });
+                            updateDeck({ volume: v as number });
                             setTempVolume(null);
                         }}
                         onChange={(_, v) => setTempVolume(v as number)}
@@ -178,9 +178,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                         step={null}
                         marks={speedMarks}
                         onChangeCommitted={(_, v) =>
-                            updateStatus({
+                            updateDeck({
                                 speed: v as number,
-                                start_timestamp: sub(new Date(), { seconds: 0 /* TODO */ }),
                             })
                         }
                         onChange={(_, v) => setTempSpeed(v as number)}
@@ -189,7 +188,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={() => stopPlaying({ trackId: state.id })} size="large">
+                    <IconButton onClick={() => stopPlaying({ deckId: state.id })} size="large">
                         <StopIcon />
                     </IconButton>
                 </Tooltip>

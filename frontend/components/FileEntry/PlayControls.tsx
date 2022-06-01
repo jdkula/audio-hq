@@ -14,9 +14,9 @@ import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
-import { useAlt, useWorkspaceStatuses, WorkspaceIdContext } from '../../lib/utility';
-import { Play_Status_Type_Enum_Enum, usePlayTrackMutation } from '../../lib/generated/graphql';
+import { useAlt, useWorkspaceDecks, WorkspaceIdContext } from '../../lib/utility';
 import { File_Minimum } from '../../lib/graphql_type_helper';
+import { Deck_Type_Enum_Enum, usePlayDeckMutation } from '../../lib/generated/graphql';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -33,13 +33,13 @@ interface PlayControlsProps {
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
-    const { main, ambience } = useWorkspaceStatuses(workspaceId);
+    const { main, ambience } = useWorkspaceDecks(workspaceId);
 
     const altKey = useAlt();
 
     const sfxHighlightTimeoutHandle = useRef<number | null>(null);
 
-    const [, playSong] = usePlayTrackMutation();
+    const [, playDeck] = usePlayDeckMutation();
 
     useEffect(
         () => () => {
@@ -51,12 +51,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        playSong({
+        playDeck({
             workspaceId,
-            track: {
+            deck: {
                 workspace_id: workspaceId,
                 queue: { data: [{ file_id: file.id }] },
-                type: Play_Status_Type_Enum_Enum.Ambience,
+                type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
                 start_timestamp: new Date(),
             },
@@ -64,13 +64,13 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     };
 
     const onPlay = async () => {
-        playSong({
+        playDeck({
             workspaceId,
             isMain: true,
-            track: {
+            deck: {
                 workspace_id: workspaceId,
                 queue: { data: [{ file_id: file.id }] },
-                type: Play_Status_Type_Enum_Enum.Main,
+                type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
                 start_timestamp: new Date(),
             },
@@ -84,12 +84,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             sfxHighlightTimeoutHandle.current = null;
         }, 2000) as unknown as number;
 
-        playSong({
+        playDeck({
             workspaceId,
-            track: {
+            deck: {
                 workspace_id: workspaceId,
                 queue: { data: [{ file_id: file.id }] },
-                type: Play_Status_Type_Enum_Enum.Sfx,
+                type: Deck_Type_Enum_Enum.Sfx,
                 pause_timestamp: null,
                 start_timestamp: new Date(),
             },

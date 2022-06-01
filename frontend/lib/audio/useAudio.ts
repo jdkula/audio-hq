@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { getTrackInfo, usePeriodicEffect } from '../utility';
-import { Play_Status_Minimum } from '../graphql_type_helper';
+import { Deck_Minimum } from '../graphql_type_helper';
 
 interface AudioInfo {
     duration: number;
@@ -11,7 +11,7 @@ interface AudioInfo {
     index: number;
 }
 
-const useAudio = (status: Play_Status_Minimum | null): AudioInfo => {
+const useAudio = (status: Deck_Minimum | null): AudioInfo => {
     const [seek, setSeek] = useState(0);
 
     const f = status ? getTrackInfo(status) : null;

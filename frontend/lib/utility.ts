@@ -9,8 +9,8 @@ import {
     useState,
 } from 'react';
 import { Set } from 'immutable';
-import { File_Minimum, Play_Status_Minimum } from './graphql_type_helper';
-import { Play_Status_Type_Enum_Enum, useEventsSubscription, usePlayStatusesQuery } from './generated/graphql';
+import { File_Minimum, Deck_Minimum } from './graphql_type_helper';
+import { Deck_Type_Enum_Enum, useDecksQuery, useEventsSubscription } from './generated/graphql';
 import { useRouter } from 'next/router';
 import { getUnixTime } from 'date-fns';
 import { LocalStorageReactiveValue, useLocalReactiveValue } from './local_reactive';
@@ -22,7 +22,7 @@ interface CurrentFileInfo {
     totalTimeBefore: number; // in s
 }
 
-export function shouldPlaySFX(sfx: Play_Status_Minimum): boolean {
+export function shouldPlaySFX(sfx: Deck_Minimum): boolean {
     const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
     const fullTime = sfx.queue.reduce((time, q) => time + q.file.length, 0);
     const valid =
@@ -70,7 +70,7 @@ export function toTimestamp(seconds: number): string {
     }
 }
 
-export function getTrackInfo(status: Play_Status_Minimum, idx?: number): CurrentFileInfo | null {
+export function getTrackInfo(status: Deck_Minimum, idx?: number): CurrentFileInfo | null {
     // debugger;
     const files = status.queue.map((x) => x.file);
 
@@ -191,22 +191,22 @@ export function usePeriodicEffect(
     return useEffect(effect, [iterator, effect, ...(deps ?? [])]);
 }
 
-export function useWorkspaceStatuses(workspaceId: string): {
-    main: Play_Status_Minimum | null;
-    ambience: Play_Status_Minimum[];
-    sfx: Play_Status_Minimum[];
+export function useWorkspaceDecks(workspaceId: string): {
+    main: Deck_Minimum | null;
+    ambience: Deck_Minimum[];
+    sfx: Deck_Minimum[];
 } {
     useEventsSubscription({
         variables: { workspaceId: workspaceId },
     });
 
-    const [{ data: statusData }] = usePlayStatusesQuery({
+    const [{ data: statusData }] = useDecksQuery({
         variables: { workspaceId },
     });
 
-    const main = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Main)[0] ?? null;
-    const ambience = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Ambience) ?? [];
-    const sfx = statusData?.play_status.filter((x) => x.type === Play_Status_Type_Enum_Enum.Sfx) ?? [];
+    const main = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Main)[0] ?? null;
+    const ambience = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Ambience) ?? [];
+    const sfx = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Sfx) ?? [];
 
     return { main, ambience, sfx };
 }

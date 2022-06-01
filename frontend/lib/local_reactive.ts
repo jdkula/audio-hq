@@ -4,8 +4,9 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'reac
 export class LocalReactiveValue<T> extends EventEmitter {
     private _value: T;
 
-    constructor(defaultValue: T) {
+    constructor(defaultValue: T, maxListeners = 10000) {
         super();
+        this.setMaxListeners(maxListeners);
         this._value = defaultValue;
     }
 

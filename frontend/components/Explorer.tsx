@@ -24,8 +24,8 @@ import _ from 'lodash';
 import { nonNull, useAlt, useFavorites, WorkspaceIdContext } from '../lib/utility';
 import { File_Minimum } from '../lib/graphql_type_helper';
 import {
-    Play_Status_Type_Enum_Enum,
-    usePlayTrackMutation,
+    Deck_Type_Enum_Enum,
+    usePlayDeckMutation,
     useUpdateFileMutation,
     useWorkspaceFilesQuery,
 } from '../lib/generated/graphql';
@@ -125,7 +125,7 @@ export const Explorer: FC = () => {
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = filesRaw?.file ?? [];
 
-    const [, playTrack] = usePlayTrackMutation();
+    const [, playDeck] = usePlayDeckMutation();
     const [, updateFile] = useUpdateFileMutation();
 
     const currentFiles = viewingFavorites
@@ -139,14 +139,14 @@ export const Explorer: FC = () => {
         if (altKey) {
             queue = _.shuffle(queue);
         }
-        playTrack({
+        playDeck({
             workspaceId: workspaceId,
-            track: {
+            deck: {
                 workspace_id: workspaceId,
                 speed: 1,
                 start_timestamp: new Date(),
                 pause_timestamp: null,
-                type: Play_Status_Type_Enum_Enum.Main,
+                type: Deck_Type_Enum_Enum.Main,
                 queue: { data: queue.map((id) => ({ file_id: id })) },
             },
         });

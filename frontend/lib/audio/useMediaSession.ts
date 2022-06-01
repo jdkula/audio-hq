@@ -1,15 +1,15 @@
 import { useContext, useEffect, useRef } from 'react';
-import { useStopTrackMutation, useUpdateTrackMutation } from '../generated/graphql';
-import { getTrackInfo, useWorkspaceStatuses, WorkspaceNameContext } from '../utility';
+import { getTrackInfo, useWorkspaceDecks, WorkspaceNameContext } from '../utility';
 import { File_Minimum } from '../graphql_type_helper';
 import { useLocalReactiveValue } from '../local_reactive';
 import { globalVolumeLRV } from '../global_lrv';
+import { useStopDeckMutation, useUpdateDeckMutation } from '../generated/graphql';
 
 const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);
-    const { main } = useWorkspaceStatuses(workspaceId);
-    const [, delTrack] = useStopTrackMutation();
-    const [, updateTrack] = useUpdateTrackMutation();
+    const { main } = useWorkspaceDecks(workspaceId);
+    const [, delDeck] = useStopDeckMutation();
+    const [, updateDeck] = useUpdateDeckMutation();
 
     const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
     const previousVolumeValue = useRef<number | null>(null);
@@ -39,7 +39,7 @@ const useMediaSession = (workspaceId: string): void => {
             });
             navigator.mediaSession.setActionHandler('stop', () => {
                 if (main) {
-                    delTrack({ trackId: main.id });
+                    delDeck({ deckId: main.id });
                 }
             });
 
@@ -50,11 +50,11 @@ const useMediaSession = (workspaceId: string): void => {
             });
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 if (main) {
-                    updateTrack({ trackId: main.id, update: { start_timestamp: new Date() } });
+                    updateDeck({ deckId: main.id, update: { start_timestamp: new Date() } });
                 }
             });
         }
-    }, [main, globalVolume, setGlobalVolume, updateTrack, delTrack]);
+    }, [main, globalVolume, setGlobalVolume, updateDeck, delDeck]);
 };
 
 export default useMediaSession;

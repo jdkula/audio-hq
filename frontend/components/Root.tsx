@@ -35,7 +35,7 @@ const Root: FC<{
     const workspaceName = workspaceRaw?.workspace?.[0]?.name;
 
     useEffect(() => {
-        if (!workspaceRaw && props.workspace && !query.stale && !query.fetching && !query.error) {
+        if (!workspaceRaw && props.workspace && !query.fetching && !query.error) {
             createWorkspace({ name: props.workspace }).then(() => refetch());
         }
     }, [createWorkspace, refetch, workspaceRaw, query, props.workspace]);

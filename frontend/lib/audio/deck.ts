@@ -1,15 +1,15 @@
 import { FileManager } from '../useFileManager';
-import { Play_Status_Minimum } from '../graphql_type_helper';
+import { Deck_Minimum } from '../graphql_type_helper';
 import { EventEmitter } from 'events';
 import { Track } from './track';
 
 export class Deck extends EventEmitter {
     private _fm: FileManager;
-    private _status: Play_Status_Minimum;
+    private _status: Deck_Minimum;
 
     private _tracks: Track[];
 
-    constructor(state: Play_Status_Minimum, fm: FileManager) {
+    constructor(state: Deck_Minimum, fm: FileManager) {
         super();
 
         this._fm = fm;
@@ -24,14 +24,14 @@ export class Deck extends EventEmitter {
         }
     }
 
-    isReferentFor(state: Play_Status_Minimum): boolean {
+    isReferentFor(state: Deck_Minimum): boolean {
         return (
             state.queue.length === this._status.queue.length &&
             this._status.queue.every((qem, idx) => qem.id === state.queue[idx].id)
         );
     }
 
-    reconcile(newState: Play_Status_Minimum): boolean {
+    reconcile(newState: Deck_Minimum): boolean {
         if (!this.isReferentFor(newState)) {
             return false;
         }

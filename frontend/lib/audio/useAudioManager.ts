@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useFileManager from '../useFileManager';
 import { Deck } from './deck';
-import { Play_Status_Minimum } from '../graphql_type_helper';
-import { useWorkspaceStatuses } from '../utility';
+import { Deck_Minimum } from '../graphql_type_helper';
+import { useWorkspaceDecks } from '../utility';
 
 const useAudioManager = (() => {
     // <== Static Members ==>
@@ -20,7 +20,7 @@ const useAudioManager = (() => {
         // <== Local State ==>
         const fileManager = useFileManager(workspaceId);
 
-        const { main, ambience, sfx } = useWorkspaceStatuses(workspaceId);
+        const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
         const mainTrack = useRef<Deck | null>(null);
         const ambientTracks = useRef<Deck[]>([]);
@@ -34,13 +34,13 @@ const useAudioManager = (() => {
             document.removeEventListener('click', unblock);
         }, []);
 
-        const onFinish = useCallback((state: Play_Status_Minimum, track: Deck) => {
+        const onFinish = useCallback((state: Deck_Minimum, track: Deck) => {
             // if (state.type === 'sfx') {
             // }
         }, []);
 
         const createTrack = useCallback(
-            (state: Play_Status_Minimum) => {
+            (state: Deck_Minimum) => {
                 const tr: Deck = new Deck(state, fileManager);
                 tr.on('loop', onFinish);
                 tr.on('next', onFinish);

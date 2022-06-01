@@ -1,10 +1,10 @@
-import { File, Play_Status, Job } from './generated/graphql';
+import { File, Deck, Job, Track } from './generated/graphql';
 
-export type Play_Status_Minimum = Omit<Play_Status, '__typename' | 'workspace_id' | 'workspace' | 'queue'> & {
-    queue: Queue_Entry_Minimum[];
+export type Deck_Minimum = Omit<Deck, '__typename' | 'workspace_id' | 'workspace' | 'queue'> & {
+    queue: Track_Minimum[];
 };
 
-export type Queue_Entry_Minimum = Omit<Play_Status['queue'][number], 'file' | 'status'> & {
+export type Track_Minimum = Omit<Track, 'file' | 'deck'> & {
     file: File_Minimum;
 };
 

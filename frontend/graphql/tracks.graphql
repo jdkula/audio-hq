@@ -1,34 +1,34 @@
-mutation StopTrack($trackId: uuid!) {
-    delete_play_status_by_pk(id: $trackId) {
+mutation StopDeck($deckId: uuid!) {
+    delete_deck_by_pk(id: $deckId) {
         id
     }
 }
 
-mutation UpdateTrack($trackId: uuid!, $update: play_status_set_input!) {
-    update_play_status_by_pk(pk_columns: {id: $trackId}, _set: $update) {
-        ...PlayStatusInfo
+mutation UpdateDeck($deckId: uuid!, $update: deck_set_input!) {
+    update_deck_by_pk(pk_columns: {id: $deckId}, _set: $update) {
+        ...DeckInfo
     }
 }
 
-mutation SetQueue($trackId: uuid!, $newQueue: [play_queue_entry_insert_input!]!) {
-    delete_play_queue_entry(where: {status: {id: {_eq: $trackId}}}) {
+mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
+    delete_track(where: {deck: {id: {_eq: $deckId}}}) {
         affected_rows
     }
-    insert_play_queue_entry(objects: $newQueue) {
+    insert_track(objects: $newQueue) {
         affected_rows
     }
 }
 
-mutation PlayTrack($workspaceId: uuid!, $track: play_status_insert_input!, $isMain: Boolean! = false) {
-    delete_play_queue_entry(where: {
-        status: {
+mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boolean! = false) {
+    delete_track(where: {
+        deck: {
             workspace_id: {_eq: $workspaceId},
             type: {_eq: main},
         }
     }) @include(if: $isMain) {
         affected_rows
     }
-    insert_play_status_one(object: $track) {
-        ...PlayStatusInfo
+    insert_deck_one(object: $deck) {
+        ...DeckInfo
     }
 }
