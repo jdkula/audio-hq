@@ -3,7 +3,7 @@ CREATE TABLE public.event
     id           uuid        NOT NULL DEFAULT gen_random_uuid(),
     time         timestamptz NOT NULL DEFAULT now(),
     type         varchar(32) NOT NULL,
-    workspace_id uuid        NOT NULL,
+    workspace_id uuid,
     deck_id      uuid                 DEFAULT NULL,
     track_id     uuid                 DEFAULT NULL,
     file_id      uuid                 DEFAULT NULL,
@@ -30,12 +30,16 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION public.create_track_update()
     RETURNS TRIGGER AS
 $$
+DECLARE
+    _workspace_id uuid;
 BEGIN
     IF tg_argv[0] = 'delete' THEN
-        INSERT INTO event (type, workspace_id, track_id) VALUES (tg_argv[0], OLD.workspace_id, NULL);
+        SELECT workspace_id INTO _workspace_id FROM deck WHERE deck.id = OLD.deck_id LIMIT 1;
+        INSERT INTO event (type, workspace_id, track_id) VALUES (tg_argv[0], _workspace_id, NULL);
         RETURN NULL;
     ELSE
-        INSERT INTO event (type, workspace_id, track_id) VALUES (tg_argv[0], NEW.workspace_id, NEW.id);
+        SELECT workspace_id INTO _workspace_id FROM deck WHERE deck.id = NEW.deck_id LIMIT 1;
+        INSERT INTO event (type, workspace_id, track_id) VALUES (tg_argv[0], _workspace_id, NEW.id);
         RETURN NEW;
     END IF;
 END;
@@ -68,7 +72,6 @@ CREATE TRIGGER deck_update_trigger_update
     ON public.deck
     FOR EACH ROW
 EXECUTE FUNCTION public.create_deck_update('update');
-
 
 CREATE TRIGGER deck_update_trigger_delete
     AFTER DELETE
