@@ -2,6 +2,13 @@ table:
   schema: public
   name: workspace
 array_relationships:
+  - name: decks
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: deck
   - name: files
     using:
       foreign_key_constraint_on:
@@ -16,20 +23,6 @@ array_relationships:
         table:
           schema: public
           name: job
-  - name: play_statuses
-    using:
-      foreign_key_constraint_on:
-        column: workspace_id
-        table:
-          schema: public
-          name: play_status
-computed_fields:
-  - name: main_play_id
-    definition:
-      function:
-        schema: public
-        name: get_workspace_main_id
-    comment: Gets the main play id of this workspace (if it exists)
 insert_permissions:
   - role: anonymous
     permission:
@@ -45,8 +38,6 @@ select_permissions:
         - id
         - name
         - updated_at
-      computed_fields:
-        - main_play_id
       filter: {}
 update_permissions:
   - role: anonymous

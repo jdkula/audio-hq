@@ -101,7 +101,7 @@ EXECUTE PROCEDURE public.reconcile_ordering();
 COMMENT ON TRIGGER reconcile_ordering ON public.file
     IS 'trigger to set value of column updated_at to current timestamp on row update';
 
-CREATE TABLE public.play_status_type_enum
+CREATE TABLE public.deck_type_enum
 (
     value       text NOT NULL,
     description text NOT NULL,
@@ -109,18 +109,18 @@ CREATE TABLE public.play_status_type_enum
     UNIQUE (value)
 );
 
-INSERT INTO public.play_status_type_enum(value, description)
+INSERT INTO public.deck_type_enum(value, description)
 VALUES (E'main', E'the main player');
 
-INSERT INTO public.play_status_type_enum(value, description)
+INSERT INTO public.deck_type_enum(value, description)
 VALUES (E'ambience', E'any ambience');
 
-INSERT INTO public.play_status_type_enum(value, description)
+INSERT INTO public.deck_type_enum(value, description)
 VALUES (E'sfx', E'any ambience');
 
 
 
-CREATE TABLE public.play_status
+CREATE TABLE public.deck
 (
     id              uuid        NOT NULL DEFAULT gen_random_uuid(),
     workspace_id    uuid        NOT NULL,
@@ -132,51 +132,62 @@ CREATE TABLE public.play_status
     type            text        NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (workspace_id) REFERENCES public.workspace (id) ON UPDATE cascade ON DELETE cascade,
-    FOREIGN KEY (type) REFERENCES public.play_status_type_enum (value) ON UPDATE cascade ON DELETE restrict,
+    FOREIGN KEY (type) REFERENCES public.deck_type_enum (value) ON UPDATE cascade ON DELETE restrict,
     UNIQUE (id),
     CONSTRAINT volume_in_range CHECK (volume >= 0 AND volume <= 1),
     CONSTRAINT speed_in_range CHECK (speed > 0)
 );
-COMMENT ON TABLE public.play_status IS E'workspace status';
+COMMENT ON TABLE public.deck IS E'one set of tracks playing';
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE OR REPLACE FUNCTION public.ensure_main_entry()
+CREATE OR REPLACE FUNCTION public.ensure_main_deck()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    DELETE FROM play_status WHERE type = 'main' AND workspace_id = NEW.workspace_id;
+    DELETE FROM deck WHERE type = 'main' AND workspace_id = NEW.workspace_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER ensure_main_entry_trigger
+CREATE TRIGGER ensure_main_deck_trigger
     BEFORE INSERT
-    ON play_status
+    ON deck
     FOR EACH ROW
     WHEN (NEW.type = 'main')
-EXECUTE FUNCTION public.ensure_main_entry();
+EXECUTE FUNCTION public.ensure_main_deck();
 
-CREATE TABLE public.play_queue_entry
+CREATE OR REPLACE FUNCTION public.update_pause()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    _new deck;
+BEGIN
+    _new = NEW;
+    IF OLD.pause_timestamp IS NOT NULL AND NEW.pause_timestamp IS NULL AND
+       OLD.start_timestamp = NEW.start_timestamp THEN
+        _new.start_timestamp = NEW.start_timestamp + (now() - NEW.start_timestamp);
+    END IF;
+    RETURN _new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_paused_track
+    BEFORE UPDATE OF pause_timestamp
+    ON deck
+    FOR EACH ROW
+EXECUTE FUNCTION public.update_pause();
+
+CREATE TABLE public.track
 (
     id         uuid        NOT NULL DEFAULT gen_random_uuid(),
     file_id    uuid        NOT NULL,
-    status_id  uuid        NOT NULL,
+    deck_id    uuid        NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (id),
     FOREIGN KEY (file_id) REFERENCES public.file (id) ON UPDATE cascade ON DELETE cascade,
-    FOREIGN KEY (status_id) REFERENCES public.play_status (id) ON UPDATE cascade ON DELETE cascade
+    FOREIGN KEY (deck_id) REFERENCES public.deck (id) ON UPDATE cascade ON DELETE cascade
 );
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-CREATE FUNCTION public.get_workspace_main_id(ws_row workspace)
-    RETURNS uuid AS
-$$
-SELECT id
-FROM public.play_status
-WHERE workspace_id = ws_row.id
-  AND type = 'main'
-ORDER BY ws_row.created_at DESC
-$$ LANGUAGE sql STABLE;
 
 CREATE TABLE public.job
 (
@@ -204,39 +215,3 @@ CREATE TABLE public.delete_job
     PRIMARY KEY (id),
     FOREIGN KEY (file_id) REFERENCES public.file (id) ON UPDATE restrict ON DELETE cascade
 );
-
-CREATE TABLE public.event
-(
-    id           uuid        NOT NULL DEFAULT gen_random_uuid(),
-    time         timestamptz NOT NULL DEFAULT now(),
-    workspace_id uuid        NOT NULL,
-    invalidate   text        NOT NULL,
-    FOREIGN KEY (workspace_id) REFERENCES public.workspace (id) ON UPDATE restrict ON DELETE cascade
-);
-
-CREATE OR REPLACE FUNCTION public.create_event()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    INSERT INTO event (workspace_id, invalidate) VALUES (NEW.workspace_id, tg_argv[0]);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER status_update_event
-    AFTER UPDATE OR INSERT
-    ON public.play_status
-    FOR EACH ROW
-EXECUTE FUNCTION public.create_event('play_status');
-
-CREATE TRIGGER file_update_event
-    AFTER UPDATE OR INSERT
-    ON public.file
-    FOR EACH ROW
-EXECUTE FUNCTION public.create_event('file');
-
-CREATE TRIGGER job_update_event
-    AFTER UPDATE OR INSERT
-    ON public.job
-    FOR EACH ROW
-EXECUTE FUNCTION public.create_event('job');

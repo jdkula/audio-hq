@@ -1,6 +1,6 @@
 table:
   schema: public
-  name: play_status
+  name: deck
 object_relationships:
   - name: workspace
     using:
@@ -9,10 +9,10 @@ array_relationships:
   - name: queue
     using:
       foreign_key_constraint_on:
-        column: status_id
+        column: deck_id
         table:
           schema: public
-          name: play_queue_entry
+          name: track
 insert_permissions:
   - role: anonymous
     permission:
