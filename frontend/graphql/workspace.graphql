@@ -1,26 +1,24 @@
+fragment WorkspaceInfo on workspace {
+    id
+    name
+    created_at
+    updated_at
+}
+
 query WorkspaceDetail($workspaceId: uuid!) {
     workspace_by_pk(id: $workspaceId) {
-        id
-        name
-        created_at
-        updated_at
+        ...WorkspaceInfo
     }
 }
 
 query WorkspaceDetailByName($workspaceName: String!) {
     workspace(where: {name: {_eq: $workspaceName}}, limit: 1) {
-        id
-        name
-        created_at
-        updated_at
+        ...WorkspaceInfo
     }
 }
 
 mutation CreateWorkspace($name: String) {
     insert_workspace_one(object: {name: $name}) {
-        id
-        name
-        updated_at
-        created_at
+        ...WorkspaceInfo
     }
 }

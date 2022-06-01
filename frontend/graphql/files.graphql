@@ -1,20 +1,27 @@
+fragment FileInfo on file {
+    id
+    type
+    path
+
+    name
+    description
+    length
+    ordering
+
+    workspace_id
+
+    download_url
+}
+
 query WorkspaceFiles($workspaceId: uuid!) {
     file(where: {workspace_id: {_eq: $workspaceId}}) {
-        id
-        type
-        path
-
-        name
-        description
-        length
-
-        download_url
+        ...FileInfo
     }
 }
 
 mutation UpdateFile($id: uuid!, $update: file_set_input!) {
     update_file_by_pk(_set: $update, pk_columns: {id: $id}) {
-        id
+        ...FileInfo
     }
 }
 
@@ -27,5 +34,8 @@ mutation DeleteFile($job: delete_job_insert_input!) {
 mutation SetFilesPath($files: [uuid!]!, $path: jsonb) {
     update_file(where: {id: {_in: $files}}, _set: {path: $path}) {
         affected_rows
+        returning {
+            ...FileInfo
+        }
     }
 }

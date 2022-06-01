@@ -1,12 +1,14 @@
 import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useState } from 'react';
-import { Client, subscriptionExchange, errorExchange, dedupExchange, fetchExchange } from 'urql';
+import { Client, subscriptionExchange, errorExchange, dedupExchange, fetchExchange, gql } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
-import { cacheExchange, Cache } from '@urql/exchange-graphcache';
+import { cacheExchange, Cache, ScalarObject } from '@urql/exchange-graphcache';
 import customScalarsExchange from 'urql-custom-scalars-exchange';
 import schema from '~/graphql.schema.json';
 import { IntrospectionQuery } from 'graphql';
 import { IntrospectionData } from '@urql/exchange-graphcache/dist/types/ast';
+import { File_Set_Input, FileInfoFragment, FileInfoFragmentDoc, WorkspaceFilesDocument } from './generated/graphql';
+import { File_Minimum } from './graphql_type_helper';
 
 function invalidateRootField(cache: Cache, fieldName: string) {
     cache
@@ -55,9 +57,49 @@ function createUrqlClient(): Client {
                     },
                     Subscription: {
                         event(result, args, cache) {
-                            // TODO
-                            invalidateRootField(cache, 'deck');
+                            const evt = result.event as Array<Record<string, never>> | null;
+                            if (evt?.[0].deck || evt?.[0].track) {
+                                invalidateRootField(cache, 'deck');
+                            }
+                            if (evt?.[0].file) {
+                                invalidateRootField(cache, 'file');
+                            }
                         },
+                    },
+                },
+                optimistic: {
+                    update_file_by_pk(args: { _set: File_Set_Input; pk_columns: { id: string } }, cache) {
+                        const fileId = args.pk_columns.id;
+                        const record: Record<string, any> = {};
+                        for (const k of Object.keys(args._set)) {
+                            const key = k as keyof typeof args._set;
+                            if (args._set[key]) {
+                                record[k] = args._set[key];
+                            }
+                        }
+
+                        const file = cache.readFragment(
+                            gql`
+                                fragment _ on file {
+                                    __typename
+                                    id
+                                    type
+                                    path
+                                    name
+                                    description
+                                    length
+                                    ordering
+                                    workspace_id
+                                    download_url
+                                }
+                            `,
+                            { id: fileId },
+                        );
+
+                        return {
+                            ...file,
+                            ...record,
+                        };
                     },
                 },
             }),

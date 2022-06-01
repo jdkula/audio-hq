@@ -1,23 +1,23 @@
+fragment JobInfo on job {
+    id
+    url
+    name
+    description
+    path
+
+    progress
+    progress_stage
+    assigned_worker
+}
+
 query WorkspaceJobs($workspaceId: uuid!) {
     job(where: {workspace_id: {_eq: $workspaceId}}) {
-        id
-        url
-        name
-        description
-        path
-
-        progress
-        progress_stage
-        assigned_worker
+        ...JobInfo
     }
 }
 
 mutation AddJob($job: job_insert_input!) {
     insert_job_one(object: $job) {
-        id
-        url
-        name
-        description
-        path
+        ...JobInfo
     }
 }

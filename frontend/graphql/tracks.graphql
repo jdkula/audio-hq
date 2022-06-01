@@ -17,6 +17,9 @@ mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
     insert_track(objects: $newQueue) {
         affected_rows
     }
+    update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now}) {
+        ...DeckInfo
+    }
 }
 
 mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boolean! = false) {

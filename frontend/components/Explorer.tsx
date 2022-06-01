@@ -123,7 +123,7 @@ export const Explorer: FC = () => {
     const fileManager = useFileManager(workspaceId);
 
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-    const files = filesRaw?.file ?? [];
+    const files = (filesRaw?.file ?? []).sort((a, b) => (a.ordering ?? Infinity) - (b.ordering ?? Infinity));
 
     const [, playDeck] = usePlayDeckMutation();
     const [, updateFile] = useUpdateFileMutation();

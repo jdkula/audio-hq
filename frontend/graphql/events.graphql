@@ -3,5 +3,15 @@ subscription Events($workspaceId: uuid!) {
         id
         workspace_id
         time
+
+        deck {
+            ...DeckInfo
+        }
+        track {
+            ...TrackInfo
+        }
+        file {
+            ...FileInfo
+        }
     }
 }
