@@ -13,14 +13,12 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import styled from '@emotion/styled';
-import { List, Set } from 'immutable';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './AddFolderDialog';
 import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
 import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
-import _ from 'lodash';
 import { nonNull, useAlt, useFavorites, WorkspaceIdContext } from '../lib/utility';
 import { File_Minimum } from '../lib/graphql_type_helper';
 import {
@@ -32,6 +30,7 @@ import {
 import useFileManager from '../lib/useFileManager';
 import { useLocalReactiveValue } from '../lib/local_reactive';
 import { currentPathLRV } from '../lib/global_lrv';
+import _ from 'lodash';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -85,26 +84,25 @@ const getFiles = (files: File_Minimum[], path: string[], searchText?: string): F
  * Folders are returned as full paths ending at that folder.
  */
 const getSearchFolders = (files: File_Minimum[], searchText: string): string[][] => {
-    return [
-        ...Set(
-            files
-                .map((file) => file.path)
-                .filter((path) => path.length > 0)
-                .filter((path) => path[path.length - 1].match(new RegExp(`.*${searchText}.*`, 'i')))
-                .map((path) => List(path as string[])), // deduplicate (immutable's lists get deduplicated in immutable sets)
-        ).map((list) => [...list]), // convert to array
-    ];
+    return _.sortedUniq(
+        files
+            .map((file) => file.path)
+            .filter((path) => path.length > 0)
+            .filter((path) => path[path.length - 1].match(new RegExp(`.*${searchText}.*`, 'i')))
+            .sort(),
+    );
 };
 
 /**
  * Given a path, finds all child folders.
  */
-const getFolders = (files: File_Minimum[], currentPath: string[]): Set<string> => {
-    return Set(
+const getFolders = (files: File_Minimum[], currentPath: string[]): string[] => {
+    return _.sortedUniq(
         files
             .filter((file) => file.path.length > currentPath.length && currentPath.every((v, i) => file.path[i] === v))
-            .map((file) => file.path[currentPath.length]),
-    ).sort();
+            .map((file) => file.path[currentPath.length])
+            .sort(),
+    );
 };
 
 export const Explorer: FC = () => {

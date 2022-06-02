@@ -65,7 +65,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [path] = useLocalReactiveValue(currentPathLRV);
 
-    const allCached = fileManager.cached.size === files.length;
+    const allCached = fileManager.cached.length === files.length;
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));

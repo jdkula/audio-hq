@@ -5,7 +5,7 @@
  * audio controls for the primary track.
  */
 
-import { Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton } from '@mui/material';
+import { Typography, List, ListItemIcon, ListItemText, ListItemButton } from '@mui/material';
 import { FunctionComponent, useMemo } from 'react';
 
 import { AudioControls } from './AudioControls';

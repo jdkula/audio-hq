@@ -28,9 +28,9 @@ const DownloadCacheButton: FC = () => {
     const [downloadTotal, setDownloadTotal] = useState(0);
     const [downloadFinished, setDownloadFinished] = useState(0);
     const filePartial =
-        fileManager.fetching.size === 0
+        fileManager.fetching.length === 0
             ? 0
-            : fileManager.fetching.reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.size;
+            : fileManager.fetching.reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.length;
     const downloadPercent =
         downloadTotal === 0
             ? undefined

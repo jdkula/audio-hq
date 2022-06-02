@@ -35,8 +35,8 @@ const useAudioManager = (() => {
         }, []);
 
         const onFinish = useCallback((state: Deck_Minimum, track: Deck) => {
-            // if (state.type === 'sfx') {
-            // }
+            if (state.type === 'sfx') {
+            }
         }, []);
 
         const createTrack = useCallback(
@@ -72,13 +72,6 @@ const useAudioManager = (() => {
                 mainTrack.current?.unblock();
             }
         }, [blocked, main?.pause_timestamp]);
-
-        // useEffect(() => {
-        //     if (ac.current.state === 'suspended') {
-        //         // need interaction first
-        //         setBlocked(true);
-        //     }
-        // }, []);
 
         useEffect(() => {
             if (main && main.queue.length > 0) {

@@ -1,7 +1,6 @@
+import _ from 'lodash';
 import PouchDB from 'pouchdb';
-import Axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { Set } from 'immutable';
 import ConvertOptions from './ConvertOptions';
 import {
     useAddJobMutation,
@@ -53,16 +52,16 @@ const useFileManager = (() => {
             (jobsData.data?.job ?? []).map((job) => [job.id, job]),
         );
 
-        const [cached, setCached] = useState<Set<string>>(Set());
-        const [fetching, setFetching] = useState<Set<{ id: string; progress: number }>>(Set());
-        const [uploading, setUploading] = useState<Set<string>>(Set());
+        const [cached, setCached] = useState<string[]>([]);
+        const [fetching, setFetching] = useState<{ id: string; progress: number }[]>([]);
+        const [uploading, setUploading] = useState<string[]>([]);
 
         // <== Private Functions ==>
 
         const reset = useCallback(async () => {
             await cache.destroy();
             cache = new PouchDB('cache');
-            setCached(Set());
+            setCached([]);
         }, []);
 
         const updateFetching = (id: string, progress: number) => {
@@ -70,7 +69,7 @@ const useFileManager = (() => {
         };
 
         const retrieveFile = async (fileId: string, url: string) => {
-            setFetching((fetching) => fetching.add({ id: fileId, progress: 0 }));
+            setFetching((fetching) => [...fetching, { id: fileId, progress: 0 }]);
             const resp = await fetch(url, {
                 headers: {
                     Accept: 'audio/ogg',
@@ -114,14 +113,11 @@ const useFileManager = (() => {
                     },
                 });
             } catch (e: unknown) {
-                if (Axios.isAxiosError(e) && e.response?.status === 409) {
-                    console.warn('Confict error... probably added in another tab?');
-                } else {
-                    throw e;
-                }
+                console.warn(e);
+                return;
             }
-            setCached((cached) => cached.add(fileId));
-            setFetching((fetching) => fetching.filterNot((v) => v.id === fileId));
+            setCached((cached) => [...cached, fileId]);
+            setFetching((fetching) => fetching.filter((v) => v.id !== fileId));
         };
 
         // <== Data Effects ==>
@@ -135,7 +131,7 @@ const useFileManager = (() => {
             } else {
                 cache
                     .allDocs()
-                    .then((docs) => setCached((cached) => cached.union(Set(docs.rows.map((row) => row.id)))));
+                    .then((docs) => setCached((cached) => _.uniq([...cached, ...docs.rows.map((row) => row.id)])));
             }
         }, [reset]);
 
@@ -170,7 +166,7 @@ const useFileManager = (() => {
                 } catch (e) {
                     // ignore
                 }
-                setCached((cached) => cached.remove(id));
+                setCached((cached) => cached.filter((oid) => oid !== id));
                 await delFile({ job: { file_id: id } });
             },
             reset,
@@ -187,7 +183,7 @@ const useFileManager = (() => {
                     const promise = cache
                         .getAttachment(file.id, 'file')
                         .then((data) => {
-                            setCached((cached) => cached.add(file.id));
+                            setCached((cached) => [...cached, file.id]);
                             fetchCallbacks.get(file.id)?.forEach((cb) => cb(data as Blob));
                             fetchCallbacks.delete(file.id);
                             return data as Blob;
@@ -232,12 +228,12 @@ const useFileManager = (() => {
                     workspace_id: workspaceId,
                 };
 
-                setUploading((uploading) => uploading.add(name));
+                setUploading((uploading) => [...uploading, name]);
 
                 try {
                     await addJob({ job });
                 } finally {
-                    setUploading((uploading) => uploading.filterNot((upName) => upName === name));
+                    setUploading((uploading) => uploading.filter((upName) => upName !== name));
                 }
             },
             downloadAll: async (
@@ -245,14 +241,14 @@ const useFileManager = (() => {
                 onProgress?: (started: number, finished: number) => void,
             ) => {
                 console.log('Downloading all songs...');
-                console.log('Already cached ', cached.size, 'of', files.size, 'total');
-                onStart?.(cached.size, files.size);
+                console.log('Already cached ', cached.length, 'of', files.size, 'total');
+                onStart?.(cached.length, files.size);
 
-                const max = files.size - cached.size;
+                const max = files.size - cached.length;
                 const progress = { started: 0, finished: 0, total: max };
 
                 for (const [, file] of files) {
-                    if (!cached.has(file.id)) {
+                    if (!cached.includes(file.id)) {
                         console.log('Downloading', file.name, `(${file.id})`);
                         progress.started++;
                         onProgress?.(progress.started, progress.finished);
