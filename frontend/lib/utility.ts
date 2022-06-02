@@ -8,7 +8,6 @@ import {
     useEffect,
     useState,
 } from 'react';
-import { Set } from 'immutable';
 import { Deck_Minimum, File_Minimum } from './graphql_type_helper';
 import { Deck_Type_Enum_Enum, useDecksQuery, useEventsSubscription } from './generated/graphql';
 import { useRouter } from 'next/router';

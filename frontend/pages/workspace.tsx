@@ -1,5 +1,7 @@
 /**
- *
+ * workspace.ts
+ * =============
+ * Provides Audio HQ's 
  */
 
 import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';
@@ -7,7 +9,6 @@ import { Header } from '~/components/Header';
 import { MainPlayer } from '~/components/MainPlayer';
 import { Explorer } from '~/components/Explorer';
 import { Ambience } from '~/components/Ambience';
-import { GetServerSideProps } from 'next';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
@@ -111,6 +112,13 @@ const Sub: FC = () => {
     const workspaceId = useContext(WorkspaceIdContext);
     const { ambience } = useWorkspaceDecks(workspaceId);
 
+    const [, addRecents] = useLocalRecents();
+    useEffect(() => {
+        if (workspaceId) {
+            addRecents(workspaceId);
+        }
+    }, [addRecents, workspaceId]);
+
     return (
         <Container hideAmbience={ambience.length === 0}>
             <MainApp />
@@ -119,18 +127,11 @@ const Sub: FC = () => {
 };
 
 const Host: FunctionComponent = () => {
-    const [, addRecents] = useLocalRecents();
     const [workspaceId, setWorkspaceId] = useState('');
 
     useEffect(() => {
         setWorkspaceId(window.location.hash.substring(1));
     }, []);
-
-    useEffect(() => {
-        if (workspaceId) {
-            addRecents(workspaceId);
-        }
-    }, [addRecents, workspaceId]);
 
     return (
         <Root workspace={workspaceId}>

@@ -126,7 +126,7 @@ export function useUrqlClient(): { client: Client; reinitialize: () => void } {
     const reinitialize = useCallback(() => setNonce((nonce) => nonce + 1), [setNonce]);
 
     useEffect(() => {
-        if (nonce == 0) return;
+        if (nonce === 0) return;
 
         setClient(createUrqlClient());
     }, [nonce]);
