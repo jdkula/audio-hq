@@ -45,21 +45,14 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     const favs = useFavorites();
     const altKey = useAlt();
 
-    const cached = fileManager.cached.includes(file.id);
-    const downloadJob = fileManager.fetching.find((job) => job.id === file.id);
+    const cached = false; // TODO
 
     const download = async () => {
-        fileManager.track(file);
+        fileManager.track(file); // TODO
     };
 
     const save = async () => {
-        fileManager
-            .track(file)
-            .data()
-            .then((blob) => {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank', 'norel noreferrer');
-            });
+        window.open(file.download_url, '_blank', 'norel noreferrer');
     };
 
     const toggleFavorite = () => {
@@ -78,7 +71,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                         <EditIcon color={editing ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
-                {downloadJob && (
+                {/* {downloadJob && (
                     <Tooltip placement="left" title="Downloading..." arrow>
                         {downloadJob.progress ? (
                             <CircularProgressWithLabel variant="determinate" value={downloadJob.progress * 100} />
@@ -86,7 +79,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                             <CircularProgressWithLabel />
                         )}
                     </Tooltip>
-                )}
+                )} */}
                 {cached && (
                     <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
                         <IconButton onClick={save} size="large">
@@ -94,7 +87,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                         </IconButton>
                     </Tooltip>
                 )}
-                {!downloadJob && !cached && (
+                {!cached && (
                     <Tooltip placement="left" title="Audio on the cloud (click to cache)" arrow>
                         <IconButton onClick={download} size="large">
                             <DownloadIcon />

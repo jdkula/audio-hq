@@ -27,14 +27,14 @@ const DownloadCacheButton: FC = () => {
     const [downloading, setDownloading] = useState(false);
     const [downloadTotal, setDownloadTotal] = useState(0);
     const [downloadFinished, setDownloadFinished] = useState(0);
-    const filePartial =
-        fileManager.fetching.length === 0
-            ? 0
-            : fileManager.fetching.reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.length;
-    const downloadPercent =
-        downloadTotal === 0
-            ? undefined
-            : (downloadFinished / downloadTotal) * 100 + (filePartial * 100) / downloadTotal;
+    // const filePartial =
+    //     fileManager.fetching.length === 0
+    //         ? 0
+    //         : fileManager.fetching.reduce((curr, v) => curr + (v.progress as number), 0) / fileManager.fetching.length;
+    // const downloadPercent =
+    //     downloadTotal === 0
+    //         ? undefined
+    //         : (downloadFinished / downloadTotal) * 100 + (filePartial * 100) / downloadTotal;
 
     const onDownload = async () => {
         setDownloading(true);
@@ -58,12 +58,7 @@ const DownloadCacheButton: FC = () => {
             {downloading && (
                 <Box mx="1rem">
                     <Tooltip arrow placement="bottom" title={`${downloadFinished} of ${downloadTotal} complete.`}>
-                        <CircularProgressWithLabel
-                            color="secondary"
-                            textColor="inherit"
-                            value={downloadPercent}
-                            variant={!downloadPercent || downloadPercent === 100 ? 'indeterminate' : 'determinate'}
-                        />
+                        <CircularProgressWithLabel color="secondary" textColor="inherit" variant="indeterminate" />
                     </Tooltip>
                 </Box>
             )}

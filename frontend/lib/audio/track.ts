@@ -23,14 +23,7 @@ export class Track extends EventEmitter {
         this.once('internal_audioplayable', this.oncanplay.bind(this));
         this._audio.oncanplay = () => this.emit('internal_audioplayable');
 
-        const info = _fm.track(this._qe.file);
-
-        this._audio.src = info.remoteUrl;
-        info.data().then((blob) => {
-            this._ready = false;
-            this.once('internal_audioplayable', this.oncanplay.bind(this));
-            this._audio.src = URL.createObjectURL(blob);
-        });
+        this._audio.src = this._qe.file.download_url;
 
         this._globalVolumeListener = () => this.update(this._status);
         globalVolumeLRV.on('set', this._globalVolumeListener);
