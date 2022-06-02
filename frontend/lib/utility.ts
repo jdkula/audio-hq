@@ -14,6 +14,7 @@ import { Deck_Type_Enum_Enum, useDecksQuery, useEventsSubscription } from './gen
 import { useRouter } from 'next/router';
 import { getUnixTime } from 'date-fns';
 import { LocalStorageReactiveValue, useLocalReactiveValue } from './local_reactive';
+import createCache from '@emotion/cache';
 
 interface CurrentFileInfo {
     file: File_Minimum;
@@ -219,3 +220,7 @@ export function useQueryParameter(id: string): string | null {
 
 export const WorkspaceIdContext = createContext('');
 export const WorkspaceNameContext = createContext('');
+
+export function createEmotionCache() {
+    return createCache({ key: 'css', prepend: true });
+}

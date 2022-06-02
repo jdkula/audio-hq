@@ -1,8 +1,7 @@
 import { amber, cyan } from '@mui/material/colors';
 
+import { Theme, ThemeOptions } from '@mui/material';
 import { DefaultTheme } from '@mui/styles';
-import { ThemeProvider } from '@emotion/react';
-import { createTheme, Theme, ThemeOptions } from '@mui/material';
 
 declare module '@mui/styles/defaultTheme' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface

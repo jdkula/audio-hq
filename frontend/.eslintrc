@@ -4,12 +4,6 @@
     "rules": {
         "@typescript-eslint/no-var-requires": "off",
         "prettier/prettier": "warn",
-        "sort-imports": [
-            "warn",
-            {
-                "allowSeparatedGroups": true
-            }
-        ],
         "eqeqeq": "error"
     },
     "overrides": [

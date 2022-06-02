@@ -5,27 +5,70 @@
  * to work correctly with SSR.
  */
 
-import Document, { DocumentContext, DocumentInitialProps } from 'next/document';
+import Document, { DocumentContext, DocumentInitialProps, Html, Main, NextScript, Head } from 'next/document';
 import { resetServerContext } from 'react-beautiful-dnd';
+import createCache from '@emotion/cache';
 import React from 'react';
 import ServerStyleSheets from '@mui/styles/ServerStyleSheets';
+import { createEmotionCache } from '~/lib/utility';
+import createEmotionServer from '@emotion/server/create-instance';
 
 class MyDocument extends Document {
+    render() {
+        return (
+            <Html lang="en">
+                <Head>
+                    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+                    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+                    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+                    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+                    <link rel="manifest" href="/site.webmanifest" />
+                    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+                    <meta name="apple-mobile-web-app-title" content="Audio HQ" />
+                    <meta name="application-name" content="Audio HQ" />
+                    <meta name="msapplication-TileColor" content="#2b5797" />
+                    <meta name="theme-color" content="#ffffff" />
+
+                    {(this.props as any).emotionStyleTags}
+                </Head>
+                <body>
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        );
+    }
+
     static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
-        const muiSheets = new ServerStyleSheets();
         resetServerContext();
+        const cache = createEmotionCache();
+        const { extractCriticalToChunks } = createEmotionServer(cache);
         const originalRenderPage = ctx.renderPage;
 
         ctx.renderPage = () =>
             originalRenderPage({
-                enhanceApp: (App) => (props) => muiSheets.collect(<App {...props} />),
+                enhanceApp: (App: any) =>
+                    function EnhancedApp(props) {
+                        return <App emotionCache={cache} {...props} />;
+                    },
             });
 
         const initialProps = await Document.getInitialProps(ctx);
+
+        const emotionStyles = extractCriticalToChunks(initialProps.html);
+        const emotionStyleTags = emotionStyles.styles.map((style) => (
+            <style
+                data-emotion={`${style.key} ${style.ids.join(' ')}`}
+                key={style.key}
+                dangerouslySetInnerHTML={{ __html: style.css }}
+            />
+        ));
+
         return {
             ...initialProps,
-            styles: [initialProps.styles, muiSheets.getStyleElement()],
-        };
+            emotionStyleTags,
+        } as any;
     }
 }
 
