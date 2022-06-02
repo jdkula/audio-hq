@@ -1,3 +1,4 @@
+# <-- Build setup -->
 FROM --platform=$BUILDPLATFORM node:17-alpine AS deps-builder
 WORKDIR /audio-hq
 ENV YARN_CACHE_FOLDER=/yarn-cache
@@ -12,7 +13,7 @@ COPY --from=deps-builder /audio-hq/package.json ./package.json
 COPY --from=deps-builder /audio-hq/node_modules ./node_modules
 RUN yarn build
 
-
+# <-- Runner setup -->
 FROM node:17-alpine AS deps
 WORKDIR /audio-hq
 ENV YARN_CACHE_FOLDER=/yarn-cache

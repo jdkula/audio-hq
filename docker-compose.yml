@@ -8,10 +8,14 @@ services:
       - mock-s3
     entrypoint: 'curl -X PUT http://mock-s3:5000/audio-hq-test-files -d ""'
     restart: 'on-failure'
+    profiles:
+      - local-test
   mock-s3:
     image: motoserver/moto:latest
     ports:
       - "5000:5000"
+    profiles:
+      - local-test
   audio-hq:
     build: ./frontend
     ports:
@@ -19,7 +23,13 @@ services:
     env_file:
       - ".env"
     profiles:
-      - prod-test
+      - frontend
+  worker:
+    build: ./worker
+    env_file:
+      - ".env"
+    profiles:
+      - worker
   postgres:
     image: postgres:12
     restart: unless-stopped
