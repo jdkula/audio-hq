@@ -1,14 +1,15 @@
+/**
+ * index.tsx
+ * ===========
+ * Provides AHQ's home page
+ */
+
 import Head from 'next/head';
 import Button from '@mui/material/Button';
 import {
     Box,
     CircularProgress,
     Container,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogProps,
-    DialogTitle,
     Divider,
     FormControl,
     FormControlLabel,
@@ -20,15 +21,20 @@ import {
     Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useCallback, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
-import PouchDB from 'pouchdb';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
 import { ColorMode, useColorMode, useLocalRecents } from '../lib/utility';
-import { useWorkspaceDetailByNameQuery, useWorkspaceDetailQuery } from '~/lib/generated/graphql';
+import {
+    useCreateWorkspaceMutation,
+    useWorkspaceDetailByNameQuery,
+    useWorkspaceDetailQuery,
+    WorkspaceDetailQuery,
+} from '~/lib/generated/graphql';
+import { ConfirmDeleteAllDialog } from '~/components/Home/ConfirmDeleteAllDialogue';
 
 const GlobalFull = () => (
     <Global
@@ -78,83 +84,20 @@ const Logo = styled.div`
     user-select: none;
 `;
 
-// thanks https://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable-string/10420404 !
-function humanFileSize(bytes: number, si = false, dp = 1) {
-    const thresh = si ? 1000 : 1024;
-
-    if (Math.abs(bytes) < thresh) {
-        return bytes + ' B';
-    }
-
-    const units = si
-        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-    let u = -1;
-    const r = 10 ** dp;
-
-    do {
-        bytes /= thresh;
-        ++u;
-    } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-
-    return bytes.toFixed(dp) + ' ' + units[u];
+interface WorkspaceInfo {
+    id: string;
+    name: string;
 }
 
-const ConfirmDeleteAllDialog: FC<DialogProps> = (props) => {
-    const [deleting, setDeleting] = useState(false);
-
-    const [size, setSize] = useState<number | null>(null);
-
-    useEffect(() => {
-        if (props.open) {
-            new PouchDB('cache')
-                .allDocs({ attachments: true, binary: true, include_docs: true })
-                .then((docs) => docs.rows.flatMap((doc) => Object.values(doc.doc?._attachments ?? {})))
-                .then((attachments) =>
-                    attachments.map((attachment) => ((attachment as PouchDB.Core.FullAttachment).data as Blob).size),
-                )
-                .then((sizes) => sizes.reduce((sum, cur) => sum + cur, 0))
-                .then((totalSize) => setSize(totalSize));
-        }
-    }, [props.open]);
-
-    const doDelete = () => {
-        setDeleting(true);
-        new PouchDB('cache').destroy().then(() => window.location.reload());
-    };
-
-    return (
-        <Dialog {...props}>
-            <DialogTitle>Clear Audio Cache</DialogTitle>
-            <DialogContent dividers>
-                <Typography variant="body1">
-                    Are you sure? This will completely clear all stored music, meaning you&apos;ll have to download
-                    everything from scratch!
-                </Typography>
-                <Box m="1rem" />
-                <Typography variant="button">
-                    Total Size: {size === null ? 'Calculating...' : humanFileSize(size, true)}
-                </Typography>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => props.onClose?.({}, 'escapeKeyDown')}>Cancel</Button>
-                {deleting ? (
-                    <CircularProgress />
-                ) : (
-                    <Button onClick={doDelete} color="secondary">
-                        Delete
-                    </Button>
-                )}
-            </DialogActions>
-        </Dialog>
-    );
-};
-
-const Recent: FC<{ wsId: string; onClick: () => void }> = ({ wsId, onClick }) => {
+const Recent: FC<{ workspaceId: string; onClick: (ws: WorkspaceInfo) => void }> = ({ workspaceId: wsId, onClick }) => {
     const [{ data }] = useWorkspaceDetailQuery({ variables: { workspaceId: wsId } });
     return (
         <Box m="5px">
-            <Button onClick={onClick} variant="outlined" disabled={!data?.workspace_by_pk?.name}>
+            <Button
+                onClick={() => data?.workspace_by_pk && onClick(data?.workspace_by_pk)}
+                variant="outlined"
+                disabled={!data?.workspace_by_pk?.name}
+            >
                 {data?.workspace_by_pk?.name ?? <CircularProgress color="inherit" size="1rem" />}
             </Button>
         </Box>
@@ -170,20 +113,40 @@ export default function Home(): React.ReactElement {
     const [deleting, setDeleting] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
 
-    const [{ fetching, data }] = useWorkspaceDetailByNameQuery({ variables: { workspaceName } });
+    const [{ fetching, data }, refetch] = useWorkspaceDetailByNameQuery({
+        variables: { workspaceName },
+        requestPolicy: 'cache-and-network',
+    });
+    const [, createWorkspaceMutation] = useCreateWorkspaceMutation();
 
-    const go = (wsId = data?.workspace[0].id) => {
-        if (!wsId) return;
+    const foundWorkspace = data?.workspace[0] ?? null;
+
+    const createWorkspace = (workspaceName: string) => {
+        createWorkspaceMutation({ name: workspaceName }).then((res) => {
+            const ws = res.data?.insert_workspace_one;
+            if (!ws) return;
+            refetch();
+            visitWorkspace(ws);
+        });
+    };
+
+    const visitWorkspace = (ws: WorkspaceInfo | null = foundWorkspace) => {
+        if (!ws) {
+            if (workspaceName) {
+                createWorkspace(workspaceName);
+            }
+            return;
+        }
 
         setLoading(true);
-        setWorkspaceName(wsId);
-        router.push('/workspace', `/workspace/#${encodeURIComponent(wsId)}`);
+        setWorkspaceName(ws.name);
+        router.push('/workspace', `/workspace/#${encodeURIComponent(ws.id)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
             e.preventDefault();
-            go();
+            visitWorkspace();
         }
     };
 
@@ -197,6 +160,7 @@ export default function Home(): React.ReactElement {
             <GlobalFull />
 
             <InnerContainer>
+                {/* Logo */}
                 <Tooltip placement="top" arrow title="Double-click/tap to delete audio cache" enterDelay={500}>
                     <Logo onDoubleClick={() => setDeleting(true)}>
                         <Hidden smDown>
@@ -207,17 +171,19 @@ export default function Home(): React.ReactElement {
                         </Hidden>
                     </Logo>
                 </Tooltip>
+
+                {/* Join Controls */}
                 <TextField
-                    style={{ gridArea: 'input' }}
                     id="workspace-input"
-                    fullWidth
-                    autoFocus
+                    label="Workspace Name"
                     value={workspaceName}
+                    variant="outlined"
+                    disabled={loading}
                     onChange={(e) => setWorkspaceName(e.target.value)}
                     onKeyDown={enterListener}
-                    variant="outlined"
-                    label="Workspace Name"
-                    disabled={loading}
+                    fullWidth
+                    autoFocus
+                    style={{ gridArea: 'input' }}
                 />
                 {loading ? (
                     <CircularProgress variant="indeterminate" />
@@ -228,24 +194,30 @@ export default function Home(): React.ReactElement {
                         size="large"
                         variant="contained"
                         color={data?.workspace[0] ? 'primary' : 'secondary'}
-                        onClick={() => go()}
+                        onClick={() => visitWorkspace()}
                     >
-                        {workspaceName
-                            ? fetching
-                                ? 'Loading...'
-                                : data?.workspace[0]
-                                ? 'Join'
-                                : 'Create Workspace'
-                            : 'Enter a workspace name'}
+                        {
+                            workspaceName
+                                ? fetching
+                                    ? 'Loading...' // Searching for workspace
+                                    : data?.workspace[0]
+                                    ? 'Join' // If workspace found
+                                    : 'Create Workspace' // If workspace not found
+                                : 'Enter a workspace name' // If workspaceName is empty
+                        }
                     </Button>
                 )}
+
+                {/* Recents */}
                 <Box mt="3em" />
                 {recents.length > 0 && <ListHeader>Recent Workspaces</ListHeader>}
                 <Box mt="1rem" />
                 {recents.map((recent) => (
-                    <Recent key={recent} wsId={recent} onClick={() => go(recent)} />
+                    <Recent key={recent} workspaceId={recent} onClick={visitWorkspace} />
                 ))}
             </InnerContainer>
+
+            {/* Color mode */}
             <Tooltip arrow placement="top" title="Press Alt/Option+M at any time to toggle light and dark modes">
                 <Box
                     display="flex"
@@ -272,6 +244,7 @@ export default function Home(): React.ReactElement {
                 </Box>
             </Tooltip>
 
+            {/* Downloads */}
             <Box m={2}>
                 <Box display="grid" gridTemplateColumns="1fr auto 1fr" gridTemplateRows="auto" alignItems="center">
                     <Box m={2} justifySelf="end" textAlign="center">
