@@ -4,7 +4,12 @@ import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
 import { WorkspaceIdContext, WorkspaceNameContext } from '../lib/utility';
-import { useCreateWorkspaceMutation, useWorkspaceDetailByNameQuery, useWorkspaceDetailQuery } from '../lib/generated/graphql';
+import {
+    useCreateWorkspaceMutation,
+    useWorkspaceDetailByNameQuery,
+    useWorkspaceDetailQuery,
+} from '../lib/generated/graphql';
+import WorkspaceNotFound from './WorkspaceNotFound';
 
 const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
@@ -26,19 +31,16 @@ const Root: FC<{
     workspace?: string | null;
     children?: React.ReactNode;
 }> = (props) => {
-    const [{ data: workspaceRaw, ...query }, refetch] = useWorkspaceDetailQuery({
+    const [{ data: workspaceRaw, fetching }] = useWorkspaceDetailQuery({
         variables: { workspaceId: props.workspace ?? '' },
         pause: !props.workspace,
     });
-    const [, createWorkspace] = useCreateWorkspaceMutation();
     const workspaceId = workspaceRaw?.workspace_by_pk?.id;
     const workspaceName = workspaceRaw?.workspace_by_pk?.name;
 
-    useEffect(() => {
-        if (!workspaceRaw && props.workspace && !query.fetching && !query.error) {
-            createWorkspace({ name: props.workspace }).then(() => refetch());
-        }
-    }, [createWorkspace, refetch, workspaceRaw, query, props.workspace]);
+    if (!fetching && props.workspace && !workspaceName) {
+        return <WorkspaceNotFound workspace={props.workspace ?? '...'} />;
+    }
 
     if (!props.workspace || !workspaceName || !workspaceId) {
         return <LoadingPage workspace={workspaceName ?? props.workspace ?? '...'} />;
