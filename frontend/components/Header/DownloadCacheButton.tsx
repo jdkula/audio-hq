@@ -7,7 +7,7 @@
  */
 
 import { Box, IconButton, Tooltip } from '@mui/material';
-import React, { useContext, useState, FC } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { GetApp } from '@mui/icons-material';
 
 import CircularProgressWithLabel from '../CircularProgressWithLabel';

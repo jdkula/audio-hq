@@ -4,7 +4,7 @@
  * Provides fields to accept a URL to import or file to upload.
  */
 
-import { Accordion, AccordionSummary, AccordionDetails, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, TextField, Typography } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import React, { FC } from 'react';
 import { useDropzone } from 'react-dropzone';

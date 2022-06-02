@@ -11,7 +11,7 @@ import styled from '@emotion/styled';
 import { AudioControls } from './AudioControls';
 
 import AddIcon from '@mui/icons-material/Add';
-import { getTrackInfo, useWorkspaceDecks, WorkspaceIdContext } from '../lib/utility';
+import { WorkspaceIdContext, getTrackInfo, useWorkspaceDecks } from '../lib/utility';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;

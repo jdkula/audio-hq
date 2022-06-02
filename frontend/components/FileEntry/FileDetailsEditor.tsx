@@ -4,7 +4,7 @@
  * Provides an editor for the track details of a given file.
  */
 
-import { ClickAwayListener, TextField, Button, Box } from '@mui/material';
+import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
 import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { File_Minimum } from '../../lib/graphql_type_helper';

@@ -5,7 +5,7 @@
  * relating to cutting a track to a given start/end time.
  */
 
-import { Accordion, Typography, AccordionDetails, InputAdornment, TextField } from '@mui/material';
+import { Accordion, AccordionDetails, InputAdornment, TextField, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
 import AccordionCheckboxHeader from './AccordionCheckboxHeader';

@@ -11,7 +11,7 @@ import React, { FC, useContext, useState } from 'react';
 
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult, Droppable } from 'react-beautiful-dnd';
 import styled from '@emotion/styled';
 import FileEntry from './FileEntry';
 import FolderAddDialog from './AddFolderDialog';
@@ -19,7 +19,7 @@ import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
 import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
-import { nonNull, useAlt, useFavorites, WorkspaceIdContext } from '../lib/utility';
+import { WorkspaceIdContext, nonNull, useAlt, useFavorites } from '../lib/utility';
 import { File_Minimum } from '../lib/graphql_type_helper';
 import {
     Deck_Type_Enum_Enum,

@@ -5,7 +5,7 @@
  * download, or delete a song.
  */
 
-import { Tooltip, IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import styled from '@emotion/styled';
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
@@ -16,7 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import OfflinePinIcon from '@mui/icons-material/OfflinePin';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import useFileManager from '../../lib/useFileManager';
-import { useAlt, useFavorites, WorkspaceIdContext } from '../../lib/utility';
+import { WorkspaceIdContext, useAlt, useFavorites } from '../../lib/utility';
 import { File_Minimum } from '../../lib/graphql_type_helper';
 
 const StatusContainerPlacer = styled.div`

@@ -5,7 +5,7 @@
  * relating to fading a track in/out.
  */
 
-import { Accordion, Typography, AccordionDetails, TextField, InputAdornment } from '@mui/material';
+import { Accordion, AccordionDetails, InputAdornment, TextField, Typography } from '@mui/material';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
 import TrackOptionsContainer from './TrackOptionsContainer';

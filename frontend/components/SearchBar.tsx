@@ -4,7 +4,7 @@
  * Provides a search bar for the explorer!
  */
 
-import { TextField, InputAdornment, Tooltip, IconButton } from '@mui/material';
+import { IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
 import React, { FC } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';

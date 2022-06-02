@@ -1,4 +1,4 @@
-import { Typography, Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import Head from 'next/head';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';

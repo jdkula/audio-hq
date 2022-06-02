@@ -6,8 +6,8 @@
  * of Audio HQ's personal global volume.
  */
 
-import { Typography, Popover, Slider, IconButton, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import React, { useState, FC } from 'react';
+import { IconButton, Popover, Slider, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import React, { FC, useState } from 'react';
 import styled from '@emotion/styled';
 
 import VolumeButton from '../VolumeButton';

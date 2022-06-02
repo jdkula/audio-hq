@@ -6,9 +6,9 @@
  * volume, cache all workspace songs, and add tracks.
  */
 
-import { AppBar, Toolbar, Typography, Button, useMediaQuery, useTheme, Hidden, Link } from '@mui/material';
+import { AppBar, Button, Hidden, Link, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
-import React, { useContext, FunctionComponent, useState, FC } from 'react';
+import React, { FC, FunctionComponent, useContext, useState } from 'react';
 import Head from 'next/head';
 import { Add } from '@mui/icons-material';
 import styled from '@emotion/styled';

@@ -3,12 +3,12 @@ import PouchDB from 'pouchdb';
 import { useCallback, useEffect, useState } from 'react';
 import ConvertOptions from './ConvertOptions';
 import {
+    WorkspaceFilesQuery,
+    WorkspaceJobsSubscription,
     useAddJobMutation,
     useDeleteFileMutation,
     useWorkspaceFilesQuery,
     useWorkspaceJobsSubscription,
-    WorkspaceFilesQuery,
-    WorkspaceJobsSubscription,
 } from './generated/graphql';
 import { File_Minimum } from './graphql_type_helper';
 

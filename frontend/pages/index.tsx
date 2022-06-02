@@ -26,7 +26,7 @@ import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import PouchDB from 'pouchdb';
 import ListHeader from '~/components/ListHeader';
-import { css, Global } from '@emotion/react';
+import { Global, css } from '@emotion/react';
 import { ColorMode, useColorMode, useLocalRecents } from '../lib/utility';
 
 const GlobalFull = () => (
