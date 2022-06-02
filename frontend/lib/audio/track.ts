@@ -15,6 +15,7 @@ export class Track extends EventEmitter {
         super();
 
         this._audio = new Audio();
+        this._audio.crossOrigin = 'anonymous';
         this._audio.volume = 0;
         this._audio.loop = false;
         this._audio.autoplay = true;

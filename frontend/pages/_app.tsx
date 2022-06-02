@@ -68,6 +68,11 @@ export default function App({
         return () => window.removeEventListener('keydown', forceModeListener);
     }, [forceModeListener]);
 
+    /** Use caching service worker */
+    useEffect(() => {
+        navigator.serviceWorker.register('/service.worker.js')
+    }, [])
+
     return (
         <CacheProvider value={emotionCache}>
             <ThemeProvider theme={theme}>

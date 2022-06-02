@@ -71,6 +71,8 @@ const useFileManager = (() => {
         const retrieveFile = async (fileId: string, url: string) => {
             setFetching((fetching) => [...fetching, { id: fileId, progress: 0 }]);
             const resp = await fetch(url, {
+                cache: 'no-store',
+                mode: "cors",
                 headers: {
                     Accept: 'audio/ogg',
                 },
@@ -247,14 +249,18 @@ const useFileManager = (() => {
                 const max = files.size - cached.length;
                 const progress = { started: 0, finished: 0, total: max };
 
+                const promises = [];
                 for (const [, file] of files) {
                     if (!cached.includes(file.id)) {
                         console.log('Downloading', file.name, `(${file.id})`);
                         progress.started++;
                         onProgress?.(progress.started, progress.finished);
-                        await cacheFile(file.id, await retrieveFile(file.id, file.download_url));
+                        promises.push(
+                            retrieveFile(file.id, file.download_url).then((blob) => cacheFile(file.id, blob)),
+                        );
                     }
                 }
+                await Promise.all(promises);
                 console.log('Done.');
             },
         };
