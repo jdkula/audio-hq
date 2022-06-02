@@ -1,13 +1,4 @@
-import {
-    DependencyList,
-    Dispatch,
-    EffectCallback,
-    SetStateAction,
-    createContext,
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
+import { DependencyList, EffectCallback, createContext, useCallback, useEffect, useState } from 'react';
 import { Deck_Minimum, File_Minimum } from './graphql_type_helper';
 import { Deck_Type_Enum_Enum, useDecksQuery, useEventsSubscription } from './generated/graphql';
 import { useRouter } from 'next/router';
@@ -117,17 +108,6 @@ export function allNonNull<T>(list: (T | null | undefined)[]): list is T[] {
 
 export function nonNull<T>(elem: T | null | undefined): elem is T {
     return elem !== null && elem !== undefined;
-}
-
-const localStorageListeners: Record<string, Dispatch<SetStateAction<unknown | null>>[]> = {};
-
-function getLocalStorage<T>(key: string, defaultValue?: T): T | null;
-function getLocalStorage<T>(key: string, defaultValue: T): T;
-function getLocalStorage<T>(key: string): T | null;
-function getLocalStorage<T>(key: string, defaultValue?: T): T | null {
-    if (typeof window === 'undefined') return defaultValue ?? null;
-
-    return JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue ?? null;
 }
 
 const kColorModeKey = '__AHQ_SAVED_COLOR_MODE';

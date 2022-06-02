@@ -70,8 +70,8 @@ export default function App({
 
     /** Use caching service worker */
     useEffect(() => {
-        navigator.serviceWorker.register('/service.worker.js')
-    }, [])
+        navigator.serviceWorker.register('/service.worker.js', { type: 'module' });
+    }, []);
 
     return (
         <CacheProvider value={emotionCache}>

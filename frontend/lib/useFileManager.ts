@@ -1,9 +1,7 @@
-import _ from 'lodash';
-import PouchDB from 'pouchdb';
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
+import { broadcast, BroadcastMessage, useIsCached } from './broadcast';
 import ConvertOptions from './ConvertOptions';
 import {
-    WorkspaceFilesQuery,
     WorkspaceJobsSubscription,
     useAddJobMutation,
     useDeleteFileMutation,
@@ -11,11 +9,11 @@ import {
     useWorkspaceJobsSubscription,
 } from './generated/graphql';
 import { File_Minimum } from './graphql_type_helper';
+import { nonNull } from './utility';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 
 const useFileManager = (() => {
-
     return (workspaceId: string) => {
         // <== State ==>
         const [filesData] = useWorkspaceFilesQuery({ variables: { workspaceId } });
@@ -24,19 +22,26 @@ const useFileManager = (() => {
         const [, addJob] = useAddJobMutation();
         const [, delFile] = useDeleteFileMutation();
 
-        const files = new Map<string, WorkspaceFilesQuery['file'][number]>(
-            (filesData.data?.file ?? []).map((file) => [file.id, { ...file }]),
+        const files = useMemo(() => filesData.data?.file ?? [], [filesData.data?.file]);
+        const urls = useMemo(() => files.map((f) => f.download_url), [files]);
+        const jobs = useMemo(
+            () =>
+                new Map<string, WorkspaceJobsSubscription['job'][number]>(
+                    (jobsData.data?.job ?? []).map((job) => [job.id, job]),
+                ),
+            [jobsData.data?.job],
         );
-        const jobs = new Map<string, WorkspaceJobsSubscription['job'][number]>(
-            (jobsData.data?.job ?? []).map((job) => [job.id, job]),
-        );
+        const cachedIdx = useIsCached(urls);
+        const cached = cachedIdx.map((state, idx) => (state === 'cached' ? files[idx] : null)).filter(nonNull);
+        const caching = cachedIdx.map((state, idx) => (state === 'loading' ? files[idx] : null)).filter(nonNull);
 
         const [uploading, setUploading] = useState<string[]>([]);
-
 
         return {
             uploading,
             jobs,
+            cached,
+            caching,
             import: async (
                 name: string,
                 url: string,
@@ -62,6 +67,12 @@ const useFileManager = (() => {
             },
             track: (file: File_Minimum): string => {
                 return file.download_url;
+            },
+            download: (file: File_Minimum) => {
+                broadcast.postMessage({
+                    type: 'cache',
+                    urls: [file.download_url],
+                } as BroadcastMessage);
             },
             upload: async (
                 name: string,
@@ -103,10 +114,15 @@ const useFileManager = (() => {
                 onStart?: (cached: number, total: number) => void,
                 onProgress?: (started: number, finished: number) => void,
             ) => {
-                // TODO
+                broadcast.postMessage({
+                    type: 'cache',
+                    urls: [...files.values()].map((f) => f.download_url),
+                } as BroadcastMessage);
             },
         };
     };
 })();
 
 export default useFileManager;
+
+export const FileManagerContext = createContext<FileManager>(null as never);

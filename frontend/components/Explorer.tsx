@@ -27,7 +27,7 @@ import {
     useUpdateFileMutation,
     useWorkspaceFilesQuery,
 } from '../lib/generated/graphql';
-import useFileManager from '../lib/useFileManager';
+import { FileManagerContext } from '../lib/useFileManager';
 import { useLocalReactiveValue } from '../lib/local_reactive';
 import { currentPathLRV } from '../lib/global_lrv';
 import _ from 'lodash';
@@ -118,7 +118,7 @@ export const Explorer: FC = () => {
 
     const altKey = useAlt();
 
-    const fileManager = useFileManager(workspaceId);
+    const fileManager = useContext(FileManagerContext);
 
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = (filesRaw?.file ?? []).sort((a, b) => (a.ordering ?? Infinity) - (b.ordering ?? Infinity));

@@ -5,18 +5,17 @@
  * download, or delete a song.
  */
 
-import { IconButton, Tooltip } from '@mui/material';
+import { CircularProgress, IconButton, Tooltip } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import styled from '@emotion/styled';
-import CircularProgressWithLabel from '../CircularProgressWithLabel';
 
 import DeleteForever from '@mui/icons-material/DeleteForever';
 import DownloadIcon from '@mui/icons-material/CloudDownload';
 import EditIcon from '@mui/icons-material/Edit';
 import OfflinePinIcon from '@mui/icons-material/OfflinePin';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import useFileManager from '../../lib/useFileManager';
-import { WorkspaceIdContext, useAlt, useFavorites } from '../../lib/utility';
+import { FileManagerContext } from '../../lib/useFileManager';
+import { useAlt, useFavorites } from '../../lib/utility';
 import { File_Minimum } from '../../lib/graphql_type_helper';
 
 const StatusContainerPlacer = styled.div`
@@ -40,15 +39,15 @@ interface StatusControlsProps {
 }
 
 const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, setDelete }) => {
-    const workspaceId = useContext(WorkspaceIdContext);
-    const fileManager = useFileManager(workspaceId);
+    const fileManager = useContext(FileManagerContext);
     const favs = useFavorites();
     const altKey = useAlt();
 
-    const cached = false; // TODO
+    const cached = !!fileManager.cached.find((f) => f.id === file.id);
+    const caching = !!fileManager.caching.find((f) => f.id === file.id);
 
     const download = async () => {
-        fileManager.track(file); // TODO
+        fileManager.download(file); // TODO
     };
 
     const save = async () => {
@@ -71,23 +70,19 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
                         <EditIcon color={editing ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
-                {/* {downloadJob && (
+                {caching && (
                     <Tooltip placement="left" title="Downloading..." arrow>
-                        {downloadJob.progress ? (
-                            <CircularProgressWithLabel variant="determinate" value={downloadJob.progress * 100} />
-                        ) : (
-                            <CircularProgressWithLabel />
-                        )}
+                        <CircularProgress />
                     </Tooltip>
-                )} */}
-                {cached && (
+                )}
+                {cached && !caching && (
                     <Tooltip placement="left" title="Audio cached (click to save to computer)" arrow>
                         <IconButton onClick={save} size="large">
                             <OfflinePinIcon />
                         </IconButton>
                     </Tooltip>
                 )}
-                {!cached && (
+                {!cached && !caching && (
                     <Tooltip placement="left" title="Audio on the cloud (click to cache)" arrow>
                         <IconButton onClick={download} size="large">
                             <DownloadIcon />

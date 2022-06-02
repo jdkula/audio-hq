@@ -1,18 +1,18 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect } from 'react';
 import { WorkspaceNameContext, getTrackInfo, useWorkspaceDecks } from '../utility';
 import { File_Minimum } from '../graphql_type_helper';
-import { useLocalReactiveValue } from '../local_reactive';
-import { globalVolumeLRV } from '../global_lrv';
-import { useStopDeckMutation, useUpdateDeckMutation } from '../generated/graphql';
+// import { useLocalReactiveValue } from '../local_reactive';
+// import { globalVolumeLRV } from '../global_lrv';
+// import { useStopDeckMutation, useUpdateDeckMutation } from '../generated/graphql';
 
 const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);
     const { main } = useWorkspaceDecks(workspaceId);
-    const [, delDeck] = useStopDeckMutation();
-    const [, updateDeck] = useUpdateDeckMutation();
+    // const [, delDeck] = useStopDeckMutation();
+    // const [, updateDeck] = useUpdateDeckMutation();
 
-    const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
-    const previousVolumeValue = useRef<number | null>(null);
+    // const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
+    // const previousVolumeValue = useRef<number | null>(null);
 
     let currentlyPlaying: File_Minimum | null = null;
     if (main) {

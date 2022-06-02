@@ -1,17 +1,14 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import React, { FC, useContext, useEffect } from 'react';
+import React, { FC, useContext } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
 import { WorkspaceIdContext, WorkspaceNameContext } from '../lib/utility';
-import {
-    useCreateWorkspaceMutation,
-    useWorkspaceDetailByNameQuery,
-    useWorkspaceDetailQuery,
-} from '../lib/generated/graphql';
+import { useWorkspaceDetailQuery } from '../lib/generated/graphql';
 import WorkspaceNotFound from './WorkspaceNotFound';
+import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
 
-const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
+const BlockedRoot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
     useMediaSession(workspaceId);
     const { blocked } = useAudioManager(workspaceId);
@@ -27,6 +24,13 @@ const Subroot: FC<{ children?: React.ReactNode }> = (props) => {
     );
 };
 
+const FileManagerRoot: FC<{ children?: React.ReactNode }> = (props) => {
+    const workspaceId = useContext(WorkspaceIdContext);
+    const fileManager = useFileManager(workspaceId);
+
+    return <FileManagerContext.Provider value={fileManager}>{props.children}</FileManagerContext.Provider>;
+};
+
 const Root: FC<{
     workspace?: string | null;
     children?: React.ReactNode;
@@ -39,7 +43,7 @@ const Root: FC<{
     const workspaceName = workspaceRaw?.workspace_by_pk?.name;
 
     if (!fetching && props.workspace && !workspaceName) {
-        return <WorkspaceNotFound workspace={props.workspace ?? '...'} />;
+        return <WorkspaceNotFound />;
     }
 
     if (!props.workspace || !workspaceName || !workspaceId) {
@@ -49,7 +53,9 @@ const Root: FC<{
     return (
         <WorkspaceIdContext.Provider value={workspaceId}>
             <WorkspaceNameContext.Provider value={workspaceName}>
-                <Subroot>{props.children}</Subroot>
+                <FileManagerRoot>
+                    <BlockedRoot>{props.children}</BlockedRoot>
+                </FileManagerRoot>
             </WorkspaceNameContext.Provider>
         </WorkspaceIdContext.Provider>
     );

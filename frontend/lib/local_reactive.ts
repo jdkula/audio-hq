@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { get, set } from 'idb-keyval';
 
 export class LocalReactiveValue<T> extends EventEmitter {
     private _value: T;
@@ -33,6 +34,29 @@ export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
     }
 }
 
+export class LocalIDBReactiveValue<T> extends LocalReactiveValue<T> {
+    private _loading = true;
+
+    get loading() {
+        return this._loading;
+    }
+
+    constructor(key: string, defaultValue: T) {
+        super(defaultValue);
+
+        if (typeof window !== 'undefined') {
+            get(key).then((value) => {
+                this._loading = false;
+                this.value = value;
+
+                this.on('set', (value) => {
+                    set(key, value);
+                });
+            });
+        }
+    }
+}
+
 export function useLocalReactiveValue<T>(lrv: LocalReactiveValue<T>): [T, Dispatch<SetStateAction<T>>] {
     const [localValue, setValueInternal] = useState(lrv.value);
 
@@ -40,8 +64,8 @@ export function useLocalReactiveValue<T>(lrv: LocalReactiveValue<T>): [T, Dispat
         const update = () => {
             setValueInternal(lrv.value);
         };
-        update();
         lrv.on('set', update);
+        update();
         return () => {
             lrv.off('set', update);
         };

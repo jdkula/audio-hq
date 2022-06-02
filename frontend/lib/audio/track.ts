@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { Deck_Minimum, Track_Minimum } from '../graphql_type_helper';
 import { FileManager } from '../useFileManager';
 import { differenceInMilliseconds } from 'date-fns';
-import { globalVolumeLRV } from '../global_lrv';
+import { doCacheLRV, globalVolumeLRV } from '../global_lrv';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -24,6 +24,10 @@ export class Track extends EventEmitter {
         this._audio.oncanplay = () => this.emit('internal_audioplayable');
 
         this._audio.src = this._qe.file.download_url;
+
+        if (doCacheLRV.value) {
+            this._fm.download(this._qe.file);
+        }
 
         this._globalVolumeListener = () => this.update(this._status);
         globalVolumeLRV.on('set', this._globalVolumeListener);
@@ -126,7 +130,7 @@ export class Track extends EventEmitter {
             this._audio.volume = 0;
         }
 
-        if (status.queue.length != 1) {
+        if (status.queue.length !== 1) {
             const startHandle = setTimeout(this.onstart.bind(this), nextStart * 1000);
             const endHandle = setTimeout(this.onend.bind(this), nextEnd * 1000);
             this._stopTimeouts = () => {

@@ -12,8 +12,7 @@ import { GetApp } from '@mui/icons-material';
 
 import CircularProgressWithLabel from '../CircularProgressWithLabel';
 import styled from '@emotion/styled';
-import useFileManager from '../../lib/useFileManager';
-import { WorkspaceIdContext } from '../../lib/utility';
+import { FileManagerContext } from '../../lib/useFileManager';
 
 const DownloadButtonContainer = styled.div`
     color: white;
@@ -21,8 +20,7 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const DownloadCacheButton: FC = () => {
-    const workspaceId = useContext(WorkspaceIdContext);
-    const fileManager = useFileManager(workspaceId);
+    const fileManager = useContext(FileManagerContext);
 
     const [downloading, setDownloading] = useState(false);
     const [downloadTotal, setDownloadTotal] = useState(0);

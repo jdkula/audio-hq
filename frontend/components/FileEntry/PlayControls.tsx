@@ -17,6 +17,7 @@ import { BlurOn } from '@mui/icons-material';
 import { WorkspaceIdContext, useAlt, useWorkspaceDecks } from '../../lib/utility';
 import { File_Minimum } from '../../lib/graphql_type_helper';
 import { Deck_Type_Enum_Enum, usePlayDeckMutation } from '../../lib/generated/graphql';
+import { add } from 'date-fns';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -58,7 +59,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 queue: { data: [{ file_id: file.id }] },
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
-                start_timestamp: new Date(),
+                start_timestamp: add(new Date(), { seconds: 1 }),
             },
         });
     };
@@ -72,7 +73,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 queue: { data: [{ file_id: file.id }] },
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
-                start_timestamp: new Date(),
+                start_timestamp: add(new Date(), { seconds: 1 }),
             },
         });
     };

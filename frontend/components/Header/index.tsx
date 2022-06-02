@@ -16,7 +16,7 @@ import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
 import { WorkspaceIdContext, WorkspaceNameContext } from '../../lib/utility';
-import useFileManager from '../../lib/useFileManager';
+import { FileManagerContext } from '../../lib/useFileManager';
 import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 import { useLocalReactiveValue } from '../../lib/local_reactive';
 import { currentPathLRV } from '../../lib/global_lrv';
@@ -56,7 +56,7 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => (
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const workspaceName = useContext(WorkspaceNameContext);
-    const fileManager = useFileManager(workspaceId);
+    const fileManager = useContext(FileManagerContext);
 
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = filesRaw?.file ?? [];
@@ -65,7 +65,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [path] = useLocalReactiveValue(currentPathLRV);
 
-    const allCached = false; // TODO
+    const allCached = fileManager.cached.length === files.length; // TODO
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));

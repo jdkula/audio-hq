@@ -2,13 +2,12 @@ import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useState } from 'react';
 import { Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
-import { Cache, ScalarObject, cacheExchange } from '@urql/exchange-graphcache';
+import { Cache, cacheExchange } from '@urql/exchange-graphcache';
 import customScalarsExchange from 'urql-custom-scalars-exchange';
 import schema from '~/graphql.schema.json';
 import { IntrospectionQuery } from 'graphql';
 import { IntrospectionData } from '@urql/exchange-graphcache/dist/types/ast';
-import { FileInfoFragment, FileInfoFragmentDoc, File_Set_Input, WorkspaceFilesDocument } from './generated/graphql';
-import { File_Minimum } from './graphql_type_helper';
+import { File_Set_Input } from './generated/graphql';
 
 function invalidateRootField(cache: Cache, fieldName: string) {
     cache

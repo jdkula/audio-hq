@@ -7,9 +7,7 @@
 
 import Document, { DocumentContext, DocumentInitialProps, Html, Main, NextScript, Head } from 'next/document';
 import { resetServerContext } from 'react-beautiful-dnd';
-import createCache from '@emotion/cache';
 import React from 'react';
-import ServerStyleSheets from '@mui/styles/ServerStyleSheets';
 import { createEmotionCache } from '~/lib/utility';
 import createEmotionServer from '@emotion/server/create-instance';
 

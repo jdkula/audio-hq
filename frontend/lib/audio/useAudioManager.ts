@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import useFileManager from '../useFileManager';
+import { useCallback, useEffect, useRef, useState, useContext } from 'react';
+import { FileManagerContext } from '../useFileManager';
 import { Deck } from './deck';
 import { Deck_Minimum } from '../graphql_type_helper';
 import { useWorkspaceDecks } from '../utility';
@@ -18,7 +18,7 @@ const useAudioManager = (() => {
         }, []);
 
         // <== Local State ==>
-        const fileManager = useFileManager(workspaceId);
+        const fileManager = useContext(FileManagerContext);
 
         const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 

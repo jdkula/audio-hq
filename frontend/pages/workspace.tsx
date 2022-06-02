@@ -1,7 +1,7 @@
 /**
  * workspace.ts
  * =============
- * Provides Audio HQ's 
+ * Provides Audio HQ's
  */
 
 import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';

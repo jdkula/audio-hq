@@ -2,8 +2,7 @@ import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import Head from 'next/head';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
-import { Add, ArrowBack, Undo } from '@mui/icons-material';
-import { useCreateWorkspaceMutation } from '~/lib/generated/graphql';
+import { ArrowBack } from '@mui/icons-material';
 
 const LoadingBase = styled.div`
     display: grid;
@@ -24,7 +23,7 @@ const Inner = styled.div`
     text-align: center;
 `;
 
-const WorkspaceNotFound: FC<{ workspace: string }> = ({ workspace }) => {
+const WorkspaceNotFound: FC = () => {
     return (
         <LoadingBase>
             <Head>

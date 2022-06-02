@@ -17,11 +17,12 @@ import {
     Link,
     Radio,
     RadioGroup,
+    Switch,
     Tooltip,
     Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { FC, KeyboardEvent, useCallback, useState } from 'react';
+import React, { FC, KeyboardEvent, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
@@ -32,9 +33,10 @@ import {
     useCreateWorkspaceMutation,
     useWorkspaceDetailByNameQuery,
     useWorkspaceDetailQuery,
-    WorkspaceDetailQuery,
 } from '~/lib/generated/graphql';
 import { ConfirmDeleteAllDialog } from '~/components/Home/ConfirmDeleteAllDialogue';
+import { useLocalReactiveValue } from '~/lib/local_reactive';
+import { doCacheLRV } from '~/lib/global_lrv';
 
 const GlobalFull = () => (
     <Global
@@ -112,6 +114,7 @@ export default function Home(): React.ReactElement {
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
+    const [doCache, setDoCache] = useLocalReactiveValue(doCacheLRV);
 
     const [{ fetching, data }, refetch] = useWorkspaceDetailByNameQuery({
         variables: { workspaceName },
@@ -243,6 +246,9 @@ export default function Home(): React.ReactElement {
                     </FormControl>
                 </Box>
             </Tooltip>
+
+            {/* Cache */}
+            <Switch checked={doCache} onChange={(_, checked) => setDoCache(checked)} />
 
             {/* Downloads */}
             <Box m={2}>

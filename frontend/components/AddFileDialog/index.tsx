@@ -17,8 +17,7 @@ import ConvertOptions from '~/lib/ConvertOptions';
 import TrackOptions, { TrackRef } from './TrackOptions';
 import TrackImportDetails from './TrackImportDetails';
 import TrackDetails from './TrackDetails';
-import { WorkspaceIdContext } from '../../lib/utility';
-import useFileManager from '../../lib/useFileManager';
+import { FileManagerContext } from '../../lib/useFileManager';
 
 /** Dialog content wrapper */
 const AddTrackContent = styled(DialogContent)`
@@ -43,8 +42,7 @@ const AddFileDialog: FC<DialogProps & { currentPath?: string[] }> = ({ currentPa
     // Needed to focus the title on shift+enter.
     const titleRef = useRef<HTMLInputElement | null>(null);
 
-    const workspaceId = useContext(WorkspaceIdContext);
-    const fileManager = useFileManager(workspaceId);
+    const fileManager = useContext(FileManagerContext);
 
     const afterSubmit = (shouldClose = true) => {
         setUrl('');
