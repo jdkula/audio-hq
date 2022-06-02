@@ -1,9 +1,17 @@
 version: '3.9'
 volumes:
   db_data:
-  localstack_tmp:
-  localstack_data:
 services:
+  mock-s3-setup:
+    image: curlimages/curl:latest
+    depends_on:
+      - mock-s3
+    entrypoint: 'curl -X PUT http://mock-s3:5000/audio-hq-test-files -d ""'
+    restart: 'on-failure'
+  mock-s3:
+    image: motoserver/moto:latest
+    ports:
+      - "5000:5000"
   audio-hq:
     build: ./frontend
     ports:

@@ -12,6 +12,7 @@ CREATE TABLE public.file
 (
     id           uuid    NOT NULL DEFAULT gen_random_uuid(),
     workspace_id uuid    NOT NULL,
+    provider_id  text,
     download_url text    NOT NULL,
     name         text    NOT NULL,
     description  text    NOT NULL DEFAULT '',

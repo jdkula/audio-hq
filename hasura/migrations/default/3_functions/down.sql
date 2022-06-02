@@ -1,3 +1,5 @@
+DROP FUNCTION public.claim_delete_job(worker_id uuid);
+DROP FUNCTION public.claim_job(worker_id uuid);
 DROP FUNCTION public.update_speed();
 DROP FUNCTION public.order_is_reconciled();
 DROP FUNCTION public.reconcile_ordering();

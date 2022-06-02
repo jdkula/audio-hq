@@ -57,11 +57,15 @@ function createUrqlClient(): Client {
                     },
                     Subscription: {
                         event(result, args, cache) {
-                            const evt = result.event as Array<Record<string, never>> | null;
-                            if (evt?.[0].deck || evt?.[0].track) {
+                            const evt = (result.event as Array<Record<string, never>> | null)?.[0];
+                            console.log('Got event', evt);
+                            if (evt?.deck || evt?.track) {
                                 invalidateRootField(cache, 'deck');
-                            }
-                            if (evt?.[0].file) {
+                            } else if (evt?.file) {
+                                invalidateRootField(cache, 'file');
+                            } else {
+                                // Something was deleted– refresh all.
+                                invalidateRootField(cache, 'deck');
                                 invalidateRootField(cache, 'file');
                             }
                         },

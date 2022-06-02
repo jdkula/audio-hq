@@ -31,30 +31,30 @@ const useMediaSession = (workspaceId: string): void => {
         }
     }, [workspaceId, currentlyPlaying, workspaceName]);
 
-    useEffect(() => {
-        if (navigator.mediaSession) {
-            navigator.mediaSession.setActionHandler('pause', () => {
-                previousVolumeValue.current = globalVolume;
-                setGlobalVolume(0);
-            });
-            navigator.mediaSession.setActionHandler('stop', () => {
-                if (main) {
-                    delDeck({ deckId: main.id });
-                }
-            });
-
-            navigator.mediaSession.setActionHandler('play', () => {
-                if (globalVolume === 0) {
-                    setGlobalVolume(previousVolumeValue.current ?? 1);
-                }
-            });
-            navigator.mediaSession.setActionHandler('previoustrack', () => {
-                if (main) {
-                    updateDeck({ deckId: main.id, update: { start_timestamp: new Date() } });
-                }
-            });
-        }
-    }, [main, globalVolume, setGlobalVolume, updateDeck, delDeck]);
+    // useEffect(() => {
+    //     if (navigator.mediaSession) {
+    //         navigator.mediaSession.setActionHandler('pause', () => {
+    //             previousVolumeValue.current = globalVolume;
+    //             setGlobalVolume(0);
+    //         });
+    //         navigator.mediaSession.setActionHandler('stop', () => {
+    //             if (main) {
+    //                 delDeck({ deckId: main.id });
+    //             }
+    //         });
+    //
+    //         navigator.mediaSession.setActionHandler('play', () => {
+    //             if (globalVolume === 0) {
+    //                 setGlobalVolume(previousVolumeValue.current ?? 1);
+    //             }
+    //         });
+    //         navigator.mediaSession.setActionHandler('previoustrack', () => {
+    //             if (main) {
+    //                 updateDeck({ deckId: main.id, update: { start_timestamp: new Date() } });
+    //             }
+    //         });
+    //     }
+    // }, [main, globalVolume, setGlobalVolume, updateDeck, delDeck]);
 };
 
 export default useMediaSession;

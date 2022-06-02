@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es2019",
+        "sourceMap": true,
         "lib": ["esnext"],
         "outDir": "dist",
         "allowJs": true,
@@ -19,6 +20,6 @@
             "~/*": ["./*"]
         }
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "include": ["next-env.d.ts", "src/*.ts"],
     "exclude": ["node_modules"]
 }

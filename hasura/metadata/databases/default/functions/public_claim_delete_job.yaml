@@ -1,0 +1,8 @@
+function:
+  schema: public
+  name: claim_delete_job
+configuration:
+  custom_root_fields: {}
+  exposed_as: mutation
+permissions:
+  - role: worker

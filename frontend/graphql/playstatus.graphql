@@ -2,14 +2,7 @@ fragment TrackInfo on track {
     id
     created_at
     file {
-        id
-        type
-        name
-        description
-        length
-        path
-        download_url
-        ordering
+        ...FileInfo
     }
 }
 

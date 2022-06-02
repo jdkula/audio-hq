@@ -7,9 +7,9 @@ import {
     useAddJobMutation,
     useDeleteFileMutation,
     useWorkspaceFilesQuery,
-    useWorkspaceJobsQuery,
+    useWorkspaceJobsSubscription,
     WorkspaceFilesQuery,
-    WorkspaceJobsQuery,
+    WorkspaceJobsSubscription,
 } from './generated/graphql';
 import { File_Minimum } from './graphql_type_helper';
 
@@ -41,7 +41,7 @@ const useFileManager = (() => {
     return (workspaceId: string) => {
         // <== State ==>
         const [filesData] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-        const [jobsData] = useWorkspaceJobsQuery({ variables: { workspaceId } });
+        const [jobsData] = useWorkspaceJobsSubscription({ variables: { workspaceId } });
 
         const [, addJob] = useAddJobMutation();
         const [, delFile] = useDeleteFileMutation();
@@ -49,7 +49,7 @@ const useFileManager = (() => {
         const files = new Map<string, WorkspaceFilesQuery['file'][number]>(
             (filesData.data?.file ?? []).map((file) => [file.id, { ...file }]),
         );
-        const jobs = new Map<string, WorkspaceJobsQuery['job'][number]>(
+        const jobs = new Map<string, WorkspaceJobsSubscription['job'][number]>(
             (jobsData.data?.job ?? []).map((job) => [job.id, job]),
         );
 

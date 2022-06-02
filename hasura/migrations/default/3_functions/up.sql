@@ -75,3 +75,44 @@ BEGIN
     RETURN _new;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION public.claim_job(worker_id uuid)
+    RETURNS job AS
+$$
+DECLARE
+    _job job;
+BEGIN
+    WITH limiter AS (SELECT id
+                     FROM job
+                     WHERE assigned_worker IS NULL
+                     LIMIT 1)
+    UPDATE job
+    SET assigned_worker = worker_id
+    FROM limiter
+    WHERE job.id = limiter.id
+    RETURNING * INTO _job;
+
+    RETURN _job;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.claim_delete_job(worker_id uuid)
+    RETURNS delete_job AS
+$$
+DECLARE
+    _job delete_job;
+BEGIN
+    WITH limiter AS (SELECT id
+                     FROM delete_job
+                     WHERE assigned_worker IS NULL
+                     LIMIT 1)
+    UPDATE delete_job
+    SET assigned_worker = worker_id
+    FROM limiter
+    WHERE delete_job.id = limiter.id
+    RETURNING * INTO _job;
+
+    RETURN _job;
+END;
+$$ LANGUAGE plpgsql;

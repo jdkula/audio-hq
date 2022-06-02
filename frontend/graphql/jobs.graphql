@@ -8,9 +8,11 @@ fragment JobInfo on job {
     progress
     progress_stage
     assigned_worker
+
+    created_at
 }
 
-query WorkspaceJobs($workspaceId: uuid!) {
+subscription WorkspaceJobs($workspaceId: uuid!) {
     job(where: {workspace_id: {_eq: $workspaceId}}) {
         ...JobInfo
     }

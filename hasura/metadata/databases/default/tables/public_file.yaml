@@ -14,10 +14,11 @@ insert_permissions:
         - download_url
         - length
         - name
+        - ordering
         - path
+        - provider_id
         - type
         - workspace_id
-        - ordering
       backend_only: false
 select_permissions:
   - role: anonymous
@@ -36,15 +37,16 @@ select_permissions:
   - role: worker
     permission:
       columns:
-        - path
-        - length
         - description
         - download_url
+        - id
+        - length
         - name
+        - ordering
+        - path
+        - provider_id
         - type
         - workspace_id
-        - id
-        - ordering
       filter: {}
 update_permissions:
   - role: anonymous
