@@ -1,3 +1,7 @@
+/**
+ *
+ */
+
 import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Header } from '~/components/Header';
 import { MainPlayer } from '~/components/MainPlayer';
@@ -114,30 +118,25 @@ const Sub: FC = () => {
     );
 };
 
-const Host: FunctionComponent<{
-    workspace: string;
-}> = ({ workspace }) => {
+const Host: FunctionComponent = () => {
     const [, addRecents] = useLocalRecents();
+    const [workspaceId, setWorkspaceId] = useState('');
 
     useEffect(() => {
-        if (workspace) {
-            addRecents(workspace);
+        setWorkspaceId(window.location.hash.substring(1));
+    }, []);
+
+    useEffect(() => {
+        if (workspaceId) {
+            addRecents(workspaceId);
         }
-    }, [addRecents, workspace]);
+    }, [addRecents, workspaceId]);
 
     return (
-        <Root workspace={workspace}>
+        <Root workspace={workspaceId}>
             <Sub />
         </Root>
     );
 };
 
 export default Host;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-    return {
-        props: {
-            workspace: context.query.id,
-        },
-    };
-};

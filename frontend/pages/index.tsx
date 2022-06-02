@@ -28,6 +28,7 @@ import PouchDB from 'pouchdb';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
 import { ColorMode, useColorMode, useLocalRecents } from '../lib/utility';
+import { useWorkspaceDetailByNameQuery, useWorkspaceDetailQuery } from '~/lib/generated/graphql';
 
 const GlobalFull = () => (
     <Global
@@ -149,19 +150,34 @@ const ConfirmDeleteAllDialog: FC<DialogProps> = (props) => {
     );
 };
 
+const Recent: FC<{ wsId: string; onClick: () => void }> = ({ wsId, onClick }) => {
+    const [{ data }] = useWorkspaceDetailQuery({ variables: { workspaceId: wsId } });
+    return (
+        <Box m="5px">
+            <Button onClick={onClick} variant="outlined" disabled={!data?.workspace_by_pk?.name}>
+                {data?.workspace_by_pk?.name ?? <CircularProgress color="inherit" size="1rem" />}
+            </Button>
+        </Box>
+    );
+};
+
 export default function Home(): React.ReactElement {
     const router = useRouter();
     const [recents] = useLocalRecents();
 
-    const [text, setText] = useState('');
+    const [workspaceName, setWorkspaceName] = useState('');
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
 
-    const go = (workspace = text) => {
+    const [{ fetching, data }] = useWorkspaceDetailByNameQuery({ variables: { workspaceName } });
+
+    const go = (wsId = data?.workspace[0].id) => {
+        if (!wsId) return;
+
         setLoading(true);
-        setText(workspace);
-        router.push('/[id]', `/${encodeURIComponent(workspace)}`);
+        setWorkspaceName(wsId);
+        router.push('/workspace', `/workspace/#${encodeURIComponent(wsId)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -196,8 +212,8 @@ export default function Home(): React.ReactElement {
                     id="workspace-input"
                     fullWidth
                     autoFocus
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    value={workspaceName}
+                    onChange={(e) => setWorkspaceName(e.target.value)}
                     onKeyDown={enterListener}
                     variant="outlined"
                     label="Workspace Name"
@@ -206,19 +222,28 @@ export default function Home(): React.ReactElement {
                 {loading ? (
                     <CircularProgress variant="indeterminate" />
                 ) : (
-                    <Button fullWidth size="large" variant="contained" color="primary" onClick={() => go()}>
-                        Join
+                    <Button
+                        fullWidth
+                        disabled={!workspaceName || fetching}
+                        size="large"
+                        variant="contained"
+                        color={data?.workspace[0] ? 'primary' : 'secondary'}
+                        onClick={() => go()}
+                    >
+                        {workspaceName
+                            ? fetching
+                                ? 'Loading...'
+                                : data?.workspace[0]
+                                ? 'Join'
+                                : 'Create Workspace'
+                            : 'Enter a workspace name'}
                     </Button>
                 )}
                 <Box mt="3em" />
                 {recents.length > 0 && <ListHeader>Recent Workspaces</ListHeader>}
                 <Box mt="1rem" />
                 {recents.map((recent) => (
-                    <Box m="5px" key={recent}>
-                        <Button onClick={() => go(recent)} variant="outlined">
-                            {recent}
-                        </Button>
-                    </Box>
+                    <Recent key={recent} wsId={recent} onClick={() => go(recent)} />
                 ))}
             </InnerContainer>
             <Tooltip arrow placement="top" title="Press Alt/Option+M at any time to toggle light and dark modes">
