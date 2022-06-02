@@ -1,107 +1,91 @@
+/**
+ * service.worker.js
+ * ===================
+ * Audio HQ Service Worker. Enables AHQ's offline mode.
+ */
+
+const audioCache = caches.open('ahq-audio-v1');
+const appCache = caches.open('ahq-app-v1');
+
 const broadcast = new BroadcastChannel('audio-hq');
 
-const putInCache = async (request, response) => {
-    const cache = await caches.open('v1');
-    console.log('Caching', request.url);
-    await cache.put(request, response);
+/** Caches the given URL in the audio cache */
+async function cacheAudioAt(url) {
+    const cache = await audioCache;
+    if ((await cache.keys(url)).length > 0) {
+        return;
+    }
+    updateCacheState(url, 'loading');
+    const res = await fetch(url, {
+        cache: 'no-store',
+        mode: 'cors',
+    });
+    if (res.status === 200) {
+        await cache.put(url, res);
+        updateCacheState(url, 'cached');
+    }
+}
+
+/** Evicts the given URL from the audio cache */
+async function evictAudioAt(url) {
+    const cache = await audioCache;
+    await cache.delete(url);
+    updateCacheState(url, 'uncached');
+}
+
+/** Determines if the given URL is cached, and update the frontend accordingly */
+async function updateCacheStateFor(url) {
+    const cache = await audioCache;
+    const requests = await cache.keys(url);
+    updateCacheState(url, requests.length > 0 ? 'cached' : 'uncached');
+}
+
+/** Broadcasts the cache state of a given URL to the client/page */
+function updateCacheState(url, state) {
     broadcast.postMessage({
         type: 'cache-update',
-        url: request.url,
-        cached: 'cached',
+        url,
+        cached: state,
     });
-};
+}
 
-const cacheFirst = async (request) => {
+/** Retrieves and gives back cached data, if it exists. */
+async function cacheFirst(request) {
     const responseFromCache = await caches.match(request);
     if (responseFromCache) {
         return responseFromCache;
     }
     return await fetch(request);
-};
+}
 
+// Respond with cached data if available
 self.addEventListener('fetch', (event) => {
-    console.log('SW Got Fetch', event.request.url);
-    if (event.request.method !== 'GET') {
-        console.log('Invalid method:', event.request.method, event.request.url);
-        return;
-    }
-    if (!new URL(event.request.url).protocol.startsWith('http')) {
-        console.log('Invalid scheme:', event.request.url);
-        return;
-    }
-    if (event.request.mode !== 'cors') {
-        console.log('Invalid mode:', event.request.mode, event.request.url);
-        return;
-    }
-
     event.respondWith(cacheFirst(event.request));
 });
 
+/** Cache home page and workspace view on install */
+// const urlsToCache = ['/', '/workspace'];
+// self.addEventListener('install', (event) => {
+//     event.waitUntil(appCache.then((cache) => cache.addAll(urlsToCache)));
+// });
+
 broadcast.onmessage = (ev) => {
-    console.log('SW Got Message', ev.data);
     switch (ev.data.type) {
+        // <-- Fetches and caches all the associated URLs with CORS -->
         case 'cache': {
-            (async () => {
-                const cache = await caches.open('v1');
-                await Promise.all(
-                    ev.data.urls.map(async (url) => {
-                        const ri = {
-                            cache: 'no-store',
-                            mode: 'cors',
-                        };
-                        if ((await cache.keys(url)).length > 0) {
-                            return;
-                        }
-                        broadcast.postMessage({
-                            type: 'cache-update',
-                            url,
-                            cached: 'loading',
-                        });
-                        const res = await fetch(url, ri);
-                        if (res.status === 200) {
-                            await cache.put(url, res);
-                            broadcast.postMessage({
-                                type: 'cache-update',
-                                url,
-                                cached: 'cached',
-                            });
-                        }
-                    }),
-                );
-            })();
+            ev.data.urls.map(cacheAudioAt);
             break;
         }
 
+        // <-- Evicts all the given URLs from the audio cache -->
         case 'evict': {
-            (async () => {
-                const cache = await caches.open('v1');
-
-                await Promise.all(ev.data.urls.map((url) => cache.delete(url)));
-                ev.data.urls.forEach((url) => {
-                    broadcast.postMessage({
-                        type: 'cache-update',
-                        url,
-                        cached: 'uncached',
-                    });
-                });
-            })();
+            ev.data.urls.map(evictAudioAt);
             break;
         }
-        case 'is-cached': {
-            (async () => {
-                const cache = await caches.open('v1');
 
-                await Promise.all(
-                    ev.data.urls.map(async (url) => {
-                        const requests = await cache.keys(url);
-                        broadcast.postMessage({
-                            type: 'cache-update',
-                            url,
-                            cached: requests.length > 0 ? 'cached' : 'uncached',
-                        });
-                    }),
-                );
-            })();
+        // <-- Determines if the given URL is stored in the audio cache -->
+        case 'is-cached': {
+            ev.data.urls.map(updateCacheStateFor);
             break;
         }
     }
