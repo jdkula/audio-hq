@@ -1,5 +1,5 @@
 import { createContext, useMemo, useState } from 'react';
-import { broadcast, BroadcastMessage, useIsCached } from './broadcast';
+import { broadcastOut, BroadcastMessage, useIsCached } from './broadcast';
 import ConvertOptions from './ConvertOptions';
 import {
     WorkspaceJobsSubscription,
@@ -31,9 +31,19 @@ const useFileManager = (() => {
                 ),
             [jobsData.data?.job],
         );
-        const cachedIdx = useIsCached(urls);
-        const cached = cachedIdx.map((state, idx) => (state === 'cached' ? files[idx] : null)).filter(nonNull);
-        const caching = cachedIdx.map((state, idx) => (state === 'loading' ? files[idx] : null)).filter(nonNull);
+        const cacheInfo = useIsCached(urls, /* useBulk = */ true);
+        const { cached, caching } = useMemo(() => {
+            const cached = new Set<string>();
+            const caching = new Set<string>();
+            for (const ci of cacheInfo) {
+                if (ci.cached === 'cached') {
+                    cached.add(ci.url);
+                } else if (ci.cached === 'loading') {
+                    caching.add(ci.url);
+                }
+            }
+            return { cached, caching };
+        }, [cacheInfo]);
 
         const [uploading, setUploading] = useState<string[]>([]);
 
@@ -69,7 +79,7 @@ const useFileManager = (() => {
                 return file.download_url;
             },
             download: (file: File_Minimum) => {
-                broadcast.postMessage({
+                broadcastOut.postMessage({
                     type: 'cache',
                     urls: [file.download_url],
                 } as BroadcastMessage);
@@ -114,7 +124,7 @@ const useFileManager = (() => {
                 onStart?: (cached: number, total: number) => void,
                 onProgress?: (started: number, finished: number) => void,
             ) => {
-                broadcast.postMessage({
+                broadcastOut.postMessage({
                     type: 'cache',
                     urls: [...files.values()].map((f) => f.download_url),
                 } as BroadcastMessage);

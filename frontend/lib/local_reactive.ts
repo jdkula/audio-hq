@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { get, set } from 'idb-keyval';
+import _ from 'lodash';
 
 export class LocalReactiveValue<T> extends EventEmitter {
     private _value: T;
@@ -36,19 +37,28 @@ export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
 
 export class LocalIDBReactiveValue<T> extends LocalReactiveValue<T> {
     private _loading = true;
+    private _key: string;
+    private _defaultValue: T;
 
     get loading() {
         return this._loading;
     }
 
+    async refresh() {
+        const value = (await get(this._key)) ?? this._defaultValue;
+        this._loading = false;
+        if (!_.isEqual(this.value, value)) {
+            this.value = value;
+        }
+    }
+
     constructor(key: string, defaultValue: T) {
         super(defaultValue);
+        this._key = key;
+        this._defaultValue = defaultValue;
 
         if (typeof window !== 'undefined') {
-            get(key).then((value) => {
-                this._loading = false;
-                this.value = value;
-
+            this.refresh().then(() => {
                 this.on('set', (value) => {
                     set(key, value);
                 });

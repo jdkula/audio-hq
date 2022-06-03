@@ -3,11 +3,25 @@
  * ===================
  * Audio HQ Service Worker. Enables AHQ's offline mode.
  */
-
 const audioCache = caches.open('ahq-audio-v1');
 const appCache = caches.open('ahq-app-v1');
 
-const broadcast = new BroadcastChannel('audio-hq');
+const broadcastIn = new BroadcastChannel('audio-hq-to-sw');
+const broadcastOut = new BroadcastChannel('audio-hq-from-sw');
+
+async function cacheUrls(urls) {
+    const promises = [];
+    const kMaxConcurrent = 2;
+    for (const url of urls) {
+        if (promises.length > kMaxConcurrent) {
+            const [resolved] = await Promise.race(promises.map((p) => p.then(() => [p])));
+            promises.splice(promises.indexOf(resolved), 1);
+        }
+        promises.push(cacheAudioAt(url));
+    }
+
+    await Promise.all(promises);
+}
 
 /** Caches the given URL in the audio cache */
 async function cacheAudioAt(url) {
@@ -42,10 +56,23 @@ async function updateCacheStateFor(url) {
 
 /** Broadcasts the cache state of a given URL to the client/page */
 function updateCacheState(url, state) {
-    broadcast.postMessage({
+    broadcastOut.postMessage({
         type: 'cache-update',
         url,
         cached: state,
+    });
+}
+
+async function updateCacheStateAll() {
+    const cache = await audioCache;
+    const requests = await cache.keys();
+
+    broadcastOut.postMessage({
+        type: 'bulk-cache-update',
+        data: requests.map((r) => ({
+            url: r.url,
+            cached: 'cached',
+        })),
     });
 }
 
@@ -64,16 +91,17 @@ self.addEventListener('fetch', (event) => {
 });
 
 /** Cache home page and workspace view on install */
-// const urlsToCache = ['/', '/workspace'];
-// self.addEventListener('install', (event) => {
-//     event.waitUntil(appCache.then((cache) => cache.addAll(urlsToCache)));
-// });
+const urlsToCache = ['/', '/workspace'];
+self.addEventListener('activate', (event) => {
+    // event.waitUntil(appCache.then((cache) => cache.addAll(urlsToCache)));
+});
 
-broadcast.onmessage = (ev) => {
+broadcastIn.onmessage = (ev) => {
+    console.log('SW Got Message', ev.data);
     switch (ev.data.type) {
         // <-- Fetches and caches all the associated URLs with CORS -->
         case 'cache': {
-            ev.data.urls.map(cacheAudioAt);
+            cacheUrls(ev.data.urls);
             break;
         }
 
@@ -86,6 +114,11 @@ broadcast.onmessage = (ev) => {
         // <-- Determines if the given URL is stored in the audio cache -->
         case 'is-cached': {
             ev.data.urls.map(updateCacheStateFor);
+            break;
+        }
+
+        case 'is-cached-bulk': {
+            updateCacheStateAll();
             break;
         }
     }

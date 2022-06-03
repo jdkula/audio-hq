@@ -2,7 +2,7 @@ import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useState } from 'react';
 import { Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
-import { Cache, cacheExchange, Entity } from '@urql/exchange-graphcache';
+import { Cache, offlineExchange, Entity } from '@urql/exchange-graphcache';
 import customScalarsExchange from 'urql-custom-scalars-exchange';
 import schema from '~/graphql.schema.json';
 import { IntrospectionQuery } from 'graphql';
@@ -11,6 +11,7 @@ import * as GQL from './generated/graphql';
 import _ from 'lodash';
 import { v4 } from 'uuid';
 import { nonNull } from './utility';
+import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 
 function getFields<T>(type: string, id: any, cache: Cache, fields: Array<keyof T>): Partial<T> | null {
     const record: Partial<T> = {};
@@ -131,7 +132,7 @@ function optimisticDeck(input: GQL.Deck_Insert_Input, cache: Cache): GQL.Deck | 
         start_timestamp: input.start_timestamp ?? new Date(),
         pause_timestamp: input.pause_timestamp ?? null,
         workspace_id: input.workspace_id,
-        workspace: workspace,
+        workspace: { ...workspace, __typename: 'workspace' },
         __typename: 'deck',
     };
 }
@@ -172,6 +173,24 @@ function optimisticTrack(input: GQL.Track_Insert_Input, cache: Cache): GQL.Track
     };
 }
 
+function optimisticJob(input: GQL.Job_Insert_Input, cache: Cache): GQL.Job | null {
+    if (!input.workspace_id) return null;
+
+    return {
+        id: v4(),
+        created_at: new Date(),
+        name: input.name ?? '',
+        url: input.url ?? '',
+        description: input.description ?? '',
+        path: input.path ?? [],
+        options: input.options ?? {},
+        progress_stage: 'waiting',
+        workspace_id: input.workspace_id,
+        assigned_worker: null,
+        progress: 0,
+    };
+}
+
 function createUrqlClient(): Client {
     if (typeof window === 'undefined') {
         return new Client({ url: process.env.NEXT_PUBLIC_HASURA_URL_HTTP as string });
@@ -179,6 +198,11 @@ function createUrqlClient(): Client {
     const wsClient = createClient({
         url: process.env.NEXT_PUBLIC_HASURA_URL_WS as string,
         retryAttempts: 10,
+    });
+
+    const storage = makeDefaultStorage({
+        idbName: 'ahq-graphcache-v1',
+        maxAge: 7,
     });
 
     return new Client({
@@ -196,8 +220,9 @@ function createUrqlClient(): Client {
             }),
             dedupExchange,
             // documentCacheExchange,
-            cacheExchange({
+            offlineExchange({
                 schema: schema as IntrospectionData,
+                storage,
                 updates: {
                     Mutation: {
                         insert_deck(result: GQL.Deck_Mutation_Response, args: GQL.Mutation_RootInsert_DeckArgs, cache) {
@@ -317,6 +342,7 @@ function createUrqlClient(): Client {
                         const deck = cache.readFragment(
                             gql`
                                 fragment _ on deck {
+                                    __typename
                                     id
                                     type
                                     volume
@@ -349,8 +375,10 @@ function createUrqlClient(): Client {
                         const deck: Partial<GQL.Deck> | null = cache.readFragment(
                             gql`
                                 fragment _ on deck {
+                                    __typename
                                     id
                                     queue {
+                                        __typename
                                         id
                                         created_at
                                     }
@@ -378,6 +406,26 @@ function createUrqlClient(): Client {
                                     volume
                                     workspace_id
                                     created_at
+                                    type
+                                    queue {
+                                        __typename
+                                        id
+                                        created_at
+                                        ordering
+                                        deck_id
+                                        file {
+                                            __typename
+                                            id
+                                            name
+                                            description
+                                            download_url
+                                            length
+                                            ordering
+                                            type
+                                            path
+                                            workspace_id
+                                        }
+                                    }
                                 }
                             `,
                             { id: args.pk_columns.id as string, __typename: 'deck' },

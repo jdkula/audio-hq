@@ -84,12 +84,13 @@ const getFiles = (files: File_Minimum[], path: string[], searchText?: string): F
  * Folders are returned as full paths ending at that folder.
  */
 const getSearchFolders = (files: File_Minimum[], searchText: string): string[][] => {
-    return _.sortedUniq(
+    return _.uniqBy(
         files
             .map((file) => file.path)
             .filter((path) => path.length > 0)
             .filter((path) => path[path.length - 1].match(new RegExp(`.*${searchText}.*`, 'i')))
             .sort(),
+        (path) => path[path.length - 1],
     );
 };
 
@@ -97,7 +98,7 @@ const getSearchFolders = (files: File_Minimum[], searchText: string): string[][]
  * Given a path, finds all child folders.
  */
 const getFolders = (files: File_Minimum[], currentPath: string[]): string[] => {
-    return _.sortedUniq(
+    return _.uniq(
         files
             .filter((file) => file.path.length > currentPath.length && currentPath.every((v, i) => file.path[i] === v))
             .map((file) => file.path[currentPath.length])

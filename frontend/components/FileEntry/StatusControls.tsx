@@ -43,8 +43,8 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     const favs = useFavorites();
     const altKey = useAlt();
 
-    const cached = !!fileManager.cached.find((f) => f.id === file.id);
-    const caching = !!fileManager.caching.find((f) => f.id === file.id);
+    const cached = !!fileManager.cached.has(file.download_url);
+    const caching = !!fileManager.caching.has(file.download_url);
 
     const download = async () => {
         fileManager.download(file); // TODO

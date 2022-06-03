@@ -1,9 +1,15 @@
 import _ from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LocalIDBReactiveValue, useLocalReactiveValue } from './local_reactive';
 
-export const broadcast = new BroadcastChannel('audio-hq');
+export const broadcastOut = new BroadcastChannel('audio-hq-to-sw');
+export const broadcastIn = new BroadcastChannel('audio-hq-from-sw');
 
-export type BroadcastMessage = WorkerBroadcastMessage | CacheUpdateMessage;
+export type BroadcastMessage =
+    | WorkerBroadcastMessage
+    | CacheUpdateMessage
+    | BulkCacheUpdateMessage
+    | BulkCacheRequestMessage;
 
 export interface WorkerBroadcastMessage {
     type: 'cache' | 'evict' | 'is-cached';
@@ -15,41 +21,65 @@ export interface CacheUpdateMessage {
     url: string;
     cached: CacheState;
 }
+export interface BulkCacheUpdateMessage {
+    type: 'bulk-cache-update';
+    data: Omit<CacheUpdateMessage, 'type'>[];
+}
+
+export interface BulkCacheRequestMessage {
+    type: 'is-cached-bulk';
+}
 
 export type CacheState = 'cached' | 'uncached' | 'loading';
 
-export function useIsCached(urls: string[]): CacheState[] {
-    const [cached, setCached] = useState<CacheState[]>(() => _.fill(new Array<CacheState>(urls.length), 'loading'));
+export function useIsCached(url: string, useBulk?: boolean): Omit<CacheUpdateMessage, 'type'> | null;
+export function useIsCached(url: string[], useBulk?: boolean): Omit<CacheUpdateMessage, 'type'>[];
+export function useIsCached(
+    url: string | string[],
+    useBulk = false,
+): Omit<CacheUpdateMessage, 'type'>[] | Omit<CacheUpdateMessage, 'type'> | null {
+    const urls = useMemo(() => (Array.isArray(url) ? url : [url]), [url]);
 
-    const oldUrls = useRef([...urls]);
+    const [cached, setCached] = useState<Omit<CacheUpdateMessage, 'type'>[]>([]);
 
     const onUpdate = useCallback(
         (ev: MessageEvent) => {
             const message: BroadcastMessage = ev.data;
-            if (message.type !== 'cache-update') return;
-            const idx = urls.indexOf(message.url);
-            if (idx < 0) return;
-            setCached((cached) => {
-                const copy = [...cached];
-                copy[idx] = message.cached;
-                return copy;
-            });
+            if (message.type === 'cache-update') {
+                if (!urls.includes(message.url)) return;
+
+                setCached((cached) => {
+                    const existient = cached.find((msg) => msg.url === message.url);
+                    if (existient) {
+                        existient.cached = message.cached;
+                    } else {
+                        cached.push(message);
+                    }
+                    return [...cached];
+                });
+            } else if (message.type === 'bulk-cache-update') {
+                setCached(message.data.filter((url) => urls.includes(url.url)));
+            }
         },
         [urls],
     );
 
     useEffect(() => {
-        broadcast.addEventListener('message', onUpdate);
-        // setCached(_.fill(new Array<CacheState>(urls.length), 'loading'));
-        oldUrls.current = [...urls];
-        broadcast.postMessage({
-            type: 'is-cached',
-            urls: urls,
-        } as BroadcastMessage);
+        broadcastIn.addEventListener('message', onUpdate);
+        if (useBulk) {
+            broadcastOut.postMessage({
+                type: 'is-cached-bulk',
+            } as BroadcastMessage);
+        } else {
+            broadcastOut.postMessage({
+                type: 'is-cached',
+                urls: urls,
+            } as BroadcastMessage);
+        }
         return () => {
-            broadcast.removeEventListener('message', onUpdate);
+            broadcastIn.removeEventListener('message', onUpdate);
         };
-    }, [urls, onUpdate]);
+    }, [urls, onUpdate, useBulk]);
 
-    return cached;
+    return Array.isArray(url) ? cached : cached[0] ?? null;
 }
