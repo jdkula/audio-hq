@@ -42,3 +42,5 @@ deploy-prod.sh
 cookies.txt
 
 lib/generated
+
+public/*dist*

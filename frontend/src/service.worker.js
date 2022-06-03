@@ -3,7 +3,13 @@
  * ===================
  * Audio HQ Service Worker. Enables AHQ's offline mode.
  */
+
+const manifest = self.__WB_MANIFEST || [];
+
+// Stores audio data
 const audioCache = caches.open('ahq-audio-v1');
+
+// Stores application files (HTML, JS)
 const appCache = caches.open('ahq-app-v1');
 
 const broadcastIn = new BroadcastChannel('audio-hq-to-sw');
@@ -78,9 +84,17 @@ async function updateCacheStateAll() {
 
 /** Retrieves and gives back cached data, if it exists. */
 async function cacheFirst(request) {
-    const responseFromCache = await caches.match(request);
-    if (responseFromCache) {
-        return responseFromCache;
+    const audioCacheResponse = await (await audioCache).match(request);
+    if (audioCacheResponse) {
+        return audioCacheResponse;
+    }
+    const appCacheResponse = await (await appCache).match(request);
+    if (appCacheResponse) {
+        // Update cache for next time if needed (SWR pattern)
+        fetch(request).then((response) => {
+            appCache.then((cache) => cache.put(request, response));
+        });
+        return appCacheResponse;
     }
     return await fetch(request);
 }
@@ -91,9 +105,9 @@ self.addEventListener('fetch', (event) => {
 });
 
 /** Cache home page and workspace view on install */
-const urlsToCache = ['/', '/workspace'];
+const urlsToCache = ['/', '/index.html', '/workspace.html', '/404.html'];
 self.addEventListener('activate', (event) => {
-    // event.waitUntil(appCache.then((cache) => cache.addAll(urlsToCache)));
+    event.waitUntil(appCache.then((cache) => cache.addAll([...urlsToCache, ...manifest.map((entry) => entry.url)])));
 });
 
 broadcastIn.onmessage = (ev) => {

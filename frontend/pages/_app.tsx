@@ -70,7 +70,7 @@ export default function App({
 
     /** Use caching service worker */
     useEffect(() => {
-        navigator.serviceWorker.register('/service.worker.js', { type: 'module' });
+        navigator.serviceWorker.register('/service.worker.dist.js', { type: 'module' });
     }, []);
 
     return (
