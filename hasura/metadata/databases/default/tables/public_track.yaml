@@ -15,12 +15,16 @@ insert_permissions:
       columns:
         - file_id
         - deck_id
+        - ordering
       backend_only: false
 select_permissions:
   - role: anonymous
     permission:
       columns:
         - created_at
+        - deck_id
+        - file_id
+        - ordering
         - id
       filter: {}
 delete_permissions:

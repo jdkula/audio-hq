@@ -56,7 +56,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             workspaceId,
             deck: {
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id }] },
+                queue: { data: [{ file_id: file.id, ordering: 0 }] },
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
                 start_timestamp: add(new Date(), { seconds: 1 }),
@@ -70,7 +70,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             isMain: true,
             deck: {
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id }] },
+                queue: { data: [{ file_id: file.id, ordering: 0 }] },
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
                 start_timestamp: add(new Date(), { seconds: 1 }),
@@ -89,7 +89,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             workspaceId,
             deck: {
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id }] },
+                queue: { data: [{ file_id: file.id, ordering: 0 }] },
                 type: Deck_Type_Enum_Enum.Sfx,
                 pause_timestamp: null,
                 start_timestamp: new Date(),

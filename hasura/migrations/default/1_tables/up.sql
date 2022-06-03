@@ -50,6 +50,7 @@ CREATE TABLE public.track
     id         uuid        NOT NULL DEFAULT gen_random_uuid(),
     file_id    uuid        NOT NULL,
     deck_id    uuid        NOT NULL,
+    ordering   bigint      NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (id),
     FOREIGN KEY (file_id) REFERENCES public.file (id) ON UPDATE cascade ON DELETE cascade,

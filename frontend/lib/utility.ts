@@ -184,9 +184,9 @@ export function useWorkspaceDecks(workspaceId: string): {
         variables: { workspaceId },
     });
 
-    const main = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Main)[0] ?? null;
-    const ambience = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Ambience) ?? [];
-    const sfx = statusData?.deck.filter((x) => x.type === Deck_Type_Enum_Enum.Sfx) ?? [];
+    const main = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Main)[0] ?? null;
+    const ambience = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Ambience) ?? [];
+    const sfx = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Sfx) ?? [];
 
     return { main, ambience, sfx };
 }

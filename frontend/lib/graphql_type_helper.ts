@@ -1,10 +1,10 @@
 import { Deck, File, Job, Track } from './generated/graphql';
 
-export type Deck_Minimum = Omit<Deck, '__typename' | 'workspace_id' | 'workspace' | 'queue'> & {
+export type Deck_Minimum = Omit<Deck, '__typename' | 'workspace_id' | 'workspace' | 'queue' | 'created_at'> & {
     queue: Track_Minimum[];
 };
 
-export type Track_Minimum = Omit<Track, 'file' | 'deck'> & {
+export type Track_Minimum = Omit<Track, 'file' | 'deck' | 'file_id' | 'track_id' | 'created_at'> & {
     file: File_Minimum;
 };
 

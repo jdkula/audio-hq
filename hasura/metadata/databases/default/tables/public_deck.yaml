@@ -29,6 +29,7 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
+        - created_at
         - id
         - pause_timestamp
         - speed

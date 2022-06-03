@@ -1,6 +1,7 @@
 mutation StopDeck($deckId: uuid!) {
     delete_deck_by_pk(id: $deckId) {
         id
+        workspace_id
     }
 }
 
@@ -30,6 +31,9 @@ mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boole
         }
     }) @include(if: $isMain) {
         affected_rows
+        returning {
+            id
+        }
     }
     insert_deck_one(object: $deck) {
         ...DeckInfo

@@ -4,6 +4,8 @@ fragment TrackInfo on track {
     file {
         ...FileInfo
     }
+    deck_id
+    ordering
 }
 
 fragment DeckInfo on deck {
@@ -18,11 +20,15 @@ fragment DeckInfo on deck {
     queue {
         ...TrackInfo
     }
+
+    workspace_id
 }
 
 query Decks($workspaceId: uuid!) {
-    deck(where: {workspace_id: {_eq: $workspaceId}}) {
-        ...DeckInfo
+    workspace_by_pk(id: $workspaceId) {
+        id
+        decks {
+            ...DeckInfo
+        }
     }
 }
-
