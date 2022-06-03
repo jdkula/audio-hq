@@ -17,7 +17,7 @@ import { Provider } from 'urql';
 import { ahqThemeBase } from '~/lib/theme';
 import { deepmerge } from '@mui/utils';
 import { createEmotionCache, useColorMode } from '../lib/utility';
-import { useUrqlClient } from '../lib/urql';
+import { useUrqlAddresses, useUrqlClient } from '../lib/urql';
 import { CacheProvider, EmotionCache } from '@emotion/react';
 
 // Allows the server to refresh its cache during each render.
@@ -31,7 +31,8 @@ export default function App({
     pageProps,
     emotionCache = clientSideEmotionCache,
 }: SSRServerProps): ReactElement {
-    const { client } = useUrqlClient();
+    const addresses = useUrqlAddresses();
+    const { client } = useUrqlClient(addresses);
 
     // Set up theming
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');

@@ -1,5 +1,5 @@
 import { createClient } from 'graphql-ws';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
 import { Cache, offlineExchange, Entity } from '@urql/exchange-graphcache';
@@ -12,6 +12,7 @@ import _ from 'lodash';
 import { v4 } from 'uuid';
 import { nonNull } from './utility';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
+import { LocalStorageReactiveValue, useLocalReactiveValue } from './local_reactive';
 
 function getFields<T>(type: string, id: any, cache: Cache, fields: Array<keyof T>): Partial<T> | null {
     const record: Partial<T> = {};
@@ -191,12 +192,12 @@ function optimisticJob(input: GQL.Job_Insert_Input, cache: Cache): GQL.Job | nul
     };
 }
 
-function createUrqlClient(): Client {
+function createUrqlClient(addresses: UrqlAddresses): Client {
     if (typeof window === 'undefined') {
-        return new Client({ url: process.env.NEXT_PUBLIC_HASURA_URL_HTTP as string });
+        return new Client({ url: addresses.http });
     }
     const wsClient = createClient({
-        url: process.env.NEXT_PUBLIC_HASURA_URL_WS as string,
+        url: addresses.websocket,
         retryAttempts: 10,
     });
 
@@ -206,7 +207,7 @@ function createUrqlClient(): Client {
     });
 
     return new Client({
-        url: process.env.NEXT_PUBLIC_HASURA_URL_HTTP as string,
+        url: addresses.http,
         exchanges: [
             devtoolsExchange,
             errorExchange({
@@ -454,17 +455,44 @@ function createUrqlClient(): Client {
     });
 }
 
-export function useUrqlClient(): { client: Client; reinitialize: () => void } {
-    const [client, setClient] = useState(() => createUrqlClient());
+type UrqlAddresses = { websocket: string; http: string };
+
+const urqlAddresses = new LocalStorageReactiveValue<UrqlAddresses>('urql_address', {
+    http: (process.env.NEXT_PUBLIC_HASURA_URL_WS as string | undefined) ?? '/v1/graphql',
+    websocket: (process.env.NEXT_PUBLIC_HASURA_URL_WS as string | undefined) ?? '/v1/graphql',
+});
+
+export function useUrqlAddresses(): UrqlAddresses {
+    const [addresses, setUrqlAddresses] = useLocalReactiveValue(urqlAddresses);
+
+    useEffect(() => {
+        fetch('/config.json')
+            .then((body) => body.json())
+            .then((info) => {
+                setUrqlAddresses(info);
+            })
+            .catch((e) => {
+                console.log("Didn't get config", e);
+            });
+    }, [setUrqlAddresses]);
+
+    return addresses;
+}
+
+export function useUrqlClient(addresses: UrqlAddresses): { client: Client; reinitialize: () => void } {
+    const [client, setClient] = useState(() => createUrqlClient(addresses));
     const [nonce, setNonce] = useState(0);
+
+    const prevAddresses = useRef(addresses);
 
     const reinitialize = useCallback(() => setNonce((nonce) => nonce + 1), [setNonce]);
 
     useEffect(() => {
-        if (nonce === 0) return;
+        if (nonce === 0 && addresses === prevAddresses.current) return;
+        prevAddresses.current = addresses;
 
-        setClient(createUrqlClient());
-    }, [nonce]);
+        setClient(createUrqlClient(addresses));
+    }, [nonce, addresses, prevAddresses]);
 
     return { client, reinitialize };
 }
