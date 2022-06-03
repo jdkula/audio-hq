@@ -13,7 +13,7 @@ generates:
         bytea: string
         jsonb: any
         numeric: number
-        timestamptz: Date
+        timestamptz: string
         uuid: string
         bigint: number
     plugins:

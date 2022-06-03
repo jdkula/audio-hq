@@ -1,9 +1,8 @@
 import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
+import { cacheExchange, Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
 import { devtoolsExchange } from '@urql/devtools';
 import { Cache, offlineExchange, Entity } from '@urql/exchange-graphcache';
-import customScalarsExchange from 'urql-custom-scalars-exchange';
 import schema from '~/graphql.schema.json';
 import { IntrospectionQuery } from 'graphql';
 import { IntrospectionData } from '@urql/exchange-graphcache/dist/types/ast';
@@ -122,7 +121,7 @@ function optimisticDeck(input: GQL.Deck_Insert_Input, cache: Cache): GQL.Deck | 
 
     const id = input.id ?? v4();
     return {
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
         id,
         queue:
             input.queue?.data
@@ -131,7 +130,7 @@ function optimisticDeck(input: GQL.Deck_Insert_Input, cache: Cache): GQL.Deck | 
         speed: input.speed ?? 1,
         volume: input.volume ?? 1,
         type: input.type ?? GQL.Deck_Type_Enum_Enum.Main,
-        start_timestamp: input.start_timestamp ?? new Date(),
+        start_timestamp: input.start_timestamp ?? new Date().toISOString(),
         pause_timestamp: input.pause_timestamp ?? null,
         workspace_id: input.workspace_id,
         workspace: { ...workspace, __typename: 'workspace' },
@@ -164,7 +163,7 @@ function optimisticTrack(input: GQL.Track_Insert_Input, cache: Cache): GQL.Track
     if (!file) return null;
 
     return {
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
         id: input.id ?? v4(),
         deck: null as never,
         deck_id: input.deck_id,
@@ -180,7 +179,7 @@ function optimisticJob(input: GQL.Job_Insert_Input, cache: Cache): GQL.Job | nul
 
     return {
         id: v4(),
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
         name: input.name ?? '',
         url: input.url ?? '',
         description: input.description ?? '',
@@ -216,15 +215,19 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                     console.warn(error, operation);
                 },
             }),
-            customScalarsExchange({
-                schema: schema as unknown as IntrospectionQuery,
-                scalars: { timestamptz: (value) => new Date(value) },
-            }),
             dedupExchange,
             // documentCacheExchange,
             offlineExchange({
                 schema: schema as IntrospectionData,
                 storage,
+                resolvers: {
+                    Query: {
+                        workspace_by_pk: (result) => {
+                            console.log('WBPK', result);
+                            return result;
+                        },
+                    },
+                },
                 updates: {
                     Mutation: {
                         insert_deck(result: GQL.Deck_Mutation_Response, args: GQL.Mutation_RootInsert_DeckArgs, cache) {
@@ -395,70 +398,74 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         };
                     },
                     update_deck_by_pk(args: GQL.Mutation_RootUpdate_Deck_By_PkArgs, cache): GQL.Deck | null {
-                        const deck: GQL.Deck | null = cache.readFragment(
-                            gql`
-                                fragment _ on deck {
+                        const deckFrag = gql`
+                            fragment _ on deck {
+                                __typename
+                                id
+                                pause_timestamp
+                                start_timestamp
+                                speed
+                                volume
+                                workspace_id
+                                created_at
+                                type
+                                queue {
                                     __typename
                                     id
-                                    pause_timestamp
-                                    start_timestamp
-                                    speed
-                                    volume
-                                    workspace_id
                                     created_at
-                                    type
-                                    queue {
+                                    ordering
+                                    deck_id
+                                    file {
                                         __typename
                                         id
-                                        created_at
+                                        name
+                                        description
+                                        download_url
+                                        length
                                         ordering
-                                        deck_id
-                                        file {
-                                            __typename
-                                            id
-                                            name
-                                            description
-                                            download_url
-                                            length
-                                            ordering
-                                            type
-                                            path
-                                            workspace_id
-                                        }
+                                        type
+                                        path
+                                        workspace_id
                                     }
                                 }
-                            `,
-                            { id: args.pk_columns.id as string, __typename: 'deck' },
-                        );
+                            }
+                        `;
+                        const deck: GQL.Deck | null = cache.readFragment(deckFrag, {
+                            id: args.pk_columns.id as string,
+                            __typename: 'deck',
+                        });
                         if (!deck) return null;
 
                         let start_timestamp = deck.start_timestamp;
                         if (args._set?.start_timestamp) {
                             start_timestamp = args._set.start_timestamp;
-                        } else if (args._set?.pause_timestamp === null && deck.pause_timestamp !== null) {
-                            const pt =
-                                typeof deck.pause_timestamp === 'string'
-                                    ? new Date(deck.pause_timestamp)
-                                    : deck.pause_timestamp;
-
+                        } else if (
+                            args._set?.pause_timestamp === null &&
+                            deck.pause_timestamp !== null &&
+                            deck.pause_timestamp !== undefined
+                        ) {
                             start_timestamp = add(new Date(deck.start_timestamp), {
                                 seconds:
-                                    differenceInMilliseconds(new Date(), pt ?? new Date()) /
+                                    differenceInMilliseconds(new Date(), new Date(deck.pause_timestamp)) /
                                     (args._set?.speed ?? deck.speed ?? 1) /
                                     1000,
-                            });
+                            }).toISOString();
                         }
 
-                        return {
+                        const final_pause =
+                            args._set?.pause_timestamp !== undefined
+                                ? args._set.pause_timestamp ?? null
+                                : deck.pause_timestamp ?? null;
+
+                        const retDeck = {
                             ...deck,
-                            pause_timestamp:
-                                args._set?.pause_timestamp !== undefined
-                                    ? args._set.pause_timestamp
-                                    : deck.pause_timestamp,
-                            start_timestamp: start_timestamp,
+                            pause_timestamp: final_pause,
+                            start_timestamp: new Date(start_timestamp).toISOString(),
                             speed: args._set?.speed ?? deck.speed,
                             volume: args._set?.volume ?? deck.volume,
                         };
+
+                        return retDeck;
                     },
                 },
             }),

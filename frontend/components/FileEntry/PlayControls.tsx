@@ -61,7 +61,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
-                start_timestamp: new Date(),
+                start_timestamp: new Date().toISOString(),
             },
         });
     };
@@ -76,7 +76,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
-                start_timestamp: new Date(),
+                start_timestamp: new Date().toISOString(),
             },
         });
     };
@@ -96,7 +96,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Sfx,
                 pause_timestamp: null,
-                start_timestamp: new Date(),
+                start_timestamp: new Date().toISOString(),
             },
         });
     };

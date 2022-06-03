@@ -17,11 +17,11 @@ export function shouldPlaySFX(sfx: Deck_Minimum): boolean {
     const lastTrigger = parseInt(localStorage.getItem('__AHQ_LAST_SFX') ?? '0');
     const fullTime = sfx.queue.reduce((time, q) => time + q.file.length, 0);
     const valid =
-        getUnixTime(sfx.start_timestamp) + fullTime < getUnixTime(new Date()) &&
-        getUnixTime(sfx.start_timestamp) > lastTrigger;
+        getUnixTime(new Date(sfx.start_timestamp)) + fullTime < getUnixTime(new Date()) &&
+        getUnixTime(new Date(sfx.start_timestamp)) > lastTrigger;
 
     if (valid) {
-        localStorage.setItem('__AHQ_LAST_SFX', JSON.stringify(getUnixTime(sfx.start_timestamp)));
+        localStorage.setItem('__AHQ_LAST_SFX', JSON.stringify(getUnixTime(new Date(sfx.start_timestamp))));
     }
     return valid;
 }
@@ -70,8 +70,8 @@ export function getTrackInfo(status: Deck_Minimum, idx?: number): CurrentFileInf
     }
 
     const totalTime = files.reduce((prev, cur) => prev + cur.length, 0); // in seconds
-    const curTs = getUnixTime(status.pause_timestamp ?? new Date());
-    const curDuration = ((curTs - getUnixTime(status.start_timestamp)) * status.speed) % totalTime; // in seconds
+    const curTs = getUnixTime(status.pause_timestamp ? new Date(status.pause_timestamp) : new Date());
+    const curDuration = ((curTs - getUnixTime(new Date(status.start_timestamp))) * status.speed) % totalTime; // in seconds
     let elapsed = 0;
 
     if (idx !== undefined) {

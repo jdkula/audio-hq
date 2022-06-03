@@ -17,8 +17,8 @@ export default function Test() {
             workspaceId: yeet,
             deck: {
                 workspace_id: yeet,
-                start_timestamp: new Date(),
-                pause_timestamp: new Date(),
+                start_timestamp: new Date().toString(),
+                pause_timestamp: new Date().toString(),
                 type: Deck_Type_Enum_Enum.Main,
                 queue: { data: [l0] },
             },

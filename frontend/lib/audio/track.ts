@@ -50,7 +50,7 @@ export class Track extends EventEmitter {
         myTurn: boolean;
     } {
         // TODO: Keep track of speed, too.
-        const secondsSinceStart = differenceInMilliseconds(new Date(), status.start_timestamp) / 1000;
+        const secondsSinceStart = differenceInMilliseconds(new Date(), new Date(status.start_timestamp)) / 1000;
         let startTime = 0;
         let endTime = 0;
         let found = false;
@@ -143,7 +143,7 @@ export class Track extends EventEmitter {
             this._stopTimeouts = () => {
                 clearTimeout(startHandle);
             };
-            console.log('Set timeouts: ', { nextStart });
+            console.log('Set timeouts: ', { nextStart, status });
         }
     }
 

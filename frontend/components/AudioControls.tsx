@@ -94,7 +94,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
         const destinationSeek = (prev + to) / state.speed;
         console.log('Seeking... with CTI', currentTrackInfo);
         updateDeck({
-            start_timestamp: sub(new Date(), { seconds: destinationSeek }),
+            start_timestamp: sub(new Date(), { seconds: destinationSeek }).toISOString(),
         });
         setTempSeek(null);
     };
@@ -107,7 +107,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
 
     const onPlayPause = () => {
         if (paused) updateDeck({ pause_timestamp: null });
-        else updateDeck({ pause_timestamp: new Date() });
+        else updateDeck({ pause_timestamp: new Date().toISOString() });
     };
 
     return (

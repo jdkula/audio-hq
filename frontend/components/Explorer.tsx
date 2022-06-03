@@ -143,7 +143,7 @@ export const Explorer: FC = () => {
             deck: {
                 workspace_id: workspaceId,
                 speed: 1,
-                start_timestamp: new Date(),
+                start_timestamp: new Date().toISOString(),
                 pause_timestamp: null,
                 type: Deck_Type_Enum_Enum.Main,
                 queue: { data: queue.map((id, i) => ({ file_id: id, ordering: i })) },

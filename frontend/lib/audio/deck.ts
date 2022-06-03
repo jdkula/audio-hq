@@ -32,6 +32,7 @@ export class Deck extends EventEmitter {
     }
 
     reconcile(newState: Deck_Minimum): boolean {
+        console.log('Got new state', newState);
         if (!this.isReferentFor(newState)) {
             return false;
         }
