@@ -16,25 +16,34 @@ services:
       - "5000:5000"
     profiles:
       - local-test
-  audio-hq:
-    build: ./frontend
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file:
-      - ".env"
-    profiles:
-      - frontend
   worker:
+    image: jdkula/audio-hq-worker
     build: ./worker
-    env_file:
-      - ".env"
+    environment:
+      NEXT_PUBLIC_HASURA_URL_HTTP: 'http://graphql-engine:8080/v1/graphql'
+      NEXT_PUBLIC_HASURA_URL_WS: 'ws://graphql-engine:8080/v1/graphql'
+      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
+    restart: unless-stopped
     profiles:
       - worker
+    depends_on:
+      - graphql-engine
+  audio-hq:
+    image: jdkula/audio-hq
+    build: ./frontend
+    ports:
+      - "3000:8080"
+    environment:
+      NEXT_PUBLIC_HASURA_URL_HTTP: 'http://localhost:8080/v1/graphql'
+      NEXT_PUBLIC_HASURA_WS_HTTP: 'ws://localhost:8080/v1/graphql'
+    profiles:
+      - frontend
   postgres:
     image: postgres:12
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -58,10 +67,4 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       ## uncomment next line to set an admin secret
       HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
-      HASURA_GRAPHQL_JWT_SECRET: |-
-        {
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "audience": "cs107-queuesystem",
-          "issuer": "https://securetoken.google.com/cs107-queuesystem"
-        }
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous

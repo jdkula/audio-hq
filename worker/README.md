@@ -7,4 +7,5 @@ NEXT_PUBLIC_HASURA_URL_WS    # Subscription endpoint for Hasura
 S3_BUCKET_NAME               # S3 bucket to store files in
 AWS_ACCESS_KEY_ID            # S3 credentials (key id)
 AWS_SECRET_ACCESS_KEY        # S3 credentials (key secret)
+HASURA_GRAPHQL_ADMIN_SECRET  # Hasura admin access (as worker)
 ```
