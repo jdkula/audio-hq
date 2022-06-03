@@ -1,0 +1,9 @@
+http://localhost:8080 {
+  respond /config.json 200 {
+    body "{\"http\": \"{$NEXT_PUBLIC_HASURA_URL_HTTP}\", \"websocket\": \"{$NEXT_PUBLIC_HASURA_URL_WS}\"}"
+    close
+  }
+  
+  root * /usr/share/caddy
+  file_server
+}
