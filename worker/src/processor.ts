@@ -7,7 +7,6 @@ import ffmpeg, { FilterSpecification } from 'fluent-ffmpeg';
 import { v4, v4 as uuidv4 } from 'uuid';
 import { spawn } from 'child_process';
 import { AppFS } from './filesystems/FileSystem';
-import type ConvertOptions from '../../frontend/lib/ConvertOptions';
 import which from 'which';
 import {
     CommitJobDocument,
@@ -19,6 +18,18 @@ import {
 import { Client } from '@urql/core';
 import fsProm from 'fs/promises';
 import { Logger } from 'tslog';
+
+interface ConvertOptions {
+    cut?:
+        | {
+              start: number;
+              end: number;
+          }
+        | null
+        | undefined;
+    fadeIn?: number | null | undefined;
+    fadeOut?: number | null | undefined;
+}
 
 const processorLog = new Logger({ name: 'processor' });
 const ytdlLog = processorLog.getChildLogger({ name: 'youtube-dl' });
