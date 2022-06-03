@@ -97,23 +97,9 @@ async function ahqCache(request) {
             return audioCacheResponse;
         }
 
-        const url = new URL(request.url);
-        // if (url.pathname.match(/^\/?workspace(?:\.html)?/i)) {
-        //     url.pathname = '/workspace.html';
-        // } else if (url.pathname === '/') {
-        //     url.pathname = '/index.html';
-        // }
-
-        const appCacheResponse = await (await appCache).match(url.toString());
+        const appCacheResponse = await (await appCache).match(request.url);
         if (appCacheResponse) {
-            // Update cache for next time if needed (SWR pattern)
-            fetch(request)
-                .then((response) => {
-                    appCache.then((cache) => cache.put(request, response));
-                })
-                .catch(() => {
-                    // We are offline; ignore
-                });
+            cacheUrl(await appCache, request.url);
             return appCacheResponse;
         }
     }
@@ -129,19 +115,31 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(ahqCache(event.request));
 });
 
+async function cacheUrl(cache, url) {
+    try {
+        const response = await fetch(url);
+        if (response.status === 200) {
+            if (url.endsWith('.html')) {
+                cache.put(url.replace(/\.html$/, ''), response.clone());
+            }
+            cache.put(url, response);
+        } else if (response.status === 404 && url.endsWith('.html')) {
+            const bareResponse = await fetch(url.replace(/\.html$/, ''));
+            console.log('Got bare response', bareResponse.status, bareResponse.url);
+            if (bareResponse.status === 200) {
+                cache.put(url.replace(/\.html$/, ''), bareResponse.clone());
+                cache.put(url, bareResponse);
+            }
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
 async function cacheStatic() {
     const cache = await appCache;
 
-    await Promise.all(
-        [...urlsToCache, ...manifest.map((entry) => entry.url)].map(async (url) => {
-            try {
-                const response = await fetch(url);
-                cache.put(url, response);
-            } catch (e) {
-                console.warn(e);
-            }
-        }),
-    );
+    await Promise.all([...urlsToCache, ...manifest.map((entry) => entry.url)].map((url) => cacheUrl(cache, url)));
 }
 
 async function clearCache(cacheProm) {
@@ -151,7 +149,7 @@ async function clearCache(cacheProm) {
 }
 
 /** Cache home page and workspace view on install */
-const urlsToCache = ['/', '/index.html', '/workspace', '/workspace.html', '/404', '/404.html', '/site.webmanifest'];
+const urlsToCache = ['/', '/index.html', '/workspace.html', '/404.html', '/site.webmanifest'];
 self.addEventListener('activate', (event) => {
     event.waitUntil(shouldCache().then((should) => should && cacheStatic()));
 });
