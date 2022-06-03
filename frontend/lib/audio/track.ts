@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { Deck_Minimum, Track_Minimum } from '../graphql_type_helper';
 import { FileManager } from '../useFileManager';
 import { differenceInMilliseconds } from 'date-fns';
-import { doCacheLRV, globalVolumeLRV } from '../global_lrv';
+import { shouldCacheLRV, globalVolumeLRV } from '../global_lrv';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -25,7 +25,7 @@ export class Track extends EventEmitter {
 
         this._audio.src = this._qe.file.download_url;
 
-        if (doCacheLRV.value) {
+        if (shouldCacheLRV.value) {
             this._fm.download(this._qe.file);
         }
 

@@ -22,21 +22,22 @@ import {
     Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { FC, KeyboardEvent, useState } from 'react';
+import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
-import { ColorMode, useColorMode, useLocalRecents } from '../lib/utility';
+import { ColorMode, useColorMode, useLocalRecents, usePeriodicEffect } from '../lib/utility';
 import {
     useCreateWorkspaceMutation,
     useWorkspaceDetailByNameQuery,
     useWorkspaceDetailQuery,
 } from '~/lib/generated/graphql';
-import { ConfirmDeleteAllDialog } from '~/components/Home/ConfirmDeleteAllDialogue';
+import { ConfirmDeleteAllDialog, humanFileSize } from '~/components/Home/ConfirmDeleteAllDialogue';
 import { useLocalReactiveValue } from '~/lib/local_reactive';
-import { doCacheLRV } from '~/lib/global_lrv';
+import { shouldCacheLRV } from '~/lib/global_lrv';
+import { useShouldCache } from '~/lib/sw_client';
 
 const GlobalFull = () => (
     <Global
@@ -114,7 +115,8 @@ export default function Home(): React.ReactElement {
     const [loading, setLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
-    const [doCache, setDoCache] = useLocalReactiveValue(doCacheLRV);
+    const [shouldCache, setShouldCache] = useShouldCache();
+    const [currentlyUsedData, setCurrentlyUsedData] = useState<number | null>(null);
 
     const [{ fetching, data }, refetch] = useWorkspaceDetailByNameQuery({
         variables: { workspaceName },
@@ -123,6 +125,16 @@ export default function Home(): React.ReactElement {
     const [, createWorkspaceMutation] = useCreateWorkspaceMutation();
 
     const foundWorkspace = data?.workspace[0] ?? null;
+
+    usePeriodicEffect(
+        2000,
+        () => {
+            navigator.storage.estimate().then((estimate) => {
+                setCurrentlyUsedData(estimate.usage ?? null);
+            });
+        },
+        [shouldCache],
+    );
 
     const createWorkspace = (workspaceName: string) => {
         createWorkspaceMutation({ name: workspaceName }).then((res) => {
@@ -155,6 +167,21 @@ export default function Home(): React.ReactElement {
 
     return (
         <OuterContainer>
+            <Box sx={{ position: 'fixed', top: 20, left: 20 }}>
+                {/* Cache */}
+                <FormControlLabel
+                    control={<Switch checked={shouldCache} onChange={(_, checked) => setShouldCache(checked)} />}
+                    label={
+                        <Box>
+                            <Typography>NEW! Offline Mode</Typography>
+                            <Typography variant="body2">
+                                Current usage: {currentlyUsedData ? humanFileSize(currentlyUsedData, true) : '...'}
+                            </Typography>
+                        </Box>
+                    }
+                />
+            </Box>
+
             <ConfirmDeleteAllDialog onClose={() => setDeleting(false)} open={deleting} />
             <Head>
                 <title>Audio HQ</title>
@@ -247,12 +274,9 @@ export default function Home(): React.ReactElement {
                 </Box>
             </Tooltip>
 
-            {/* Cache */}
-            <Switch checked={doCache} onChange={(_, checked) => setDoCache(checked)} />
-
             {/* Downloads */}
             <Box m={2}>
-                <Box display="grid" gridTemplateColumns="1fr auto 1fr" gridTemplateRows="auto" alignItems="center">
+                <Box display="flex" justifyContent="center" alignItems="center">
                     <Box m={2} justifySelf="end" textAlign="center">
                         <Link
                             href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.dmg"
@@ -261,7 +285,9 @@ export default function Home(): React.ReactElement {
                             Audio HQ for Mac
                         </Link>
                     </Box>
-                    <Divider flexItem variant="middle" orientation="vertical" />
+                    <Box justifySelf="center" textAlign="center" color="#888">
+                        {'//'}
+                    </Box>
                     <Box m={2} justifySelf="start" textAlign="center">
                         <Link
                             href="https://s3-us-west-2.amazonaws.com/static-public.jdkula.dev/audiohq/Audio+HQ.zip"

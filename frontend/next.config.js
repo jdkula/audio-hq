@@ -1,6 +1,4 @@
 const { InjectManifest } = require('workbox-webpack-plugin');
-const fs = require('fs');
-const crypto = require('crypto');
 
 module.exports = {
     webpack: (config, { isServer }) => {
@@ -9,6 +7,7 @@ module.exports = {
             new InjectManifest({
                 swSrc: `${__dirname}/src/service.worker.js`,
                 swDest: `${__dirname}/public/service.worker.dist.js`,
+                exclude: [/manifest\.json$/],
             }),
         );
 

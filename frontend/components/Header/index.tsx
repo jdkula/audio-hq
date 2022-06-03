@@ -6,7 +6,20 @@
  * volume, cache all workspace songs, and add tracks.
  */
 
-import { AppBar, Button, Hidden, Link, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+    AppBar,
+    Box,
+    Button,
+    CircularProgress,
+    Collapse,
+    Hidden,
+    LinearProgress,
+    Link,
+    Toolbar,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
 import React, { FC, FunctionComponent, useContext, useState } from 'react';
 import Head from 'next/head';
@@ -66,6 +79,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const [path] = useLocalReactiveValue(currentPathLRV);
 
     const allCached = fileManager.cached.size === files.length; // TODO
+    const isCaching = fileManager.caching.size > 0;
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
@@ -97,10 +111,13 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         )}
                     </Title>
                     {host && <GlobalVolumeSlider />}
-                    {!allCached && <DownloadCacheButton />}
+                    {!allCached && !isCaching && <DownloadCacheButton />}
                     {host && <AddTrackButton startAdding={() => setAdding(true)} />}
                 </ToolbarContent>
             </Toolbar>
+            <Collapse in={isCaching}>
+                <LinearProgress />
+            </Collapse>
         </AppBar>
     );
 };

@@ -1,5 +1,5 @@
 import { createContext, useMemo, useState } from 'react';
-import { broadcastOut, BroadcastMessage, useIsCached } from './broadcast';
+import { broadcastOut, BroadcastMessage, useIsCached } from './sw_client';
 import ConvertOptions from './ConvertOptions';
 import {
     WorkspaceJobsSubscription,

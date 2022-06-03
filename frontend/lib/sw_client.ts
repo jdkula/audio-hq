@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { shouldCacheLRV } from './global_lrv';
 import { LocalIDBReactiveValue, useLocalReactiveValue } from './local_reactive';
 
 export const broadcastOut = new BroadcastChannel('audio-hq-to-sw');
@@ -27,7 +28,7 @@ export interface BulkCacheUpdateMessage {
 }
 
 export interface BulkCacheRequestMessage {
-    type: 'is-cached-bulk';
+    type: 'is-cached-bulk' | 'cache-off' | 'cache-on';
 }
 
 export type CacheState = 'cached' | 'uncached' | 'loading';
@@ -45,6 +46,7 @@ export function useIsCached(
     const onUpdate = useCallback(
         (ev: MessageEvent) => {
             const message: BroadcastMessage = ev.data;
+            console.log('Got message CLIENT', message);
             if (message.type === 'cache-update') {
                 if (!urls.includes(message.url)) return;
 
@@ -82,4 +84,26 @@ export function useIsCached(
     }, [urls, onUpdate, useBulk]);
 
     return Array.isArray(url) ? cached : cached[0] ?? null;
+}
+
+export function useShouldCache() {
+    const retVal = useLocalReactiveValue(shouldCacheLRV);
+
+    const callback = useCallback((value) => {
+        if (value) {
+            broadcastOut.postMessage({ type: 'cache-on' } as BroadcastMessage);
+        } else {
+            broadcastOut.postMessage({ type: 'cache-off' } as BroadcastMessage);
+        }
+    }, []);
+
+    useEffect(() => {
+        shouldCacheLRV.on('set', callback);
+
+        return () => {
+            shouldCacheLRV.off('set', callback);
+        };
+    }, [callback]);
+
+    return retVal;
 }

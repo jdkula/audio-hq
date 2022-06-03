@@ -13,7 +13,7 @@ import { FC, useState, useEffect } from 'react';
 import PouchDB from 'pouchdb';
 
 // thanks https://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable-string/10420404 !
-function humanFileSize(bytes: number, si = false, dp = 1) {
+export function humanFileSize(bytes: number, si = false, dp = 1) {
     const thresh = si ? 1000 : 1024;
 
     if (Math.abs(bytes) < thresh) {
