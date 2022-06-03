@@ -22,6 +22,7 @@ fragment DeckInfo on deck {
     }
 
     workspace_id
+    created_at
 }
 
 query Decks($workspaceId: uuid!) {

@@ -13,8 +13,9 @@ insert_permissions:
     permission:
       check: {}
       columns:
-        - file_id
         - deck_id
+        - file_id
+        - id
         - ordering
       backend_only: false
 select_permissions:

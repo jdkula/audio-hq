@@ -18,6 +18,7 @@ import { WorkspaceIdContext, useAlt, useWorkspaceDecks } from '../../lib/utility
 import { File_Minimum } from '../../lib/graphql_type_helper';
 import { Deck_Type_Enum_Enum, usePlayDeckMutation } from '../../lib/generated/graphql';
 import { add } from 'date-fns';
+import { v4 } from 'uuid';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -55,11 +56,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
         playDeck({
             workspaceId,
             deck: {
+                id: v4(),
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0 }] },
+                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
-                start_timestamp: add(new Date(), { seconds: 1 }),
+                start_timestamp: new Date(),
             },
         });
     };
@@ -69,11 +71,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             workspaceId,
             isMain: true,
             deck: {
+                id: v4(),
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0 }] },
+                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
-                start_timestamp: add(new Date(), { seconds: 1 }),
+                start_timestamp: new Date(),
             },
         });
     };
@@ -88,8 +91,9 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
         playDeck({
             workspaceId,
             deck: {
+                id: v4(),
                 workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0 }] },
+                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
                 type: Deck_Type_Enum_Enum.Sfx,
                 pause_timestamp: null,
                 start_timestamp: new Date(),

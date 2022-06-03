@@ -119,8 +119,8 @@ export class Track extends EventEmitter {
                 });
             }
             const targetTime = (times.secondsIntoLoop - times.startTime) * this._status.speed;
-            if (Math.abs(this._audio.currentTime - targetTime) > 0.5) {
-                // only update if we're off by more than half a second. Prevents skipping with
+            if (Math.abs(this._audio.currentTime - targetTime) > 1.5) {
+                // only update if we're off by more than 3/2 a second. Prevents skipping with
                 // extra updates.
                 this._audio.currentTime = targetTime;
             }
