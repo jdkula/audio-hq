@@ -13,6 +13,7 @@ import { v4 } from 'uuid';
 import { nonNull } from './utility';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { LocalStorageReactiveValue, useLocalReactiveValue } from './local_reactive';
+import { add, differenceInMilliseconds } from 'date-fns';
 
 function getFields<T>(type: string, id: any, cache: Cache, fields: Array<keyof T>): Partial<T> | null {
     const record: Partial<T> = {};
@@ -296,9 +297,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         const record: Record<string, any> = {};
                         for (const k of Object.keys(args._set)) {
                             const key = k as keyof typeof args._set;
-                            if (args._set[key]) {
-                                record[k] = args._set[key];
-                            }
+                            record[k] = args._set[key];
                         }
 
                         const file = cache.readFragment(
@@ -433,10 +432,30 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         );
                         if (!deck) return null;
 
+                        let start_timestamp = deck.start_timestamp;
+                        if (args._set?.start_timestamp) {
+                            start_timestamp = args._set.start_timestamp;
+                        } else if (args._set?.pause_timestamp === null && deck.pause_timestamp !== null) {
+                            const pt =
+                                typeof deck.pause_timestamp === 'string'
+                                    ? new Date(deck.pause_timestamp)
+                                    : deck.pause_timestamp;
+
+                            start_timestamp = add(new Date(deck.start_timestamp), {
+                                seconds:
+                                    differenceInMilliseconds(new Date(), pt ?? new Date()) /
+                                    (args._set?.speed ?? deck.speed ?? 1) /
+                                    1000,
+                            });
+                        }
+
                         return {
                             ...deck,
-                            pause_timestamp: args._set?.pause_timestamp ?? deck.pause_timestamp,
-                            start_timestamp: args._set?.start_timestamp ?? deck.start_timestamp,
+                            pause_timestamp:
+                                args._set?.pause_timestamp !== undefined
+                                    ? args._set.pause_timestamp
+                                    : deck.pause_timestamp,
+                            start_timestamp: start_timestamp,
                             speed: args._set?.speed ?? deck.speed,
                             volume: args._set?.volume ?? deck.volume,
                         };
@@ -458,7 +477,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
 type UrqlAddresses = { websocket: string; http: string };
 
 const urqlAddresses = new LocalStorageReactiveValue<UrqlAddresses>('urql_address', {
-    http: (process.env.NEXT_PUBLIC_HASURA_URL_WS as string | undefined) ?? '/v1/graphql',
+    http: (process.env.NEXT_PUBLIC_HASURA_URL_HTTP as string | undefined) ?? '/v1/graphql',
     websocket: (process.env.NEXT_PUBLIC_HASURA_URL_WS as string | undefined) ?? '/v1/graphql',
 });
 
