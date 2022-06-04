@@ -91,7 +91,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [path] = useLocalReactiveValue(currentPathLRV);
 
-    const allCached = fileManager.cached.size === files.length;
+    const allCached = fileManager.cached.size >= files.length;
     const isCaching = fileManager.caching.size > 0;
 
     const theme = useTheme();

@@ -144,6 +144,7 @@ export class Track extends EventEmitter {
             await this._audio.play();
             this.update(this._status);
         } catch (e) {
+            console.warn(e);
             this.emit('blocked', e);
         }
     }

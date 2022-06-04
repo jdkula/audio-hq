@@ -129,9 +129,13 @@ export function useFileManager(workspaceId: string) {
             }
         },
         downloadAll: async () => {
+            console.log(
+                'Downloading all. Uncached:',
+                files.filter((f) => !cached.has(f.download_url)),
+            );
             broadcastOut?.postMessage({
                 type: 'cache',
-                urls: [...files.values()].map((f) => f.download_url),
+                urls: files.map((f) => f.download_url),
             } as BroadcastMessage);
         },
     };
