@@ -12,7 +12,6 @@ import { Cache, offlineExchange } from '@urql/exchange-graphcache';
 import * as GQL from '../generated/graphql';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { LocalStorageReactiveValue, useLocalReactiveValue } from '../LocalReactive';
-import { add, differenceInMilliseconds } from 'date-fns';
 import schema from '../generated/schema';
 import Mutation from './mutation';
 import Optimistic from './optimistic';
@@ -128,28 +127,37 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         },
                     },
                     Subscription: {
-                        event(data: GQL.EventsSubscription, _args, cache) {
+                        event(data: GQL.DeckEventsSubscription & GQL.FileEventsSubscription, _args, cache) {
                             const event = data.event?.[0];
                             if (!event || !event.workspace_id || !event.workspace) return;
                             const newWorkspace = event.workspace;
 
-                            cache.updateQuery<GQL.DecksQuery, GQL.DecksQueryVariables>(
-                                {
-                                    query: GQL.DecksDocument,
-                                    variables: { workspaceId: event.workspace_id },
-                                },
-                                () => ({ __typename: 'query_root', workspace_by_pk: newWorkspace }),
-                            );
+                            if (newWorkspace.decks) {
+                                cache.updateQuery<GQL.DecksQuery, GQL.DecksQueryVariables>(
+                                    {
+                                        query: GQL.DecksDocument,
+                                        variables: { workspaceId: event.workspace_id },
+                                    },
+                                    (data) => {
+                                        if (!data || !data.workspace_by_pk) return data;
 
-                            if (!newWorkspace.files) return;
+                                        return {
+                                            __typename: 'query_root',
+                                            workspace_by_pk: { ...data.workspace_by_pk, ...newWorkspace },
+                                        };
+                                    },
+                                );
+                            }
 
-                            cache.updateQuery<GQL.WorkspaceFilesQuery, GQL.WorkspaceFilesQueryVariables>(
-                                {
-                                    query: GQL.WorkspaceFilesDocument,
-                                    variables: { workspaceId: event.workspace_id },
-                                },
-                                () => ({ file: newWorkspace.files, __typename: 'query_root' }),
-                            );
+                            if (newWorkspace.files) {
+                                cache.updateQuery<GQL.WorkspaceFilesQuery, GQL.WorkspaceFilesQueryVariables>(
+                                    {
+                                        query: GQL.WorkspaceFilesDocument,
+                                        variables: { workspaceId: event.workspace_id },
+                                    },
+                                    () => ({ file: newWorkspace.files, __typename: 'query_root' }),
+                                );
+                            }
                         },
                     },
                 },

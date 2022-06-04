@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE public.workspace
 (
     id         uuid        NOT NULL DEFAULT gen_random_uuid(),
@@ -57,24 +59,42 @@ CREATE TABLE public.track
     FOREIGN KEY (deck_id) REFERENCES public.deck (id) ON UPDATE cascade ON DELETE cascade
 );
 
+CREATE TABLE public.workers
+(
+    id            uuid        NOT NULL DEFAULT gen_random_uuid(),
+    last_check_in timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE public.job
 (
-    id              uuid        NOT NULL DEFAULT gen_random_uuid(),
-    name            text        NOT NULL,
-    description     text        NOT NULL default '',
-    path            jsonb       NOT NULL default json_build_array(),
-    url             text,
-    file_upload     bytea,
-    options         jsonb       NOT NULL default json_build_object(),
-    assigned_worker uuid                 DEFAULT NULL,
-    progress        numeric              DEFAULT NULL,
-    progress_stage  text        NOT NULL DEFAULT 'waiting',
-    workspace_id    uuid        NOT NULL,
-    created_at      timestamptz NOT NULL DEFAULT now(),
+    id               uuid        NOT NULL DEFAULT gen_random_uuid(),
+    created_at       timestamptz NOT NULL DEFAULT now(),
+    workspace_id     uuid        NOT NULL,
+    name             text        NOT NULL,
+    description      text        NOT NULL default '',
+    path             jsonb       NOT NULL default json_build_array(),
+    url              text,
+    file_upload      bytea,
+
+    option_cut_start double precision     DEFAULT NULL,
+    option_cut_end   double precision     DEFAULT NULL,
+    option_fade_in   double precision     DEFAULT NULL,
+    option_fade_out  double precision     DEFAULT NULL,
+
+    assigned_worker  uuid                 DEFAULT NULL,
+    assign_time      timestamptz          DEFAULT NULL,
+    progress         numeric              DEFAULT NULL,
+    status           text        NOT NULL DEFAULT 'waiting',
+    error            text                 DEFAULT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (workspace_id) REFERENCES public.workspace (id) ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (status) REFERENCES public.job_status_enum (value) ON UPDATE restrict ON DELETE restrict,
+    FOREIGN KEY (assigned_worker) REFERENCES public.workers (id) ON UPDATE restrict ON DELETE cascade,
     CONSTRAINT no_empty_jobs CHECK ((file_upload IS NULL) != (url IS NULL)),
-    CONSTRAINT file_maximum CHECK ( length(file_upload) <= 1024 * 1024 * 200 ) -- 200MiB
+    CONSTRAINT file_maximum CHECK ( length(file_upload) <= 1024 * 1024 * 200 ), -- 200MiB
+    CONSTRAINT cut_both_defined CHECK ((option_cut_start IS NULL) = (option_cut_end IS NULL)),
+    CONSTRAINT assigned_has_timestamp CHECK ((assign_time IS NULL) = (assigned_worker IS NULL))
 );
 
 CREATE TABLE public.delete_job
@@ -82,8 +102,9 @@ CREATE TABLE public.delete_job
     id              uuid NOT NULL DEFAULT gen_random_uuid(),
     file_id         uuid NOT NULL,
     assigned_worker uuid          DEFAULT NULL,
+    status          text NOT NULL DEFAULT 'waiting',
     PRIMARY KEY (id),
-    FOREIGN KEY (file_id) REFERENCES public.file (id) ON UPDATE restrict ON DELETE cascade
+    FOREIGN KEY (file_id) REFERENCES public.file (id) ON UPDATE restrict ON DELETE cascade,
+    FOREIGN KEY (assigned_worker) REFERENCES public.workers (id) ON UPDATE restrict ON DELETE cascade,
+    FOREIGN KEY (status) REFERENCES public.job_status_enum (value) ON UPDATE restrict ON DELETE restrict
 );
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;

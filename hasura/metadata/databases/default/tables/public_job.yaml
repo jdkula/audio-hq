@@ -9,7 +9,10 @@ insert_permissions:
         - description
         - file_upload
         - name
-        - options
+        - option_cut_start
+        - option_cut_end
+        - option_fade_in
+        - option_fade_out
         - path
         - url
         - workspace_id
@@ -18,17 +21,22 @@ select_permissions:
   - role: anonymous
     permission:
       columns:
+        - assign_time
         - assigned_worker
+        - created_at
         - description
+        - error
         - id
         - name
-        - options
+        - option_cut_end
+        - option_cut_start
+        - option_fade_in
+        - option_fade_out
         - path
         - progress
-        - progress_stage
+        - status
         - url
         - workspace_id
-        - created_at
       filter: {}
   - role: worker
     permission:
@@ -38,10 +46,14 @@ select_permissions:
         - file_upload
         - id
         - name
-        - options
+        - option_cut_start
+        - option_cut_end
+        - option_fade_in
+        - option_fade_out
         - path
         - progress
-        - progress_stage
+        - status
+        - assign_time
         - url
         - workspace_id
         - created_at
@@ -50,9 +62,11 @@ update_permissions:
   - role: worker
     permission:
       columns:
+        - assign_time
         - assigned_worker
+        - error
         - progress
-        - progress_stage
+        - status
       filter: {}
       check: null
 delete_permissions:

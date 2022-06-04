@@ -8,13 +8,17 @@ import {
     useWorkspaceJobsSubscription,
     Deck_Type_Enum_Enum,
     useDecksQuery,
-    useEventsSubscription,
+    useFileEventsSubscription,
+    useDeckEventsSubscription,
 } from './generated/graphql';
 import { Deck_Minimum, File_Minimum } from './urql/graphql_type_helper';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 
 export function useFileManager(workspaceId: string) {
+    // <== Subscription ==>
+    useFileEventsSubscription({ variables: { workspaceId } });
+
     // <== State ==>
     const [filesData] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const [jobsData] = useWorkspaceJobsSubscription({ variables: { workspaceId } });
@@ -65,7 +69,10 @@ export function useFileManager(workspaceId: string) {
                 job: {
                     name,
                     description,
-                    options,
+                    option_cut_start: options?.cut?.start ?? null,
+                    option_cut_end: options?.cut?.end ?? null,
+                    option_fade_in: options?.fadeIn ?? null,
+                    option_fade_out: options?.fadeOut ?? null,
                     url,
                     file_upload: null,
                     path: currentPath,
@@ -132,7 +139,7 @@ export function useWorkspaceDecks(workspaceId: string): {
     ambience: Deck_Minimum[];
     sfx: Deck_Minimum[];
 } {
-    useEventsSubscription({
+    useDeckEventsSubscription({
         variables: { workspaceId: workspaceId },
     });
 

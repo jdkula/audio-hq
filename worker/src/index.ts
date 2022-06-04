@@ -15,6 +15,20 @@ const myid = v4();
 
 let working = false;
 
+async function reportError(jobId: string, e: any) {
+    await client
+        .mutation<GQL.SetJobErrorMutation, GQL.SetJobErrorMutationVariables>(GQL.SetJobErrorDocument, {
+            jobId,
+            error:
+                e instanceof Error
+                    ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
+                    : e.toString instanceof Function
+                    ? e.toString()
+                    : 'Unknown error',
+        })
+        .toPromise();
+}
+
 async function doJobs() {
     if (working) return;
     working = true;
@@ -33,30 +47,49 @@ async function doJobs() {
                 return;
             }
 
-            log.debug('Job found', job);
-            let inPath;
-            if (job.file_upload) {
-                log.silly('Raw file upload found. Saving to disk...');
-                inPath = await processor.saveInput(job.file_upload);
-            } else if (job.url) {
-                log.silly('Import found. Downloading...');
-                inPath = await processor.download(job.url, job.id, job.options);
-            } else {
-                throw new Error('Neither job nor file upload is defined!');
+            try {
+                log.debug('Job found', job);
+                let inPath;
+                if (job.file_upload) {
+                    log.silly('Raw file upload found. Saving to disk...');
+                    inPath = await processor.saveInput(job.file_upload);
+                } else if (job.url) {
+                    log.silly('Import found. Downloading...');
+                    let cut: any = { start: job.option_cut_start, end: job.option_cut_end };
+                    if (!cut.start) cut = undefined;
+
+                    inPath = await processor.download(job.url, job.id, {
+                        cut,
+                        fadeIn: job.option_fade_in ?? undefined,
+                        fadeOut: job.option_fade_out ?? undefined,
+                    });
+                } else {
+                    throw new Error('Neither job nor file upload is defined!');
+                }
+
+                log.silly('Converting...');
+                let cut: any = { start: job.option_cut_start, end: job.option_cut_end };
+                if (!cut.start) cut = undefined;
+
+                const outPath = await processor.convert(inPath, job.id, {
+                    cut,
+                    fadeIn: job.option_fade_in ?? undefined,
+                    fadeOut: job.option_fade_out ?? undefined,
+                });
+
+                log.silly('Adding to AHQ...');
+                await processor.addFile(job.id, outPath, {
+                    name: job.name,
+                    path: job.path,
+                    workspace: job.workspace_id,
+                    description: job.description,
+                });
+
+                log.debug('Job finished');
+            } catch (e) {
+                log.warn('Got error while processing job:', e);
+                reportError(job.id, e);
             }
-
-            log.silly('Converting...');
-            const outPath = await processor.convert(inPath, job.id, job.options);
-
-            log.silly('Adding to AHQ...');
-            await processor.addFile(job.id, outPath, {
-                name: job.name,
-                path: job.path,
-                workspace: job.workspace_id,
-                description: job.description,
-            });
-
-            log.debug('Job finished');
         }
     } finally {
         working = false;
@@ -65,7 +98,7 @@ async function doJobs() {
 
 let deleting = false;
 
-async function dpDeletion() {
+async function doDeletion() {
     if (deleting) return;
     deleting = true;
     try {
@@ -83,57 +116,81 @@ async function dpDeletion() {
                 return;
             }
 
-            log.debug('Delete job received', job);
-            log.silly('Deleting file in database...');
-            await client
-                .mutation<GQL.CommitDeleteJobMutation, GQL.CommitDeleteJobMutationVariables>(
-                    GQL.CommitDeleteJobDocument,
-                    {
-                        jobId: job.id,
-                        fileId: job.file.id,
-                    },
-                )
-                .toPromise();
+            try {
+                log.debug('Delete job received', job);
+                log.silly('Deleting file in database...');
+                await client
+                    .mutation<GQL.CommitDeleteJobMutation, GQL.CommitDeleteJobMutationVariables>(
+                        GQL.CommitDeleteJobDocument,
+                        {
+                            jobId: job.id,
+                            fileId: job.file.id,
+                        },
+                    )
+                    .toPromise();
 
-            if (job.file.provider_id) {
-                log.silly('Deleting in AWS...');
-                await AppFS.delete(job.file.provider_id);
-            } else {
-                log.debug('No provide ID associated with this file, skipping AWS delete...');
+                if (job.file.provider_id) {
+                    log.silly('Deleting in AWS...');
+                    await AppFS.delete(job.file.provider_id);
+                } else {
+                    log.debug('No provide ID associated with this file, skipping AWS delete...');
+                }
+
+                log.debug('Delete job finished');
+            } catch (e) {
+                log.warn('Failed to remove file', e);
             }
-
-            log.debug('Delete job finished');
         }
     } finally {
         deleting = false;
     }
 }
 
-const newJobs = client.subscription<GQL.NewJobsSubscriptionSubscription, GQL.NewJobsSubscriptionSubscriptionVariables>(
-    GQL.NewJobsSubscriptionDocument,
-);
+let ready = false;
 
-const newDeleteJobs = client.subscription<
-    GQL.DeleteJobsSubscriptionSubscription,
-    GQL.DeleteJobsSubscriptionSubscriptionVariables
->(GQL.DeleteJobsSubscriptionDocument);
+function setup() {
+    const newJobs = client.subscription<
+        GQL.NewJobsSubscriptionSubscription,
+        GQL.NewJobsSubscriptionSubscriptionVariables
+    >(GQL.NewJobsSubscriptionDocument);
 
-pipe(
-    newJobs,
-    subscribe((result) => {
-        log.silly('Got new jobs data', result.data);
-        if (!result.data || result.data.job.length == 0) return;
-        doJobs();
-    }),
-);
+    const newDeleteJobs = client.subscription<
+        GQL.DeleteJobsSubscriptionSubscription,
+        GQL.DeleteJobsSubscriptionSubscriptionVariables
+    >(GQL.DeleteJobsSubscriptionDocument);
 
-pipe(
-    newDeleteJobs,
-    subscribe((result) => {
-        log.silly('Got new delete jobs data', result.data);
-        if (!result.data || result.data.delete_job.length == 0) return;
-        dpDeletion();
-    }),
-);
+    pipe(
+        newJobs,
+        subscribe((result) => {
+            log.silly('Got new jobs data', result.data);
+            if (!result.data || result.data.job.length == 0) return;
+            doJobs();
+        }),
+    );
 
-log.info('Worker started');
+    pipe(
+        newDeleteJobs,
+        subscribe((result) => {
+            log.silly('Got new delete jobs data', result.data);
+            if (!result.data || result.data.delete_job.length == 0) return;
+            doDeletion();
+        }),
+    );
+    ready = true;
+    log.info('Worker started');
+}
+
+async function checkIn() {
+    log.debug('Checking in...');
+    await client
+        .mutation<GQL.CheckInMutation, GQL.CheckInMutationVariables>(GQL.CheckInDocument, { myId: myid })
+        .toPromise();
+
+    if (!ready) {
+        log.info('Starting subscription...');
+        setup();
+    }
+
+    setTimeout(checkIn, 10000);
+}
+checkIn();

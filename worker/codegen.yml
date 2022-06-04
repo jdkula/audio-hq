@@ -16,6 +16,7 @@ generates:
         timestamptz: Date
         uuid: string
         bigint: number
+        float8: number
       withHooks: false
       gqlImport: '@urql/core#gql'
     plugins:

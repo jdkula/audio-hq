@@ -1,0 +1,4 @@
+table:
+  schema: public
+  name: job_status_enum
+is_enum: true

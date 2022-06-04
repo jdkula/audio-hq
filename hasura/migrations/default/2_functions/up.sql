@@ -57,12 +57,18 @@ $$
 DECLARE
     _job job;
 BEGIN
-    WITH limiter AS (SELECT id
+    WITH limiter AS (SELECT job.id
                      FROM job
+                              LEFT OUTER JOIN public.workers w on w.id = job.assigned_worker
                      WHERE assigned_worker IS NULL
+                        OR EXTRACT(EPOCH FROM (now() - w.last_check_in)) > 60        -- >60s since worker check-in
+                        OR EXTRACT(EPOCH FROM (now() - job.assign_time)) > (60 * 30) -- >30m since assigned
                      LIMIT 1)
     UPDATE job
-    SET assigned_worker = worker_id
+    SET assigned_worker = worker_id,
+        assign_time     = now(),
+        status          = 'assigned',
+        progress        = 0
     FROM limiter
     WHERE job.id = limiter.id
     RETURNING * INTO _job;
@@ -82,7 +88,8 @@ BEGIN
                      WHERE assigned_worker IS NULL
                      LIMIT 1)
     UPDATE delete_job
-    SET assigned_worker = worker_id
+    SET assigned_worker = worker_id,
+        status          = 'assigned'
     FROM limiter
     WHERE delete_job.id = limiter.id
     RETURNING * INTO _job;

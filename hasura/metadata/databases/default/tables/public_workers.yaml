@@ -1,0 +1,44 @@
+table:
+  schema: public
+  name: workers
+array_relationships:
+  - name: delete_jobs
+    using:
+      foreign_key_constraint_on:
+        column: assigned_worker
+        table:
+          schema: public
+          name: delete_job
+  - name: jobs
+    using:
+      foreign_key_constraint_on:
+        column: assigned_worker
+        table:
+          schema: public
+          name: job
+insert_permissions:
+  - role: worker
+    permission:
+      check: {}
+      columns:
+        - id
+        - last_check_in
+      backend_only: false
+select_permissions:
+  - role: worker
+    permission:
+      columns:
+        - last_check_in
+        - id
+      filter: {}
+update_permissions:
+  - role: worker
+    permission:
+      columns:
+        - last_check_in
+      filter: {}
+      check: {}
+delete_permissions:
+  - role: worker
+    permission:
+      filter: {}

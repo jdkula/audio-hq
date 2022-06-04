@@ -1,14 +1,19 @@
 fragment JobInfo on job {
-    __typename
     id
     url
     name
     description
     path
 
+    option_cut_start
+    option_cut_end
+    option_fade_in
+    option_fade_out
+
     progress
-    progress_stage
+    status
     assigned_worker
+    error
 
     created_at
 }

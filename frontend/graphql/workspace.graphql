@@ -1,5 +1,4 @@
 fragment WorkspaceInfo on workspace {
-    __typename
     id
     name
     created_at

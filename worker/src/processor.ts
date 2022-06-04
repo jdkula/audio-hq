@@ -103,7 +103,7 @@ export class Processor {
         processorLog.silly(`Saving to S3...`);
         const dlurl = await AppFS.write(
             filepath,
-            id,
+            id + '.ogg',
             'audio/ogg',
             (progress) => progress && this.updateProgress(id, progress, 'saving'),
         );

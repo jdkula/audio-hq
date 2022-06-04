@@ -23,7 +23,8 @@ select_permissions:
         - id
         - time
         - track_id
-        - type
+        - event_type
+        - modification_type
         - workspace_id
       filter: {}
       allow_aggregations: true

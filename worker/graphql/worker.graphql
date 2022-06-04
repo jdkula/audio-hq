@@ -1,17 +1,17 @@
 subscription NewJobsSubscription {
-    job(where: {assigned_worker: {_is_null: true}}, order_by: [{created_at: asc}]) {
+    job(where: { assigned_worker: { _is_null: true } }, order_by: [{ created_at: asc }]) {
         id
     }
 }
 
 subscription DeleteJobsSubscription {
-    delete_job(where: {assigned_worker: {_is_null: true}}) {
+    delete_job(where: { assigned_worker: { _is_null: true } }) {
         id
     }
 }
 
 subscription MyJobsSubscription($myId: uuid!) {
-    job(where: {assigned_worker: {_eq: $myId}}, order_by: [{created_at: asc}]) {
+    job(where: { assigned_worker: { _eq: $myId } }, order_by: [{ created_at: asc }]) {
         id
     }
 }
@@ -23,22 +23,25 @@ fragment FullJob on job {
     file_upload
 
     progress
-    progress_stage
+    status
 
     name
     description
     path
-    options
+    option_cut_start
+    option_cut_end
+    option_fade_in
+    option_fade_out
 }
 
 mutation ClaimJob($myId: uuid!) {
-    claim_job(args: {worker_id: $myId}) {
+    claim_job(args: { worker_id: $myId }) {
         ...FullJob
     }
 }
 
 mutation ClaimDeleteJob($myId: uuid!) {
-    claim_delete_job(args: {worker_id: $myId}) {
+    claim_delete_job(args: { worker_id: $myId }) {
         id
         file {
             id
@@ -47,8 +50,8 @@ mutation ClaimDeleteJob($myId: uuid!) {
     }
 }
 
-mutation UpdateJobProgress($jobId: uuid!, $progressStage: String!, $progress: numeric!) {
-    update_job_by_pk(pk_columns: {id: $jobId}, _set: {progress_stage: $progressStage, progress: $progress}) {
+mutation UpdateJobProgress($jobId: uuid!, $progressStage: job_status_enum_enum!, $progress: numeric!) {
+    update_job_by_pk(pk_columns: { id: $jobId }, _set: { status: $progressStage, progress: $progress }) {
         ...FullJob
     }
 }
@@ -73,5 +76,21 @@ mutation CommitDeleteJob($jobId: uuid!, $fileId: uuid!) {
     }
     delete_file_by_pk(id: $fileId) {
         id
+    }
+}
+
+mutation SetJobError($jobId: uuid!, $error: String!) {
+    update_job_by_pk(pk_columns: { id: $jobId }, _set: { error: $error, status: error }) {
+        ...FullJob
+    }
+}
+
+mutation CheckIn($myId: uuid!) {
+    insert_workers_one(
+        object: { id: $myId, last_check_in: now }
+        on_conflict: { constraint: workers_pkey, update_columns: [last_check_in] }
+    ) {
+        id
+        last_check_in
     }
 }

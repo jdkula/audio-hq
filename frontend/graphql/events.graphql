@@ -1,9 +1,14 @@
-subscription Events($workspaceId: uuid!) {
-    event(where: { workspace_id: { _eq: $workspaceId } }, limit: 1, order_by: [{ time: desc }]) {
+subscription DeckEvents($workspaceId: uuid!) {
+    event(
+        where: { workspace_id: { _eq: $workspaceId }, event_type: { _in: ["deck", "track"] } }
+        limit: 1
+        order_by: [{ time: desc }]
+    ) {
         __typename
         id
         workspace_id
         time
+        event_type
 
         workspace {
             __typename
@@ -15,13 +20,31 @@ subscription Events($workspaceId: uuid!) {
                 __typename
                 ...DeckInfo
             }
+        }
+    }
+}
+
+subscription FileEvents($workspaceId: uuid!) {
+    event(
+        where: { workspace_id: { _eq: $workspaceId }, event_type: { _eq: "file" } }
+        limit: 1
+        order_by: [{ time: desc }]
+    ) {
+        __typename
+        id
+        workspace_id
+        time
+        event_type
+
+        workspace {
+            __typename
+            id
+            created_at
+            updated_at
+            name
             files {
                 __typename
                 ...FileInfo
-            }
-            jobs {
-                __typename
-                ...JobInfo
             }
         }
     }
