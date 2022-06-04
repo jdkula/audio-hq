@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import {
     Box,
     CircularProgress,
+    Collapse,
     Container,
     FormControl,
     FormControlLabel,
@@ -128,13 +129,15 @@ export default function Home(): React.ReactElement {
         () => {
             // estimate type is incorrect for newer browsers
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            navigator.storage.estimate().then((estimate: any) => {
-                if (estimate.usageDetails) {
-                    setCurrentlyUsedData(estimate.usageDetails?.caches ?? 0);
-                } else {
-                    setCurrentlyUsedData(estimate.usage ?? null);
-                }
-            });
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then((estimate: any) => {
+                    if (estimate.usageDetails) {
+                        setCurrentlyUsedData(estimate.usageDetails?.caches ?? 0);
+                    } else {
+                        setCurrentlyUsedData(estimate.usage ?? null);
+                    }
+                });
+            }
         },
         [shouldCache],
     );
@@ -177,10 +180,14 @@ export default function Home(): React.ReactElement {
                     label={
                         <Box>
                             <Typography>NEW! Offline Mode</Typography>
-                            <Typography variant="body2">
-                                Current usage:{' '}
-                                {isDefined(currentlyUsedData) ? humanFileSize(currentlyUsedData, true) : '...'}
-                            </Typography>
+                            <Collapse in={isDefined(currentlyUsedData)}>
+                                <Typography variant="body2">
+                                    Current usage:{' '}
+                                    {isDefined(currentlyUsedData)
+                                        ? humanFileSize(currentlyUsedData, /* si = */ true)
+                                        : '...'}
+                                </Typography>
+                            </Collapse>
                         </Box>
                     }
                 />

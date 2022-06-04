@@ -104,6 +104,20 @@ export function useShouldCache() {
     const callback = useCallback((value) => {
         if (value) {
             broadcastOut?.postMessage({ type: 'cache-on' } as BroadcastMessage);
+            if (navigator.storage?.persist as unknown) {
+                navigator.storage
+                    .persist()
+                    .then((persisted) => {
+                        if (!persisted) {
+                            console.warn('Could not persist');
+                            shouldCacheLRV.value = false;
+                        }
+                    })
+                    .catch((e) => {
+                        console.warn('Could not persist', e);
+                        shouldCacheLRV.value = false;
+                    });
+            }
         } else {
             broadcastOut?.postMessage({ type: 'cache-off' } as BroadcastMessage);
         }
