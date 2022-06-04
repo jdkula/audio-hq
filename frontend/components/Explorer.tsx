@@ -132,7 +132,7 @@ export const Explorer: FC = () => {
 
     const currentFiles = viewingFavorites
         ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(isDefined)
-        : getFiles(files, path, searching ? searchText : undefined);
+        : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
@@ -164,7 +164,7 @@ export const Explorer: FC = () => {
 
     const folders = viewingFavorites
         ? []
-        : searching
+        : searching && searchText.length > 1
         ? getSearchFolders(files, searchText).map((path, i) => (
               <FolderEntry
                   name={path[path.length - 1]}

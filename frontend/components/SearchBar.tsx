@@ -4,8 +4,8 @@
  * Provides a search bar for the explorer!
  */
 
-import { IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
-import React, { FC } from 'react';
+import { Button, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
+import React, { FC, useEffect, useState } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -24,14 +24,22 @@ interface SearchBarProps {
 }
 
 const SearchBar: FC<SearchBarProps> = ({ searching, searchText, setSearching, setSearchText }) => {
+    const [searchTextInternal, setSearchTextInternal] = useState('');
+
+    useEffect(() => {
+        if (searchText !== searchTextInternal && searchText) {
+            setSearchText('');
+        }
+    }, [searchTextInternal, searchText, setSearchText]);
+
     return searching ? (
         <SearchContainer>
             <TextField
                 id="search-bar"
                 autoFocus
                 variant="filled"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                value={searchTextInternal}
+                onChange={(e) => setSearchTextInternal(e.target.value)}
                 label="Search..."
                 InputProps={{
                     startAdornment: (
@@ -41,6 +49,9 @@ const SearchBar: FC<SearchBarProps> = ({ searching, searchText, setSearching, se
                     ),
                 }}
             />
+            <Button size="small" onClick={() => setSearchText(searchTextInternal)}>
+                GO
+            </Button>
             <Tooltip placement="bottom" title="Close search" arrow>
                 <IconButton onClick={() => setSearching(false)} size="large">
                     <CloseIcon />
