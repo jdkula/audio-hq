@@ -1,3 +1,6 @@
+const kAudioType = 'audio/mp3';
+const kAudioExtension = '.v1.mp3';
+
 import fs from 'fs/promises';
 import fsSync from 'fs';
 import path from 'path';
@@ -108,8 +111,8 @@ export class Processor {
         processorLog.silly(`Saving to S3...`);
         const dlurl = await AppFS.write(
             filepath,
-            id + '.ogg',
-            'audio/ogg',
+            id + kAudioExtension,
+            kAudioType,
             (progress) => progress && this.updateProgress(id, progress, 'saving'),
         );
         processorLog.silly(`Saved to S3`);
@@ -121,7 +124,7 @@ export class Processor {
             length: duration,
             description: description,
             workspace_id: workspace,
-            provider_id: id,
+            provider_id: id + kAudioExtension,
             download_url: dlurl,
             ordering: null,
         };
@@ -198,7 +201,7 @@ export class Processor {
 
         const uuid = uuidv4();
 
-        const outPath = path.join(basedir, uuid + '.ogg');
+        const outPath = path.join(basedir, uuid + '.mp3');
         processorLog.debug(`Converting ${input} to ${outPath}`);
 
         this.updateProgress(id, 0, 'converting');
