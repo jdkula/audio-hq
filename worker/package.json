@@ -37,7 +37,7 @@
     "ws": "^8.6.0"
   },
   "scripts": {
-    "run:watch": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node -r dotenv/config ./dist/worker/src/index.js\"",
+    "run:watch": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node -r dotenv/config ./dist/index.js\"",
     "gql:update": "graphql-codegen --config codegen.yml -r dotenv/config",
     "lint": "eslint ."
   }

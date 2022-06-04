@@ -83,9 +83,14 @@ export class Processor {
     }
 
     async saveInput(input_b64: string) {
+        input_b64 = Buffer.from(input_b64.substring(2), 'hex').toString();
         const b64 = input_b64.replace(/^data:.*?;base64,/, '');
         const type = input_b64.replace(/;base64,.*$/, '').replace(/^data:.*?\//, '');
         const uuid = v4();
+
+        if (/[-/.~]/.exec(type)) {
+            throw new Error('Invalid type: ' + type);
+        }
         const outPath = path.join(kBaseDir, uuid + '.' + type);
         processorLog.debug('Saving input to file', outPath);
         await fsProm.writeFile(outPath, b64, 'base64url');

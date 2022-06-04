@@ -22,7 +22,7 @@ import { FC, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
 import { Job_Minimum } from '../lib/urql/graphql_type_helper';
-import { Job_Status_Enum_Enum } from '~/lib/generated/graphql';
+import { Job_Status_Enum_Enum, useDeleteErrorJobMutation } from '~/lib/generated/graphql';
 
 const JobContainer = styled(Paper)`
     border-radius: 1rem;
@@ -43,7 +43,7 @@ const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) =>
     const percent = Math.floor((job.progress ?? 0) * 1000) / 10;
 
     const [showError, setShowError] = useState(false);
-
+    const [, deleteJob] = useDeleteErrorJobMutation();
     // TODO: Cancel
 
     const hasValue =
@@ -75,7 +75,7 @@ const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) =>
                         <Button onClick={() => setShowError(true)}>ERROR</Button>
                     )}
                     <Tooltip placement="top" title="Hide job" arrow>
-                        <IconButton size="large">
+                        <IconButton size="large" onClick={() => deleteJob({ jobId: job.id })}>
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>

@@ -19,7 +19,7 @@ fragment JobInfo on job {
 }
 
 subscription WorkspaceJobs($workspaceId: uuid!) {
-    job(where: {workspace_id: {_eq: $workspaceId}}) {
+    job(where: { workspace_id: { _eq: $workspaceId } }) {
         ...JobInfo
     }
 }
@@ -27,5 +27,11 @@ subscription WorkspaceJobs($workspaceId: uuid!) {
 mutation AddJob($job: job_insert_input!) {
     insert_job_one(object: $job) {
         ...JobInfo
+    }
+}
+
+mutation DeleteErrorJob($jobId: uuid!) {
+    delete_job_by_pk(id: $jobId) {
+        id
     }
 }

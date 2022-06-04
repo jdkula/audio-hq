@@ -110,7 +110,10 @@ export function useFileManager(workspaceId: string) {
             const job = {
                 name,
                 description,
-                options,
+                option_cut_start: options?.cut?.start ?? null,
+                option_cut_end: options?.cut?.end ?? null,
+                option_fade_in: options?.fadeIn ?? null,
+                option_fade_out: options?.fadeOut ?? null,
                 url: null,
                 file_upload: base64,
                 path: currentPath,
