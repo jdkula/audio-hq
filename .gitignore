@@ -42,3 +42,5 @@ cookies.txt
 schema.graphql
 graphql.schema.json
 tsconfig.tsbuildinfo
+
+*secret

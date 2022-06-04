@@ -84,7 +84,7 @@ export function useFileManager(workspaceId: string) {
             await delFile({ job: { file_id: id } });
         },
         download: (file: File_Minimum) => {
-            broadcastOut.postMessage({
+            broadcastOut?.postMessage({
                 type: 'cache',
                 urls: [file.download_url],
             } as BroadcastMessage);
@@ -129,7 +129,7 @@ export function useFileManager(workspaceId: string) {
             }
         },
         downloadAll: async () => {
-            broadcastOut.postMessage({
+            broadcastOut?.postMessage({
                 type: 'cache',
                 urls: [...files.values()].map((f) => f.download_url),
             } as BroadcastMessage);

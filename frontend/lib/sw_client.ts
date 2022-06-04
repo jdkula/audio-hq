@@ -9,9 +9,14 @@ import { LocalIDBReactiveValue, useLocalReactiveValue } from './LocalReactive';
 
 // <== Broadcast Channels ==>
 // Outgoing to service worker
-export const broadcastOut = new BroadcastChannel('audio-hq-to-sw');
+export let broadcastOut: BroadcastChannel | null = null;
 // Incoming from service worker
-export const broadcastIn = new BroadcastChannel('audio-hq-from-sw');
+export let broadcastIn: BroadcastChannel | null = null;
+
+if (typeof window !== 'undefined') {
+    broadcastOut = new BroadcastChannel('audio-hq-to-sw');
+    broadcastIn = new BroadcastChannel('audio-hq-from-sw');
+}
 
 // We can note URLs as cached, uncached, or in the process of caching (loading)
 export type CacheState = 'cached' | 'uncached' | 'loading';
@@ -78,14 +83,14 @@ export function useIsCached(urls: string[]): CacheUpdateData[] {
     );
 
     useEffect(() => {
-        broadcastIn.addEventListener('message', onUpdate);
+        broadcastIn?.addEventListener('message', onUpdate);
 
-        broadcastOut.postMessage({
+        broadcastOut?.postMessage({
             type: 'is-cached-bulk',
         } as BroadcastMessage);
 
         return () => {
-            broadcastIn.removeEventListener('message', onUpdate);
+            broadcastIn?.removeEventListener('message', onUpdate);
         };
     }, [urls, onUpdate]);
 
@@ -98,9 +103,9 @@ export function useShouldCache() {
 
     const callback = useCallback((value) => {
         if (value) {
-            broadcastOut.postMessage({ type: 'cache-on' } as BroadcastMessage);
+            broadcastOut?.postMessage({ type: 'cache-on' } as BroadcastMessage);
         } else {
-            broadcastOut.postMessage({ type: 'cache-off' } as BroadcastMessage);
+            broadcastOut?.postMessage({ type: 'cache-off' } as BroadcastMessage);
         }
     }, []);
 

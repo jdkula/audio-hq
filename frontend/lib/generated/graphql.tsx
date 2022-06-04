@@ -2176,7 +2176,10 @@ export function useSetFilesPathMutation() {
 };
 export const WorkspaceJobsDocument = gql`
     subscription WorkspaceJobs($workspaceId: uuid!) {
-  job(where: {workspace_id: {_eq: $workspaceId}}) {
+  job(
+    where: {workspace_id: {_eq: $workspaceId}}
+    order_by: [{assign_time: asc}, {created_at: asc}]
+  ) {
     ...JobInfo
   }
 }
