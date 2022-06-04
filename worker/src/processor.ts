@@ -179,12 +179,8 @@ export class Processor {
                     fs.readdir(basedir)
                         .then((files) => files.find((f) => f.startsWith(uuid)))
                         .then((file) => {
-                            if (!file) return null;
-                            else return this.convert(path.join(basedir, file), id, options);
-                        })
-                        .then((converted) => {
-                            if (!converted) reject('Conversion failed');
-                            else resolve(converted);
+                            if (!file) reject('conversion failed');
+                            else resolve(path.join(basedir, file));
                         });
                 }
             });
