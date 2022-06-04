@@ -1,5 +1,5 @@
 subscription NewJobsSubscription {
-    job(where: { assigned_worker: { _is_null: true } }, order_by: [{ created_at: asc }]) {
+    available_jobs {
         id
     }
 }

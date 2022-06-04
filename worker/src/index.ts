@@ -163,7 +163,7 @@ function setup() {
         newJobs,
         subscribe((result) => {
             log.silly('Got new jobs data', result.data);
-            if (!result.data || result.data.job.length == 0) return;
+            if (!result.data || result.data.available_jobs.length == 0) return;
             doJobs();
         }),
     );

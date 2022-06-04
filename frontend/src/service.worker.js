@@ -51,6 +51,7 @@ async function cacheUrls(urls) {
 async function cacheAudioAt(url) {
     const cache = await audioCache;
     if ((await cache.keys(url)).length > 0) {
+        updateCacheState(url, 'cached');
         return;
     }
     updateCacheState(url, 'loading');

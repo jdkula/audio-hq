@@ -97,3 +97,18 @@ BEGIN
     RETURN _job;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.available_jobs()
+    RETURNS SETOF job AS
+$$
+BEGIN
+    RETURN QUERY SELECT job.*
+        FROM job
+                LEFT OUTER JOIN public.workers w on w.id = job.assigned_worker
+        WHERE assigned_worker IS NULL
+            OR EXTRACT(EPOCH FROM (now() - w.last_check_in)) > 60        -- >60s since worker check-in
+            OR EXTRACT(EPOCH FROM (now() - job.assign_time)) > (60 * 30) -- >30m since assigned
+        ORDER BY job.assign_time NULLS LAST, job.created_at;
+                     
+END;
+$$ LANGUAGE plpgsql STABLE;

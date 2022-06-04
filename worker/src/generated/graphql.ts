@@ -821,6 +821,8 @@ export enum Order_By {
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** execute function "available_jobs" which returns "job" */
+  available_jobs: Array<Job>;
   /** fetch data from the table: "delete_job" */
   delete_job: Array<Delete_Job>;
   /** fetch data from the table: "delete_job" using primary key columns */
@@ -837,6 +839,15 @@ export type Query_Root = {
   workers: Array<Workers>;
   /** fetch data from the table: "workers" using primary key columns */
   workers_by_pk?: Maybe<Workers>;
+};
+
+
+export type Query_RootAvailable_JobsArgs = {
+  distinct_on?: InputMaybe<Array<Job_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Job_Order_By>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -897,6 +908,8 @@ export type Query_RootWorkers_By_PkArgs = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** execute function "available_jobs" which returns "job" */
+  available_jobs: Array<Job>;
   /** fetch data from the table: "delete_job" */
   delete_job: Array<Delete_Job>;
   /** fetch data from the table: "delete_job" using primary key columns */
@@ -913,6 +926,15 @@ export type Subscription_Root = {
   workers: Array<Workers>;
   /** fetch data from the table: "workers" using primary key columns */
   workers_by_pk?: Maybe<Workers>;
+};
+
+
+export type Subscription_RootAvailable_JobsArgs = {
+  distinct_on?: InputMaybe<Array<Job_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Job_Order_By>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -1102,7 +1124,7 @@ export enum Workers_Update_Column {
 export type NewJobsSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type NewJobsSubscriptionSubscription = { __typename?: 'subscription_root', job: Array<{ __typename?: 'job', id: string }> };
+export type NewJobsSubscriptionSubscription = { __typename?: 'subscription_root', available_jobs: Array<{ __typename?: 'job', id: string }> };
 
 export type DeleteJobsSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -1191,7 +1213,7 @@ export const FullJobFragmentDoc = gql`
     `;
 export const NewJobsSubscriptionDocument = gql`
     subscription NewJobsSubscription {
-  job(where: {assigned_worker: {_is_null: true}}, order_by: [{created_at: asc}]) {
+  available_jobs {
     id
   }
 }

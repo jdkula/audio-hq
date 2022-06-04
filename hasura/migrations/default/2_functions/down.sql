@@ -1,3 +1,4 @@
+DROP FUNCTION public.available_jobs();
 DROP FUNCTION public.claim_delete_job(worker_id uuid);
 DROP FUNCTION public.claim_job(worker_id uuid);
 DROP FUNCTION public.order_is_reconciled();

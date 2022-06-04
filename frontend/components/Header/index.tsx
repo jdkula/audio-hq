@@ -79,19 +79,15 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => {
 };
 
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
-    const workspaceId = useContext(WorkspaceIdContext);
     const workspaceName = useContext(WorkspaceNameContext);
     const fileManager = useContext(FileManagerContext);
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
-
-    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-    const files = filesRaw?.file ?? [];
 
     const [adding, setAdding] = useState(false);
 
     const [path] = useLocalReactiveValue(currentPathLRV);
 
-    const allCached = fileManager.cached.size >= files.length;
+    const allCached = fileManager.cached.size >= fileManager.files.length;
     const isCaching = fileManager.caching.size > 0;
 
     const theme = useTheme();
