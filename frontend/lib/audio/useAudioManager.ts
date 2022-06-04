@@ -1,120 +1,112 @@
+/**
+ * useAudioManager.ts
+ * ===================
+ * Provides all the acutal audio that plays in Audio HQ.
+ * Manages all their state using information retrieved from the server.
+ */
 import { useCallback, useEffect, useRef, useState, useContext } from 'react';
-import { FileManagerContext } from '../useFileManager';
 import { Deck } from './deck';
-import { Deck_Minimum } from '../graphql_type_helper';
-import { useWorkspaceDecks } from '../utility';
+import { Deck_Minimum } from '../urql/graphql_type_helper';
+import { useWorkspaceDecks } from '../useWorkspaceDetails';
+import { FileManagerContext } from '../utility/context';
 
-const useAudioManager = (() => {
-    // <== Static Members ==>
-    let initialized = false;
+export default function useAudioManager(workspaceId: string) {
+    // <== Local State ==>
+    const fileManager = useContext(FileManagerContext);
 
-    // <== Static Functions ==>
+    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
-    return (workspaceId: string) => {
-        // <== SSR Static Initialization ==>
-        useEffect(() => {
-            if (initialized) return;
-            initialized = true;
-        }, []);
+    const mainTrack = useRef<Deck | null>(null);
+    const ambientTracks = useRef<Deck[]>([]);
 
-        // <== Local State ==>
-        const fileManager = useContext(FileManagerContext);
+    const [blocked, setBlocked] = useState(false);
 
-        const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
+    // <== Private Functions ==>
 
-        const mainTrack = useRef<Deck | null>(null);
-        const ambientTracks = useRef<Deck[]>([]);
+    const unblock = useCallback(() => {
+        setBlocked(false);
+        document.removeEventListener('click', unblock);
+    }, []);
 
-        const [blocked, setBlocked] = useState(false);
+    const onFinish = useCallback((state: Deck_Minimum, track: Deck) => {
+        if (state.type === 'sfx') {
+            // TODO: Stop the track on finish if it's an sfx track
+        }
+    }, []);
 
-        // <== Private Functions ==>
+    const createTrack = useCallback(
+        (state: Deck_Minimum) => {
+            const tr: Deck = new Deck(state, fileManager);
+            tr.on('loop', onFinish);
+            tr.on('next', onFinish);
+            tr.on('blocked', () => setBlocked(true));
+            return tr;
+        },
+        [fileManager, onFinish],
+    );
 
-        const unblock = useCallback(() => {
-            setBlocked(false);
-            document.removeEventListener('click', unblock);
-        }, []);
+    // <== Data Effects ==>
 
-        const onFinish = useCallback((state: Deck_Minimum, track: Deck) => {
-            if (state.type === 'sfx') {
+    useEffect(() => {
+        return () => {
+            mainTrack.current?.destroy();
+            for (const track of ambientTracks.current) {
+                track.destroy();
             }
-        }, []);
-
-        const createTrack = useCallback(
-            (state: Deck_Minimum) => {
-                const tr: Deck = new Deck(state, fileManager);
-                tr.on('loop', onFinish);
-                tr.on('next', onFinish);
-                tr.on('blocked', () => setBlocked(true));
-                return tr;
-            },
-            [fileManager, onFinish],
-        );
-
-        // <== Data Effects ==>
-
-        useEffect(() => {
-            return () => {
-                mainTrack.current?.destroy();
-                for (const track of ambientTracks.current) {
-                    track.destroy();
-                }
-            };
-        }, []);
-
-        useEffect(() => {
-            if (blocked) {
-                document.addEventListener('click', unblock);
-            }
-        }, [unblock, blocked]);
-
-        useEffect(() => {
-            if (!blocked && !main?.pause_timestamp) {
-                mainTrack.current?.unblock();
-            }
-        }, [blocked, main?.pause_timestamp]);
-
-        useEffect(() => {
-            if (main && main.queue.length > 0) {
-                // TODO: Code smell...
-                if (main && mainTrack.current?.reconcile(main)) {
-                    return;
-                }
-                // console.log('Creating new track!');
-
-                mainTrack.current?.destroy();
-                mainTrack.current = createTrack(main);
-            } else if (!main) {
-                mainTrack.current?.destroy();
-                mainTrack.current = null;
-            }
-        }, [fileManager, main, createTrack]);
-
-        useEffect(() => {
-            for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
-                const track = ambientTracks.current[i];
-                const matchedState = [...ambience, ...sfx].find((ps) => track.isReferentFor(ps));
-                if (!matchedState) {
-                    track.destroy();
-                    ambientTracks.current.splice(i, 1);
-                } else if (!track.reconcile(matchedState)) {
-                    track.destroy();
-                    ambientTracks.current[i] = createTrack(matchedState);
-                }
-            }
-
-            for (const amb of [...ambience, ...sfx]) {
-                const matchedTrack = ambientTracks.current.find((track) => track.isReferentFor(amb));
-                if (!matchedTrack) {
-                    const tr = createTrack(amb);
-                    ambientTracks.current.push(tr);
-                }
-            }
-        }, [ambience, sfx, fileManager, createTrack]);
-
-        return {
-            blocked,
         };
-    };
-})();
+    }, []);
 
-export default useAudioManager;
+    useEffect(() => {
+        if (blocked) {
+            document.addEventListener('click', unblock);
+        }
+    }, [unblock, blocked]);
+
+    useEffect(() => {
+        if (!blocked && !main?.pause_timestamp) {
+            mainTrack.current?.unblock();
+        }
+    }, [blocked, main?.pause_timestamp]);
+
+    useEffect(() => {
+        if (main && main.queue.length > 0) {
+            // TODO: Code smell...
+            if (main && mainTrack.current?.reconcile(main)) {
+                return;
+            }
+            // console.log('Creating new track!');
+
+            mainTrack.current?.destroy();
+            mainTrack.current = createTrack(main);
+        } else if (!main) {
+            mainTrack.current?.destroy();
+            mainTrack.current = null;
+        }
+    }, [fileManager, main, createTrack]);
+
+    useEffect(() => {
+        for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
+            const track = ambientTracks.current[i];
+            const matchedState = [...ambience, ...sfx].find((ps) => track.isReferentFor(ps));
+            if (!matchedState) {
+                track.destroy();
+                ambientTracks.current.splice(i, 1);
+            } else if (!track.reconcile(matchedState)) {
+                track.destroy();
+                ambientTracks.current[i] = createTrack(matchedState);
+            }
+        }
+
+        for (const amb of [...ambience, ...sfx]) {
+            const matchedTrack = ambientTracks.current.find((track) => track.isReferentFor(amb));
+            if (!matchedTrack) {
+                const tr = createTrack(amb);
+                ambientTracks.current.push(tr);
+            }
+        }
+    }, [ambience, sfx, fileManager, createTrack]);
+
+    return {
+        blocked,
+    };
+}

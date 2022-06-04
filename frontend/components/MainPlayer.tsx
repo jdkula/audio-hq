@@ -12,8 +12,8 @@ import { AudioControls } from './AudioControls';
 import styled from '@emotion/styled';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import ListHeader from './ListHeader';
-import { Deck_Minimum } from '../lib/graphql_type_helper';
-import useAudio from '../lib/audio/useAudio';
+import { Deck_Minimum } from '../lib/urql/graphql_type_helper';
+import useAudio from '../lib/audio/useAudioDetail';
 import { useSetQueueMutation } from '../lib/generated/graphql';
 
 const MainPlayerContainer = styled.div`

@@ -16,9 +16,10 @@ import { AppProps } from 'next/app';
 import { Provider } from 'urql';
 import { ahqThemeBase } from '~/lib/theme';
 import { deepmerge } from '@mui/utils';
-import { createEmotionCache, useColorMode } from '../lib/utility';
-import { useUrqlAddresses, useUrqlClient } from '../lib/urql';
+import { useUrqlAddresses, useUrqlClient } from '../lib/urql/urql';
 import { CacheProvider, EmotionCache } from '@emotion/react';
+import { createEmotionCache } from '~/lib/ssr';
+import { useColorMode } from '~/lib/utility/usePersistentData';
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {

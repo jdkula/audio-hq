@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "es5",
-        "lib": ["dom", "dom.iterable", "esnext"],
+        "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,
@@ -20,6 +20,6 @@
             "~/*": ["./*"]
         }
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/service.worker.js"],
     "exclude": ["node_modules"]
 }

@@ -7,7 +7,7 @@
 
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { FC } from 'react';
-import { File_Minimum } from '../../lib/graphql_type_helper';
+import { File_Minimum } from '../../lib/urql/graphql_type_helper';
 import { useDeleteFileMutation } from '../../lib/generated/graphql';
 
 const FileDeleteDialog: FC<DialogProps & { file: File_Minimum }> = ({ file, ...props }) => {

@@ -1,6 +1,13 @@
+/**
+ * useAudioDetail.ts
+ * ==================
+ * Provides a hook that provides audio player data about the piece of
+ * audio that's passed in.
+ */
 import { useCallback, useState } from 'react';
-import { getTrackInfo, usePeriodicEffect } from '../utility';
-import { Deck_Minimum } from '../graphql_type_helper';
+import { Deck_Minimum } from '../urql/graphql_type_helper';
+import { usePeriodicEffect } from '../utility/hooks';
+import { getTrackInfo } from './util';
 
 interface AudioInfo {
     duration: number;
@@ -11,9 +18,10 @@ interface AudioInfo {
     index: number;
 }
 
-const useAudio = (status: Deck_Minimum | null): AudioInfo => {
+export default function useAudioDetail(status: Deck_Minimum | null): AudioInfo {
     const [seek, setSeek] = useState(0);
 
+    // TODO useMemo
     const f = status ? getTrackInfo(status) : null;
 
     const updateData = useCallback(() => {
@@ -34,6 +42,4 @@ const useAudio = (status: Deck_Minimum | null): AudioInfo => {
         name: f?.file.name ?? 'Loading...',
         index: f?.index ?? 0,
     };
-};
-
-export default useAudio;
+}

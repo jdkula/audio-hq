@@ -1,10 +1,15 @@
-import { FileManager } from '../useFileManager';
-import { Deck_Minimum } from '../graphql_type_helper';
+/**
+ * deck.ts
+ * ========
+ * Provides a class that coordinates a number of Tracks according to a
+ * database's Deck.
+ */
+import { FileManager } from '../useWorkspaceDetails';
+import { Deck_Minimum } from '../urql/graphql_type_helper';
 import { EventEmitter } from 'events';
 import { Track } from './track';
 
 export class Deck extends EventEmitter {
-    private _fm: FileManager;
     private _status: Deck_Minimum;
 
     private _tracks: Track[];
@@ -12,7 +17,6 @@ export class Deck extends EventEmitter {
     constructor(state: Deck_Minimum, fm: FileManager) {
         super();
 
-        this._fm = fm;
         this._status = state;
 
         this._tracks = [];

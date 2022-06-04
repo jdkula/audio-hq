@@ -16,7 +16,7 @@ import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
-import { File_Minimum } from '../../lib/graphql_type_helper';
+import { File_Minimum } from '../../lib/urql/graphql_type_helper';
 
 export const FileContainer = styled(Paper)`
     display: grid;

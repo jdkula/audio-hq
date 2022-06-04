@@ -1,4 +1,4 @@
-import { Deck, File, Job, Track } from './generated/graphql';
+import { Deck, File, Job, Track } from '../generated/graphql';
 
 export type Deck_Minimum = Omit<Deck, '__typename' | 'workspace_id' | 'workspace' | 'queue' | 'created_at'> & {
     queue: Track_Minimum[];

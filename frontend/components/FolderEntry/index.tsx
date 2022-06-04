@@ -29,8 +29,8 @@ import {
 import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
-import { WorkspaceIdContext } from '../../lib/utility';
 import { useSetFilesPathMutation, useWorkspaceFilesQuery } from '../../lib/generated/graphql';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const FolderContainer = styled(Paper)`
     display: grid;

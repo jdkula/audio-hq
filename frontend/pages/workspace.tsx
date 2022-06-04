@@ -13,7 +13,9 @@ import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { AppBar, Tab, Tabs, useMediaQuery, useTheme } from '@mui/material';
 import Root from '~/components/Root';
-import { WorkspaceIdContext, useLocalRecents, useWorkspaceDecks } from '../lib/utility';
+import { useWorkspaceDecks } from '~/lib/useWorkspaceDetails';
+import { WorkspaceIdContext } from '~/lib/utility/context';
+import { useLocalRecents } from '~/lib/utility/usePersistentData';
 
 const TabContainer = styled.div`
     grid-area: tabcontent;

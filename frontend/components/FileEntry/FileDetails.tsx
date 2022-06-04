@@ -9,8 +9,8 @@ import { Typography } from '@mui/material';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
 import FileDetailsEditor from './FileDetailsEditor';
-import { File_Minimum } from '../../lib/graphql_type_helper';
-import { toTimestamp } from '../../lib/utility';
+import { File_Minimum } from '../../lib/urql/graphql_type_helper';
+import { durationOfLength } from '~/lib/utility/util';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -71,7 +71,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                 )}
             </EditorContainer>
             <TimestampContainer $editing={editing} variant="body1">
-                {toTimestamp(file.length)}
+                {durationOfLength(file.length)}
             </TimestampContainer>
         </DetailsContainer>
     );

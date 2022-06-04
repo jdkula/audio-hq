@@ -8,9 +8,7 @@
 
 import {
     AppBar,
-    Box,
     Button,
-    CircularProgress,
     Collapse,
     Hidden,
     LinearProgress,
@@ -28,11 +26,14 @@ import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
-import { WorkspaceIdContext, WorkspaceNameContext } from '../../lib/utility';
-import { FileManagerContext } from '../../lib/useFileManager';
 import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
-import { useLocalReactiveValue } from '../../lib/local_reactive';
-import { currentPathLRV } from '../../lib/global_lrv';
+import { useLocalReactiveValue } from '../../lib/LocalReactive';
+import {
+    WorkspaceIdContext,
+    WorkspaceNameContext,
+    FileManagerContext,
+    WorkspaceLRVContext,
+} from '~/lib/utility/context';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -70,6 +71,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const workspaceName = useContext(WorkspaceNameContext);
     const fileManager = useContext(FileManagerContext);
+    const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
 
     const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
     const files = filesRaw?.file ?? [];

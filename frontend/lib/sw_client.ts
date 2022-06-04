@@ -1,52 +1,61 @@
-import _ from 'lodash';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { shouldCacheLRV } from './global_lrv';
-import { LocalIDBReactiveValue, useLocalReactiveValue } from './local_reactive';
+/**
+ * sw_client.ts
+ * =============
+ * Provides functions, hooks, and types for interacting with the service worker
+ */
+import { useCallback, useEffect, useState } from 'react';
+import { kCacheEnabledKey } from './constants';
+import { LocalIDBReactiveValue, useLocalReactiveValue } from './LocalReactive';
 
+// <== Broadcast Channels ==>
+// Outgoing to service worker
 export const broadcastOut = new BroadcastChannel('audio-hq-to-sw');
+// Incoming from service worker
 export const broadcastIn = new BroadcastChannel('audio-hq-from-sw');
 
-export type BroadcastMessage =
-    | WorkerBroadcastMessage
-    | CacheUpdateMessage
-    | BulkCacheUpdateMessage
-    | BulkCacheRequestMessage;
+// We can note URLs as cached, uncached, or in the process of caching (loading)
+export type CacheState = 'cached' | 'uncached' | 'loading';
 
-export interface WorkerBroadcastMessage {
+export type BroadcastMessage =
+    | WorkerTargetedMessageOut
+    | BulkCacheRequestMessageOut
+    | CacheUpdateMessageIn
+    | BulkCacheUpdateIn;
+
+interface WorkerTargetedMessageOut {
     type: 'cache' | 'evict' | 'is-cached';
     urls: string[];
 }
 
-export interface CacheUpdateMessage {
-    type: 'cache-update';
-    url: string;
-    cached: CacheState;
-}
-export interface BulkCacheUpdateMessage {
-    type: 'bulk-cache-update';
-    data: Omit<CacheUpdateMessage, 'type'>[];
-}
-
-export interface BulkCacheRequestMessage {
+interface BulkCacheRequestMessageOut {
     type: 'is-cached-bulk' | 'cache-off' | 'cache-on';
 }
 
-export type CacheState = 'cached' | 'uncached' | 'loading';
+interface CacheUpdateData {
+    url: string;
+    cached: CacheState;
+}
 
-export function useIsCached(url: string, useBulk?: boolean): Omit<CacheUpdateMessage, 'type'> | null;
-export function useIsCached(url: string[], useBulk?: boolean): Omit<CacheUpdateMessage, 'type'>[];
-export function useIsCached(
-    url: string | string[],
-    useBulk = false,
-): Omit<CacheUpdateMessage, 'type'>[] | Omit<CacheUpdateMessage, 'type'> | null {
-    const urls = useMemo(() => (Array.isArray(url) ? url : [url]), [url]);
+interface CacheUpdateMessageIn extends CacheUpdateData {
+    type: 'cache-update';
+}
+interface BulkCacheUpdateIn {
+    type: 'bulk-cache-update';
+    data: CacheUpdateData[];
+}
 
-    const [cached, setCached] = useState<Omit<CacheUpdateMessage, 'type'>[]>([]);
+/** Determines whether or not caching is enabled */
+export const shouldCacheLRV = new LocalIDBReactiveValue<boolean>(kCacheEnabledKey, false);
+
+/** Returns a set of cache  */
+export function useIsCached(urls: string[]): CacheUpdateData[] {
+    const [cached, setCached] = useState<CacheUpdateData[]>([]);
 
     const onUpdate = useCallback(
         (ev: MessageEvent) => {
             const message: BroadcastMessage = ev.data;
-            console.log('Got message CLIENT', message);
+
+            // Individual update
             if (message.type === 'cache-update') {
                 if (!urls.includes(message.url)) return;
 
@@ -59,6 +68,8 @@ export function useIsCached(
                     }
                     return [...cached];
                 });
+
+                // Bulk update
             } else if (message.type === 'bulk-cache-update') {
                 setCached(message.data.filter((url) => urls.includes(url.url)));
             }
@@ -68,26 +79,22 @@ export function useIsCached(
 
     useEffect(() => {
         broadcastIn.addEventListener('message', onUpdate);
-        if (useBulk) {
-            broadcastOut.postMessage({
-                type: 'is-cached-bulk',
-            } as BroadcastMessage);
-        } else {
-            broadcastOut.postMessage({
-                type: 'is-cached',
-                urls: urls,
-            } as BroadcastMessage);
-        }
+
+        broadcastOut.postMessage({
+            type: 'is-cached-bulk',
+        } as BroadcastMessage);
+
         return () => {
             broadcastIn.removeEventListener('message', onUpdate);
         };
-    }, [urls, onUpdate, useBulk]);
+    }, [urls, onUpdate]);
 
-    return Array.isArray(url) ? cached : cached[0] ?? null;
+    return cached;
 }
 
+/** Returns a useState-like interface for turning the cache on and off */
 export function useShouldCache() {
-    const retVal = useLocalReactiveValue(shouldCacheLRV);
+    const shouldCache = useLocalReactiveValue(shouldCacheLRV);
 
     const callback = useCallback((value) => {
         if (value) {
@@ -105,5 +112,5 @@ export function useShouldCache() {
         };
     }, [callback]);
 
-    return retVal;
+    return shouldCache;
 }

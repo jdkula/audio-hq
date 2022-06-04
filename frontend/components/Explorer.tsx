@@ -19,18 +19,19 @@ import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
 import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
-import { WorkspaceIdContext, nonNull, useAlt, useFavorites } from '../lib/utility';
-import { File_Minimum } from '../lib/graphql_type_helper';
+import { File_Minimum } from '../lib/urql/graphql_type_helper';
 import {
     Deck_Type_Enum_Enum,
     usePlayDeckMutation,
     useUpdateFileMutation,
     useWorkspaceFilesQuery,
 } from '../lib/generated/graphql';
-import { FileManagerContext } from '../lib/useFileManager';
-import { useLocalReactiveValue } from '../lib/local_reactive';
-import { currentPathLRV } from '../lib/global_lrv';
+import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
+import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { useAlt } from '~/lib/utility/hooks';
+import { useFavorites } from '~/lib/utility/usePersistentData';
+import { isDefined } from '~/lib/utility/util';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -109,6 +110,8 @@ const getFolders = (files: File_Minimum[], currentPath: string[]): string[] => {
 export const Explorer: FC = () => {
     const workspaceId = useContext(WorkspaceIdContext);
 
+    const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
+
     const favs = useFavorites();
     const [viewingFavorites, setViewingFavorites] = useState(false);
     const [path, setPath] = useLocalReactiveValue(currentPathLRV);
@@ -128,7 +131,7 @@ export const Explorer: FC = () => {
     const [, updateFile] = useUpdateFileMutation();
 
     const currentFiles = viewingFavorites
-        ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(nonNull)
+        ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(isDefined)
         : getFiles(files, path, searching ? searchText : undefined);
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);

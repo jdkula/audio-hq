@@ -10,7 +10,6 @@ import {
     Box,
     CircularProgress,
     Container,
-    Divider,
     FormControl,
     FormControlLabel,
     Hidden,
@@ -22,22 +21,21 @@ import {
     Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
-import { ColorMode, useColorMode, useLocalRecents, usePeriodicEffect } from '../lib/utility';
 import {
     useCreateWorkspaceMutation,
     useWorkspaceDetailByNameQuery,
     useWorkspaceDetailQuery,
 } from '~/lib/generated/graphql';
-import { ConfirmDeleteAllDialog, humanFileSize } from '~/components/Home/ConfirmDeleteAllDialogue';
-import { useLocalReactiveValue } from '~/lib/local_reactive';
-import { shouldCacheLRV } from '~/lib/global_lrv';
 import { useShouldCache } from '~/lib/sw_client';
+import { usePeriodicEffect } from '~/lib/utility/hooks';
+import { useLocalRecents, useColorMode, ColorMode } from '~/lib/utility/usePersistentData';
+import { humanFileSize } from '~/lib/utility/util';
 
 const GlobalFull = () => (
     <Global
@@ -113,7 +111,6 @@ export default function Home(): React.ReactElement {
 
     const [workspaceName, setWorkspaceName] = useState('');
     const [loading, setLoading] = useState(false);
-    const [deleting, setDeleting] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
     const [shouldCache, setShouldCache] = useShouldCache();
     const [currentlyUsedData, setCurrentlyUsedData] = useState<number | null>(null);
@@ -182,7 +179,6 @@ export default function Home(): React.ReactElement {
                 />
             </Box>
 
-            <ConfirmDeleteAllDialog onClose={() => setDeleting(false)} open={deleting} />
             <Head>
                 <title>Audio HQ</title>
                 <link rel="icon" href="/favicon.ico" />
@@ -191,16 +187,14 @@ export default function Home(): React.ReactElement {
 
             <InnerContainer>
                 {/* Logo */}
-                <Tooltip placement="top" arrow title="Double-click/tap to delete audio cache" enterDelay={500}>
-                    <Logo onDoubleClick={() => setDeleting(true)}>
-                        <Hidden smDown>
-                            <Typography variant="h1">Audio HQ</Typography>
-                        </Hidden>
-                        <Hidden smUp>
-                            <Typography variant="h2">Audio HQ</Typography>
-                        </Hidden>
-                    </Logo>
-                </Tooltip>
+                <Logo>
+                    <Hidden smDown>
+                        <Typography variant="h1">Audio HQ</Typography>
+                    </Hidden>
+                    <Hidden smUp>
+                        <Typography variant="h2">Audio HQ</Typography>
+                    </Hidden>
+                </Logo>
 
                 {/* Join Controls */}
                 <TextField

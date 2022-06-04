@@ -14,9 +14,10 @@ import DownloadIcon from '@mui/icons-material/CloudDownload';
 import EditIcon from '@mui/icons-material/Edit';
 import OfflinePinIcon from '@mui/icons-material/OfflinePin';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { FileManagerContext } from '../../lib/useFileManager';
-import { useAlt, useFavorites } from '../../lib/utility';
-import { File_Minimum } from '../../lib/graphql_type_helper';
+import { File_Minimum } from '../../lib/urql/graphql_type_helper';
+import { FileManagerContext } from '~/lib/utility/context';
+import { useAlt } from '~/lib/utility/hooks';
+import { useFavorites } from '~/lib/utility/usePersistentData';
 
 const StatusContainerPlacer = styled.div`
     display: flex;

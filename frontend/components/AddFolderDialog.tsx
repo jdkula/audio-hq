@@ -5,16 +5,17 @@
  * multiple files together into a new folder.
  */
 
-import React, { FC, KeyboardEvent, useState } from 'react';
+import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
-import { File_Minimum } from '../lib/graphql_type_helper';
+import { File_Minimum } from '../lib/urql/graphql_type_helper';
 import { useSetFilesPathMutation } from '../lib/generated/graphql';
-import { useLocalReactiveValue } from '../lib/local_reactive';
-import { currentPathLRV } from '../lib/global_lrv';
+import { useLocalReactiveValue } from '../lib/LocalReactive';
+import { WorkspaceLRVContext } from '~/lib/utility/context';
 
 const FolderAddDialog: FC<{ files: File_Minimum[]; cancel: () => void }> = ({ files, cancel }) => {
     const [name, setName] = useState('');
+    const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
 
     const [, setPath] = useSetFilesPathMutation();

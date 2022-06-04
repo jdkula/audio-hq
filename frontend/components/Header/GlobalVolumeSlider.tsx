@@ -11,8 +11,7 @@ import React, { FC, useState } from 'react';
 import styled from '@emotion/styled';
 
 import VolumeButton from '../VolumeButton';
-import { useLocalReactiveValue } from '../../lib/local_reactive';
-import { globalVolumeLRV } from '../../lib/global_lrv';
+import { useGlobalVolume } from '~/lib/utility/usePersistentData';
 
 const Container = styled.div`
     color: white;
@@ -29,7 +28,7 @@ const GlobalVolumeSlider: FC = () => {
     const theme = useTheme();
     const isXSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
+    const [globalVolume, setGlobalVolume] = useGlobalVolume();
     const [volumeOpen, setVolumeOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 

@@ -1,3 +1,8 @@
+/**
+ * ConvertOptions.ts
+ * ===================
+ * Provides options passed to workers for audio processing
+ */
 export default interface ConvertOptions {
     cut?:
         | {

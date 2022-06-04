@@ -7,7 +7,7 @@
 
 import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material';
-import useAudio from '../lib/audio/useAudio';
+import useAudio from '../lib/audio/useAudioDetail';
 import styled from '@emotion/styled';
 import VolumeButton from './VolumeButton';
 
@@ -15,10 +15,11 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import SpeedIcon from '@mui/icons-material/Speed';
-import { getTrackInfo, toTimestamp } from '../lib/utility';
-import { Deck_Minimum } from '../lib/graphql_type_helper';
+import { Deck_Minimum } from '../lib/urql/graphql_type_helper';
 import { sub } from 'date-fns';
 import { UpdateDeckMutationVariables, useStopDeckMutation, useUpdateDeckMutation } from '../lib/generated/graphql';
+import { getTrackInfo } from '~/lib/audio/util';
+import { durationOfLength } from '~/lib/utility/util';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -125,12 +126,12 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                     max={duration}
                     step={1}
                     valueLabelDisplay="auto"
-                    valueLabelFormat={(value) => <Timestamp>{toTimestamp(value)}</Timestamp>}
+                    valueLabelFormat={(value) => <Timestamp>{durationOfLength(value)}</Timestamp>}
                     onChangeCommitted={(_, v) => finishSeek(v as number)}
                     onChange={(_, v) => setTempSeek(v as number)}
                 />
                 <Spaced>
-                    <Typography variant="subtitle1">{toTimestamp(tempSeek ?? time)}</Typography>
+                    <Typography variant="subtitle1">{durationOfLength(tempSeek ?? time)}</Typography>
                 </Spaced>
             </ControlsContainer>
             <ControlsContainer>

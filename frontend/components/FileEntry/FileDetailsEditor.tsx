@@ -7,7 +7,7 @@
 import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
 import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import { File_Minimum } from '../../lib/graphql_type_helper';
+import { File_Minimum } from '../../lib/urql/graphql_type_helper';
 import { useUpdateFileMutation } from '../../lib/generated/graphql';
 
 const EditorContainer = styled.div`

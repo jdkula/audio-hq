@@ -15,7 +15,6 @@ declare module '@emotion/react' {
 
 export const ahqThemeBase: ThemeOptions = {
     palette: {
-        mode: 'dark',
         primary: { main: cyan[400], contrastText: '#fff' },
         secondary: { main: amber.A400 },
     },

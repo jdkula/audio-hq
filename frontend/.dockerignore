@@ -1,5 +1,10 @@
-**/node_modules
+node_modules
 **/.env*
-**/.git
-../.vscode
-**/.next
+.git
+.next
+.vscode
+cache
+README.md
+*.afdesign
+out
+.idea

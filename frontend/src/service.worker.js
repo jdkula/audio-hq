@@ -1,32 +1,43 @@
+/// <reference lib="webworker" />
 /**
  * service.worker.js
  * ===================
  * Audio HQ Service Worker. Enables AHQ's offline mode.
  */
 
-import { ConstructionOutlined } from '@mui/icons-material';
-import { get, set } from 'idb-keyval';
+import { get } from 'idb-keyval';
+import { kMaxConcurrentDownloads } from '~/lib/constants';
 
+// <== Globals ==>
+
+// Populated with a list of files to cache by workbox
 const manifest = self.__WB_MANIFEST || [];
+const staticUrlsToCache = ['/', '/index.html', '/workspace.html', '/404.html', '/site.webmanifest'];
 
-// Stores audio data
+// Audio data storage
 const audioCache = caches.open('ahq-audio-v1');
 
-// Stores application files (HTML, JS)
+// Application data storage
 const appCache = caches.open('ahq-app-v1');
 
+// Broadcast in from the frontend and out to the frontend
 const broadcastIn = new BroadcastChannel('audio-hq-to-sw');
 const broadcastOut = new BroadcastChannel('audio-hq-from-sw');
 
-async function shouldCache() {
+// <== Data Access ==>
+
+// Returns true if offline mode is enabled
+async function offlineEnabled() {
     return (await get('should_cache')) ?? false;
 }
 
+// <== Audio Caching ==>
+
+/** Batch-caches URLs */
 async function cacheUrls(urls) {
     const promises = [];
-    const kMaxConcurrent = 2;
     for (const url of urls) {
-        if (promises.length > kMaxConcurrent) {
+        if (promises.length > kMaxConcurrentDownloads) {
             const [resolved] = await Promise.race(promises.map((p) => p.then(() => [p])));
             promises.splice(promises.indexOf(resolved), 1);
         }
@@ -60,6 +71,8 @@ async function evictAudioAt(url) {
     updateCacheState(url, 'uncached');
 }
 
+// <== Client Management ==>
+
 /** Determines if the given URL is cached, and update the frontend accordingly */
 async function updateCacheStateFor(url) {
     const cache = await audioCache;
@@ -76,6 +89,7 @@ function updateCacheState(url, state) {
     });
 }
 
+/** Broadcasts the entire cache state to the given client/page */
 async function updateCacheStateAll() {
     const cache = await audioCache;
     const requests = await cache.keys();
@@ -89,9 +103,11 @@ async function updateCacheStateAll() {
     });
 }
 
+// <== Application Cache Management ==>
+
 /** Retrieves and gives back cached data, if it exists. */
 async function ahqCache(request) {
-    if (await shouldCache()) {
+    if (await offlineEnabled()) {
         const audioCacheResponse = await (await audioCache).match(request);
         if (audioCacheResponse) {
             return audioCacheResponse;
@@ -106,28 +122,24 @@ async function ahqCache(request) {
     return await fetch(request);
 }
 
-// Respond with cached data if available
-self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-    if (!new URL(event.request.url).protocol.startsWith('http')) return;
-
-    console.log('SW got fetch', event.request);
-    event.respondWith(ahqCache(event.request));
-});
-
+/** Caches the given URL, automatically testing and caching for bare urls as well. */
 async function cacheUrl(cache, url) {
+    const bareUrl = url.replace(/\.html$/, '');
+
     try {
         const response = await fetch(url);
         if (response.status === 200) {
+            // If the URL ends in HTML, also save this response for the bare url.
             if (url.endsWith('.html')) {
-                cache.put(url.replace(/\.html$/, ''), response.clone());
+                cache.put(bareUrl, response.clone());
             }
             cache.put(url, response);
+
+            // If we didn't find this page.html, try accessing the bare url.
         } else if (response.status === 404 && url.endsWith('.html')) {
-            const bareResponse = await fetch(url.replace(/\.html$/, ''));
-            console.log('Got bare response', bareResponse.status, bareResponse.url);
+            const bareResponse = await fetch(bareUrl);
             if (bareResponse.status === 200) {
-                cache.put(url.replace(/\.html$/, ''), bareResponse.clone());
+                cache.put(bareUrl, bareResponse.clone());
                 cache.put(url, bareResponse);
             }
         }
@@ -136,26 +148,38 @@ async function cacheUrl(cache, url) {
     }
 }
 
+/** Caches all static assets */
 async function cacheStatic() {
     const cache = await appCache;
 
-    await Promise.all([...urlsToCache, ...manifest.map((entry) => entry.url)].map((url) => cacheUrl(cache, url)));
+    await Promise.all([...staticUrlsToCache, ...manifest.map((entry) => entry.url)].map((url) => cacheUrl(cache, url)));
 }
 
+/** Clears the given cache */
 async function clearCache(cacheProm) {
     const cache = await cacheProm;
     const keys = await cache.keys();
     await Promise.all(keys.map((key) => cache.delete(key)));
 }
 
-/** Cache home page and workspace view on install */
-const urlsToCache = ['/', '/index.html', '/workspace.html', '/404.html', '/site.webmanifest'];
-self.addEventListener('activate', (event) => {
-    event.waitUntil(shouldCache().then((should) => should && cacheStatic()));
+// <== Event Listeners ==>
+
+/** Respond with cached data if possible, using a SWR "cache-and-network" pattern */
+self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') return;
+    if (!new URL(event.request.url).protocol.startsWith('http')) return;
+
+    event.respondWith(ahqCache(event.request));
 });
 
+/** Cache home page and workspace view on install */
+self.addEventListener('activate', (event) => {
+    event.waitUntil(offlineEnabled().then((should) => should && cacheStatic()));
+});
+
+// <== Communication from frontend ==>
+
 broadcastIn.onmessage = (ev) => {
-    console.log('Got message SW', ev.data);
     switch (ev.data.type) {
         // <-- Fetches and caches all the associated URLs with CORS -->
         case 'cache': {
@@ -175,16 +199,19 @@ broadcastIn.onmessage = (ev) => {
             break;
         }
 
+        // <-- Asks for the state of the entire cache -->
         case 'is-cached-bulk': {
             updateCacheStateAll();
             break;
         }
 
+        // <-- Turns off and deletes all data from the cache -->
         case 'cache-off': {
             Promise.all([clearCache(audioCache), clearCache(appCache)]).then(() => updateCacheStateAll());
             break;
         }
 
+        // <-- Caches all static assets for offline mode -->
         case 'cache-on': {
             cacheStatic();
             break;

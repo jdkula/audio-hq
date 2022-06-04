@@ -1,8 +1,19 @@
+/**
+ * LocalReactive.ts
+ * ==================
+ * Provides classes and hooks for LocalReactiveValues, which
+ * will be reactively updated anywhere that is listening for them.
+ */
 import { EventEmitter } from 'events';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import { get, set } from 'idb-keyval';
 import _ from 'lodash';
 
+/**
+ * Provides a transient local reactive value of a given type
+ *
+ * You can listen on the 'set' event to be updated of new data.
+ */
 export class LocalReactiveValue<T> extends EventEmitter {
     private _value: T;
 
@@ -22,6 +33,12 @@ export class LocalReactiveValue<T> extends EventEmitter {
     }
 }
 
+/**
+ * Provides a transient local reactive value of a given type,
+ * which is replicated to local storage
+ *
+ * You can listen on the 'set' event to be updated of new data.
+ */
 export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
     constructor(key: string, defaultValue: T) {
         super(
@@ -35,15 +52,23 @@ export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
     }
 }
 
+/**
+ * Provides a transient local reactive value of a given type,
+ * which is replicated to IndexedDB using idb-keyval
+ *
+ * You can listen on the 'set' event to be updated of new data.
+ */
 export class LocalIDBReactiveValue<T> extends LocalReactiveValue<T> {
     private _loading = true;
     private _key: string;
     private _defaultValue: T;
 
+    /** Returns true if we are retrieving the initial value */
     get loading() {
         return this._loading;
     }
 
+    /** Refreshes this value from IndexedDB */
     async refresh() {
         const value = (await get(this._key)) ?? this._defaultValue;
         this._loading = false;
@@ -67,6 +92,9 @@ export class LocalIDBReactiveValue<T> extends LocalReactiveValue<T> {
     }
 }
 
+/**
+ * Provides a hook that gives a useState-like API for using reactive values.
+ */
 export function useLocalReactiveValue<T>(lrv: LocalReactiveValue<T>): [T, Dispatch<SetStateAction<T>>] {
     const [localValue, setValueInternal] = useState(lrv.value);
 

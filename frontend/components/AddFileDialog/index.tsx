@@ -17,7 +17,7 @@ import ConvertOptions from '~/lib/ConvertOptions';
 import TrackOptions, { TrackRef } from './TrackOptions';
 import TrackImportDetails from './TrackImportDetails';
 import TrackDetails from './TrackDetails';
-import { FileManagerContext } from '../../lib/useFileManager';
+import { FileManagerContext } from '~/lib/utility/context';
 
 /** Dialog content wrapper */
 const AddTrackContent = styled(DialogContent)`

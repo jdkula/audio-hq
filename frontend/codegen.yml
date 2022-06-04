@@ -20,9 +20,9 @@ generates:
       - "typescript"
       - "typescript-operations"
       - "typescript-urql"
-  schema.graphql:
+  lib/generated/schema.ts:
     plugins:
-      - "schema-ast"
+      - "urql-introspection"
   graphql.schema.json:
     plugins:
       - "introspection"

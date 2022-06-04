@@ -3,12 +3,16 @@ import React, { FC, useContext } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
-import { WorkspaceIdContext, WorkspaceNameContext } from '../lib/utility';
 import { useWorkspaceDetailQuery } from '../lib/generated/graphql';
 import WorkspaceNotFound from './WorkspaceNotFound';
-import useFileManager, { FileManagerContext } from '~/lib/useFileManager';
+import {
+    FileManagerProvider,
+    WorkspaceIdContext,
+    WorkspaceLocalReactiveValuesProvider,
+    WorkspaceNameContext,
+} from '~/lib/utility/context';
 
-const BlockedRoot: FC<{ children?: React.ReactNode }> = (props) => {
+const MediaRoot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
     useMediaSession(workspaceId);
     const { blocked } = useAudioManager(workspaceId);
@@ -22,13 +26,6 @@ const BlockedRoot: FC<{ children?: React.ReactNode }> = (props) => {
             {props.children}
         </>
     );
-};
-
-const FileManagerRoot: FC<{ children?: React.ReactNode }> = (props) => {
-    const workspaceId = useContext(WorkspaceIdContext);
-    const fileManager = useFileManager(workspaceId);
-
-    return <FileManagerContext.Provider value={fileManager}>{props.children}</FileManagerContext.Provider>;
 };
 
 const Root: FC<{
@@ -53,9 +50,11 @@ const Root: FC<{
     return (
         <WorkspaceIdContext.Provider value={workspaceId}>
             <WorkspaceNameContext.Provider value={workspaceName}>
-                <FileManagerRoot>
-                    <BlockedRoot>{props.children}</BlockedRoot>
-                </FileManagerRoot>
+                <WorkspaceLocalReactiveValuesProvider workspaceId={workspaceId}>
+                    <FileManagerProvider workspaceId={workspaceId}>
+                        <MediaRoot>{props.children}</MediaRoot>
+                    </FileManagerProvider>
+                </WorkspaceLocalReactiveValuesProvider>
             </WorkspaceNameContext.Provider>
         </WorkspaceIdContext.Provider>
     );

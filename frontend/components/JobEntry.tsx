@@ -10,7 +10,7 @@ import { FC } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
-import { Job_Minimum } from '../lib/graphql_type_helper';
+import { Job_Minimum } from '../lib/urql/graphql_type_helper';
 
 const JobContainer = styled(Paper)`
     border-radius: 1rem;

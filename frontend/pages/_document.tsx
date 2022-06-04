@@ -7,11 +7,15 @@
 
 import Document, { DocumentContext, DocumentInitialProps, Html, Main, NextScript, Head } from 'next/document';
 import { resetServerContext } from 'react-beautiful-dnd';
-import React from 'react';
-import { createEmotionCache } from '~/lib/utility';
+import React, { ReactNode } from 'react';
 import createEmotionServer from '@emotion/server/create-instance';
+import { createEmotionCache } from '~/lib/ssr';
 
-class MyDocument extends Document {
+interface DocumentAdditionalProps {
+    emotionStyleTags: ReactNode[];
+}
+
+class MyDocument extends Document<DocumentAdditionalProps> {
     render() {
         return (
             <Html lang="en">
@@ -28,7 +32,7 @@ class MyDocument extends Document {
                     <meta name="msapplication-TileColor" content="#2b5797" />
                     <meta name="theme-color" content="#ffffff" />
 
-                    {(this.props as any).emotionStyleTags}
+                    {this.props.emotionStyleTags}
                 </Head>
                 <body>
                     <Main />
@@ -38,7 +42,7 @@ class MyDocument extends Document {
         );
     }
 
-    static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
+    static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps & DocumentAdditionalProps> {
         resetServerContext();
         const cache = createEmotionCache();
         const { extractCriticalToChunks } = createEmotionServer(cache);
@@ -66,7 +70,7 @@ class MyDocument extends Document {
         return {
             ...initialProps,
             emotionStyleTags,
-        } as any;
+        };
     }
 }
 

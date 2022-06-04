@@ -1,8 +1,15 @@
+/**
+ * track.ts
+ * =========
+ * Provides an audio player for a single track that reconciles the
+ * HTMLAudioElement towards a given database Track
+ */
 import { EventEmitter } from 'events';
-import { Deck_Minimum, Track_Minimum } from '../graphql_type_helper';
-import { FileManager } from '../useFileManager';
-import { differenceInMilliseconds } from 'date-fns';
-import { shouldCacheLRV, globalVolumeLRV } from '../global_lrv';
+import { Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
+import { FileManager } from '../useWorkspaceDetails';
+import { shouldCacheLRV } from '../sw_client';
+import { globalVolumeLRV } from '../utility/usePersistentData';
+import { getTimes } from './util';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -42,42 +49,6 @@ export class Track extends EventEmitter {
     private _startTime = 0;
     private _endTime = 0;
 
-    private getTimes(status: Deck_Minimum): {
-        startTime: number;
-        endTime: number;
-        secondsIntoLoop: number;
-        totalSeconds: number;
-        myTurn: boolean;
-    } {
-        // TODO: Keep track of speed, too.
-        const secondsSinceStart = differenceInMilliseconds(new Date(), new Date(status.start_timestamp)) / 1000;
-        let startTime = 0;
-        let endTime = 0;
-        let found = false;
-        const totalSeconds = status.queue.reduce((prev, cur) => {
-            if (cur.id === this._qe.id) {
-                found = true;
-                startTime = prev;
-                endTime = prev + cur.file.length / status.speed;
-            }
-            return prev + cur.file.length / status.speed;
-        }, 0);
-
-        if (!found) {
-            throw new Error("This track wasn't found in the current play status!");
-        }
-
-        const secondsIntoLoop = secondsSinceStart % totalSeconds;
-
-        return {
-            startTime,
-            endTime,
-            secondsIntoLoop,
-            myTurn: startTime <= secondsIntoLoop && secondsIntoLoop <= endTime,
-            totalSeconds,
-        };
-    }
-
     private onstart() {
         console.log('onstart called');
         if (this._audio.paused) {
@@ -104,7 +75,7 @@ export class Track extends EventEmitter {
 
         if (!this._ready) return;
 
-        const times = this.getTimes(status);
+        const times = getTimes(status, this._qe.id);
         this._startTime = times.startTime;
         this._endTime = times.endTime;
 
