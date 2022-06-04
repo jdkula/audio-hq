@@ -107,17 +107,17 @@ async function updateCacheStateAll() {
 
 /** Retrieves and gives back cached data, if it exists. */
 async function ahqCache(request) {
-    if (await offlineEnabled()) {
-        const audioCacheResponse = await (await audioCache).match(request);
-        if (audioCacheResponse) {
-            return audioCacheResponse;
-        }
+    const audioCacheResponse = await (await audioCache).match(request);
+    if (audioCacheResponse) {
+        return audioCacheResponse;
+    }
 
-        const appCacheResponse = await (await appCache).match(request.url);
-        if (appCacheResponse) {
+    const appCacheResponse = await (await appCache).match(request.url);
+    if (appCacheResponse) {
+        if (await offlineEnabled()) {
             cacheUrl(await appCache, request.url);
-            return appCacheResponse;
         }
+        return appCacheResponse;
     }
     return await fetch(request);
 }
@@ -168,6 +168,8 @@ async function clearCache(cacheProm) {
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
     if (!new URL(event.request.url).protocol.startsWith('http')) return;
+
+    console.log('Got fetch request', event.request);
 
     event.respondWith(ahqCache(event.request));
 });
