@@ -9,8 +9,9 @@ import { Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
 import { FileManager } from '../useWorkspaceDetails';
 import { shouldCacheLRV } from '../sw_client';
 import { globalVolumeLRV } from '../utility/usePersistentData';
-import { getTimes } from './util';
+import { getDeckInfo } from './audio_util';
 import { kMaxAudioDriftAllowance } from '../constants';
+import { Deck_Type_Enum_Enum } from '../generated/graphql';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -74,19 +75,32 @@ export class Track extends EventEmitter {
 
         if (!this._ready) return;
 
-        const times = getTimes(status, this._qe);
+        const deckInfo = getDeckInfo(status, this._qe);
 
-        const nextStart = (times.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
-        const nextEnd = (times.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
+        if (!deckInfo) {
+            this._audio.pause();
+            return;
+        }
 
-        if (times.myTurn && !status.pause_timestamp && globalVolumeLRV.value !== 0) {
+        const { trackInfo, ...times } = deckInfo;
+
+        // Stop SFX after time.
+        if (status.type === Deck_Type_Enum_Enum.Sfx && times.secondsToCurrentPlayhead > times.totalSeconds) {
+            this._audio.pause();
+            return;
+        }
+
+        const nextStart = (trackInfo.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
+        const nextEnd = (trackInfo.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
+
+        if (trackInfo.isCurrent && !status.pause_timestamp && globalVolumeLRV.value !== 0) {
             if (this._audio.paused) {
                 this._audio.play().catch((e) => {
                     console.warn(e);
                     this.emit('blocked', e);
                 });
             }
-            const targetTime = (times.secondsIntoLoop - times.startTime) * this._status.speed;
+            const targetTime = (times.secondsIntoLoop - trackInfo.startTime) * this._status.speed;
             if (Math.abs(this._audio.currentTime - targetTime) > kMaxAudioDriftAllowance) {
                 // only update if we're off by more than 3/2 a second. Prevents skipping with
                 // extra updates.

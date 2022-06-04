@@ -1,4 +1,5 @@
 fragment JobInfo on job {
+    __typename
     id
     url
     name

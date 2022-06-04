@@ -11,7 +11,7 @@ import { File_Minimum } from '../urql/graphql_type_helper';
 import { useWorkspaceDecks } from '../useWorkspaceDetails';
 import { WorkspaceNameContext } from '../utility/context';
 import { globalVolumeLRV } from '../utility/usePersistentData';
-import { getTrackInfo } from './util';
+import { getDeckInfo } from './audio_util';
 
 const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);
@@ -22,10 +22,7 @@ const useMediaSession = (workspaceId: string): void => {
 
     let currentlyPlaying: File_Minimum | null = null;
     if (main) {
-        const track = getTrackInfo(main)?.file;
-        if (track) {
-            currentlyPlaying = track;
-        }
+        currentlyPlaying = getDeckInfo(main)?.trackInfo.currentTrack.file ?? null;
     }
 
     useEffect(() => {

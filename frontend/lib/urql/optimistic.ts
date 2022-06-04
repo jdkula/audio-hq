@@ -96,6 +96,7 @@ export default class Optimistic {
             workspace_id: input.workspace_id,
             assigned_worker: null,
             progress: 0,
+            __typename: 'job',
         };
     }
 }

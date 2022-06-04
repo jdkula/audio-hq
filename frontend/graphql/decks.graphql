@@ -1,4 +1,5 @@
 fragment TrackInfo on track {
+    __typename
     id
     created_at
     file {
@@ -9,6 +10,7 @@ fragment TrackInfo on track {
 }
 
 fragment DeckInfo on deck {
+    __typename
     id
     type
 

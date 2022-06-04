@@ -51,32 +51,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION public.update_pause()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    _new deck;
-BEGIN
-    _new = NEW;
-    _new.start_timestamp = OLD.start_timestamp + (now() - OLD.pause_timestamp) / NEW.speed;
-    RETURN _new;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION public.update_speed()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    _new deck;
-BEGIN
-    _new = NEW;
-    _new.start_timestamp = now() - (now() - NEW.start_timestamp) * OLD.speed / NEW.speed;
-    RETURN _new;
-END;
-$$ LANGUAGE plpgsql;
-
-
 CREATE OR REPLACE FUNCTION public.claim_job(worker_id uuid)
     RETURNS job AS
 $$

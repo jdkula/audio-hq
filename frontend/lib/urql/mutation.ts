@@ -15,7 +15,9 @@ export default class Mutation {
 
                 let decks = data?.workspace_by_pk?.decks;
                 if (deck.type === GQL.Deck_Type_Enum_Enum.Main)
-                    decks = decks.filter((deck) => deck.type !== GQL.Deck_Type_Enum_Enum.Main);
+                    decks = decks.filter(
+                        (innerDeck) => innerDeck.type !== GQL.Deck_Type_Enum_Enum.Main && innerDeck.id !== deck.id,
+                    );
                 decks.push(deck);
 
                 data.workspace_by_pk.decks = decks;
@@ -52,7 +54,7 @@ export default class Mutation {
                 const decks = data?.workspace_by_pk?.decks;
                 const deck = decks.find((deck) => deck.id === track.deck_id);
                 if (!deck) return data;
-                deck.queue.push(track);
+                deck.queue.push({ ...track, __typename: 'track' });
                 deck.queue.sort();
 
                 return data;

@@ -1,21 +1,26 @@
 subscription Events($workspaceId: uuid!) {
     event(where: { workspace_id: { _eq: $workspaceId } }, limit: 1, order_by: [{ time: desc }]) {
+        __typename
         id
         workspace_id
         time
 
         workspace {
+            __typename
             id
             created_at
             updated_at
             name
             decks {
+                __typename
                 ...DeckInfo
             }
             files {
+                __typename
                 ...FileInfo
             }
             jobs {
+                __typename
                 ...JobInfo
             }
         }

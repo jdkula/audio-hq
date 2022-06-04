@@ -48,7 +48,7 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     const caching = !!fileManager.caching.has(file.download_url);
 
     const download = async () => {
-        fileManager.download(file); // TODO
+        fileManager.download(file);
     };
 
     const save = async () => {

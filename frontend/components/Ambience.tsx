@@ -5,15 +5,17 @@
  * Displays controls for all ambient tracks playing in the workspace.
  */
 
-import { Paper, Typography } from '@mui/material';
+import { Collapse, Paper, Tooltip, Typography } from '@mui/material';
 import { FunctionComponent, useContext } from 'react';
 import styled from '@emotion/styled';
 import { AudioControls } from './AudioControls';
 
 import AddIcon from '@mui/icons-material/Add';
-import { getTrackInfo } from '~/lib/audio/util';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useWorkspaceDecks } from '~/lib/useWorkspaceDetails';
+import { getDeckInfo } from '~/lib/audio/audio_util';
+import { Deck_Type_Enum_Enum } from '~/lib/generated/graphql';
+import { BlurOn } from '@mui/icons-material';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -57,12 +59,17 @@ export const Ambience: FunctionComponent = () => {
     const workspaceId = useContext(WorkspaceIdContext);
     const { ambience, sfx } = useWorkspaceDecks(workspaceId);
 
-    const controls = ambience.map((ps) => (
-        <AmbienceControlsContainer key={ps.id}>
-            <Typography variant="h5">
-                {getTrackInfo(ps)?.file.name ?? ps.queue[0]?.file.name ?? 'Loading...'}
+    const controls = [...sfx, ...ambience].map((deck) => (
+        <AmbienceControlsContainer key={deck.id}>
+            <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Tooltip arrow title="Sound FX" placement="top" enterDelay={0}>
+                    <Collapse in={deck.type === Deck_Type_Enum_Enum.Sfx}>
+                        <BlurOn sx={{ marginRight: 2 }} />
+                    </Collapse>
+                </Tooltip>
+                {getDeckInfo(deck)?.trackInfo.currentTrack.file.name ?? 'Loading...'}
             </Typography>
-            <AudioControls state={ps} />
+            <AudioControls state={deck} />
         </AmbienceControlsContainer>
     ));
 

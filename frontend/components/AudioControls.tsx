@@ -17,9 +17,14 @@ import StopIcon from '@mui/icons-material/Stop';
 import SpeedIcon from '@mui/icons-material/Speed';
 import { Deck_Minimum } from '../lib/urql/graphql_type_helper';
 import { sub } from 'date-fns';
-import { UpdateDeckMutationVariables, useStopDeckMutation, useUpdateDeckMutation } from '../lib/generated/graphql';
-import { getTrackInfo } from '~/lib/audio/util';
+import {
+    Deck_Type_Enum_Enum,
+    UpdateDeckMutationVariables,
+    useStopDeckMutation,
+    useUpdateDeckMutation,
+} from '../lib/generated/graphql';
 import { durationOfLength } from '~/lib/utility/util';
+import { getDeckInfo, getSpeedChangeData, getUnpauseData } from '~/lib/audio/audio_util';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -91,10 +96,12 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
     useEffect(() => setTempSpeed(state.speed), [state.speed]);
 
     const finishSeek = (to: number) => {
-        const currentTrackInfo = getTrackInfo(state);
-        const prev = currentTrackInfo?.totalTimeBefore ?? 0;
-        const destinationSeek = (prev + to) / state.speed;
-        console.log('Seeking... with CTI', currentTrackInfo);
+        const currentTrackInfo = getDeckInfo(state);
+        if (!currentTrackInfo) {
+            setTempSeek(null);
+            return;
+        }
+        const destinationSeek = (currentTrackInfo.trackInfo.startTime + to) / state.speed;
         updateDeck({
             start_timestamp: sub(new Date(), { seconds: destinationSeek }).toISOString(),
         });
@@ -104,12 +111,20 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
         return <div>Waiting for Audio to Load</div>;
     }
 
-    // if (blocked) return <AudioControlsContainer>Please click on the page to allow audio.</AudioControlsContainer>;
-    // if (loading) return <AudioControlsContainer>Content is loading...</AudioControlsContainer>;
-
     const onPlayPause = () => {
-        if (paused) updateDeck({ pause_timestamp: null });
-        else updateDeck({ pause_timestamp: new Date().toISOString() });
+        if (state.type === Deck_Type_Enum_Enum.Sfx && paused && !state.pause_timestamp) {
+            updateDeck({
+                start_timestamp: new Date().toISOString(),
+            });
+        } else if (state.pause_timestamp) {
+            updateDeck(getUnpauseData(state));
+        } else {
+            updateDeck({ pause_timestamp: new Date().toISOString() });
+        }
+    };
+
+    const setSpeed = (newSpeed: number) => {
+        updateDeck(getSpeedChangeData(state, newSpeed));
     };
 
     return (
@@ -179,11 +194,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                         max={3}
                         step={null}
                         marks={speedMarks}
-                        onChangeCommitted={(_, v) =>
-                            updateDeck({
-                                speed: v as number,
-                            })
-                        }
+                        onChangeCommitted={(_, v) => setSpeed(v as number)}
                         onChange={(_, v) => setTempSpeed(v as number)}
                         orientation="vertical"
                         style={{ minHeight: '10rem', margin: '1rem 2.5rem 1rem 1rem' }}

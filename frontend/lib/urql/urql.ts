@@ -71,6 +71,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                             result.returning?.forEach((deck) => {
                                 const wsId = deck.workspace_id;
                                 if (wsId) {
+                                    debugger;
                                     Mutation.addDeck(wsId, { ...deck }, cache);
                                 } else {
                                     invalidateRootField(cache, 'workspace_by_pk');
@@ -126,6 +127,31 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                             }
                         },
                     },
+                    Subscription: {
+                        event(data: GQL.EventsSubscription, _args, cache) {
+                            const event = data.event?.[0];
+                            if (!event || !event.workspace_id || !event.workspace) return;
+                            const newWorkspace = event.workspace;
+
+                            cache.updateQuery<GQL.DecksQuery, GQL.DecksQueryVariables>(
+                                {
+                                    query: GQL.DecksDocument,
+                                    variables: { workspaceId: event.workspace_id },
+                                },
+                                () => ({ __typename: 'query_root', workspace_by_pk: newWorkspace }),
+                            );
+
+                            if (!newWorkspace.files) return;
+
+                            cache.updateQuery<GQL.WorkspaceFilesQuery, GQL.WorkspaceFilesQueryVariables>(
+                                {
+                                    query: GQL.WorkspaceFilesDocument,
+                                    variables: { workspaceId: event.workspace_id },
+                                },
+                                () => ({ file: newWorkspace.files, __typename: 'query_root' }),
+                            );
+                        },
+                    },
                 },
                 optimistic: {
                     update_file_by_pk(args: { _set: GQL.File_Set_Input; pk_columns: { id: string } }, cache) {
@@ -161,6 +187,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                     },
                     insert_deck(args: GQL.Mutation_RootInsert_DeckArgs, cache): GQL.Deck_Mutation_Response {
                         return {
+                            __typename: 'deck_mutation_response',
                             affected_rows: args.objects.length,
                             returning: args.objects
                                 .map((input) => {
@@ -195,6 +222,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                     },
                     insert_track(args: GQL.Mutation_RootInsert_TrackArgs, cache): GQL.Track_Mutation_Response {
                         return {
+                            __typename: 'track_mutation_response',
                             affected_rows: args.objects.length,
                             returning: args.objects
                                 .map((input) => {
@@ -226,6 +254,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         if (!deck?.queue) return null;
 
                         return {
+                            __typename: 'track_mutation_response',
                             affected_rows: deck.queue.length,
                             returning: deck.queue,
                         };
@@ -269,31 +298,13 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         });
                         if (!deck) return null;
 
-                        let start_timestamp = deck.start_timestamp;
-                        if (args._set?.start_timestamp) {
-                            start_timestamp = args._set.start_timestamp;
-                        } else if (
-                            args._set?.pause_timestamp === null &&
-                            deck.pause_timestamp !== null &&
-                            deck.pause_timestamp !== undefined
-                        ) {
-                            start_timestamp = add(new Date(deck.start_timestamp), {
-                                seconds:
-                                    differenceInMilliseconds(new Date(), new Date(deck.pause_timestamp)) /
-                                    (args._set?.speed ?? deck.speed ?? 1) /
-                                    1000,
-                            }).toISOString();
-                        }
-
-                        const final_pause =
-                            args._set?.pause_timestamp !== undefined
-                                ? args._set.pause_timestamp ?? null
-                                : deck.pause_timestamp ?? null;
-
                         const retDeck = {
                             ...deck,
-                            pause_timestamp: final_pause,
-                            start_timestamp,
+                            pause_timestamp:
+                                args._set?.pause_timestamp === undefined
+                                    ? deck.pause_timestamp
+                                    : args._set.pause_timestamp,
+                            start_timestamp: args._set?.start_timestamp ?? deck.start_timestamp,
                             speed: args._set?.speed ?? deck.speed,
                             volume: args._set?.volume ?? deck.volume,
                         };

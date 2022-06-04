@@ -126,7 +126,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     <IconButton onClick={onAmbience} size="large">
                         <AddIcon
                             color={
-                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
+                                ambience.find((ps) => ps.queue.map((q) => q.file.id).includes(file.id))
                                     ? 'primary'
                                     : undefined
                             }

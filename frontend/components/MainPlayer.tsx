@@ -72,7 +72,11 @@ export const MainPlayer: FunctionComponent<{
         const newQueue = [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)];
         setQueue({
             deckId: state.id,
-            newQueue: newQueue.map((qe, i) => ({ file_id: qe.file.id, deck_id: state.id, ordering: i })),
+            newQueue: newQueue.map((qe, i) => ({
+                file_id: qe.file.id,
+                deck_id: state.id,
+                ordering: i,
+            })),
             dummy: new Date().toISOString(),
         });
     };

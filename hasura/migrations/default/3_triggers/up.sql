@@ -21,18 +21,3 @@ CREATE TRIGGER ensure_main_deck_trigger
     FOR EACH ROW
     WHEN (NEW.type = 'main')
 EXECUTE FUNCTION public.ensure_main_deck();
-
-CREATE TRIGGER update_paused_track
-    BEFORE UPDATE OF pause_timestamp
-    ON public.deck
-    FOR EACH ROW
-    WHEN (NEW.pause_timestamp IS NULL AND OLD.pause_timestamp IS NOT NULL AND NEW.start_timestamp = OLD.start_timestamp)
-EXECUTE FUNCTION public.update_pause();
-
-CREATE TRIGGER update_track_speed
-    BEFORE UPDATE OF speed
-    ON public.deck
-    FOR EACH ROW
-    WHEN (NEW.speed != OLD.speed AND NEW.start_timestamp = OLD.start_timestamp)
-EXECUTE FUNCTION public.update_speed();
-

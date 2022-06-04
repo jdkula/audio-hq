@@ -1,4 +1,5 @@
 fragment FileInfo on file {
+    __typename
     id
     type
     path
