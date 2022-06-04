@@ -6,7 +6,7 @@ const data = fs.readFileSync(process.argv[2], { encoding: "utf-8" });
 const input = JSON.parse(data);
 
 const workspaces = [];
-const files = [];
+const jobs = [];
 
 for (const workspace of input) {
   const id = uuid.v4();
@@ -14,14 +14,11 @@ for (const workspace of input) {
   for (let i = 0; i < workspace.files.length; i++) {
     const file = workspace.files[i];
 
-    files.push({
+    jobs.push({
       workspace_id: id,
-      download_url: `https://audio-hq-files.s3.amazonaws.com/${file.id}`,
+      url: `https://audio-hq-files.s3.amazonaws.com/${file.id}`,
       name: file.name,
       path: file.path,
-      type: "audio",
-      length: file.length,
-      ordering: i,
     });
   }
 }
@@ -40,7 +37,7 @@ client
     `
       mutation Import(
         $workspaces: [workspace_insert_input!]!
-        $files: [file_insert_input!]!
+        $jobs: [job_insert_input!]!
       ) {
         delete_workspace(where: {}) {
           affected_rows
@@ -51,12 +48,12 @@ client
         insert_workspace(objects: $workspaces) {
           affected_rows
         }
-        insert_file(objects: $files) {
+        insert_jobs(objects: $jobs) {
           affected_rows
         }
       }
     `,
-    { workspaces, files }
+    { workspaces, jobs }
   )
   .toPromise()
   .then((res) => console.log(res.error?.graphQLErrors));
