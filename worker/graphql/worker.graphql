@@ -1,0 +1,96 @@
+subscription NewJobsSubscription {
+    job(where: { assigned_worker: { _is_null: true } }, order_by: [{ created_at: asc }]) {
+        id
+    }
+}
+
+subscription DeleteJobsSubscription {
+    delete_job(where: { assigned_worker: { _is_null: true } }) {
+        id
+    }
+}
+
+subscription MyJobsSubscription($myId: uuid!) {
+    job(where: { assigned_worker: { _eq: $myId } }, order_by: [{ created_at: asc }]) {
+        id
+    }
+}
+
+fragment FullJob on job {
+    id
+    workspace_id
+    url
+    file_upload
+
+    progress
+    status
+
+    name
+    description
+    path
+    option_cut_start
+    option_cut_end
+    option_fade_in
+    option_fade_out
+}
+
+mutation ClaimJob($myId: uuid!) {
+    claim_job(args: { worker_id: $myId }) {
+        ...FullJob
+    }
+}
+
+mutation ClaimDeleteJob($myId: uuid!) {
+    claim_delete_job(args: { worker_id: $myId }) {
+        id
+        file {
+            id
+            provider_id
+        }
+    }
+}
+
+mutation UpdateJobProgress($jobId: uuid!, $progressStage: job_status_enum_enum!, $progress: numeric!) {
+    update_job_by_pk(pk_columns: { id: $jobId }, _set: { status: $progressStage, progress: $progress }) {
+        ...FullJob
+    }
+}
+
+mutation CommitJob($jobId: uuid!, $file: file_insert_input!) {
+    delete_job_by_pk(id: $jobId) {
+        __typename
+        id
+        url
+        name
+    }
+    insert_file_one(object: $file) {
+        __typename
+        id
+        name
+    }
+}
+
+mutation CommitDeleteJob($jobId: uuid!, $fileId: uuid!) {
+    delete_delete_job_by_pk(id: $jobId) {
+        id
+    }
+    delete_file_by_pk(id: $fileId) {
+        id
+    }
+}
+
+mutation SetJobError($jobId: uuid!, $error: String!) {
+    update_job_by_pk(pk_columns: { id: $jobId }, _set: { error: $error, status: error }) {
+        ...FullJob
+    }
+}
+
+mutation CheckIn($myId: uuid!) {
+    insert_workers_one(
+        object: { id: $myId, last_check_in: now }
+        on_conflict: { constraint: workers_pkey, update_columns: [last_check_in] }
+    ) {
+        id
+        last_check_in
+    }
+}

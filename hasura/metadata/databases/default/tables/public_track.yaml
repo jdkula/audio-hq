@@ -1,0 +1,34 @@
+table:
+  schema: public
+  name: track
+object_relationships:
+  - name: deck
+    using:
+      foreign_key_constraint_on: deck_id
+  - name: file
+    using:
+      foreign_key_constraint_on: file_id
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - deck_id
+        - file_id
+        - id
+        - ordering
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - created_at
+        - deck_id
+        - file_id
+        - ordering
+        - id
+      filter: {}
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}

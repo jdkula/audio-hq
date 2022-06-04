@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "migration"
+		},
+		{
+			"path": "frontend"
+		},
+		{
+			"path": "hasura"
+		},
+		{
+			"path": "worker"
+		}
+	]
+}

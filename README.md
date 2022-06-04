@@ -1,30 +1,14 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/zeit/next.js/tree/canary/packages/create-next-app).
+# Audio HQ
 
-## Getting Started
+Audio HQ is a social DJ platform intended for use by Tabletop RPG-ers!
 
-First, run the development server:
+## Application Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+Audio HQ has three components: a [frontend](/jdkula/audio-hq/tree/main/frontend) (nextjs), a [backend](/jdkula/audio-hq/tree/main/hasura) (hasura), and [workers](/jdkula/audio-hq/tree/main/worker) (nodejs).
+Only the frontend and backend need to be publically accessible, and the frontend is statically hostable!
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Hasura provides a GraphQL endpoint and acts as middleware between the frontend and database, making the database
+safely publically accessible, so there is no custom backend code (outside of SQL functions and triggers).
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/zeit/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on ZEIT Now
-
-The easiest way to deploy your Next.js app is to use the [ZEIT Now Platform](https://zeit.co/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+When work is requested (e.g. to upload or import a song), workers (which connect to the database independently)
+do the job of downloading, converting, and storing that upload in block storage.

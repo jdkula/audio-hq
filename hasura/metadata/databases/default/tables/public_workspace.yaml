@@ -1,0 +1,48 @@
+table:
+  schema: public
+  name: workspace
+array_relationships:
+  - name: decks
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: deck
+  - name: files
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: file
+  - name: jobs
+    using:
+      foreign_key_constraint_on:
+        column: workspace_id
+        table:
+          schema: public
+          name: job
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - name
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - created_at
+        - id
+        - name
+        - updated_at
+      filter: {}
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - name
+      filter: {}
+      check: null

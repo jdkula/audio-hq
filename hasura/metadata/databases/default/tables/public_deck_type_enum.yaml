@@ -1,0 +1,4 @@
+table:
+  schema: public
+  name: deck_type_enum
+is_enum: true

@@ -1,0 +1,57 @@
+table:
+  schema: public
+  name: deck
+object_relationships:
+  - name: workspace
+    using:
+      foreign_key_constraint_on: workspace_id
+array_relationships:
+  - name: queue
+    using:
+      foreign_key_constraint_on:
+        column: deck_id
+        table:
+          schema: public
+          name: track
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - dummy
+        - id
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - type
+        - volume
+        - workspace_id
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - created_at
+        - id
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - type
+        - volume
+        - workspace_id
+      filter: {}
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - dummy
+        - pause_timestamp
+        - speed
+        - start_timestamp
+        - volume
+      filter: {}
+      check: null
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}

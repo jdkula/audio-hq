@@ -1,0 +1,37 @@
+fragment JobInfo on job {
+    id
+    url
+    name
+    description
+    path
+
+    option_cut_start
+    option_cut_end
+    option_fade_in
+    option_fade_out
+
+    progress
+    status
+    assigned_worker
+    error
+
+    created_at
+}
+
+subscription WorkspaceJobs($workspaceId: uuid!) {
+    job(where: { workspace_id: { _eq: $workspaceId } }) {
+        ...JobInfo
+    }
+}
+
+mutation AddJob($job: job_insert_input!) {
+    insert_job_one(object: $job) {
+        ...JobInfo
+    }
+}
+
+mutation DeleteErrorJob($jobId: uuid!) {
+    delete_job_by_pk(id: $jobId) {
+        id
+    }
+}

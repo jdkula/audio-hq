@@ -1,0 +1,83 @@
+table:
+  schema: public
+  name: job
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - description
+        - file_upload
+        - name
+        - option_cut_start
+        - option_cut_end
+        - option_fade_in
+        - option_fade_out
+        - path
+        - url
+        - workspace_id
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - assign_time
+        - assigned_worker
+        - created_at
+        - description
+        - error
+        - id
+        - name
+        - option_cut_end
+        - option_cut_start
+        - option_fade_in
+        - option_fade_out
+        - path
+        - progress
+        - status
+        - url
+        - workspace_id
+      filter: {}
+  - role: worker
+    permission:
+      columns:
+        - assigned_worker
+        - description
+        - file_upload
+        - id
+        - name
+        - option_cut_start
+        - option_cut_end
+        - option_fade_in
+        - option_fade_out
+        - path
+        - progress
+        - status
+        - assign_time
+        - url
+        - workspace_id
+        - created_at
+      filter: {}
+update_permissions:
+  - role: worker
+    permission:
+      columns:
+        - assign_time
+        - assigned_worker
+        - error
+        - progress
+        - status
+      filter: {}
+      check: null
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter:
+        _or:
+          - assigned_worker:
+              _is_null: true
+          - status:
+              _eq: error
+  - role: worker
+    permission:
+      filter: {}

@@ -1,30 +1,32 @@
 name: Docker Image CI Release
 
 on:
-    push:
-        tags:
-            - 'release_*'
+  push:
+    tags:
+      - "release_*"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        environment: dockerhub
-        steps:
-            - name: Get Release Tag
-              run: echo "TAG_NAME=${{ github.event.ref }}" | sed "s/refs\/tags\/release_//" >> $GITHUB_ENV
-            - name: Checkout
-              uses: actions/checkout@v2
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v1
-            - name: Set up Docker Buildx
-              id: buildx
-              uses: docker/setup-buildx-action@v1
-              with:
-                  install: true
-            - name: Login to DockerHub
-              uses: docker/login-action@v1
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_PASSWORD }}
-            - name: Build the Docker image
-              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push .
+  build:
+    runs-on: ubuntu-latest
+    environment: dockerhub
+    steps:
+      - name: Get Release Tag
+        run: echo "TAG_NAME=${{ github.event.ref }}" | sed "s/refs\/tags\/release_//" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build the frontend Docker image
+        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push ./frontend
+      - name: Build the worker Docker image
+        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq-woerker:latest -t jdkula/audio-hq-woerker:stable -t jdkula/audio-hq-woerker:${{ env.TAG_NAME }} -t jdkula/audio-hq-worker:main --push ./frontend

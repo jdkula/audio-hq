@@ -1,0 +1,72 @@
+version: '3.9'
+volumes:
+  db_data:
+services:
+  mock-s3-setup:
+    image: curlimages/curl:latest
+    depends_on:
+      - mock-s3
+    entrypoint: 'curl -X PUT http://mock-s3:5000/audio-hq-test-files -d ""'
+    restart: 'on-failure'
+    profiles:
+      - local-test
+  mock-s3:
+    image: motoserver/moto:latest
+    ports:
+      - "5000:5000"
+    profiles:
+      - local-test
+  worker:
+    image: jdkula/audio-hq-worker
+    build: ./worker
+    environment:
+      NEXT_PUBLIC_HASURA_URL_HTTP: 'http://graphql-engine:8080/v1/graphql'
+      NEXT_PUBLIC_HASURA_URL_WS: 'ws://graphql-engine:8080/v1/graphql'
+      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
+    restart: unless-stopped
+    profiles:
+      - worker
+    depends_on:
+      - graphql-engine
+  audio-hq:
+    image: jdkula/audio-hq
+    build: ./frontend
+    ports:
+      - "3000:8080"
+    environment:
+      NEXT_PUBLIC_HASURA_URL_HTTP: 'http://localhost:8080/v1/graphql'
+      NEXT_PUBLIC_HASURA_WS_HTTP: 'ws://localhost:8080/v1/graphql'
+    profiles:
+      - frontend
+  postgres:
+    image: postgres:12
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+  graphql-engine:
+    image: hasura/graphql-engine:v2.6.2
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "postgres"
+    restart: unless-stopped
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres"
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      HASURA_GRAPHQL_DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres"
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false" # set to "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      ## uncomment next line to set an admin secret
+      HASURA_GRAPHQL_ADMIN_SECRET: "${HASURA_GRAPHQL_ADMIN_SECRET}"
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
