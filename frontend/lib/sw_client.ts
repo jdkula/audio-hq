@@ -109,13 +109,11 @@ export function useShouldCache() {
                     .persist()
                     .then((persisted) => {
                         if (!persisted) {
-                            console.warn('Could not persist');
-                            shouldCacheLRV.value = false;
+                            console.warn('Could not persist; storage may not work');
                         }
                     })
                     .catch((e) => {
-                        console.warn('Could not persist', e);
-                        shouldCacheLRV.value = false;
+                        console.warn('Could not persist; storage may not work', e);
                     });
             }
         } else {
