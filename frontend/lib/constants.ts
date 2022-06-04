@@ -33,3 +33,7 @@ export const kMaxRecents = 5 as const;
 
 // The default volume level
 export const kDefaultVolume = 0.2 as const;
+
+// The maximum amount we allow the audio to drift from what's defined on the server before
+//  correcting it
+export const kMaxAudioDriftAllowance = 1.5 as const;

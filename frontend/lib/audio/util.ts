@@ -4,7 +4,7 @@
  * Provides a small set of utility functions used for managing tracks and decks
  */
 import { differenceInMilliseconds, getUnixTime } from 'date-fns';
-import { File_Minimum, Deck_Minimum } from '../urql/graphql_type_helper';
+import { File_Minimum, Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
 import { isDefined } from '../utility/util';
 
 interface CurrentFileInfo {
@@ -59,15 +59,15 @@ interface AudioTimes {
 }
 
 export function getTimes(status: Deck_Minimum): Pick<AudioTimes, 'totalSeconds' | 'secondsIntoLoop'>;
-export function getTimes(status: Deck_Minimum, currentQueueEntryId: string): AudioTimes;
-export function getTimes(status: Deck_Minimum, currentQueueEntryId?: string): Partial<AudioTimes> {
+export function getTimes(status: Deck_Minimum, queueEntry: Track_Minimum): AudioTimes;
+export function getTimes(status: Deck_Minimum, queueEntry?: Track_Minimum): Partial<AudioTimes> {
     // TODO: Keep track of speed, too.
     const secondsSinceStart = differenceInMilliseconds(new Date(), new Date(status.start_timestamp)) / 1000;
     let startTime = 0;
     let endTime = 0;
     let found = false;
     const totalSeconds = status.queue.reduce((prev, cur) => {
-        if (cur.id === currentQueueEntryId) {
+        if (cur.file.id === queueEntry?.file.id) {
             found = true;
             startTime = prev;
             endTime = prev + cur.file.length / status.speed;
@@ -77,14 +77,14 @@ export function getTimes(status: Deck_Minimum, currentQueueEntryId?: string): Pa
 
     const secondsIntoLoop = secondsSinceStart % totalSeconds;
 
-    if (!currentQueueEntryId) {
+    if (!queueEntry) {
         return {
             secondsIntoLoop,
             totalSeconds,
         };
     }
 
-    if (!found && currentQueueEntryId) {
+    if (!found && queueEntry) {
         throw new Error("This track wasn't found in the current play status!");
     }
 

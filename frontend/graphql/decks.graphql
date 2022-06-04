@@ -1,0 +1,72 @@
+fragment TrackInfo on track {
+    id
+    created_at
+    file {
+        ...FileInfo
+    }
+    deck_id
+    ordering
+}
+
+fragment DeckInfo on deck {
+    id
+    type
+
+    volume
+    speed
+    pause_timestamp
+    start_timestamp
+
+    queue {
+        ...TrackInfo
+    }
+
+    workspace_id
+    created_at
+}
+
+query Decks($workspaceId: uuid!) {
+    workspace_by_pk(id: $workspaceId) {
+        id
+        decks {
+            ...DeckInfo
+        }
+    }
+}
+
+mutation StopDeck($deckId: uuid!) {
+    delete_deck_by_pk(id: $deckId) {
+        id
+        workspace_id
+    }
+}
+
+mutation UpdateDeck($deckId: uuid!, $update: deck_set_input!) {
+    update_deck_by_pk(pk_columns: { id: $deckId }, _set: $update) {
+        ...DeckInfo
+    }
+}
+
+mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boolean! = false) {
+    delete_track(where: { deck: { workspace_id: { _eq: $workspaceId }, type: { _eq: main } } }) @include(if: $isMain) {
+        affected_rows
+        returning {
+            id
+        }
+    }
+    insert_deck_one(object: $deck) {
+        ...DeckInfo
+    }
+}
+
+mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!, $dummy: timestamptz!) {
+    delete_track(where: { deck: { id: { _eq: $deckId } } }) {
+        affected_rows
+    }
+    insert_track(objects: $newQueue) {
+        affected_rows
+    }
+    update_deck_by_pk(pk_columns: { id: $deckId }, _set: { start_timestamp: now, dummy: $dummy }) {
+        ...DeckInfo
+    }
+}

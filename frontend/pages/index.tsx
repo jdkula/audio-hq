@@ -35,7 +35,7 @@ import {
 import { useShouldCache } from '~/lib/sw_client';
 import { usePeriodicEffect } from '~/lib/utility/hooks';
 import { useLocalRecents, useColorMode, ColorMode } from '~/lib/utility/usePersistentData';
-import { humanFileSize } from '~/lib/utility/util';
+import { humanFileSize, isDefined } from '~/lib/utility/util';
 
 const GlobalFull = () => (
     <Global
@@ -126,8 +126,12 @@ export default function Home(): React.ReactElement {
     usePeriodicEffect(
         2000,
         () => {
-            navigator.storage.estimate().then((estimate) => {
-                setCurrentlyUsedData(estimate.usage ?? null);
+            navigator.storage.estimate().then((estimate: any) => {
+                if (estimate.usageDetails) {
+                    setCurrentlyUsedData(estimate.usageDetails?.caches ?? 0);
+                } else {
+                    setCurrentlyUsedData(estimate.usage ?? null);
+                }
             });
         },
         [shouldCache],
@@ -172,7 +176,8 @@ export default function Home(): React.ReactElement {
                         <Box>
                             <Typography>NEW! Offline Mode</Typography>
                             <Typography variant="body2">
-                                Current usage: {currentlyUsedData ? humanFileSize(currentlyUsedData, true) : '...'}
+                                Current usage:{' '}
+                                {isDefined(currentlyUsedData) ? humanFileSize(currentlyUsedData, true) : '...'}
                             </Typography>
                         </Box>
                     }

@@ -10,6 +10,7 @@ import { FileManager } from '../useWorkspaceDetails';
 import { shouldCacheLRV } from '../sw_client';
 import { globalVolumeLRV } from '../utility/usePersistentData';
 import { getTimes } from './util';
+import { kMaxAudioDriftAllowance } from '../constants';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -25,6 +26,7 @@ export class Track extends EventEmitter {
         this._audio.crossOrigin = 'anonymous';
         this._audio.volume = 0;
         this._audio.loop = false;
+        this._audio.preload = 'auto';
         this._audio.autoplay = true;
 
         this.once('internal_audioplayable', this.oncanplay.bind(this));
@@ -45,9 +47,6 @@ export class Track extends EventEmitter {
         this._ready = true;
         this.update(this._status);
     }
-
-    private _startTime = 0;
-    private _endTime = 0;
 
     private onstart() {
         console.log('onstart called');
@@ -75,14 +74,12 @@ export class Track extends EventEmitter {
 
         if (!this._ready) return;
 
-        const times = getTimes(status, this._qe.id);
-        this._startTime = times.startTime;
-        this._endTime = times.endTime;
+        const times = getTimes(status, this._qe);
 
         const nextStart = (times.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
         const nextEnd = (times.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
 
-        if (times.myTurn && !status.pause_timestamp) {
+        if (times.myTurn && !status.pause_timestamp && globalVolumeLRV.value !== 0) {
             if (this._audio.paused) {
                 this._audio.play().catch((e) => {
                     console.warn(e);
@@ -90,7 +87,7 @@ export class Track extends EventEmitter {
                 });
             }
             const targetTime = (times.secondsIntoLoop - times.startTime) * this._status.speed;
-            if (Math.abs(this._audio.currentTime - targetTime) > 1.5) {
+            if (Math.abs(this._audio.currentTime - targetTime) > kMaxAudioDriftAllowance) {
                 // only update if we're off by more than 3/2 a second. Prevents skipping with
                 // extra updates.
                 this._audio.currentTime = targetTime;
@@ -99,6 +96,9 @@ export class Track extends EventEmitter {
             this._audio.playbackRate = this._status.speed;
         } else {
             this._audio.volume = 0;
+            if (!this._audio.paused) {
+                this._audio.pause();
+            }
         }
 
         if (status.queue.length !== 1) {
@@ -108,13 +108,11 @@ export class Track extends EventEmitter {
                 clearTimeout(startHandle);
                 clearTimeout(endHandle);
             };
-            console.log('Set timeouts: ', { nextStart, nextEnd });
         } else {
             const startHandle = setTimeout(this.onstart.bind(this), nextStart * 1000);
             this._stopTimeouts = () => {
                 clearTimeout(startHandle);
             };
-            console.log('Set timeouts: ', { nextStart, status });
         }
     }
 

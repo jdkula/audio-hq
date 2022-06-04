@@ -66,6 +66,8 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                                 const wsId = deck.workspace_id;
                                 if (wsId) {
                                     Mutation.addDeck(wsId, { ...deck }, cache);
+                                } else {
+                                    invalidateRootField(cache, 'workspace_by_pk');
                                 }
                             });
                         },
@@ -74,6 +76,8 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                             const wsId = result?.workspace_id ?? args.object.workspace_id;
                             if (wsId && result) {
                                 Mutation.addDeck(wsId, { ...result }, cache);
+                            } else {
+                                invalidateRootField(cache, 'workspace_by_pk');
                             }
                         },
                         delete_deck_by_pk(resultRaw, args: GQL.Mutation_RootDelete_Deck_By_PkArgs, cache) {
@@ -81,6 +85,8 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                             const wsId = result?.workspace_id;
                             if (wsId && result?.id) {
                                 Mutation.delDeck(wsId, result.id, cache);
+                            } else {
+                                invalidateRootField(cache, 'workspace_by_pk');
                             }
                         },
                         insert_track(
@@ -108,17 +114,22 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                                 }
                             }
                         },
-                    },
-                    Subscription: {
-                        event(result, args, cache) {
-                            const evt = (result.event as Array<Record<string, never>> | null)?.[0];
-                            console.log('Got event', evt);
-                            if (evt?.file) {
-                                invalidateRootField(cache, 'file');
-                            } else {
+                        update_deck_by_pk(result, _, cache) {
+                            if (!result.update_deck_by_pk) {
                                 invalidateRootField(cache, 'workspace_by_pk');
                             }
-                        },
+                        }
+                    },
+                    Subscription: {
+                        // event(result, args, cache) {
+                        //     const evt = (result.event as Array<Record<string, never>> | null)?.[0];
+                        //     console.log('Got event', evt);
+                        //     if (evt?.file) {
+                        //         invalidateRootField(cache, 'file');
+                        //     } else {
+                        //         invalidateRootField(cache, 'workspace_by_pk');
+                        //     }
+                        // },
                     },
                 },
                 optimistic: {

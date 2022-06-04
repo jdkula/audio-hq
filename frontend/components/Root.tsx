@@ -33,6 +33,7 @@ const Root: FC<{
     children?: React.ReactNode;
 }> = (props) => {
     const [{ data: workspaceRaw, fetching }] = useWorkspaceDetailQuery({
+        requestPolicy: 'cache-first',
         variables: { workspaceId: props.workspace ?? '' },
         pause: !props.workspace,
     });

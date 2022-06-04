@@ -1,7 +1,7 @@
 /**
  * workspace.ts
  * =============
- * Provides Audio HQ's
+ * Provides Audio HQ's workspace view (all the audio controls!)
  */
 
 import React, { FC, FunctionComponent, useContext, useEffect, useState } from 'react';

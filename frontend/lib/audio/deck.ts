@@ -31,12 +31,11 @@ export class Deck extends EventEmitter {
     isReferentFor(state: Deck_Minimum): boolean {
         return (
             state.queue.length === this._status.queue.length &&
-            this._status.queue.every((qem, idx) => qem.id === state.queue[idx].id)
+            this._status.queue.every((qem, idx) => qem.file.download_url === state.queue[idx].file.download_url)
         );
     }
 
     reconcile(newState: Deck_Minimum): boolean {
-        console.log('Got new state', newState);
         if (!this.isReferentFor(newState)) {
             return false;
         }

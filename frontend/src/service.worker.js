@@ -174,7 +174,12 @@ self.addEventListener('fetch', (event) => {
 
 /** Cache home page and workspace view on install */
 self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
     event.waitUntil(offlineEnabled().then((should) => should && cacheStatic()));
+});
+
+self.addEventListener('install', () => {
+    self.skipWaiting();
 });
 
 // <== Communication from frontend ==>
@@ -207,7 +212,9 @@ broadcastIn.onmessage = (ev) => {
 
         // <-- Turns off and deletes all data from the cache -->
         case 'cache-off': {
-            Promise.all([clearCache(audioCache), clearCache(appCache)]).then(() => updateCacheStateAll());
+            Promise.all([clearCache(audioCache), clearCache(appCache)])
+                .then(() => updateCacheStateAll())
+                .then(() => console.log('Cleared caches'));
             break;
         }
 

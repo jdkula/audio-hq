@@ -1,17 +1,23 @@
 subscription Events($workspaceId: uuid!) {
-    event(where: {workspace_id: {_eq: $workspaceId}}, limit: 1, order_by: [{time: desc}]) {
+    event(where: { workspace_id: { _eq: $workspaceId } }, limit: 1, order_by: [{ time: desc }]) {
         id
         workspace_id
         time
 
-        deck {
-            ...DeckInfo
-        }
-        track {
-            ...TrackInfo
-        }
-        file {
-            ...FileInfo
+        workspace {
+            id
+            created_at
+            updated_at
+            name
+            decks {
+                ...DeckInfo
+            }
+            files {
+                ...FileInfo
+            }
+            jobs {
+                ...JobInfo
+            }
         }
     }
 }
