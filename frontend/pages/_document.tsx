@@ -50,6 +50,8 @@ class MyDocument extends Document<DocumentAdditionalProps> {
 
         ctx.renderPage = () =>
             originalRenderPage({
+                // Too much rigamaroll to tell _document that App accepts an optional emotionCache prop.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 enhanceApp: (App: any) =>
                     function EnhancedApp(props) {
                         return <App emotionCache={cache} {...props} />;

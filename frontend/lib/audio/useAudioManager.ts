@@ -28,21 +28,13 @@ export default function useAudioManager(workspaceId: string) {
         document.removeEventListener('click', unblock);
     }, []);
 
-    const onFinish = useCallback((state: Deck_Minimum, track: Deck) => {
-        if (state.type === 'sfx') {
-            // TODO: Stop the track on finish if it's an sfx track
-        }
-    }, []);
-
     const createTrack = useCallback(
         (state: Deck_Minimum) => {
             const tr: Deck = new Deck(state, fileManager);
-            tr.on('loop', onFinish);
-            tr.on('next', onFinish);
             tr.on('blocked', () => setBlocked(true));
             return tr;
         },
-        [fileManager, onFinish],
+        [fileManager],
     );
 
     // <== Data Effects ==>
@@ -50,6 +42,7 @@ export default function useAudioManager(workspaceId: string) {
     useEffect(() => {
         return () => {
             mainTrack.current?.destroy();
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             for (const track of ambientTracks.current) {
                 track.destroy();
             }
