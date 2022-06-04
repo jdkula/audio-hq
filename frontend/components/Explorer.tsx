@@ -29,7 +29,7 @@ import {
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
-import { useAlt } from '~/lib/utility/hooks';
+import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
 import { isDefined } from '~/lib/utility/util';
 
@@ -108,6 +108,7 @@ const getFolders = (files: File_Minimum[], currentPath: string[]): string[] => {
 };
 
 export const Explorer: FC = () => {
+    const online = useIsOnline();
     const workspaceId = useContext(WorkspaceIdContext);
 
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
@@ -130,9 +131,11 @@ export const Explorer: FC = () => {
     const [, playDeck] = usePlayDeckMutation();
     const [, updateFile] = useUpdateFileMutation();
 
-    const currentFiles = viewingFavorites
-        ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(isDefined)
-        : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined);
+    const currentFiles = (
+        viewingFavorites
+            ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(isDefined)
+            : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined)
+    ).filter((file) => online || fileManager.cached.has(file.download_url));
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 

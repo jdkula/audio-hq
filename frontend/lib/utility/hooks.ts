@@ -56,3 +56,24 @@ export function useHash(): string {
 
     return hash;
 }
+
+/** Returns if we are online or not, or null if that information isn't available */
+export function useIsOnline(): boolean | null {
+    const [isOnline, setIsOnline] = useState<boolean | null>(null);
+
+    const setIsOnlineCallback = useCallback(() => {
+        setIsOnline(navigator.onLine ?? null);
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('online', setIsOnlineCallback);
+        window.addEventListener('offline', setIsOnlineCallback);
+        setIsOnlineCallback();
+        return () => {
+            window.removeEventListener('online', setIsOnlineCallback);
+            window.removeEventListener('offline', setIsOnlineCallback);
+        };
+    }, [setIsOnlineCallback]);
+
+    return isOnline;
+}

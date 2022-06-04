@@ -21,7 +21,7 @@ import {
 import AddFileDialog from '../AddFileDialog';
 import React, { FC, FunctionComponent, useContext, useState } from 'react';
 import Head from 'next/head';
-import { Add } from '@mui/icons-material';
+import { Add, OfflineBolt } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
@@ -34,6 +34,7 @@ import {
     FileManagerContext,
     WorkspaceLRVContext,
 } from '~/lib/utility/context';
+import { useIsOnline } from '~/lib/utility/hooks';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -52,20 +53,30 @@ const Spacer = styled.div`
     margin: 1rem;
 `;
 
-const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => (
-    <>
-        <Hidden smDown>
-            <Button variant="contained" color="secondary" onClick={startAdding} startIcon={<Add />}>
-                Add a Track
-            </Button>
-        </Hidden>
-        <Hidden smUp>
-            <Button variant="contained" color="secondary" onClick={startAdding}>
-                <Add />
-            </Button>
-        </Hidden>
-    </>
-);
+const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => {
+    const online = useIsOnline();
+
+    return (
+        <>
+            <Hidden smDown>
+                <Button
+                    variant="contained"
+                    color={'secondary'}
+                    onClick={startAdding}
+                    startIcon={!online ? <OfflineBolt /> : <Add />}
+                    disabled={!online}
+                >
+                    {!online ? 'Offline' : 'Add a Track'}
+                </Button>
+            </Hidden>
+            <Hidden smUp>
+                <Button variant="contained" color="secondary" onClick={startAdding} disabled={!online}>
+                    {!online ? <OfflineBolt /> : <Add />}
+                </Button>
+            </Hidden>
+        </>
+    );
+};
 
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspaceId = useContext(WorkspaceIdContext);
@@ -85,6 +96,8 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
+
+    const online = useIsOnline();
 
     return (
         <AppBar position="static" style={{ gridArea: 'header' }}>
@@ -113,7 +126,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                         )}
                     </Title>
                     {host && <GlobalVolumeSlider />}
-                    {!allCached && !isCaching && <DownloadCacheButton />}
+                    {!allCached && !isCaching && online !== false && <DownloadCacheButton />}
                     {host && <AddTrackButton startAdding={() => setAdding(true)} />}
                 </ToolbarContent>
             </Toolbar>
