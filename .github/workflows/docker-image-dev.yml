@@ -1,28 +1,30 @@
 name: Docker Image CI Dev
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        environment: dockerhub
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v1
-            - name: Set up Docker Buildx
-              id: buildx
-              uses: docker/setup-buildx-action@v1
-              with:
-                  install: true
-            - name: Login to DockerHub
-              uses: docker/login-action@v1
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_PASSWORD }}
-            - name: Build the Docker image
-              run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:dev -t jdkula/audio-hq:$(date +%Y-%m-%d.%H-%M-%S) -t jdkula/audio-hq:main --push ./frontend
+  build:
+    runs-on: ubuntu-latest
+    environment: dockerhub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build frontend image
+        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:dev -t jdkula/audio-hq:${{ env.GITHUB_SHA }} -t jdkula/audio-hq:main --push ./frontend
+      - name: Build worker image
+        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq-worker:latest -t jdkula/audio-hq-worker:dev -t jdkula/audio-hq-worker:${{ env.GITHUB_SHA }} -t jdkula/audio-hq-worker:main --push ./worker
