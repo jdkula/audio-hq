@@ -72,13 +72,16 @@ const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) =>
                         <Typography variant="button">{percent}%</Typography>
                     </Box>
                     {job.status === Job_Status_Enum_Enum.Error && (
-                        <Button onClick={() => setShowError(true)}>ERROR</Button>
+                        <>
+                            <Button onClick={() => setShowError(true)}>ERROR</Button>
+
+                            <Tooltip placement="top" title="Close job" arrow>
+                                <IconButton size="large" onClick={() => deleteJob({ jobId: job.id })}>
+                                    <CloseIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </>
                     )}
-                    <Tooltip placement="top" title="Hide job" arrow>
-                        <IconButton size="large" onClick={() => deleteJob({ jobId: job.id })}>
-                            <CloseIcon />
-                        </IconButton>
-                    </Tooltip>
                 </Box>
             </JobInnerContainer>
             {hasValue && <LinearProgress variant="determinate" value={percent} />}
