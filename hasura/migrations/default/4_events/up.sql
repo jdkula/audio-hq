@@ -8,6 +8,7 @@ CREATE TABLE public.event
     deck_id           uuid                 DEFAULT NULL,
     track_id          uuid                 DEFAULT NULL,
     file_id           uuid                 DEFAULT NULL,
+    PRIMARY KEY (id),
     FOREIGN KEY (workspace_id) REFERENCES public.workspace (id) ON UPDATE restrict ON DELETE cascade,
     FOREIGN KEY (deck_id) REFERENCES public.deck (id) ON UPDATE restrict ON DELETE set null,
     FOREIGN KEY (track_id) REFERENCES public.track (id) ON UPDATE restrict ON DELETE set null,
