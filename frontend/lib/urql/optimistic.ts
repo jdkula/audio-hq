@@ -1,3 +1,8 @@
+/**
+ * optimistic.ts
+ * ========
+ * Implements getters that retrieve optimistic results given some input
+ */
 import * as GQL from '../generated/graphql';
 import { gql } from 'urql';
 import { Cache } from '@urql/exchange-graphcache';

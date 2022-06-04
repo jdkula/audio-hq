@@ -1,3 +1,8 @@
+/**
+ * mutation.ts
+ * =============
+ * Implements some helper functiosn that operate on the urql graphcache
+ */
 import * as GQL from '../generated/graphql';
 import { Cache } from '@urql/exchange-graphcache';
 

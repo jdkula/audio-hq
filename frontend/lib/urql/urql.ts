@@ -1,3 +1,9 @@
+/**
+ * urql.ts
+ * ========
+ * Implements the URQL client, including optimistic resolvers and
+ * mutation update resolvers that allow Audio HQ to work offline
+ */
 import { createClient } from 'graphql-ws';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client, dedupExchange, errorExchange, fetchExchange, gql, subscriptionExchange } from 'urql';
@@ -118,18 +124,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                             if (!result.update_deck_by_pk) {
                                 invalidateRootField(cache, 'workspace_by_pk');
                             }
-                        }
-                    },
-                    Subscription: {
-                        // event(result, args, cache) {
-                        //     const evt = (result.event as Array<Record<string, never>> | null)?.[0];
-                        //     console.log('Got event', evt);
-                        //     if (evt?.file) {
-                        //         invalidateRootField(cache, 'file');
-                        //     } else {
-                        //         invalidateRootField(cache, 'workspace_by_pk');
-                        //     }
-                        // },
+                        },
                     },
                 },
                 optimistic: {

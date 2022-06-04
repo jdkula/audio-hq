@@ -1,3 +1,11 @@
+/**
+ * Root.tsx
+ * =========
+ * The top of the Workspace tree. Sets up all
+ * the required Contexts, and is responsible for the
+ * "audio blocked" notification.
+ */
+
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';

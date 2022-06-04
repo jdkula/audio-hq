@@ -1,3 +1,9 @@
+/**
+ * LoadingPage.tsx
+ * ================
+ * Provides a basic page that shows the currently-loading workspace while we
+ * gather data.
+ */
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Head from 'next/head';
 import React, { FC } from 'react';

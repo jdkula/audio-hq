@@ -1,3 +1,6 @@
+/**
+ * Mini list header extension on Typography
+ */
 import { Typography } from '@mui/material';
 import { FC, ReactNode } from 'react';
 

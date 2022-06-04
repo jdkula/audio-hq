@@ -1,3 +1,9 @@
+/**
+ * graphql_type_helper.ts
+ * =======================
+ * Implements some convenience types that contain all the fields we
+ * query for each type, so we can pass gql results around
+ */
 import { Deck, File, Job, Track } from '../generated/graphql';
 
 export type Deck_Minimum = Omit<Deck, '__typename' | 'workspace_id' | 'workspace' | 'queue' | 'created_at'> & {

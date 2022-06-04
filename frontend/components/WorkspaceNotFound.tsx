@@ -1,3 +1,9 @@
+/**
+ * WorkspaceNotFound.tsx
+ * ======================
+ * Based on the loading page – shows that a workspace with the
+ * given ID was not found.
+ */
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import Head from 'next/head';
 import React, { FC } from 'react';
