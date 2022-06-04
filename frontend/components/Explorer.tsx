@@ -147,6 +147,7 @@ export const Explorer: FC = () => {
                 pause_timestamp: null,
                 type: Deck_Type_Enum_Enum.Main,
                 queue: { data: queue.map((id, i) => ({ file_id: id, ordering: i })) },
+                dummy: new Date().toISOString(),
             },
         });
     };

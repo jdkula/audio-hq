@@ -1,0 +1,1 @@
+ALTER TABLE public.deck DROP COLUMN dummy;

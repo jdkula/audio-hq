@@ -62,6 +62,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
                 start_timestamp: new Date().toISOString(),
+                dummy: new Date().toISOString(),
             },
         });
     };
@@ -77,6 +78,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
                 start_timestamp: new Date().toISOString(),
+                dummy: new Date().toISOString(),
             },
         });
     };
@@ -97,6 +99,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 type: Deck_Type_Enum_Enum.Sfx,
                 pause_timestamp: null,
                 start_timestamp: new Date().toISOString(),
+                dummy: new Date().toISOString(),
             },
         });
     };

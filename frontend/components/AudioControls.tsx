@@ -81,7 +81,8 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
     const [, stopPlaying] = useStopDeckMutation();
 
     const updateDeck = useCallback(
-        (update: UpdateDeckMutationVariables['update']) => updateDeckInternal({ deckId: state.id, update }),
+        (update: UpdateDeckMutationVariables['update']) =>
+            updateDeckInternal({ deckId: state.id, update: { ...update, dummy: new Date().toISOString() } }),
         [state, updateDeckInternal],
     );
 

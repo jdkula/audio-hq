@@ -208,6 +208,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
 
     return new Client({
         url: addresses.http,
+        requestPolicy: 'cache-and-network',
         exchanges: [
             devtoolsExchange,
             errorExchange({
@@ -282,14 +283,10 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         event(result, args, cache) {
                             const evt = (result.event as Array<Record<string, never>> | null)?.[0];
                             console.log('Got event', evt);
-                            if (evt?.deck || evt?.track) {
-                                invalidateRootField(cache, 'deck');
-                            } else if (evt?.file) {
+                            if (evt?.file) {
                                 invalidateRootField(cache, 'file');
                             } else {
-                                // Something was deleted– refresh all.
-                                invalidateRootField(cache, 'deck');
-                                invalidateRootField(cache, 'file');
+                                invalidateRootField(cache, 'workspace_by_pk');
                             }
                         },
                     },
@@ -460,7 +457,7 @@ function createUrqlClient(addresses: UrqlAddresses): Client {
                         const retDeck = {
                             ...deck,
                             pause_timestamp: final_pause,
-                            start_timestamp: new Date(start_timestamp).toISOString(),
+                            start_timestamp,
                             speed: args._set?.speed ?? deck.speed,
                             volume: args._set?.volume ?? deck.volume,
                         };

@@ -11,14 +11,14 @@ mutation UpdateDeck($deckId: uuid!, $update: deck_set_input!) {
     }
 }
 
-mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
+mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!, $dummy: timestamptz!) {
     delete_track(where: {deck: {id: {_eq: $deckId}}}) {
         affected_rows
     }
     insert_track(objects: $newQueue) {
         affected_rows
     }
-    update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now}) {
+    update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now, dummy: $dummy}) {
         ...DeckInfo
     }
 }
