@@ -29,4 +29,4 @@ jobs:
       - name: Build the frontend Docker image
         run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:${{ env.TAG_NAME }} -t jdkula/audio-hq:main --push ./frontend
       - name: Build the worker Docker image
-        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq-woerker:latest -t jdkula/audio-hq-woerker:stable -t jdkula/audio-hq-woerker:${{ env.TAG_NAME }} -t jdkula/audio-hq-worker:main --push ./frontend
+        run: docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq-worker:latest -t jdkula/audio-hq-worker:stable -t jdkula/audio-hq-worker:${{ env.TAG_NAME }} -t jdkula/audio-hq-worker:main --push ./frontend
