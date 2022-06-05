@@ -20,7 +20,10 @@ fragment FullJob on job {
     id
     workspace_id
     url
-    file_upload
+    file_upload {
+        id
+        base64
+    }
 
     progress
     status
@@ -52,7 +55,10 @@ mutation ClaimDeleteJob($myId: uuid!) {
 
 mutation UpdateJobProgress($jobId: uuid!, $progressStage: job_status_enum_enum!, $progress: numeric!) {
     update_job_by_pk(pk_columns: { id: $jobId }, _set: { status: $progressStage, progress: $progress }) {
-        ...FullJob
+        id
+        progress
+        status
+        assigned_worker
     }
 }
 

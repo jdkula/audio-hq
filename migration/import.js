@@ -24,13 +24,40 @@ for (const workspace of input) {
 }
 
 const client = new urql.Client({
-  url: "http://localhost:8080/v1/graphql",
+  url: process.env.NEXT_PUBLIC_HASURA_URL_HTTP,
   fetchOptions: {
     headers: {
       "X-Hasura-Admin-Secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET,
     },
   },
 });
+
+// client
+//   .query(
+//     `
+// query {
+//   file {
+//     id
+//   }
+// }
+// `
+//   )
+//   .toPromise()
+//   .then((value) => {
+//     const djob = value.data.file.map((file) => ({ file_id: file.id }));
+//     return client
+//       .mutation(
+//         `
+//     mutation DeleteAll($djobs: [delete_job_insert_input!]!) {
+//       insert_delete_job(objects: $djobs) {
+//         affected_rows
+//       }
+//     }
+//   `,
+//         { djobs: djob }
+//       )
+//       .toPromise();
+//   });
 
 client
   .mutation(
@@ -48,7 +75,7 @@ client
         insert_workspace(objects: $workspaces) {
           affected_rows
         }
-        insert_jobs(objects: $jobs) {
+        insert_job(objects: $jobs) {
           affected_rows
         }
       }

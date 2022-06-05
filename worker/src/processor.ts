@@ -16,11 +16,15 @@ import {
     CommitJobMutation,
     CommitJobMutationVariables,
     File_Type_Enum_Enum,
+    Job_Status_Enum_Enum,
     UpdateJobProgressDocument,
+    UpdateJobProgressMutation,
+    UpdateJobProgressMutationVariables,
 } from './generated/graphql';
 import { Client } from '@urql/core';
 import fsProm from 'fs/promises';
 import { Logger } from 'tslog';
+import { myid } from './id';
 
 interface ConvertOptions {
     cut?:
@@ -76,17 +80,28 @@ export class Processor {
 
     private async updateProgress(jobId: string, progress: number, progressStage: string) {
         processorLog.silly(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
-        await this._client
-            .mutation(UpdateJobProgressDocument, {
-                jobId,
-                progress,
-                progressStage,
-            })
-            .toPromise();
+        try {
+            const updateData = await this._client
+                .mutation<UpdateJobProgressMutation, UpdateJobProgressMutationVariables>(UpdateJobProgressDocument, {
+                    jobId,
+                    progress,
+                    progressStage: progressStage as Job_Status_Enum_Enum,
+                })
+                .toPromise();
+
+            if (updateData.data?.update_job_by_pk?.assigned_worker !== myid) {
+                processorLog.fatal("Started work on a job we don't own, exiting now!!");
+                process.exit(1);
+            }
+        } catch (e) {
+            processorLog.warn('Could not update progress', e);
+        }
     }
 
     async saveInput(input_b64: string) {
-        input_b64 = Buffer.from(input_b64.substring(2), 'hex').toString();
+        if (input_b64.startsWith('\\x')) {
+            input_b64 = Buffer.from(input_b64.substring(2), 'hex').toString();
+        }
         const b64 = input_b64.replace(/^data:.*?;base64,/, '');
         const type = input_b64.replace(/;base64,.*$/, '').replace(/^data:.*?\//, '');
         const uuid = v4();

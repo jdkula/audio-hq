@@ -1,16 +1,20 @@
 table:
   schema: public
   name: job
+object_relationships:
+  - name: file_upload
+    using:
+      foreign_key_constraint_on: file_upload_id
 insert_permissions:
   - role: anonymous
     permission:
       check: {}
       columns:
         - description
-        - file_upload
+        - file_upload_id
         - name
-        - option_cut_start
         - option_cut_end
+        - option_cut_start
         - option_fade_in
         - option_fade_out
         - path
@@ -26,6 +30,7 @@ select_permissions:
         - created_at
         - description
         - error
+        - file_upload_id
         - id
         - name
         - option_cut_end
@@ -41,22 +46,22 @@ select_permissions:
   - role: worker
     permission:
       columns:
+        - assign_time
         - assigned_worker
+        - created_at
         - description
-        - file_upload
+        - file_upload_id
         - id
         - name
-        - option_cut_start
         - option_cut_end
+        - option_cut_start
         - option_fade_in
         - option_fade_out
         - path
         - progress
         - status
-        - assign_time
         - url
         - workspace_id
-        - created_at
       filter: {}
 update_permissions:
   - role: worker

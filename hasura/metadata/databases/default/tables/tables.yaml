@@ -4,6 +4,7 @@
 - "!include public_event.yaml"
 - "!include public_file.yaml"
 - "!include public_file_type_enum.yaml"
+- "!include public_file_upload.yaml"
 - "!include public_job.yaml"
 - "!include public_job_status_enum.yaml"
 - "!include public_track.yaml"

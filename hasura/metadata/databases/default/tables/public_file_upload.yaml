@@ -1,0 +1,26 @@
+table:
+  schema: public
+  name: file_upload
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - base64
+      backend_only: false
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+      filter: {}
+  - role: worker
+    permission:
+      columns:
+        - base64
+        - id
+      filter: {}
+delete_permissions:
+  - role: worker
+    permission:
+      filter: {}

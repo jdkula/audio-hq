@@ -63,7 +63,8 @@ BEGIN
                      WHERE assigned_worker IS NULL
                         OR EXTRACT(EPOCH FROM (now() - w.last_check_in)) > 60        -- >60s since worker check-in
                         OR EXTRACT(EPOCH FROM (now() - job.assign_time)) > (60 * 30) -- >30m since assigned
-                     LIMIT 1)
+                     LIMIT 1
+                     FOR UPDATE OF job)
     UPDATE job
     SET assigned_worker = worker_id,
         assign_time     = now(),
@@ -86,7 +87,8 @@ BEGIN
     WITH limiter AS (SELECT id
                      FROM delete_job
                      WHERE assigned_worker IS NULL
-                     LIMIT 1)
+                     LIMIT 1
+                     FOR UPDATE OF delete_job)
     UPDATE delete_job
     SET assigned_worker = worker_id,
         status          = 'assigned'

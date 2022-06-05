@@ -13,7 +13,6 @@ export type Scalars = {
   Int: number;
   Float: number;
   bigint: number;
-  bytea: string;
   float8: number;
   jsonb: any;
   numeric: number;
@@ -65,19 +64,6 @@ export type Bigint_Comparison_Exp = {
   _lte?: InputMaybe<Scalars['bigint']>;
   _neq?: InputMaybe<Scalars['bigint']>;
   _nin?: InputMaybe<Array<Scalars['bigint']>>;
-};
-
-/** Boolean expression to compare columns of type "bytea". All fields are combined with logical 'AND'. */
-export type Bytea_Comparison_Exp = {
-  _eq?: InputMaybe<Scalars['bytea']>;
-  _gt?: InputMaybe<Scalars['bytea']>;
-  _gte?: InputMaybe<Scalars['bytea']>;
-  _in?: InputMaybe<Array<Scalars['bytea']>>;
-  _is_null?: InputMaybe<Scalars['Boolean']>;
-  _lt?: InputMaybe<Scalars['bytea']>;
-  _lte?: InputMaybe<Scalars['bytea']>;
-  _neq?: InputMaybe<Scalars['bytea']>;
-  _nin?: InputMaybe<Array<Scalars['bytea']>>;
 };
 
 export type Claim_Delete_Job_Args = {
@@ -281,6 +267,45 @@ export type File_Type_Enum_Enum_Comparison_Exp = {
   _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
 };
 
+/** columns and relationships of "file_upload" */
+export type File_Upload = {
+  __typename?: 'file_upload';
+  base64: Scalars['String'];
+  id: Scalars['uuid'];
+};
+
+/** Boolean expression to filter rows from the table "file_upload". All fields are combined with a logical 'AND'. */
+export type File_Upload_Bool_Exp = {
+  _and?: InputMaybe<Array<File_Upload_Bool_Exp>>;
+  _not?: InputMaybe<File_Upload_Bool_Exp>;
+  _or?: InputMaybe<Array<File_Upload_Bool_Exp>>;
+  base64?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** response of any mutation on the table "file_upload" */
+export type File_Upload_Mutation_Response = {
+  __typename?: 'file_upload_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<File_Upload>;
+};
+
+/** Ordering options when selecting data from "file_upload". */
+export type File_Upload_Order_By = {
+  base64?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "file_upload" */
+export enum File_Upload_Select_Column {
+  /** column name */
+  Base64 = 'base64',
+  /** column name */
+  Id = 'id'
+}
+
 /** Boolean expression to compare columns of type "float8". All fields are combined with logical 'AND'. */
 export type Float8_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['float8']>;
@@ -301,7 +326,9 @@ export type Job = {
   assigned_worker?: Maybe<Scalars['uuid']>;
   created_at: Scalars['timestamptz'];
   description: Scalars['String'];
-  file_upload?: Maybe<Scalars['bytea']>;
+  /** An object relationship */
+  file_upload?: Maybe<File_Upload>;
+  file_upload_id?: Maybe<Scalars['uuid']>;
   id: Scalars['uuid'];
   name: Scalars['String'];
   option_cut_end?: Maybe<Scalars['float8']>;
@@ -354,7 +381,8 @@ export type Job_Bool_Exp = {
   assigned_worker?: InputMaybe<Uuid_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
-  file_upload?: InputMaybe<Bytea_Comparison_Exp>;
+  file_upload?: InputMaybe<File_Upload_Bool_Exp>;
+  file_upload_id?: InputMaybe<Uuid_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   option_cut_end?: InputMaybe<Float8_Comparison_Exp>;
@@ -379,6 +407,7 @@ export type Job_Max_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -396,6 +425,7 @@ export type Job_Min_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -422,7 +452,8 @@ export type Job_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
-  file_upload?: InputMaybe<Order_By>;
+  file_upload?: InputMaybe<File_Upload_Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -452,7 +483,7 @@ export enum Job_Select_Column {
   /** column name */
   Description = 'description',
   /** column name */
-  FileUpload = 'file_upload',
+  FileUploadId = 'file_upload_id',
   /** column name */
   Id = 'id',
   /** column name */
@@ -620,6 +651,10 @@ export type Mutation_Root = {
   delete_file?: Maybe<File_Mutation_Response>;
   /** delete single row from the table: "file" */
   delete_file_by_pk?: Maybe<File>;
+  /** delete data from the table: "file_upload" */
+  delete_file_upload?: Maybe<File_Upload_Mutation_Response>;
+  /** delete single row from the table: "file_upload" */
+  delete_file_upload_by_pk?: Maybe<File_Upload>;
   /** delete data from the table: "job" */
   delete_job?: Maybe<Job_Mutation_Response>;
   /** delete single row from the table: "job" */
@@ -693,6 +728,18 @@ export type Mutation_RootDelete_FileArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_File_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_File_UploadArgs = {
+  where: File_Upload_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_File_Upload_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -831,6 +878,10 @@ export type Query_Root = {
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "file_upload" */
+  file_upload: Array<File_Upload>;
+  /** fetch data from the table: "file_upload" using primary key columns */
+  file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
@@ -879,6 +930,20 @@ export type Query_RootFile_By_PkArgs = {
 };
 
 
+export type Query_RootFile_UploadArgs = {
+  distinct_on?: InputMaybe<Array<File_Upload_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<File_Upload_Order_By>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
+export type Query_RootFile_Upload_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
 export type Query_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -918,6 +983,10 @@ export type Subscription_Root = {
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "file_upload" */
+  file_upload: Array<File_Upload>;
+  /** fetch data from the table: "file_upload" using primary key columns */
+  file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
@@ -962,6 +1031,20 @@ export type Subscription_RootFileArgs = {
 
 
 export type Subscription_RootFile_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFile_UploadArgs = {
+  distinct_on?: InputMaybe<Array<File_Upload_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<File_Upload_Order_By>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
+export type Subscription_RootFile_Upload_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1138,14 +1221,14 @@ export type MyJobsSubscriptionSubscriptionVariables = Exact<{
 
 export type MyJobsSubscriptionSubscription = { __typename?: 'subscription_root', job: Array<{ __typename?: 'job', id: string }> };
 
-export type FullJobFragment = { __typename?: 'job', id: string, workspace_id: string, url?: string | null, file_upload?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null };
+export type FullJobFragment = { __typename?: 'job', id: string, workspace_id: string, url?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null, file_upload?: { __typename?: 'file_upload', id: string, base64: string } | null };
 
 export type ClaimJobMutationVariables = Exact<{
   myId: Scalars['uuid'];
 }>;
 
 
-export type ClaimJobMutation = { __typename?: 'mutation_root', claim_job?: { __typename?: 'job', id: string, workspace_id: string, url?: string | null, file_upload?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null } | null };
+export type ClaimJobMutation = { __typename?: 'mutation_root', claim_job?: { __typename?: 'job', id: string, workspace_id: string, url?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null, file_upload?: { __typename?: 'file_upload', id: string, base64: string } | null } | null };
 
 export type ClaimDeleteJobMutationVariables = Exact<{
   myId: Scalars['uuid'];
@@ -1161,7 +1244,7 @@ export type UpdateJobProgressMutationVariables = Exact<{
 }>;
 
 
-export type UpdateJobProgressMutation = { __typename?: 'mutation_root', update_job_by_pk?: { __typename?: 'job', id: string, workspace_id: string, url?: string | null, file_upload?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null } | null };
+export type UpdateJobProgressMutation = { __typename?: 'mutation_root', update_job_by_pk?: { __typename?: 'job', id: string, progress?: number | null, status: Job_Status_Enum_Enum, assigned_worker?: string | null } | null };
 
 export type CommitJobMutationVariables = Exact<{
   jobId: Scalars['uuid'];
@@ -1185,7 +1268,7 @@ export type SetJobErrorMutationVariables = Exact<{
 }>;
 
 
-export type SetJobErrorMutation = { __typename?: 'mutation_root', update_job_by_pk?: { __typename?: 'job', id: string, workspace_id: string, url?: string | null, file_upload?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null } | null };
+export type SetJobErrorMutation = { __typename?: 'mutation_root', update_job_by_pk?: { __typename?: 'job', id: string, workspace_id: string, url?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null, file_upload?: { __typename?: 'file_upload', id: string, base64: string } | null } | null };
 
 export type CheckInMutationVariables = Exact<{
   myId: Scalars['uuid'];
@@ -1199,7 +1282,10 @@ export const FullJobFragmentDoc = gql`
   id
   workspace_id
   url
-  file_upload
+  file_upload {
+    id
+    base64
+  }
   progress
   status
   name
@@ -1256,10 +1342,13 @@ export const UpdateJobProgressDocument = gql`
     pk_columns: {id: $jobId}
     _set: {status: $progressStage, progress: $progress}
   ) {
-    ...FullJob
+    id
+    progress
+    status
+    assigned_worker
   }
 }
-    ${FullJobFragmentDoc}`;
+    `;
 export const CommitJobDocument = gql`
     mutation CommitJob($jobId: uuid!, $file: file_insert_input!) {
   delete_job_by_pk(id: $jobId) {

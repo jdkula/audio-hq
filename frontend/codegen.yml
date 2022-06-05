@@ -1,28 +1,28 @@
 overwrite: true
 schema:
-  - "http://localhost:8080/v1/graphql":
-      headers:
-        "X-Hasura-Admin-Secret": "${HASURA_GRAPHQL_ADMIN_SECRET}"
-        "X-Hasura-Role": "anonymous"
-documents: "graphql/**/*.graphql"
+    - 'https://api.audio-hq.jdkula.dev/v1/graphql':
+          headers:
+              'X-Hasura-Admin-Secret': '${HASURA_GRAPHQL_ADMIN_SECRET}'
+              'X-Hasura-Role': 'anonymous'
+documents: 'graphql/**/*.graphql'
 generates:
-  lib/generated/graphql.tsx:
-    config:
-      defaultScalarType: unknown
-      scalars:
-        bytea: string
-        jsonb: any
-        numeric: number
-        timestamptz: string
-        uuid: string
-        bigint: number
-    plugins:
-      - "typescript"
-      - "typescript-operations"
-      - "typescript-urql"
-  lib/generated/schema.ts:
-    plugins:
-      - "urql-introspection"
-  graphql.schema.json:
-    plugins:
-      - "introspection"
+    lib/generated/graphql.tsx:
+        config:
+            defaultScalarType: unknown
+            scalars:
+                bytea: string
+                jsonb: any
+                numeric: number
+                timestamptz: string
+                uuid: string
+                bigint: number
+        plugins:
+            - 'typescript'
+            - 'typescript-operations'
+            - 'typescript-urql'
+    lib/generated/schema.ts:
+        plugins:
+            - 'urql-introspection'
+    graphql.schema.json:
+        plugins:
+            - 'introspection'

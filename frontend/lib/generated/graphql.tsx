@@ -14,7 +14,6 @@ export type Scalars = {
   Int: number;
   Float: number;
   bigint: number;
-  bytea: string;
   float8: unknown;
   jsonb: any;
   numeric: number;
@@ -679,6 +678,50 @@ export type File_Type_Enum_Enum_Comparison_Exp = {
   _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
 };
 
+/** columns and relationships of "file_upload" */
+export type File_Upload = {
+  __typename?: 'file_upload';
+  id: Scalars['uuid'];
+};
+
+/** Boolean expression to filter rows from the table "file_upload". All fields are combined with a logical 'AND'. */
+export type File_Upload_Bool_Exp = {
+  _and?: InputMaybe<Array<File_Upload_Bool_Exp>>;
+  _not?: InputMaybe<File_Upload_Bool_Exp>;
+  _or?: InputMaybe<Array<File_Upload_Bool_Exp>>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** input type for inserting data into table "file_upload" */
+export type File_Upload_Insert_Input = {
+  base64?: InputMaybe<Scalars['String']>;
+};
+
+/** response of any mutation on the table "file_upload" */
+export type File_Upload_Mutation_Response = {
+  __typename?: 'file_upload_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<File_Upload>;
+};
+
+/** input type for inserting object relation for remote table "file_upload" */
+export type File_Upload_Obj_Rel_Insert_Input = {
+  data: File_Upload_Insert_Input;
+};
+
+/** Ordering options when selecting data from "file_upload". */
+export type File_Upload_Order_By = {
+  id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "file_upload" */
+export enum File_Upload_Select_Column {
+  /** column name */
+  Id = 'id'
+}
+
 /** order by var_pop() on columns of table "file" */
 export type File_Var_Pop_Order_By = {
   length?: InputMaybe<Order_By>;
@@ -718,6 +761,9 @@ export type Job = {
   created_at: Scalars['timestamptz'];
   description: Scalars['String'];
   error?: Maybe<Scalars['String']>;
+  /** An object relationship */
+  file_upload?: Maybe<File_Upload>;
+  file_upload_id?: Maybe<Scalars['uuid']>;
   id: Scalars['uuid'];
   name: Scalars['String'];
   option_cut_end?: Maybe<Scalars['float8']>;
@@ -776,6 +822,8 @@ export type Job_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
   error?: InputMaybe<String_Comparison_Exp>;
+  file_upload?: InputMaybe<File_Upload_Bool_Exp>;
+  file_upload_id?: InputMaybe<Uuid_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   option_cut_end?: InputMaybe<Float8_Comparison_Exp>;
@@ -792,7 +840,8 @@ export type Job_Bool_Exp = {
 /** input type for inserting data into table "job" */
 export type Job_Insert_Input = {
   description?: InputMaybe<Scalars['String']>;
-  file_upload?: InputMaybe<Scalars['bytea']>;
+  file_upload?: InputMaybe<File_Upload_Obj_Rel_Insert_Input>;
+  file_upload_id?: InputMaybe<Scalars['uuid']>;
   name?: InputMaybe<Scalars['String']>;
   option_cut_end?: InputMaybe<Scalars['float8']>;
   option_cut_start?: InputMaybe<Scalars['float8']>;
@@ -810,6 +859,7 @@ export type Job_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   error?: InputMaybe<Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -828,6 +878,7 @@ export type Job_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   error?: InputMaybe<Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -855,6 +906,8 @@ export type Job_Order_By = {
   created_at?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   error?: InputMaybe<Order_By>;
+  file_upload?: InputMaybe<File_Upload_Order_By>;
+  file_upload_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   option_cut_end?: InputMaybe<Order_By>;
@@ -880,6 +933,8 @@ export enum Job_Select_Column {
   Description = 'description',
   /** column name */
   Error = 'error',
+  /** column name */
+  FileUploadId = 'file_upload_id',
   /** column name */
   Id = 'id',
   /** column name */
@@ -1044,6 +1099,10 @@ export type Mutation_Root = {
   insert_deck_one?: Maybe<Deck>;
   /** insert data into the table: "delete_job" */
   insert_delete_job?: Maybe<Delete_Job_Mutation_Response>;
+  /** insert data into the table: "file_upload" */
+  insert_file_upload?: Maybe<File_Upload_Mutation_Response>;
+  /** insert a single row into the table: "file_upload" */
+  insert_file_upload_one?: Maybe<File_Upload>;
   /** insert data into the table: "job" */
   insert_job?: Maybe<Job_Mutation_Response>;
   /** insert a single row into the table: "job" */
@@ -1124,6 +1183,18 @@ export type Mutation_RootInsert_Deck_OneArgs = {
 /** mutation root */
 export type Mutation_RootInsert_Delete_JobArgs = {
   objects: Array<Delete_Job_Insert_Input>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_File_UploadArgs = {
+  objects: Array<File_Upload_Insert_Input>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_File_Upload_OneArgs = {
+  object: File_Upload_Insert_Input;
 };
 
 
@@ -1251,6 +1322,8 @@ export enum Order_By {
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** execute function "available_jobs" which returns "job" */
+  available_jobs: Array<Job>;
   /** fetch data from the table: "deck" */
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
@@ -1259,10 +1332,16 @@ export type Query_Root = {
   event: Array<Event>;
   /** fetch aggregated fields from the table: "event" */
   event_aggregate: Event_Aggregate;
+  /** fetch data from the table: "event" using primary key columns */
+  event_by_pk?: Maybe<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "file_upload" */
+  file_upload: Array<File_Upload>;
+  /** fetch data from the table: "file_upload" using primary key columns */
+  file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
@@ -1275,6 +1354,15 @@ export type Query_Root = {
   workspace: Array<Workspace>;
   /** fetch data from the table: "workspace" using primary key columns */
   workspace_by_pk?: Maybe<Workspace>;
+};
+
+
+export type Query_RootAvailable_JobsArgs = {
+  distinct_on?: InputMaybe<Array<Job_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Job_Order_By>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -1310,6 +1398,11 @@ export type Query_RootEvent_AggregateArgs = {
 };
 
 
+export type Query_RootEvent_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
 export type Query_RootFileArgs = {
   distinct_on?: InputMaybe<Array<File_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1320,6 +1413,20 @@ export type Query_RootFileArgs = {
 
 
 export type Query_RootFile_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Query_RootFile_UploadArgs = {
+  distinct_on?: InputMaybe<Array<File_Upload_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<File_Upload_Order_By>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
+export type Query_RootFile_Upload_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1367,6 +1474,8 @@ export type Query_RootWorkspace_By_PkArgs = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** execute function "available_jobs" which returns "job" */
+  available_jobs: Array<Job>;
   /** fetch data from the table: "deck" */
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
@@ -1375,10 +1484,16 @@ export type Subscription_Root = {
   event: Array<Event>;
   /** fetch aggregated fields from the table: "event" */
   event_aggregate: Event_Aggregate;
+  /** fetch data from the table: "event" using primary key columns */
+  event_by_pk?: Maybe<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "file_upload" */
+  file_upload: Array<File_Upload>;
+  /** fetch data from the table: "file_upload" using primary key columns */
+  file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
@@ -1391,6 +1506,15 @@ export type Subscription_Root = {
   workspace: Array<Workspace>;
   /** fetch data from the table: "workspace" using primary key columns */
   workspace_by_pk?: Maybe<Workspace>;
+};
+
+
+export type Subscription_RootAvailable_JobsArgs = {
+  distinct_on?: InputMaybe<Array<Job_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Job_Order_By>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -1426,6 +1550,11 @@ export type Subscription_RootEvent_AggregateArgs = {
 };
 
 
+export type Subscription_RootEvent_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
 export type Subscription_RootFileArgs = {
   distinct_on?: InputMaybe<Array<File_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1436,6 +1565,20 @@ export type Subscription_RootFileArgs = {
 
 
 export type Subscription_RootFile_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFile_UploadArgs = {
+  distinct_on?: InputMaybe<Array<File_Upload_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<File_Upload_Order_By>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
+export type Subscription_RootFile_Upload_By_PkArgs = {
   id: Scalars['uuid'];
 };
 

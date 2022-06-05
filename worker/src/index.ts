@@ -2,16 +2,15 @@ import { createUrqlClient } from './urql_worker';
 import * as GQL from './generated/graphql';
 import { pipe, subscribe } from 'wonka';
 import { Processor } from './processor';
-import { v4 } from 'uuid';
 import { AppFS } from './filesystems/FileSystem';
 
 import { Logger } from 'tslog';
+import { myid } from './id';
 
 const log = new Logger({ name: 'worker' });
 
 const client = createUrqlClient();
 const processor = new Processor(client);
-const myid = v4();
 
 let working = false;
 
@@ -52,7 +51,7 @@ async function doJobs() {
                 let inPath;
                 if (job.file_upload) {
                     log.silly('Raw file upload found. Saving to disk...');
-                    inPath = await processor.saveInput(job.file_upload);
+                    inPath = await processor.saveInput(job.file_upload.base64);
                 } else if (job.url) {
                     log.silly('Import found. Downloading...');
                     let cut: any = { start: job.option_cut_start, end: job.option_cut_end };

@@ -10,6 +10,7 @@ import {
     useDecksQuery,
     useFileEventsSubscription,
     useDeckEventsSubscription,
+    Job_Insert_Input,
 } from './generated/graphql';
 import { Deck_Minimum, File_Minimum } from './urql/graphql_type_helper';
 
@@ -74,7 +75,6 @@ export function useFileManager(workspaceId: string) {
                     option_fade_in: options?.fadeIn ?? null,
                     option_fade_out: options?.fadeOut ?? null,
                     url,
-                    file_upload: null,
                     path: currentPath,
                     workspace_id: workspaceId,
                 },
@@ -115,10 +115,12 @@ export function useFileManager(workspaceId: string) {
                 option_fade_in: options?.fadeIn ?? null,
                 option_fade_out: options?.fadeOut ?? null,
                 url: null,
-                file_upload: base64,
                 path: currentPath,
                 workspace_id: workspaceId,
-            };
+                file_upload: {
+                    data: { base64: base64 },
+                },
+            } as Job_Insert_Input;
 
             setUploading((uploading) => [...uploading, name]);
 
