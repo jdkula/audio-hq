@@ -2272,7 +2272,10 @@ export function useFileEventsSubscription<TData = FileEventsSubscription>(option
 };
 export const WorkspaceFilesDocument = gql`
     query WorkspaceFiles($workspaceId: uuid!) {
-  file(where: {workspace_id: {_eq: $workspaceId}}) {
+  file(
+    where: {workspace_id: {_eq: $workspaceId}}
+    order_by: [{ordering: asc_nulls_last}]
+  ) {
     ...FileInfo
   }
 }

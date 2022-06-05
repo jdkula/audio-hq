@@ -218,7 +218,14 @@ export const Explorer: FC = () => {
         } else if (result.destination?.droppableId === '___current___' && currentFiles.length > 1) {
             // === Reorder one file around the current folder ===
             const target = currentFiles[result.destination.index];
-            updateFile({ id: srcFile.id, update: { ordering: target?.ordering ? target.ordering - 1 : null } });
+            updateFile({
+                id: srcFile.id,
+                update: {
+                    ordering: target?.ordering
+                        ? target.ordering - result.source.index + result.destination.index
+                        : null,
+                },
+            });
         } else {
             // === Move one file into an existing folder ===
             if (!result.destination || result.destination.droppableId === '___current___') return;
