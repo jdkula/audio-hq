@@ -72,7 +72,14 @@ export default function App({
 
     /** Use caching service worker */
     useEffect(() => {
-        navigator.serviceWorker.register('/service.worker.dist.js', { type: 'module' });
+        navigator.serviceWorker
+            .register('/service.worker.dist.js', { type: 'module' })
+            .then((registration) => {
+                console.log('Service worker registered', registration);
+            })
+            .catch((e) => {
+                console.log('Service worker registration failed', e);
+            });
     }, []);
 
     return (
