@@ -6,7 +6,7 @@
 import { add, differenceInMilliseconds, sub } from 'date-fns';
 import { Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
 
-interface DeckInfo {
+export interface DeckInfo {
     secondsToCurrentPlayhead: number;
     secondsIntoLoop: number;
     totalSeconds: number;

@@ -4,11 +4,10 @@
  * Provides a hook that provides audio player data about the piece of
  * audio that's passed in.
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Deck_Type_Enum_Enum } from '../generated/graphql';
 import { Deck_Minimum } from '../urql/graphql_type_helper';
 import { usePeriodicEffect } from '../utility/hooks';
-import { isDefined } from '../utility/util';
 import { getDeckInfo } from './audio_util';
 
 interface AudioInfo {
@@ -23,7 +22,7 @@ interface AudioInfo {
 export default function useAudioDetail(status: Deck_Minimum | null): AudioInfo {
     const [seek, setSeek] = useState(0);
 
-    const data = useMemo(() => (!isDefined(status) ? null : getDeckInfo(status)), [status]);
+    const data = status ? getDeckInfo(status) : null;
 
     const updateData = useCallback(() => {
         if (!status) return;
