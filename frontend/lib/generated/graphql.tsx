@@ -153,7 +153,6 @@ export type Deck_Inc_Input = {
 
 /** input type for inserting data into table "deck" */
 export type Deck_Insert_Input = {
-  dummy?: InputMaybe<Scalars['timestamptz']>;
   id?: InputMaybe<Scalars['uuid']>;
   pause_timestamp?: InputMaybe<Scalars['timestamptz']>;
   queue?: InputMaybe<Track_Arr_Rel_Insert_Input>;
@@ -251,7 +250,6 @@ export enum Deck_Select_Column {
 
 /** input type for updating data in table "deck" */
 export type Deck_Set_Input = {
-  dummy?: InputMaybe<Scalars['timestamptz']>;
   pause_timestamp?: InputMaybe<Scalars['timestamptz']>;
   speed?: InputMaybe<Scalars['numeric']>;
   start_timestamp?: InputMaybe<Scalars['timestamptz']>;
@@ -302,8 +300,6 @@ export type Deck_Type_Enum_Enum_Comparison_Exp = {
 
 /** update columns of table "deck" */
 export enum Deck_Update_Column {
-  /** column name */
-  Dummy = 'dummy',
   /** column name */
   PauseTimestamp = 'pause_timestamp',
   /** column name */
@@ -1971,7 +1967,6 @@ export type PlayDeckMutation = { __typename?: 'mutation_root', delete_track?: { 
 export type SetQueueMutationVariables = Exact<{
   deckId: Scalars['uuid'];
   newQueue: Array<Track_Insert_Input> | Track_Insert_Input;
-  dummy: Scalars['timestamptz'];
 }>;
 
 
@@ -2191,17 +2186,14 @@ export function usePlayDeckMutation() {
   return Urql.useMutation<PlayDeckMutation, PlayDeckMutationVariables>(PlayDeckDocument);
 };
 export const SetQueueDocument = gql`
-    mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!, $dummy: timestamptz!) {
+    mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
   delete_track(where: {deck: {id: {_eq: $deckId}}}) {
     affected_rows
   }
   insert_track(objects: $newQueue) {
     affected_rows
   }
-  update_deck_by_pk(
-    pk_columns: {id: $deckId}
-    _set: {start_timestamp: now, dummy: $dummy}
-  ) {
+  update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now}) {
     ...DeckInfo
   }
 }

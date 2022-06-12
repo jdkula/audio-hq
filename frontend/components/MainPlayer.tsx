@@ -76,8 +76,7 @@ export const MainPlayer: FunctionComponent<{
                 file_id: qe.file.id,
                 deck_id: state.id,
                 ordering: i,
-            })),
-            dummy: new Date().toISOString(),
+            }))
         });
     };
 

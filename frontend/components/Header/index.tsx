@@ -26,14 +26,8 @@ import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
-import { useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 import { useLocalReactiveValue } from '../../lib/LocalReactive';
-import {
-    WorkspaceIdContext,
-    WorkspaceNameContext,
-    FileManagerContext,
-    WorkspaceLRVContext,
-} from '~/lib/utility/context';
+import { WorkspaceNameContext, FileManagerContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useIsOnline } from '~/lib/utility/hooks';
 
 const ToolbarContent = styled.div`
