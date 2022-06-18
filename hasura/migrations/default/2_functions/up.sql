@@ -37,7 +37,7 @@ BEGIN
                  (row_number() over (PARTITION BY workspace_id ORDER BY ordering NULLS LAST)) *
                  100 AS reconciled_ordering
           FROM file) as order_check
-    WHERE order_check.ordering != order_check.reconciled_ordering;
+    WHERE order_check.ordering IS DISTINCT FROM order_check.reconciled_ordering;
     RETURN _result;
 END;
 $$ LANGUAGE plpgsql;

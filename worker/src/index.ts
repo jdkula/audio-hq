@@ -190,6 +190,9 @@ async function checkIn() {
         setup();
     }
 
+    doJobs();
+    doDeletion();
+
     setTimeout(checkIn, 10000);
 }
 checkIn();
