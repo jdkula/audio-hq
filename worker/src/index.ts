@@ -1,6 +1,6 @@
 import { createUrqlClient } from './urql_worker';
 import * as GQL from './generated/graphql';
-import { pipe, subscribe } from 'wonka';
+import { pipe, subscribe, onEnd } from 'wonka';
 import { Processor } from './processor';
 import { AppFS } from './filesystems/FileSystem';
 
@@ -158,23 +158,38 @@ function setup() {
         GQL.DeleteJobsSubscriptionSubscriptionVariables
     >(GQL.DeleteJobsSubscriptionDocument);
 
-    pipe(
-        newJobs,
-        subscribe((result) => {
-            log.silly('Got new jobs data', result.data);
-            if (!result.data || result.data.available_jobs.length == 0) return;
-            doJobs();
-        }),
-    );
+    function setupJobsSubscription() {
+        pipe(
+            newJobs,
+            onEnd(() => {
+                log.warn('Jobs subscription ended, recreating...');
+                setupJobsSubscription();
+            }),
+            subscribe((result) => {
+                log.silly('Got new jobs data', result.data);
+                if (!result.data || result.data.available_jobs.length == 0) return;
+                doJobs();
+            }),
+        );
+    }
 
-    pipe(
-        newDeleteJobs,
-        subscribe((result) => {
-            log.silly('Got new delete jobs data', result.data);
-            if (!result.data || result.data.delete_job.length == 0) return;
-            doDeletion();
-        }),
-    );
+    function setupDeleteJobsSubscription() {
+        pipe(
+            newDeleteJobs,
+            onEnd(() => {
+                log.warn('Delete jobs subscription ended, recreating...');
+                setupDeleteJobsSubscription();
+            }),
+            subscribe((result) => {
+                log.silly('Got new delete jobs data', result.data);
+                if (!result.data || result.data.delete_job.length == 0) return;
+                doDeletion();
+            }),
+        );
+    }
+
+    setupJobsSubscription();
+    setupDeleteJobsSubscription();
     ready = true;
     log.info('Worker started');
 }
