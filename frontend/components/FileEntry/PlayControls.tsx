@@ -63,6 +63,8 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 type: Deck_Type_Enum_Enum.Ambience,
                 pause_timestamp: null,
                 start_timestamp: new Date().toISOString(),
+                speed: main?.speed ?? 1,
+                volume: main?.volume ?? 1,
             },
         });
     };
@@ -78,6 +80,8 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 type: Deck_Type_Enum_Enum.Main,
                 pause_timestamp: null,
                 start_timestamp: new Date().toISOString(),
+                speed: main?.speed ?? 1,
+                volume: main?.volume ?? 1,
             },
         });
     };
