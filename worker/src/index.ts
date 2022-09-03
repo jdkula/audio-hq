@@ -151,12 +151,12 @@ function setup() {
     const newJobs = client.subscription<
         GQL.NewJobsSubscriptionSubscription,
         GQL.NewJobsSubscriptionSubscriptionVariables
-    >(GQL.NewJobsSubscriptionDocument);
+    >(GQL.NewJobsSubscriptionDocument, {});
 
     const newDeleteJobs = client.subscription<
         GQL.DeleteJobsSubscriptionSubscription,
         GQL.DeleteJobsSubscriptionSubscriptionVariables
-    >(GQL.DeleteJobsSubscriptionDocument);
+    >(GQL.DeleteJobsSubscriptionDocument, {});
 
     function setupJobsSubscription() {
         pipe(
