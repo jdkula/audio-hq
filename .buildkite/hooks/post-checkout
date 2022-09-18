@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+mkdir private
+kubectl get secret tfsecrets -o jsonpath='{.data}' | jq -r '.["tfvars.json"]' | base64 -d > private/secrets.json
+
+export BK_BUILDX_BUILDER=$(docker buildx create)
+cat private/secrets.json | jq -r '.dockerhub_pat' | docker login -u $(cat private/secrets.json | jq -r '.dockerhub_username') --password-stdin

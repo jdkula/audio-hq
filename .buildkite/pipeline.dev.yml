@@ -1,0 +1,5 @@
+steps:
+  - command: "docker buildx build --builder $$BK_BUILDX_BUILDER --platform linux/arm64,linux/amd64,linux/arm/v7 -t jdkula/audio-hq:latest -t jdkula/audio-hq:dev -t jdkula/audio-hq:$$BUILDKITE_COMMIT -t jdkula/audio-hq:main --push ./frontend"
+    label: ":nextjs: Frontend"
+  - command: "docker buildx build --builder $$BK_BUILDX_BUILDER --platform linux/arm64,linux/amd64,linux/arm/v7 -t jdkula/audio-hq-worker:latest -t jdkula/audio-hq-worker:dev -t jdkula/audio-hq-worker:$$BUILDKITE_COMMIT -t jdkula/audio-hq-worker:main --push ./worker"
+    label: ":construction: Worker"

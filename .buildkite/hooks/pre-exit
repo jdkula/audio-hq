@@ -1,0 +1,4 @@
+#!/bin/bash
+shred -f -n 1000 private/secrets.json
+
+docker buildx rm --force --builder $BK_BUILDX_BUILDER $BK_BUILDX_BUILDER
