@@ -1,9 +1,9 @@
 steps:
-  - label: ":pipeline: :rocket: Trigger Release Build"
+  - label: ":allthethings: :rocket: Initialize Release Build"
     if: build.tag != null && build.tag =~ /^release_.*/
     commands:
       - buildkite-agent pipeline upload .buildkite/pipeline.release.yml
-  - label: ":pipeline: Start Build"
+  - label: ":allthethings: Initialize Dev Build"
     if: build.tag == null || build.tag !~ /^release_.*/
     commands:
       - buildkite-agent pipeline upload .buildkite/pipeline.dev.yml
