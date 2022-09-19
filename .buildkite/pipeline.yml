@@ -1,4 +1,8 @@
 steps:
+  - label: ":docker: Initialize Buildx"
+    command: 'echo "FROM scratch" | docker buildx build -'
+    concurrency: 1
+    concurrency_group: lanayru/docker-buildx
   - label: ":allthethings: :rocket: Initialize Release Build"
     if: build.tag != null && build.tag =~ /^release_.*/
     commands:
