@@ -6,7 +6,7 @@ schema:
               'X-Hasura-Role': 'anonymous'
 documents: 'graphql/**/*.graphql'
 generates:
-    lib/generated/graphql.tsx:
+    lib/generated/graphql.ts:
         config:
             defaultScalarType: unknown
             scalars:
@@ -19,10 +19,7 @@ generates:
         plugins:
             - 'typescript'
             - 'typescript-operations'
-            - 'typescript-urql'
-    lib/generated/schema.ts:
-        plugins:
-            - 'urql-introspection'
+            - 'typed-document-node'
     graphql.schema.json:
         plugins:
             - 'introspection'

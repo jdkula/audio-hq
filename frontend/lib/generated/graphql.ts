@@ -1,11 +1,9 @@
-import gql from 'graphql-tag';
-import * as Urql from 'urql';
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -2423,320 +2421,25 @@ export type CreateWorkspaceMutationVariables = Exact<{
 
 export type CreateWorkspaceMutation = { __typename?: 'mutation_root', insert_workspace_one?: { __typename?: 'workspace', id: string, name: string, created_at: string, updated_at: string } | null };
 
-export const FileInfoFragmentDoc = gql`
-    fragment FileInfo on file {
-  id
-  type
-  path
-  name
-  description
-  length
-  ordering
-  workspace_id
-  download_url
-}
-    `;
-export const TrackInfoFragmentDoc = gql`
-    fragment TrackInfo on track {
-  id
-  created_at
-  file {
-    ...FileInfo
-  }
-  deck_id
-  ordering
-}
-    ${FileInfoFragmentDoc}`;
-export const DeckInfoFragmentDoc = gql`
-    fragment DeckInfo on deck {
-  id
-  type
-  volume
-  speed
-  pause_timestamp
-  start_timestamp
-  queue {
-    ...TrackInfo
-  }
-  workspace_id
-  created_at
-}
-    ${TrackInfoFragmentDoc}`;
-export const JobInfoFragmentDoc = gql`
-    fragment JobInfo on job {
-  id
-  url
-  name
-  description
-  path
-  option_cut_start
-  option_cut_end
-  option_fade_in
-  option_fade_out
-  progress
-  status
-  assigned_worker
-  error
-  created_at
-}
-    `;
-export const WorkspaceInfoFragmentDoc = gql`
-    fragment WorkspaceInfo on workspace {
-  id
-  name
-  created_at
-  updated_at
-}
-    `;
-export const DecksDocument = gql`
-    query Decks($workspaceId: uuid!) {
-  workspace_by_pk(id: $workspaceId) {
-    id
-    decks {
-      ...DeckInfo
-    }
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useDecksQuery(options: Omit<Urql.UseQueryArgs<DecksQueryVariables>, 'query'>) {
-  return Urql.useQuery<DecksQuery, DecksQueryVariables>({ query: DecksDocument, ...options });
-};
-export const StopDeckDocument = gql`
-    mutation StopDeck($deckId: uuid!) {
-  delete_deck_by_pk(id: $deckId) {
-    id
-    workspace_id
-  }
-}
-    `;
-
-export function useStopDeckMutation() {
-  return Urql.useMutation<StopDeckMutation, StopDeckMutationVariables>(StopDeckDocument);
-};
-export const UpdateDeckDocument = gql`
-    mutation UpdateDeck($deckId: uuid!, $update: deck_set_input!) {
-  update_deck_by_pk(pk_columns: {id: $deckId}, _set: $update) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useUpdateDeckMutation() {
-  return Urql.useMutation<UpdateDeckMutation, UpdateDeckMutationVariables>(UpdateDeckDocument);
-};
-export const PlayDeckDocument = gql`
-    mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boolean! = false) {
-  delete_track(
-    where: {deck: {workspace_id: {_eq: $workspaceId}, type: {_eq: main}}}
-  ) @include(if: $isMain) {
-    affected_rows
-    returning {
-      id
-    }
-  }
-  insert_deck_one(object: $deck) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function usePlayDeckMutation() {
-  return Urql.useMutation<PlayDeckMutation, PlayDeckMutationVariables>(PlayDeckDocument);
-};
-export const SetQueueDocument = gql`
-    mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
-  delete_track(where: {deck: {id: {_eq: $deckId}}}) {
-    affected_rows
-  }
-  insert_track(objects: $newQueue) {
-    affected_rows
-  }
-  update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now}) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useSetQueueMutation() {
-  return Urql.useMutation<SetQueueMutation, SetQueueMutationVariables>(SetQueueDocument);
-};
-export const DeckEventsDocument = gql`
-    subscription DeckEvents($workspaceId: uuid!) {
-  event(
-    where: {workspace_id: {_eq: $workspaceId}, event_type: {_in: ["deck", "track"]}}
-    limit: 1
-    order_by: [{time: desc}]
-  ) {
-    __typename
-    id
-    workspace_id
-    time
-    event_type
-    workspace {
-      __typename
-      id
-      created_at
-      updated_at
-      name
-      decks {
-        __typename
-        ...DeckInfo
-      }
-    }
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useDeckEventsSubscription<TData = DeckEventsSubscription>(options: Omit<Urql.UseSubscriptionArgs<DeckEventsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<DeckEventsSubscription, TData>) {
-  return Urql.useSubscription<DeckEventsSubscription, TData, DeckEventsSubscriptionVariables>({ query: DeckEventsDocument, ...options }, handler);
-};
-export const FileEventsDocument = gql`
-    subscription FileEvents($workspaceId: uuid!) {
-  event(
-    where: {workspace_id: {_eq: $workspaceId}, event_type: {_eq: "file"}}
-    limit: 1
-    order_by: [{time: desc}]
-  ) {
-    __typename
-    id
-    workspace_id
-    time
-    event_type
-    workspace {
-      __typename
-      id
-      created_at
-      updated_at
-      name
-      files {
-        __typename
-        ...FileInfo
-      }
-    }
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useFileEventsSubscription<TData = FileEventsSubscription>(options: Omit<Urql.UseSubscriptionArgs<FileEventsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<FileEventsSubscription, TData>) {
-  return Urql.useSubscription<FileEventsSubscription, TData, FileEventsSubscriptionVariables>({ query: FileEventsDocument, ...options }, handler);
-};
-export const WorkspaceFilesDocument = gql`
-    query WorkspaceFiles($workspaceId: uuid!) {
-  file(
-    where: {workspace_id: {_eq: $workspaceId}}
-    order_by: [{ordering: asc_nulls_last}]
-  ) {
-    ...FileInfo
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useWorkspaceFilesQuery(options: Omit<Urql.UseQueryArgs<WorkspaceFilesQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>({ query: WorkspaceFilesDocument, ...options });
-};
-export const UpdateFileDocument = gql`
-    mutation UpdateFile($id: uuid!, $update: file_set_input!) {
-  update_file_by_pk(_set: $update, pk_columns: {id: $id}) {
-    ...FileInfo
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useUpdateFileMutation() {
-  return Urql.useMutation<UpdateFileMutation, UpdateFileMutationVariables>(UpdateFileDocument);
-};
-export const DeleteFileDocument = gql`
-    mutation DeleteFile($job: delete_job_insert_input!) {
-  insert_delete_job(objects: [$job]) {
-    affected_rows
-  }
-}
-    `;
-
-export function useDeleteFileMutation() {
-  return Urql.useMutation<DeleteFileMutation, DeleteFileMutationVariables>(DeleteFileDocument);
-};
-export const SetFilesPathDocument = gql`
-    mutation SetFilesPath($files: [uuid!]!, $path: jsonb) {
-  update_file(where: {id: {_in: $files}}, _set: {path: $path}) {
-    affected_rows
-    returning {
-      ...FileInfo
-    }
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useSetFilesPathMutation() {
-  return Urql.useMutation<SetFilesPathMutation, SetFilesPathMutationVariables>(SetFilesPathDocument);
-};
-export const WorkspaceJobsDocument = gql`
-    subscription WorkspaceJobs($workspaceId: uuid!) {
-  job(
-    where: {workspace_id: {_eq: $workspaceId}}
-    order_by: [{assign_time: asc}, {created_at: asc}]
-  ) {
-    ...JobInfo
-  }
-}
-    ${JobInfoFragmentDoc}`;
-
-export function useWorkspaceJobsSubscription<TData = WorkspaceJobsSubscription>(options: Omit<Urql.UseSubscriptionArgs<WorkspaceJobsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<WorkspaceJobsSubscription, TData>) {
-  return Urql.useSubscription<WorkspaceJobsSubscription, TData, WorkspaceJobsSubscriptionVariables>({ query: WorkspaceJobsDocument, ...options }, handler);
-};
-export const AddJobDocument = gql`
-    mutation AddJob($job: job_insert_input!) {
-  insert_job_one(object: $job) {
-    ...JobInfo
-  }
-}
-    ${JobInfoFragmentDoc}`;
-
-export function useAddJobMutation() {
-  return Urql.useMutation<AddJobMutation, AddJobMutationVariables>(AddJobDocument);
-};
-export const DeleteErrorJobDocument = gql`
-    mutation DeleteErrorJob($jobId: uuid!) {
-  delete_job_by_pk(id: $jobId) {
-    id
-  }
-}
-    `;
-
-export function useDeleteErrorJobMutation() {
-  return Urql.useMutation<DeleteErrorJobMutation, DeleteErrorJobMutationVariables>(DeleteErrorJobDocument);
-};
-export const WorkspaceDetailDocument = gql`
-    query WorkspaceDetail($workspaceId: uuid!) {
-  workspace_by_pk(id: $workspaceId) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useWorkspaceDetailQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailQuery, WorkspaceDetailQueryVariables>({ query: WorkspaceDetailDocument, ...options });
-};
-export const WorkspaceDetailByNameDocument = gql`
-    query WorkspaceDetailByName($workspaceName: String!) {
-  workspace(where: {name: {_eq: $workspaceName}}, limit: 1) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useWorkspaceDetailByNameQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailByNameQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailByNameQuery, WorkspaceDetailByNameQueryVariables>({ query: WorkspaceDetailByNameDocument, ...options });
-};
-export const CreateWorkspaceDocument = gql`
-    mutation CreateWorkspace($name: String) {
-  insert_workspace_one(object: {name: $name}) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useCreateWorkspaceMutation() {
-  return Urql.useMutation<CreateWorkspaceMutation, CreateWorkspaceMutationVariables>(CreateWorkspaceDocument);
-};
+export const FileInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FileInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"file"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"length"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"download_url"}}]}}]} as unknown as DocumentNode<FileInfoFragment, unknown>;
+export const TrackInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TrackInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"track"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"file"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"deck_id"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<TrackInfoFragment, unknown>;
+export const DeckInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"DeckInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"deck"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}},{"kind":"Field","name":{"kind":"Name","value":"speed"}},{"kind":"Field","name":{"kind":"Name","value":"pause_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"start_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"queue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TrackInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},...TrackInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckInfoFragment, unknown>;
+export const JobInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"JobInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"job"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_start"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_end"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_in"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_out"}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"assigned_worker"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]} as unknown as DocumentNode<JobInfoFragment, unknown>;
+export const WorkspaceInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WorkspaceInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"workspace"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]} as unknown as DocumentNode<WorkspaceInfoFragment, unknown>;
+export const DecksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Decks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DecksQuery, DecksQueryVariables>;
+export const StopDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StopDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}}]}}]}}]} as unknown as DocumentNode<StopDeckMutation, StopDeckMutationVariables>;
+export const UpdateDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export const PlayDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deck"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_insert_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},"defaultValue":{"kind":"BooleanValue","value":false}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}}]}}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_deck_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deck"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<PlayDeckMutation, PlayDeckMutationVariables>;
+export const SetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"start_timestamp"},"value":{"kind":"EnumValue","value":"now"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetQueueMutation, SetQueueMutationVariables>;
+export const DeckEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DeckEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"deck","block":false},{"kind":"StringValue","value":"track","block":false}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckEventsSubscription, DeckEventsSubscriptionVariables>;
+export const FileEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"FileEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"StringValue","value":"file","block":false}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"files"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<FileEventsSubscription, FileEventsSubscriptionVariables>;
+export const WorkspaceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"EnumValue","value":"asc_nulls_last"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>;
+export const UpdateFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"file_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateFileMutation, UpdateFileMutationVariables>;
+export const DeleteFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"delete_job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"ListValue","values":[{"kind":"Variable","name":{"kind":"Name","value":"job"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}}]}}]} as unknown as DocumentNode<DeleteFileMutation, DeleteFileMutationVariables>;
+export const SetFilesPathDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetFilesPath"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"files"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"path"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"files"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"Variable","name":{"kind":"Name","value":"path"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetFilesPathMutation, SetFilesPathMutationVariables>;
+export const WorkspaceJobsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"WorkspaceJobs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"assign_time"},"value":{"kind":"EnumValue","value":"asc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"asc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceJobsSubscription, WorkspaceJobsSubscriptionVariables>;
+export const AddJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_job_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"job"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<AddJobMutation, AddJobMutationVariables>;
+export const DeleteErrorJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteErrorJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteErrorJobMutation, DeleteErrorJobMutationVariables>;
+export const WorkspaceDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceDetailQuery, WorkspaceDetailQueryVariables>;
+export const WorkspaceDetailByNameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceDetailByName"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceName"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceDetailByNameQuery, WorkspaceDetailByNameQueryVariables>;
+export const CreateWorkspaceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateWorkspace"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_workspace_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<CreateWorkspaceMutation, CreateWorkspaceMutationVariables>;
