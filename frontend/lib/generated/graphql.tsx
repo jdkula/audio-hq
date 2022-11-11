@@ -67,6 +67,14 @@ export type Bigint_Comparison_Exp = {
   _nin?: InputMaybe<Array<Scalars['bigint']>>;
 };
 
+/** ordering argument of a cursor */
+export enum Cursor_Ordering {
+  /** ascending ordering of the cursor */
+  Asc = 'ASC',
+  /** descending ordering of the cursor */
+  Desc = 'DESC'
+}
+
 /** one set of tracks playing */
 export type Deck = {
   __typename?: 'deck';
@@ -141,7 +149,7 @@ export type Deck_Bool_Exp = {
 
 /** unique or primary key constraints on table "deck" */
 export enum Deck_Constraint {
-  /** unique or primary key constraint */
+  /** unique or primary key constraint on columns "id" */
   DeckPkey = 'deck_pkey'
 }
 
@@ -274,6 +282,26 @@ export type Deck_Stddev_Samp_Order_By = {
   volume?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "deck" */
+export type Deck_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Deck_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Deck_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  pause_timestamp?: InputMaybe<Scalars['timestamptz']>;
+  speed?: InputMaybe<Scalars['numeric']>;
+  start_timestamp?: InputMaybe<Scalars['timestamptz']>;
+  type?: InputMaybe<Deck_Type_Enum_Enum>;
+  volume?: InputMaybe<Scalars['numeric']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "deck" */
 export type Deck_Sum_Order_By = {
   speed?: InputMaybe<Order_By>;
@@ -310,6 +338,14 @@ export enum Deck_Update_Column {
   Volume = 'volume'
 }
 
+export type Deck_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Deck_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Deck_Set_Input>;
+  where: Deck_Bool_Exp;
+};
+
 /** order by var_pop() on columns of table "deck" */
 export type Deck_Var_Pop_Order_By = {
   speed?: InputMaybe<Order_By>;
@@ -328,6 +364,19 @@ export type Deck_Variance_Order_By = {
   volume?: InputMaybe<Order_By>;
 };
 
+/** Boolean expression to filter rows from the table "delete_job". All fields are combined with a logical 'AND'. */
+export type Delete_Job_Bool_Exp = {
+  _and?: InputMaybe<Array<Delete_Job_Bool_Exp>>;
+  _not?: InputMaybe<Delete_Job_Bool_Exp>;
+  _or?: InputMaybe<Array<Delete_Job_Bool_Exp>>;
+};
+
+/** unique or primary key constraints on table "delete_job" */
+export enum Delete_Job_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  DeleteJobPkey = 'delete_job_pkey'
+}
+
 /** input type for inserting data into table "delete_job" */
 export type Delete_Job_Insert_Input = {
   file_id?: InputMaybe<Scalars['uuid']>;
@@ -339,6 +388,19 @@ export type Delete_Job_Mutation_Response = {
   /** number of rows affected by the mutation */
   affected_rows: Scalars['Int'];
 };
+
+/** on_conflict condition type for table "delete_job" */
+export type Delete_Job_On_Conflict = {
+  constraint: Delete_Job_Constraint;
+  update_columns?: Array<Delete_Job_Update_Column>;
+  where?: InputMaybe<Delete_Job_Bool_Exp>;
+};
+
+/** placeholder for update columns of table "delete_job" (current role has no relevant permissions) */
+export enum Delete_Job_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** columns and relationships of "event" */
 export type Event = {
@@ -463,6 +525,26 @@ export enum Event_Select_Column {
   /** column name */
   WorkspaceId = 'workspace_id'
 }
+
+/** Streaming cursor of the table "event" */
+export type Event_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Event_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Event_Stream_Cursor_Value_Input = {
+  deck_id?: InputMaybe<Scalars['uuid']>;
+  event_type?: InputMaybe<Scalars['String']>;
+  file_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  modification_type?: InputMaybe<Scalars['String']>;
+  time?: InputMaybe<Scalars['timestamptz']>;
+  track_id?: InputMaybe<Scalars['uuid']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
 
 /** columns and relationships of "file" */
 export type File = {
@@ -652,6 +734,27 @@ export type File_Stddev_Samp_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "file" */
+export type File_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: File_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type File_Stream_Cursor_Value_Input = {
+  description?: InputMaybe<Scalars['String']>;
+  download_url?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  length?: InputMaybe<Scalars['numeric']>;
+  name?: InputMaybe<Scalars['String']>;
+  ordering?: InputMaybe<Scalars['bigint']>;
+  path?: InputMaybe<Scalars['jsonb']>;
+  type?: InputMaybe<File_Type_Enum_Enum>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "file" */
 export type File_Sum_Order_By = {
   length?: InputMaybe<Order_By>;
@@ -674,6 +777,24 @@ export type File_Type_Enum_Enum_Comparison_Exp = {
   _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
 };
 
+export type File_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<File_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<File_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<File_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<File_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<File_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<File_Set_Input>;
+  where: File_Bool_Exp;
+};
+
 /** columns and relationships of "file_upload" */
 export type File_Upload = {
   __typename?: 'file_upload';
@@ -687,6 +808,12 @@ export type File_Upload_Bool_Exp = {
   _or?: InputMaybe<Array<File_Upload_Bool_Exp>>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "file_upload" */
+export enum File_Upload_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  FileUploadsPkey = 'file_uploads_pkey'
+}
 
 /** input type for inserting data into table "file_upload" */
 export type File_Upload_Insert_Input = {
@@ -705,6 +832,15 @@ export type File_Upload_Mutation_Response = {
 /** input type for inserting object relation for remote table "file_upload" */
 export type File_Upload_Obj_Rel_Insert_Input = {
   data: File_Upload_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
+};
+
+/** on_conflict condition type for table "file_upload" */
+export type File_Upload_On_Conflict = {
+  constraint: File_Upload_Constraint;
+  update_columns?: Array<File_Upload_Update_Column>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "file_upload". */
@@ -716,6 +852,25 @@ export type File_Upload_Order_By = {
 export enum File_Upload_Select_Column {
   /** column name */
   Id = 'id'
+}
+
+/** Streaming cursor of the table "file_upload" */
+export type File_Upload_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: File_Upload_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type File_Upload_Stream_Cursor_Value_Input = {
+  id?: InputMaybe<Scalars['uuid']>;
+};
+
+/** placeholder for update columns of table "file_upload" (current role has no relevant permissions) */
+export enum File_Upload_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
 }
 
 /** order by var_pop() on columns of table "file" */
@@ -797,6 +952,8 @@ export type Job_Aggregate_Order_By = {
 /** input type for inserting array relation for remote table "job" */
 export type Job_Arr_Rel_Insert_Input = {
   data: Array<Job_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 /** order by avg() on columns of table "job" */
@@ -832,6 +989,12 @@ export type Job_Bool_Exp = {
   url?: InputMaybe<String_Comparison_Exp>;
   workspace_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "job" */
+export enum Job_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  JobPkey = 'job_pkey'
+}
 
 /** input type for inserting data into table "job" */
 export type Job_Insert_Input = {
@@ -893,6 +1056,13 @@ export type Job_Mutation_Response = {
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
   returning: Array<Job>;
+};
+
+/** on_conflict condition type for table "job" */
+export type Job_On_Conflict = {
+  constraint: Job_Constraint;
+  update_columns?: Array<Job_Update_Column>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "job". */
@@ -1010,6 +1180,35 @@ export type Job_Stddev_Samp_Order_By = {
   progress?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "job" */
+export type Job_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Job_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Job_Stream_Cursor_Value_Input = {
+  assign_time?: InputMaybe<Scalars['timestamptz']>;
+  assigned_worker?: InputMaybe<Scalars['uuid']>;
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  description?: InputMaybe<Scalars['String']>;
+  error?: InputMaybe<Scalars['String']>;
+  file_upload_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  name?: InputMaybe<Scalars['String']>;
+  option_cut_end?: InputMaybe<Scalars['float8']>;
+  option_cut_start?: InputMaybe<Scalars['float8']>;
+  option_fade_in?: InputMaybe<Scalars['float8']>;
+  option_fade_out?: InputMaybe<Scalars['float8']>;
+  path?: InputMaybe<Scalars['jsonb']>;
+  progress?: InputMaybe<Scalars['numeric']>;
+  status?: InputMaybe<Job_Status_Enum_Enum>;
+  url?: InputMaybe<Scalars['String']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "job" */
 export type Job_Sum_Order_By = {
   option_cut_end?: InputMaybe<Order_By>;
@@ -1018,6 +1217,12 @@ export type Job_Sum_Order_By = {
   option_fade_out?: InputMaybe<Order_By>;
   progress?: InputMaybe<Order_By>;
 };
+
+/** placeholder for update columns of table "job" (current role has no relevant permissions) */
+export enum Job_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** order by var_pop() on columns of table "job" */
 export type Job_Var_Pop_Order_By = {
@@ -1115,14 +1320,20 @@ export type Mutation_Root = {
   update_deck?: Maybe<Deck_Mutation_Response>;
   /** update single row of the table: "deck" */
   update_deck_by_pk?: Maybe<Deck>;
+  /** update multiples rows of table: "deck" */
+  update_deck_many?: Maybe<Array<Maybe<Deck_Mutation_Response>>>;
   /** update data of the table: "file" */
   update_file?: Maybe<File_Mutation_Response>;
   /** update single row of the table: "file" */
   update_file_by_pk?: Maybe<File>;
+  /** update multiples rows of table: "file" */
+  update_file_many?: Maybe<Array<Maybe<File_Mutation_Response>>>;
   /** update data of the table: "workspace" */
   update_workspace?: Maybe<Workspace_Mutation_Response>;
   /** update single row of the table: "workspace" */
   update_workspace_by_pk?: Maybe<Workspace>;
+  /** update multiples rows of table: "workspace" */
+  update_workspace_many?: Maybe<Array<Maybe<Workspace_Mutation_Response>>>;
 };
 
 
@@ -1179,42 +1390,49 @@ export type Mutation_RootInsert_Deck_OneArgs = {
 /** mutation root */
 export type Mutation_RootInsert_Delete_JobArgs = {
   objects: Array<Delete_Job_Insert_Input>;
+  on_conflict?: InputMaybe<Delete_Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_File_UploadArgs = {
   objects: Array<File_Upload_Insert_Input>;
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_File_Upload_OneArgs = {
   object: File_Upload_Insert_Input;
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_JobArgs = {
   objects: Array<Job_Insert_Input>;
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_Job_OneArgs = {
   object: Job_Insert_Input;
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_TrackArgs = {
   objects: Array<Track_Insert_Input>;
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_Track_OneArgs = {
   object: Track_Insert_Input;
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 
@@ -1249,6 +1467,12 @@ export type Mutation_RootUpdate_Deck_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Deck_ManyArgs = {
+  updates: Array<Deck_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_FileArgs = {
   _append?: InputMaybe<File_Append_Input>;
   _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
@@ -1275,6 +1499,12 @@ export type Mutation_RootUpdate_File_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_File_ManyArgs = {
+  updates: Array<File_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_WorkspaceArgs = {
   _set?: InputMaybe<Workspace_Set_Input>;
   where: Workspace_Bool_Exp;
@@ -1285,6 +1515,12 @@ export type Mutation_RootUpdate_WorkspaceArgs = {
 export type Mutation_RootUpdate_Workspace_By_PkArgs = {
   _set?: InputMaybe<Workspace_Set_Input>;
   pk_columns: Workspace_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Workspace_ManyArgs = {
+  updates: Array<Workspace_Updates>;
 };
 
 /** Boolean expression to compare columns of type "numeric". All fields are combined with logical 'AND'. */
@@ -1476,32 +1712,46 @@ export type Subscription_Root = {
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
   deck_by_pk?: Maybe<Deck>;
+  /** fetch data from the table in a streaming manner : "deck" */
+  deck_stream: Array<Deck>;
   /** fetch data from the table: "event" */
   event: Array<Event>;
   /** fetch aggregated fields from the table: "event" */
   event_aggregate: Event_Aggregate;
   /** fetch data from the table: "event" using primary key columns */
   event_by_pk?: Maybe<Event>;
+  /** fetch data from the table in a streaming manner : "event" */
+  event_stream: Array<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table in a streaming manner : "file" */
+  file_stream: Array<File>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
+  /** fetch data from the table in a streaming manner : "file_upload" */
+  file_upload_stream: Array<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
+  /** fetch data from the table in a streaming manner : "job" */
+  job_stream: Array<Job>;
   /** fetch data from the table: "track" */
   track: Array<Track>;
   /** fetch data from the table: "track" using primary key columns */
   track_by_pk?: Maybe<Track>;
+  /** fetch data from the table in a streaming manner : "track" */
+  track_stream: Array<Track>;
   /** fetch data from the table: "workspace" */
   workspace: Array<Workspace>;
   /** fetch data from the table: "workspace" using primary key columns */
   workspace_by_pk?: Maybe<Workspace>;
+  /** fetch data from the table in a streaming manner : "workspace" */
+  workspace_stream: Array<Workspace>;
 };
 
 
@@ -1528,6 +1778,13 @@ export type Subscription_RootDeck_By_PkArgs = {
 };
 
 
+export type Subscription_RootDeck_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Deck_Stream_Cursor_Input>>;
+  where?: InputMaybe<Deck_Bool_Exp>;
+};
+
+
 export type Subscription_RootEventArgs = {
   distinct_on?: InputMaybe<Array<Event_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1551,6 +1808,13 @@ export type Subscription_RootEvent_By_PkArgs = {
 };
 
 
+export type Subscription_RootEvent_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Event_Stream_Cursor_Input>>;
+  where?: InputMaybe<Event_Bool_Exp>;
+};
+
+
 export type Subscription_RootFileArgs = {
   distinct_on?: InputMaybe<Array<File_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1562,6 +1826,13 @@ export type Subscription_RootFileArgs = {
 
 export type Subscription_RootFile_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFile_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<File_Stream_Cursor_Input>>;
+  where?: InputMaybe<File_Bool_Exp>;
 };
 
 
@@ -1579,6 +1850,13 @@ export type Subscription_RootFile_Upload_By_PkArgs = {
 };
 
 
+export type Subscription_RootFile_Upload_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<File_Upload_Stream_Cursor_Input>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
 export type Subscription_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1590,6 +1868,13 @@ export type Subscription_RootJobArgs = {
 
 export type Subscription_RootJob_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootJob_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Job_Stream_Cursor_Input>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -1607,6 +1892,13 @@ export type Subscription_RootTrack_By_PkArgs = {
 };
 
 
+export type Subscription_RootTrack_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Track_Stream_Cursor_Input>>;
+  where?: InputMaybe<Track_Bool_Exp>;
+};
+
+
 export type Subscription_RootWorkspaceArgs = {
   distinct_on?: InputMaybe<Array<Workspace_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1618,6 +1910,13 @@ export type Subscription_RootWorkspaceArgs = {
 
 export type Subscription_RootWorkspace_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootWorkspace_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Workspace_Stream_Cursor_Input>>;
+  where?: InputMaybe<Workspace_Bool_Exp>;
 };
 
 /** Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'. */
@@ -1665,6 +1964,8 @@ export type Track_Aggregate_Order_By = {
 /** input type for inserting array relation for remote table "track" */
 export type Track_Arr_Rel_Insert_Input = {
   data: Array<Track_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 /** order by avg() on columns of table "track" */
@@ -1685,6 +1986,12 @@ export type Track_Bool_Exp = {
   id?: InputMaybe<Uuid_Comparison_Exp>;
   ordering?: InputMaybe<Bigint_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "track" */
+export enum Track_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  TrackPkey = 'track_pkey'
+}
 
 /** input type for inserting data into table "track" */
 export type Track_Insert_Input = {
@@ -1720,6 +2027,13 @@ export type Track_Mutation_Response = {
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
   returning: Array<Track>;
+};
+
+/** on_conflict condition type for table "track" */
+export type Track_On_Conflict = {
+  constraint: Track_Constraint;
+  update_columns?: Array<Track_Update_Column>;
+  where?: InputMaybe<Track_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "track". */
@@ -1762,10 +2076,33 @@ export type Track_Stddev_Samp_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "track" */
+export type Track_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Track_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Track_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  deck_id?: InputMaybe<Scalars['uuid']>;
+  file_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  ordering?: InputMaybe<Scalars['bigint']>;
+};
+
 /** order by sum() on columns of table "track" */
 export type Track_Sum_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
+
+/** placeholder for update columns of table "track" (current role has no relevant permissions) */
+export enum Track_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** order by var_pop() on columns of table "track" */
 export type Track_Var_Pop_Order_By = {
@@ -1856,7 +2193,7 @@ export type Workspace_Bool_Exp = {
 
 /** unique or primary key constraints on table "workspace" */
 export enum Workspace_Constraint {
-  /** unique or primary key constraint */
+  /** unique or primary key constraint on columns "id" */
   WorkspacePkey = 'workspace_pkey'
 }
 
@@ -1923,11 +2260,33 @@ export type Workspace_Set_Input = {
   name?: InputMaybe<Scalars['String']>;
 };
 
+/** Streaming cursor of the table "workspace" */
+export type Workspace_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Workspace_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Workspace_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  name?: InputMaybe<Scalars['String']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
 /** update columns of table "workspace" */
 export enum Workspace_Update_Column {
   /** column name */
   Name = 'name'
 }
+
+export type Workspace_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Workspace_Set_Input>;
+  where: Workspace_Bool_Exp;
+};
 
 export type TrackInfoFragment = { __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } };
 
@@ -2141,7 +2500,7 @@ export const DecksDocument = gql`
     ${DeckInfoFragmentDoc}`;
 
 export function useDecksQuery(options: Omit<Urql.UseQueryArgs<DecksQueryVariables>, 'query'>) {
-  return Urql.useQuery<DecksQuery>({ query: DecksDocument, ...options });
+  return Urql.useQuery<DecksQuery, DecksQueryVariables>({ query: DecksDocument, ...options });
 };
 export const StopDeckDocument = gql`
     mutation StopDeck($deckId: uuid!) {
@@ -2274,7 +2633,7 @@ export const WorkspaceFilesDocument = gql`
     ${FileInfoFragmentDoc}`;
 
 export function useWorkspaceFilesQuery(options: Omit<Urql.UseQueryArgs<WorkspaceFilesQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceFilesQuery>({ query: WorkspaceFilesDocument, ...options });
+  return Urql.useQuery<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>({ query: WorkspaceFilesDocument, ...options });
 };
 export const UpdateFileDocument = gql`
     mutation UpdateFile($id: uuid!, $update: file_set_input!) {
@@ -2357,7 +2716,7 @@ export const WorkspaceDetailDocument = gql`
     ${WorkspaceInfoFragmentDoc}`;
 
 export function useWorkspaceDetailQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailQuery>({ query: WorkspaceDetailDocument, ...options });
+  return Urql.useQuery<WorkspaceDetailQuery, WorkspaceDetailQueryVariables>({ query: WorkspaceDetailDocument, ...options });
 };
 export const WorkspaceDetailByNameDocument = gql`
     query WorkspaceDetailByName($workspaceName: String!) {
@@ -2368,7 +2727,7 @@ export const WorkspaceDetailByNameDocument = gql`
     ${WorkspaceInfoFragmentDoc}`;
 
 export function useWorkspaceDetailByNameQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailByNameQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailByNameQuery>({ query: WorkspaceDetailByNameDocument, ...options });
+  return Urql.useQuery<WorkspaceDetailByNameQuery, WorkspaceDetailByNameQueryVariables>({ query: WorkspaceDetailByNameDocument, ...options });
 };
 export const CreateWorkspaceDocument = gql`
     mutation CreateWorkspace($name: String) {
