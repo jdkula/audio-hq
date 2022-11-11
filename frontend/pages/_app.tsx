@@ -20,6 +20,10 @@ import { useUrqlAddresses, useUrqlClient } from '../lib/urql/urql';
 import { CacheProvider, EmotionCache } from '@emotion/react';
 import { createEmotionCache } from '~/lib/ssr';
 import { useColorMode } from '~/lib/utility/usePersistentData';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {
@@ -83,13 +87,16 @@ export default function App({
     }, []);
 
     return (
-        <CacheProvider value={emotionCache}>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <Provider value={client}>
-                    <Component {...pageProps} />
-                </Provider>
-            </ThemeProvider>
-        </CacheProvider>
+        <QueryClientProvider client={queryClient}>
+            <CacheProvider value={emotionCache}>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <Provider value={client}>
+                        <Component {...pageProps} />
+                    </Provider>
+                </ThemeProvider>
+            </CacheProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
     );
 }

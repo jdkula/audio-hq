@@ -1,11 +1,9 @@
-import gql from 'graphql-tag';
-import * as Urql from 'urql';
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -66,6 +64,14 @@ export type Bigint_Comparison_Exp = {
   _neq?: InputMaybe<Scalars['bigint']>;
   _nin?: InputMaybe<Array<Scalars['bigint']>>;
 };
+
+/** ordering argument of a cursor */
+export enum Cursor_Ordering {
+  /** ascending ordering of the cursor */
+  Asc = 'ASC',
+  /** descending ordering of the cursor */
+  Desc = 'DESC'
+}
 
 /** one set of tracks playing */
 export type Deck = {
@@ -141,7 +147,7 @@ export type Deck_Bool_Exp = {
 
 /** unique or primary key constraints on table "deck" */
 export enum Deck_Constraint {
-  /** unique or primary key constraint */
+  /** unique or primary key constraint on columns "id" */
   DeckPkey = 'deck_pkey'
 }
 
@@ -274,6 +280,26 @@ export type Deck_Stddev_Samp_Order_By = {
   volume?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "deck" */
+export type Deck_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Deck_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Deck_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  pause_timestamp?: InputMaybe<Scalars['timestamptz']>;
+  speed?: InputMaybe<Scalars['numeric']>;
+  start_timestamp?: InputMaybe<Scalars['timestamptz']>;
+  type?: InputMaybe<Deck_Type_Enum_Enum>;
+  volume?: InputMaybe<Scalars['numeric']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "deck" */
 export type Deck_Sum_Order_By = {
   speed?: InputMaybe<Order_By>;
@@ -310,6 +336,14 @@ export enum Deck_Update_Column {
   Volume = 'volume'
 }
 
+export type Deck_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Deck_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Deck_Set_Input>;
+  where: Deck_Bool_Exp;
+};
+
 /** order by var_pop() on columns of table "deck" */
 export type Deck_Var_Pop_Order_By = {
   speed?: InputMaybe<Order_By>;
@@ -328,6 +362,19 @@ export type Deck_Variance_Order_By = {
   volume?: InputMaybe<Order_By>;
 };
 
+/** Boolean expression to filter rows from the table "delete_job". All fields are combined with a logical 'AND'. */
+export type Delete_Job_Bool_Exp = {
+  _and?: InputMaybe<Array<Delete_Job_Bool_Exp>>;
+  _not?: InputMaybe<Delete_Job_Bool_Exp>;
+  _or?: InputMaybe<Array<Delete_Job_Bool_Exp>>;
+};
+
+/** unique or primary key constraints on table "delete_job" */
+export enum Delete_Job_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  DeleteJobPkey = 'delete_job_pkey'
+}
+
 /** input type for inserting data into table "delete_job" */
 export type Delete_Job_Insert_Input = {
   file_id?: InputMaybe<Scalars['uuid']>;
@@ -339,6 +386,19 @@ export type Delete_Job_Mutation_Response = {
   /** number of rows affected by the mutation */
   affected_rows: Scalars['Int'];
 };
+
+/** on_conflict condition type for table "delete_job" */
+export type Delete_Job_On_Conflict = {
+  constraint: Delete_Job_Constraint;
+  update_columns?: Array<Delete_Job_Update_Column>;
+  where?: InputMaybe<Delete_Job_Bool_Exp>;
+};
+
+/** placeholder for update columns of table "delete_job" (current role has no relevant permissions) */
+export enum Delete_Job_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** columns and relationships of "event" */
 export type Event = {
@@ -463,6 +523,26 @@ export enum Event_Select_Column {
   /** column name */
   WorkspaceId = 'workspace_id'
 }
+
+/** Streaming cursor of the table "event" */
+export type Event_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Event_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Event_Stream_Cursor_Value_Input = {
+  deck_id?: InputMaybe<Scalars['uuid']>;
+  event_type?: InputMaybe<Scalars['String']>;
+  file_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  modification_type?: InputMaybe<Scalars['String']>;
+  time?: InputMaybe<Scalars['timestamptz']>;
+  track_id?: InputMaybe<Scalars['uuid']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
 
 /** columns and relationships of "file" */
 export type File = {
@@ -652,6 +732,27 @@ export type File_Stddev_Samp_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "file" */
+export type File_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: File_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type File_Stream_Cursor_Value_Input = {
+  description?: InputMaybe<Scalars['String']>;
+  download_url?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  length?: InputMaybe<Scalars['numeric']>;
+  name?: InputMaybe<Scalars['String']>;
+  ordering?: InputMaybe<Scalars['bigint']>;
+  path?: InputMaybe<Scalars['jsonb']>;
+  type?: InputMaybe<File_Type_Enum_Enum>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "file" */
 export type File_Sum_Order_By = {
   length?: InputMaybe<Order_By>;
@@ -674,6 +775,24 @@ export type File_Type_Enum_Enum_Comparison_Exp = {
   _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
 };
 
+export type File_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<File_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<File_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<File_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<File_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<File_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<File_Set_Input>;
+  where: File_Bool_Exp;
+};
+
 /** columns and relationships of "file_upload" */
 export type File_Upload = {
   __typename?: 'file_upload';
@@ -687,6 +806,12 @@ export type File_Upload_Bool_Exp = {
   _or?: InputMaybe<Array<File_Upload_Bool_Exp>>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "file_upload" */
+export enum File_Upload_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  FileUploadsPkey = 'file_uploads_pkey'
+}
 
 /** input type for inserting data into table "file_upload" */
 export type File_Upload_Insert_Input = {
@@ -705,6 +830,15 @@ export type File_Upload_Mutation_Response = {
 /** input type for inserting object relation for remote table "file_upload" */
 export type File_Upload_Obj_Rel_Insert_Input = {
   data: File_Upload_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
+};
+
+/** on_conflict condition type for table "file_upload" */
+export type File_Upload_On_Conflict = {
+  constraint: File_Upload_Constraint;
+  update_columns?: Array<File_Upload_Update_Column>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "file_upload". */
@@ -716,6 +850,25 @@ export type File_Upload_Order_By = {
 export enum File_Upload_Select_Column {
   /** column name */
   Id = 'id'
+}
+
+/** Streaming cursor of the table "file_upload" */
+export type File_Upload_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: File_Upload_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type File_Upload_Stream_Cursor_Value_Input = {
+  id?: InputMaybe<Scalars['uuid']>;
+};
+
+/** placeholder for update columns of table "file_upload" (current role has no relevant permissions) */
+export enum File_Upload_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
 }
 
 /** order by var_pop() on columns of table "file" */
@@ -797,6 +950,8 @@ export type Job_Aggregate_Order_By = {
 /** input type for inserting array relation for remote table "job" */
 export type Job_Arr_Rel_Insert_Input = {
   data: Array<Job_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 /** order by avg() on columns of table "job" */
@@ -832,6 +987,12 @@ export type Job_Bool_Exp = {
   url?: InputMaybe<String_Comparison_Exp>;
   workspace_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "job" */
+export enum Job_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  JobPkey = 'job_pkey'
+}
 
 /** input type for inserting data into table "job" */
 export type Job_Insert_Input = {
@@ -893,6 +1054,13 @@ export type Job_Mutation_Response = {
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
   returning: Array<Job>;
+};
+
+/** on_conflict condition type for table "job" */
+export type Job_On_Conflict = {
+  constraint: Job_Constraint;
+  update_columns?: Array<Job_Update_Column>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "job". */
@@ -1010,6 +1178,35 @@ export type Job_Stddev_Samp_Order_By = {
   progress?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "job" */
+export type Job_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Job_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Job_Stream_Cursor_Value_Input = {
+  assign_time?: InputMaybe<Scalars['timestamptz']>;
+  assigned_worker?: InputMaybe<Scalars['uuid']>;
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  description?: InputMaybe<Scalars['String']>;
+  error?: InputMaybe<Scalars['String']>;
+  file_upload_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  name?: InputMaybe<Scalars['String']>;
+  option_cut_end?: InputMaybe<Scalars['float8']>;
+  option_cut_start?: InputMaybe<Scalars['float8']>;
+  option_fade_in?: InputMaybe<Scalars['float8']>;
+  option_fade_out?: InputMaybe<Scalars['float8']>;
+  path?: InputMaybe<Scalars['jsonb']>;
+  progress?: InputMaybe<Scalars['numeric']>;
+  status?: InputMaybe<Job_Status_Enum_Enum>;
+  url?: InputMaybe<Scalars['String']>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
 /** order by sum() on columns of table "job" */
 export type Job_Sum_Order_By = {
   option_cut_end?: InputMaybe<Order_By>;
@@ -1018,6 +1215,12 @@ export type Job_Sum_Order_By = {
   option_fade_out?: InputMaybe<Order_By>;
   progress?: InputMaybe<Order_By>;
 };
+
+/** placeholder for update columns of table "job" (current role has no relevant permissions) */
+export enum Job_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** order by var_pop() on columns of table "job" */
 export type Job_Var_Pop_Order_By = {
@@ -1115,14 +1318,20 @@ export type Mutation_Root = {
   update_deck?: Maybe<Deck_Mutation_Response>;
   /** update single row of the table: "deck" */
   update_deck_by_pk?: Maybe<Deck>;
+  /** update multiples rows of table: "deck" */
+  update_deck_many?: Maybe<Array<Maybe<Deck_Mutation_Response>>>;
   /** update data of the table: "file" */
   update_file?: Maybe<File_Mutation_Response>;
   /** update single row of the table: "file" */
   update_file_by_pk?: Maybe<File>;
+  /** update multiples rows of table: "file" */
+  update_file_many?: Maybe<Array<Maybe<File_Mutation_Response>>>;
   /** update data of the table: "workspace" */
   update_workspace?: Maybe<Workspace_Mutation_Response>;
   /** update single row of the table: "workspace" */
   update_workspace_by_pk?: Maybe<Workspace>;
+  /** update multiples rows of table: "workspace" */
+  update_workspace_many?: Maybe<Array<Maybe<Workspace_Mutation_Response>>>;
 };
 
 
@@ -1179,42 +1388,49 @@ export type Mutation_RootInsert_Deck_OneArgs = {
 /** mutation root */
 export type Mutation_RootInsert_Delete_JobArgs = {
   objects: Array<Delete_Job_Insert_Input>;
+  on_conflict?: InputMaybe<Delete_Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_File_UploadArgs = {
   objects: Array<File_Upload_Insert_Input>;
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_File_Upload_OneArgs = {
   object: File_Upload_Insert_Input;
+  on_conflict?: InputMaybe<File_Upload_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_JobArgs = {
   objects: Array<Job_Insert_Input>;
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_Job_OneArgs = {
   object: Job_Insert_Input;
+  on_conflict?: InputMaybe<Job_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_TrackArgs = {
   objects: Array<Track_Insert_Input>;
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 
 /** mutation root */
 export type Mutation_RootInsert_Track_OneArgs = {
   object: Track_Insert_Input;
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 
@@ -1249,6 +1465,12 @@ export type Mutation_RootUpdate_Deck_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Deck_ManyArgs = {
+  updates: Array<Deck_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_FileArgs = {
   _append?: InputMaybe<File_Append_Input>;
   _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
@@ -1275,6 +1497,12 @@ export type Mutation_RootUpdate_File_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_File_ManyArgs = {
+  updates: Array<File_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_WorkspaceArgs = {
   _set?: InputMaybe<Workspace_Set_Input>;
   where: Workspace_Bool_Exp;
@@ -1285,6 +1513,12 @@ export type Mutation_RootUpdate_WorkspaceArgs = {
 export type Mutation_RootUpdate_Workspace_By_PkArgs = {
   _set?: InputMaybe<Workspace_Set_Input>;
   pk_columns: Workspace_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Workspace_ManyArgs = {
+  updates: Array<Workspace_Updates>;
 };
 
 /** Boolean expression to compare columns of type "numeric". All fields are combined with logical 'AND'. */
@@ -1476,32 +1710,46 @@ export type Subscription_Root = {
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
   deck_by_pk?: Maybe<Deck>;
+  /** fetch data from the table in a streaming manner : "deck" */
+  deck_stream: Array<Deck>;
   /** fetch data from the table: "event" */
   event: Array<Event>;
   /** fetch aggregated fields from the table: "event" */
   event_aggregate: Event_Aggregate;
   /** fetch data from the table: "event" using primary key columns */
   event_by_pk?: Maybe<Event>;
+  /** fetch data from the table in a streaming manner : "event" */
+  event_stream: Array<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
   file_by_pk?: Maybe<File>;
+  /** fetch data from the table in a streaming manner : "file" */
+  file_stream: Array<File>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
+  /** fetch data from the table in a streaming manner : "file_upload" */
+  file_upload_stream: Array<File_Upload>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
+  /** fetch data from the table in a streaming manner : "job" */
+  job_stream: Array<Job>;
   /** fetch data from the table: "track" */
   track: Array<Track>;
   /** fetch data from the table: "track" using primary key columns */
   track_by_pk?: Maybe<Track>;
+  /** fetch data from the table in a streaming manner : "track" */
+  track_stream: Array<Track>;
   /** fetch data from the table: "workspace" */
   workspace: Array<Workspace>;
   /** fetch data from the table: "workspace" using primary key columns */
   workspace_by_pk?: Maybe<Workspace>;
+  /** fetch data from the table in a streaming manner : "workspace" */
+  workspace_stream: Array<Workspace>;
 };
 
 
@@ -1528,6 +1776,13 @@ export type Subscription_RootDeck_By_PkArgs = {
 };
 
 
+export type Subscription_RootDeck_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Deck_Stream_Cursor_Input>>;
+  where?: InputMaybe<Deck_Bool_Exp>;
+};
+
+
 export type Subscription_RootEventArgs = {
   distinct_on?: InputMaybe<Array<Event_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1551,6 +1806,13 @@ export type Subscription_RootEvent_By_PkArgs = {
 };
 
 
+export type Subscription_RootEvent_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Event_Stream_Cursor_Input>>;
+  where?: InputMaybe<Event_Bool_Exp>;
+};
+
+
 export type Subscription_RootFileArgs = {
   distinct_on?: InputMaybe<Array<File_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1562,6 +1824,13 @@ export type Subscription_RootFileArgs = {
 
 export type Subscription_RootFile_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFile_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<File_Stream_Cursor_Input>>;
+  where?: InputMaybe<File_Bool_Exp>;
 };
 
 
@@ -1579,6 +1848,13 @@ export type Subscription_RootFile_Upload_By_PkArgs = {
 };
 
 
+export type Subscription_RootFile_Upload_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<File_Upload_Stream_Cursor_Input>>;
+  where?: InputMaybe<File_Upload_Bool_Exp>;
+};
+
+
 export type Subscription_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1590,6 +1866,13 @@ export type Subscription_RootJobArgs = {
 
 export type Subscription_RootJob_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootJob_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Job_Stream_Cursor_Input>>;
+  where?: InputMaybe<Job_Bool_Exp>;
 };
 
 
@@ -1607,6 +1890,13 @@ export type Subscription_RootTrack_By_PkArgs = {
 };
 
 
+export type Subscription_RootTrack_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Track_Stream_Cursor_Input>>;
+  where?: InputMaybe<Track_Bool_Exp>;
+};
+
+
 export type Subscription_RootWorkspaceArgs = {
   distinct_on?: InputMaybe<Array<Workspace_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1618,6 +1908,13 @@ export type Subscription_RootWorkspaceArgs = {
 
 export type Subscription_RootWorkspace_By_PkArgs = {
   id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootWorkspace_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Workspace_Stream_Cursor_Input>>;
+  where?: InputMaybe<Workspace_Bool_Exp>;
 };
 
 /** Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'. */
@@ -1665,6 +1962,8 @@ export type Track_Aggregate_Order_By = {
 /** input type for inserting array relation for remote table "track" */
 export type Track_Arr_Rel_Insert_Input = {
   data: Array<Track_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Track_On_Conflict>;
 };
 
 /** order by avg() on columns of table "track" */
@@ -1685,6 +1984,12 @@ export type Track_Bool_Exp = {
   id?: InputMaybe<Uuid_Comparison_Exp>;
   ordering?: InputMaybe<Bigint_Comparison_Exp>;
 };
+
+/** unique or primary key constraints on table "track" */
+export enum Track_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  TrackPkey = 'track_pkey'
+}
 
 /** input type for inserting data into table "track" */
 export type Track_Insert_Input = {
@@ -1720,6 +2025,13 @@ export type Track_Mutation_Response = {
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
   returning: Array<Track>;
+};
+
+/** on_conflict condition type for table "track" */
+export type Track_On_Conflict = {
+  constraint: Track_Constraint;
+  update_columns?: Array<Track_Update_Column>;
+  where?: InputMaybe<Track_Bool_Exp>;
 };
 
 /** Ordering options when selecting data from "track". */
@@ -1762,10 +2074,33 @@ export type Track_Stddev_Samp_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
+/** Streaming cursor of the table "track" */
+export type Track_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Track_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Track_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  deck_id?: InputMaybe<Scalars['uuid']>;
+  file_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  ordering?: InputMaybe<Scalars['bigint']>;
+};
+
 /** order by sum() on columns of table "track" */
 export type Track_Sum_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
+
+/** placeholder for update columns of table "track" (current role has no relevant permissions) */
+export enum Track_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** order by var_pop() on columns of table "track" */
 export type Track_Var_Pop_Order_By = {
@@ -1856,7 +2191,7 @@ export type Workspace_Bool_Exp = {
 
 /** unique or primary key constraints on table "workspace" */
 export enum Workspace_Constraint {
-  /** unique or primary key constraint */
+  /** unique or primary key constraint on columns "id" */
   WorkspacePkey = 'workspace_pkey'
 }
 
@@ -1923,11 +2258,33 @@ export type Workspace_Set_Input = {
   name?: InputMaybe<Scalars['String']>;
 };
 
+/** Streaming cursor of the table "workspace" */
+export type Workspace_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Workspace_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Workspace_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  name?: InputMaybe<Scalars['String']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
 /** update columns of table "workspace" */
 export enum Workspace_Update_Column {
   /** column name */
   Name = 'name'
 }
+
+export type Workspace_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Workspace_Set_Input>;
+  where: Workspace_Bool_Exp;
+};
 
 export type TrackInfoFragment = { __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } };
 
@@ -2064,320 +2421,25 @@ export type CreateWorkspaceMutationVariables = Exact<{
 
 export type CreateWorkspaceMutation = { __typename?: 'mutation_root', insert_workspace_one?: { __typename?: 'workspace', id: string, name: string, created_at: string, updated_at: string } | null };
 
-export const FileInfoFragmentDoc = gql`
-    fragment FileInfo on file {
-  id
-  type
-  path
-  name
-  description
-  length
-  ordering
-  workspace_id
-  download_url
-}
-    `;
-export const TrackInfoFragmentDoc = gql`
-    fragment TrackInfo on track {
-  id
-  created_at
-  file {
-    ...FileInfo
-  }
-  deck_id
-  ordering
-}
-    ${FileInfoFragmentDoc}`;
-export const DeckInfoFragmentDoc = gql`
-    fragment DeckInfo on deck {
-  id
-  type
-  volume
-  speed
-  pause_timestamp
-  start_timestamp
-  queue {
-    ...TrackInfo
-  }
-  workspace_id
-  created_at
-}
-    ${TrackInfoFragmentDoc}`;
-export const JobInfoFragmentDoc = gql`
-    fragment JobInfo on job {
-  id
-  url
-  name
-  description
-  path
-  option_cut_start
-  option_cut_end
-  option_fade_in
-  option_fade_out
-  progress
-  status
-  assigned_worker
-  error
-  created_at
-}
-    `;
-export const WorkspaceInfoFragmentDoc = gql`
-    fragment WorkspaceInfo on workspace {
-  id
-  name
-  created_at
-  updated_at
-}
-    `;
-export const DecksDocument = gql`
-    query Decks($workspaceId: uuid!) {
-  workspace_by_pk(id: $workspaceId) {
-    id
-    decks {
-      ...DeckInfo
-    }
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useDecksQuery(options: Omit<Urql.UseQueryArgs<DecksQueryVariables>, 'query'>) {
-  return Urql.useQuery<DecksQuery>({ query: DecksDocument, ...options });
-};
-export const StopDeckDocument = gql`
-    mutation StopDeck($deckId: uuid!) {
-  delete_deck_by_pk(id: $deckId) {
-    id
-    workspace_id
-  }
-}
-    `;
-
-export function useStopDeckMutation() {
-  return Urql.useMutation<StopDeckMutation, StopDeckMutationVariables>(StopDeckDocument);
-};
-export const UpdateDeckDocument = gql`
-    mutation UpdateDeck($deckId: uuid!, $update: deck_set_input!) {
-  update_deck_by_pk(pk_columns: {id: $deckId}, _set: $update) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useUpdateDeckMutation() {
-  return Urql.useMutation<UpdateDeckMutation, UpdateDeckMutationVariables>(UpdateDeckDocument);
-};
-export const PlayDeckDocument = gql`
-    mutation PlayDeck($workspaceId: uuid!, $deck: deck_insert_input!, $isMain: Boolean! = false) {
-  delete_track(
-    where: {deck: {workspace_id: {_eq: $workspaceId}, type: {_eq: main}}}
-  ) @include(if: $isMain) {
-    affected_rows
-    returning {
-      id
-    }
-  }
-  insert_deck_one(object: $deck) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function usePlayDeckMutation() {
-  return Urql.useMutation<PlayDeckMutation, PlayDeckMutationVariables>(PlayDeckDocument);
-};
-export const SetQueueDocument = gql`
-    mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
-  delete_track(where: {deck: {id: {_eq: $deckId}}}) {
-    affected_rows
-  }
-  insert_track(objects: $newQueue) {
-    affected_rows
-  }
-  update_deck_by_pk(pk_columns: {id: $deckId}, _set: {start_timestamp: now}) {
-    ...DeckInfo
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useSetQueueMutation() {
-  return Urql.useMutation<SetQueueMutation, SetQueueMutationVariables>(SetQueueDocument);
-};
-export const DeckEventsDocument = gql`
-    subscription DeckEvents($workspaceId: uuid!) {
-  event(
-    where: {workspace_id: {_eq: $workspaceId}, event_type: {_in: ["deck", "track"]}}
-    limit: 1
-    order_by: [{time: desc}]
-  ) {
-    __typename
-    id
-    workspace_id
-    time
-    event_type
-    workspace {
-      __typename
-      id
-      created_at
-      updated_at
-      name
-      decks {
-        __typename
-        ...DeckInfo
-      }
-    }
-  }
-}
-    ${DeckInfoFragmentDoc}`;
-
-export function useDeckEventsSubscription<TData = DeckEventsSubscription>(options: Omit<Urql.UseSubscriptionArgs<DeckEventsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<DeckEventsSubscription, TData>) {
-  return Urql.useSubscription<DeckEventsSubscription, TData, DeckEventsSubscriptionVariables>({ query: DeckEventsDocument, ...options }, handler);
-};
-export const FileEventsDocument = gql`
-    subscription FileEvents($workspaceId: uuid!) {
-  event(
-    where: {workspace_id: {_eq: $workspaceId}, event_type: {_eq: "file"}}
-    limit: 1
-    order_by: [{time: desc}]
-  ) {
-    __typename
-    id
-    workspace_id
-    time
-    event_type
-    workspace {
-      __typename
-      id
-      created_at
-      updated_at
-      name
-      files {
-        __typename
-        ...FileInfo
-      }
-    }
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useFileEventsSubscription<TData = FileEventsSubscription>(options: Omit<Urql.UseSubscriptionArgs<FileEventsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<FileEventsSubscription, TData>) {
-  return Urql.useSubscription<FileEventsSubscription, TData, FileEventsSubscriptionVariables>({ query: FileEventsDocument, ...options }, handler);
-};
-export const WorkspaceFilesDocument = gql`
-    query WorkspaceFiles($workspaceId: uuid!) {
-  file(
-    where: {workspace_id: {_eq: $workspaceId}}
-    order_by: [{ordering: asc_nulls_last}]
-  ) {
-    ...FileInfo
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useWorkspaceFilesQuery(options: Omit<Urql.UseQueryArgs<WorkspaceFilesQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceFilesQuery>({ query: WorkspaceFilesDocument, ...options });
-};
-export const UpdateFileDocument = gql`
-    mutation UpdateFile($id: uuid!, $update: file_set_input!) {
-  update_file_by_pk(_set: $update, pk_columns: {id: $id}) {
-    ...FileInfo
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useUpdateFileMutation() {
-  return Urql.useMutation<UpdateFileMutation, UpdateFileMutationVariables>(UpdateFileDocument);
-};
-export const DeleteFileDocument = gql`
-    mutation DeleteFile($job: delete_job_insert_input!) {
-  insert_delete_job(objects: [$job]) {
-    affected_rows
-  }
-}
-    `;
-
-export function useDeleteFileMutation() {
-  return Urql.useMutation<DeleteFileMutation, DeleteFileMutationVariables>(DeleteFileDocument);
-};
-export const SetFilesPathDocument = gql`
-    mutation SetFilesPath($files: [uuid!]!, $path: jsonb) {
-  update_file(where: {id: {_in: $files}}, _set: {path: $path}) {
-    affected_rows
-    returning {
-      ...FileInfo
-    }
-  }
-}
-    ${FileInfoFragmentDoc}`;
-
-export function useSetFilesPathMutation() {
-  return Urql.useMutation<SetFilesPathMutation, SetFilesPathMutationVariables>(SetFilesPathDocument);
-};
-export const WorkspaceJobsDocument = gql`
-    subscription WorkspaceJobs($workspaceId: uuid!) {
-  job(
-    where: {workspace_id: {_eq: $workspaceId}}
-    order_by: [{assign_time: asc}, {created_at: asc}]
-  ) {
-    ...JobInfo
-  }
-}
-    ${JobInfoFragmentDoc}`;
-
-export function useWorkspaceJobsSubscription<TData = WorkspaceJobsSubscription>(options: Omit<Urql.UseSubscriptionArgs<WorkspaceJobsSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandler<WorkspaceJobsSubscription, TData>) {
-  return Urql.useSubscription<WorkspaceJobsSubscription, TData, WorkspaceJobsSubscriptionVariables>({ query: WorkspaceJobsDocument, ...options }, handler);
-};
-export const AddJobDocument = gql`
-    mutation AddJob($job: job_insert_input!) {
-  insert_job_one(object: $job) {
-    ...JobInfo
-  }
-}
-    ${JobInfoFragmentDoc}`;
-
-export function useAddJobMutation() {
-  return Urql.useMutation<AddJobMutation, AddJobMutationVariables>(AddJobDocument);
-};
-export const DeleteErrorJobDocument = gql`
-    mutation DeleteErrorJob($jobId: uuid!) {
-  delete_job_by_pk(id: $jobId) {
-    id
-  }
-}
-    `;
-
-export function useDeleteErrorJobMutation() {
-  return Urql.useMutation<DeleteErrorJobMutation, DeleteErrorJobMutationVariables>(DeleteErrorJobDocument);
-};
-export const WorkspaceDetailDocument = gql`
-    query WorkspaceDetail($workspaceId: uuid!) {
-  workspace_by_pk(id: $workspaceId) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useWorkspaceDetailQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailQuery>({ query: WorkspaceDetailDocument, ...options });
-};
-export const WorkspaceDetailByNameDocument = gql`
-    query WorkspaceDetailByName($workspaceName: String!) {
-  workspace(where: {name: {_eq: $workspaceName}}, limit: 1) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useWorkspaceDetailByNameQuery(options: Omit<Urql.UseQueryArgs<WorkspaceDetailByNameQueryVariables>, 'query'>) {
-  return Urql.useQuery<WorkspaceDetailByNameQuery>({ query: WorkspaceDetailByNameDocument, ...options });
-};
-export const CreateWorkspaceDocument = gql`
-    mutation CreateWorkspace($name: String) {
-  insert_workspace_one(object: {name: $name}) {
-    ...WorkspaceInfo
-  }
-}
-    ${WorkspaceInfoFragmentDoc}`;
-
-export function useCreateWorkspaceMutation() {
-  return Urql.useMutation<CreateWorkspaceMutation, CreateWorkspaceMutationVariables>(CreateWorkspaceDocument);
-};
+export const FileInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FileInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"file"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"length"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"download_url"}}]}}]} as unknown as DocumentNode<FileInfoFragment, unknown>;
+export const TrackInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TrackInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"track"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"file"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"deck_id"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<TrackInfoFragment, unknown>;
+export const DeckInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"DeckInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"deck"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}},{"kind":"Field","name":{"kind":"Name","value":"speed"}},{"kind":"Field","name":{"kind":"Name","value":"pause_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"start_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"queue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TrackInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},...TrackInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckInfoFragment, unknown>;
+export const JobInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"JobInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"job"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_start"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_end"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_in"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_out"}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"assigned_worker"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]} as unknown as DocumentNode<JobInfoFragment, unknown>;
+export const WorkspaceInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WorkspaceInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"workspace"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]} as unknown as DocumentNode<WorkspaceInfoFragment, unknown>;
+export const DecksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Decks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DecksQuery, DecksQueryVariables>;
+export const StopDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StopDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}}]}}]}}]} as unknown as DocumentNode<StopDeckMutation, StopDeckMutationVariables>;
+export const UpdateDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDeckMutation, UpdateDeckMutationVariables>;
+export const PlayDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deck"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_insert_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},"defaultValue":{"kind":"BooleanValue","value":false}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}}]}}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_deck_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deck"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<PlayDeckMutation, PlayDeckMutationVariables>;
+export const SetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"start_timestamp"},"value":{"kind":"EnumValue","value":"now"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetQueueMutation, SetQueueMutationVariables>;
+export const DeckEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DeckEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"deck","block":false},{"kind":"StringValue","value":"track","block":false}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckEventsSubscription, DeckEventsSubscriptionVariables>;
+export const FileEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"FileEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"StringValue","value":"file","block":false}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"files"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<FileEventsSubscription, FileEventsSubscriptionVariables>;
+export const WorkspaceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"EnumValue","value":"asc_nulls_last"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>;
+export const UpdateFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"file_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateFileMutation, UpdateFileMutationVariables>;
+export const DeleteFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"delete_job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"ListValue","values":[{"kind":"Variable","name":{"kind":"Name","value":"job"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}}]}}]} as unknown as DocumentNode<DeleteFileMutation, DeleteFileMutationVariables>;
+export const SetFilesPathDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetFilesPath"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"files"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"path"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"files"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"Variable","name":{"kind":"Name","value":"path"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetFilesPathMutation, SetFilesPathMutationVariables>;
+export const WorkspaceJobsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"WorkspaceJobs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"assign_time"},"value":{"kind":"EnumValue","value":"asc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"asc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceJobsSubscription, WorkspaceJobsSubscriptionVariables>;
+export const AddJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_job_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"job"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<AddJobMutation, AddJobMutationVariables>;
+export const DeleteErrorJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteErrorJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteErrorJobMutation, DeleteErrorJobMutationVariables>;
+export const WorkspaceDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceDetailQuery, WorkspaceDetailQueryVariables>;
+export const WorkspaceDetailByNameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceDetailByName"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceName"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceDetailByNameQuery, WorkspaceDetailByNameQueryVariables>;
+export const CreateWorkspaceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateWorkspace"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_workspace_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WorkspaceInfo"}}]}}]}},...WorkspaceInfoFragmentDoc.definitions]} as unknown as DocumentNode<CreateWorkspaceMutation, CreateWorkspaceMutationVariables>;
