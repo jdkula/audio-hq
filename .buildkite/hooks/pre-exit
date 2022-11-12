@@ -1,2 +1,0 @@
-#!/bin/bash
-shred -f -n 1000 private/secrets.json

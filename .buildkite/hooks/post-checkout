@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-mkdir private
-kubectl get secret tfsecrets -o jsonpath='{.data}' | jq -r '.["tfvars.json"]' | base64 -d > private/secrets.json
-
-cat private/secrets.json | jq -r '.dockerhub_pat' | docker login -u $(cat private/secrets.json | jq -r '.dockerhub_username') --password-stdin
