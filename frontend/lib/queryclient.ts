@@ -6,6 +6,9 @@ export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             cacheTime: 1000 * 60 * 60 * 24, // 24 hours
+            refetchIntervalInBackground: true,
+            refetchInterval: 2000,
+            staleTime: 1000,
         },
     },
 });
@@ -15,7 +18,6 @@ if (typeof window !== 'undefined') {
         storage: window.localStorage,
         retry: removeOldestQuery,
     });
-
     persistQueryClient({
         queryClient,
         persister: localStoragePersister,
