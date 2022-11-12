@@ -22,7 +22,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
 import { AudioHQApiImplRest } from '~/lib/api/impl/gql';
-import { queryClient } from '~/lib/queryclient';
+import { localStoragePersister, queryClient } from '~/lib/queryclient';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {
@@ -74,18 +75,16 @@ export default function App({
 
     /** Use caching service worker */
     useEffect(() => {
-        navigator.serviceWorker
-            .register('/service.worker.dist.js', { type: 'module' })
-            .then((registration) => {
-                console.log('Service worker registered', registration);
-            })
-            .catch((e) => {
-                console.log('Service worker registration failed', e);
-            });
+        navigator.serviceWorker.register('/service.worker.dist.js', { type: 'module' }).catch((e) => {
+            console.log('Service worker registration failed', e);
+        });
     }, []);
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister: localStoragePersister!, maxAge: 1000 * 60 * 60 * 24 * 31 }}
+        >
             <CacheProvider value={emotionCache}>
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
@@ -95,6 +94,6 @@ export default function App({
                 </ThemeProvider>
             </CacheProvider>
             <ReactQueryDevtools initialIsOpen={true} />
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
     );
 }

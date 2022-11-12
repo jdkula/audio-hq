@@ -1,11 +1,11 @@
 import { QueryClient } from '@tanstack/react-query';
-import { persistQueryClient, removeOldestQuery } from '@tanstack/react-query-persist-client';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { PersistedClient, Persister } from '@tanstack/react-query-persist-client';
+import { del, get, set } from 'idb-keyval';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            cacheTime: 1000 * 60 * 60 * 24, // 24 hours
+            cacheTime: 1000 * 60 * 60 * 24 * 31, // 31 days
             refetchIntervalInBackground: true,
             refetchInterval: 2000,
             staleTime: 1000,
@@ -13,25 +13,18 @@ export const queryClient = new QueryClient({
     },
 });
 
-if (typeof window !== 'undefined') {
-    // @ts-expect-error This is for the sake of serialization below which we expect to work.
-    Date.prototype.toJSON = function (key) {
-        return { $$date: this.toISOString() };
-    };
-    const localStoragePersister = createSyncStoragePersister({
-        storage: window.localStorage,
-        retry: removeOldestQuery,
-        deserialize: (str) => {
-            return JSON.parse(str, (_, datum) => {
-                if (typeof datum === 'object' && datum.$$date) {
-                    return new Date(datum.$$date);
-                }
-                return datum;
-            });
+export function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
+    return {
+        persistClient: async (client: PersistedClient) => {
+            await set(idbValidKey, client);
         },
-    });
-    persistQueryClient({
-        queryClient,
-        persister: localStoragePersister,
-    });
+        restoreClient: async () => {
+            return await get<PersistedClient>(idbValidKey);
+        },
+        removeClient: async () => {
+            await del(idbValidKey);
+        },
+    } as Persister;
 }
+
+export let localStoragePersister: Persister = createIDBPersister();
