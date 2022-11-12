@@ -24,6 +24,8 @@ if (typeof window !== 'undefined') {
     localStoragePersister = createSyncStoragePersister({
         storage: window.localStorage,
         deserialize: (str) =>
-            JSON.parse(str, (_, datum) => (typeof datum === 'object' && datum.$$date ? new Date(datum.$$date) : datum)),
+            JSON.parse(str, (_, datum) =>
+                typeof datum === 'object' && datum?.$$date ? new Date(datum.$$date) : datum,
+            ),
     });
 }
