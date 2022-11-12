@@ -112,7 +112,7 @@ const Container = styled.div<{ hideAmbience?: boolean }>`
 
 const Sub: FC = () => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const { ambience } = useWorkspaceDecks(workspaceId);
+    const { ambience, sfx } = useWorkspaceDecks(workspaceId);
 
     const [, addRecents] = useLocalRecents();
     useEffect(() => {
@@ -122,7 +122,7 @@ const Sub: FC = () => {
     }, [addRecents, workspaceId]);
 
     return (
-        <Container hideAmbience={ambience.length === 0}>
+        <Container hideAmbience={ambience.length + sfx.length === 0}>
             <MainApp />
         </Container>
     );

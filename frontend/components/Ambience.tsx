@@ -73,7 +73,7 @@ export const Ambience: FunctionComponent = () => {
         </AmbienceControlsContainer>
     ));
 
-    if (controls.length === 0 && !sfx) {
+    if (controls.length === 0) {
         return (
             <AmbienceContainer>
                 <EmptyContainer>
