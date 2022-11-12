@@ -1,40 +1,31 @@
 import { useMemo, useState } from 'react';
 import { broadcastOut, BroadcastMessage, useIsCached } from './sw_client';
 import ConvertOptions from './ConvertOptions';
+import * as API from './api/models';
 import {
-    useAddJobMutation,
-    useDeleteFileMutation,
-    useWorkspaceFilesQuery,
-    useWorkspaceJobsSubscription,
-    Deck_Type_Enum_Enum,
-    useDecksQuery,
-    useFileEventsSubscription,
-    useDeckEventsSubscription,
-    Job_Insert_Input,
-} from './generated/graphql';
-import { Deck_Minimum, File_Minimum } from './urql/graphql_type_helper';
+    useCreateImportJob,
+    useCreateUploadJob,
+    useDeleteTrackMutation,
+    useWorkspaceJobs,
+    useWorkspaceTracks,
+} from './api/hooks';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 
 export function useFileManager(workspaceId: string) {
-    // <== Subscription ==>
-    useFileEventsSubscription({ variables: { workspaceId } });
-
     // <== State ==>
-    const [filesData] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-    const [jobsData] = useWorkspaceJobsSubscription({ variables: { workspaceId } });
+    const { data: filesData } = useWorkspaceTracks(workspaceId);
+    const files = useMemo(() => filesData ?? [], [filesData]);
+    const { data: jobsData } = useWorkspaceJobs(workspaceId);
+    const jobs = useMemo(() => jobsData ?? [], [jobsData]);
 
-    const [, addJob] = useAddJobMutation();
-    const [, delFile] = useDeleteFileMutation();
+    const uploadJob = useCreateUploadJob(workspaceId);
+    const importJob = useCreateImportJob(workspaceId);
 
-    // List of jobs currently in progress in the workspace
-    const jobs = useMemo(() => jobsData.data?.job ?? [], [jobsData.data?.job]);
-
-    // Files in this workspace
-    const files = useMemo(() => filesData.data?.file ?? [], [filesData.data?.file]);
+    const delFile = useDeleteTrackMutation(workspaceId);
 
     // URLs of files in this workspace
-    const urls = useMemo(() => files.map((f) => f.download_url), [files]);
+    const urls = useMemo(() => files.map((f) => f.url), [files]);
     const cacheInfo = useIsCached(urls);
 
     // Load the cache info into two sets of URLs
@@ -66,27 +57,42 @@ export function useFileManager(workspaceId: string) {
             description?: string,
             options?: ConvertOptions,
         ) => {
-            await addJob({
-                job: {
-                    name,
-                    description,
-                    option_cut_start: options?.cut?.start ?? null,
-                    option_cut_end: options?.cut?.end ?? null,
-                    option_fade_in: options?.fadeIn ?? null,
-                    option_fade_out: options?.fadeOut ?? null,
-                    url,
-                    path: currentPath,
-                    workspace_id: workspaceId,
-                },
+            const modifications: API.JobModification[] = [];
+            if (options?.cut) {
+                modifications.push({
+                    type: 'cut',
+                    startSeconds: options.cut.start,
+                    endSeconds: options.cut.end,
+                });
+            }
+            if (options?.fadeIn || options?.fadeOut) {
+                modifications.push({
+                    type: 'fade',
+                    inSeconds: options.fadeIn ?? 0,
+                    outSeconds: options.fadeOut ?? 0,
+                });
+            }
+
+            const job = {
+                name,
+                description,
+                path: currentPath,
+                modifications: modifications,
+                ordering: Number.POSITIVE_INFINITY,
+            } as API.JobCreate;
+
+            await importJob.mutateAsync({
+                url: url,
+                info: job,
             });
         },
         delete: async (id: string) => {
-            await delFile({ job: { file_id: id } });
+            await delFile.mutateAsync({ id });
         },
-        download: (file: File_Minimum) => {
+        download: (file: API.Track) => {
             broadcastOut?.postMessage({
                 type: 'cache',
-                urls: [file.download_url],
+                urls: [file.url],
             } as BroadcastMessage);
         },
         upload: async (
@@ -96,36 +102,34 @@ export function useFileManager(workspaceId: string) {
             description?: string,
             options?: ConvertOptions,
         ) => {
-            const base64 = await new Promise<string>((resolve, reject) => {
-                const fr = new FileReader();
-                fr.onload = () => {
-                    resolve(fr.result as string);
-                };
-                fr.onerror = (e) => {
-                    reject(e);
-                };
-                fr.readAsDataURL(file);
-            });
+            const modifications: API.JobModification[] = [];
+            if (options?.cut) {
+                modifications.push({
+                    type: 'cut',
+                    startSeconds: options.cut.start,
+                    endSeconds: options.cut.end,
+                });
+            }
+            if (options?.fadeIn || options?.fadeOut) {
+                modifications.push({
+                    type: 'fade',
+                    inSeconds: options.fadeIn ?? 0,
+                    outSeconds: options.fadeOut ?? 0,
+                });
+            }
 
             const job = {
                 name,
                 description,
-                option_cut_start: options?.cut?.start ?? null,
-                option_cut_end: options?.cut?.end ?? null,
-                option_fade_in: options?.fadeIn ?? null,
-                option_fade_out: options?.fadeOut ?? null,
-                url: null,
                 path: currentPath,
-                workspace_id: workspaceId,
-                file_upload: {
-                    data: { base64: base64 },
-                },
-            } as Job_Insert_Input;
+                modifications: modifications,
+                ordering: Number.POSITIVE_INFINITY,
+            } as API.JobCreate;
 
             setUploading((uploading) => [...uploading, name]);
 
             try {
-                await addJob({ job });
+                await uploadJob.mutateAsync({ file, info: job });
             } finally {
                 setUploading((uploading) => uploading.filter((upName) => upName !== name));
             }
@@ -133,32 +137,12 @@ export function useFileManager(workspaceId: string) {
         downloadAll: async () => {
             console.log(
                 'Downloading all. Uncached:',
-                files.filter((f) => !cached.has(f.download_url)),
+                files.filter((f) => !cached.has(f.url)),
             );
             broadcastOut?.postMessage({
                 type: 'cache',
-                urls: files.map((f) => f.download_url),
+                urls: files.map((f) => f.url),
             } as BroadcastMessage);
         },
     };
-}
-
-export function useWorkspaceDecks(workspaceId: string): {
-    main: Deck_Minimum | null;
-    ambience: Deck_Minimum[];
-    sfx: Deck_Minimum[];
-} {
-    useDeckEventsSubscription({
-        variables: { workspaceId: workspaceId },
-    });
-
-    const [{ data: statusData }] = useDecksQuery({
-        variables: { workspaceId },
-    });
-
-    const main = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Main)[0] ?? null;
-    const ambience = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Ambience) ?? [];
-    const sfx = statusData?.workspace_by_pk?.decks.filter((x) => x.type === Deck_Type_Enum_Enum.Sfx) ?? [];
-
-    return { main, ambience, sfx };
 }

@@ -12,10 +12,10 @@ import { AudioControls } from './AudioControls';
 
 import AddIcon from '@mui/icons-material/Add';
 import { WorkspaceIdContext } from '~/lib/utility/context';
-import { useWorkspaceDecks } from '~/lib/useWorkspaceDetails';
 import { getDeckInfo } from '~/lib/audio/audio_util';
 import { Deck_Type_Enum_Enum } from '~/lib/generated/graphql';
 import { BlurOn } from '@mui/icons-material';
+import { useWorkspaceDecks } from '~/lib/api/hooks';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -67,7 +67,7 @@ export const Ambience: FunctionComponent = () => {
                         <BlurOn sx={{ marginRight: 2 }} />
                     </Collapse>
                 </Tooltip>
-                {getDeckInfo(deck)?.trackInfo.currentTrack.file.name ?? 'Loading...'}
+                {getDeckInfo(deck)?.trackInfo.currentTrack.name ?? 'Loading...'}
             </Typography>
             <AudioControls state={deck} />
         </AmbienceControlsContainer>

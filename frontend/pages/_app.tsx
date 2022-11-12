@@ -10,18 +10,18 @@
 import '@emotion/react';
 
 import { CssBaseline, ThemeProvider, createTheme, useMediaQuery } from '@mui/material';
-import { ReactElement, useCallback, useEffect, useMemo } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { AppProps } from 'next/app';
-import { Provider } from 'urql';
 import { ahqThemeBase } from '~/lib/theme';
 import { deepmerge } from '@mui/utils';
-import { useUrqlAddresses, useUrqlClient } from '../lib/urql/urql';
 import { CacheProvider, EmotionCache } from '@emotion/react';
 import { createEmotionCache } from '~/lib/ssr';
 import { useColorMode } from '~/lib/utility/usePersistentData';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import AudioHQApiContext from '~/lib/api/context';
+import { AudioHQApiImplRest } from '~/lib/api/impl/gql';
 
 const queryClient = new QueryClient();
 
@@ -36,8 +36,7 @@ export default function App({
     pageProps,
     emotionCache = clientSideEmotionCache,
 }: SSRServerProps): ReactElement {
-    const addresses = useUrqlAddresses();
-    const { client } = useUrqlClient(addresses);
+    const apiClient = useRef(new AudioHQApiImplRest());
 
     // Set up theming
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -91,12 +90,12 @@ export default function App({
             <CacheProvider value={emotionCache}>
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
-                    <Provider value={client}>
+                    <AudioHQApiContext.Provider value={apiClient.current}>
                         <Component {...pageProps} />
-                    </Provider>
+                    </AudioHQApiContext.Provider>
                 </ThemeProvider>
             </CacheProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
+            <ReactQueryDevtools initialIsOpen={true} />
         </QueryClientProvider>
     );
 }

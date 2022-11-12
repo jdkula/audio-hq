@@ -16,7 +16,7 @@ import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
+import * as API from '~/lib/api/models';
 
 export const FileContainer = styled(Paper)`
     display: grid;
@@ -47,7 +47,7 @@ export const FileContainer = styled(Paper)`
     }
 `;
 
-const FileEntry: FC<{ file: File_Minimum; index: number }> = ({ file, index }) => {
+const FileEntry: FC<{ file: API.Track; index: number }> = ({ file, index }) => {
     const [showDelete, setDelete] = useState(false);
 
     const [editing, setEditing] = useState(false);

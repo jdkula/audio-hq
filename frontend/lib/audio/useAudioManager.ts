@@ -6,9 +6,9 @@
  */
 import { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { Deck } from './deck';
-import { Deck_Minimum } from '../urql/graphql_type_helper';
-import { useWorkspaceDecks } from '../useWorkspaceDetails';
 import { FileManagerContext } from '../utility/context';
+import * as API from '../api/models';
+import { useWorkspaceDecks } from '../api/hooks';
 
 export default function useAudioManager(workspaceId: string) {
     // <== Local State ==>
@@ -29,7 +29,7 @@ export default function useAudioManager(workspaceId: string) {
     }, []);
 
     const createTrack = useCallback(
-        (state: Deck_Minimum) => {
+        (state: API.Deck) => {
             const tr: Deck = new Deck(state, fileManager);
             tr.on('blocked', () => setBlocked(true));
             return tr;
@@ -56,10 +56,10 @@ export default function useAudioManager(workspaceId: string) {
     }, [unblock, blocked]);
 
     useEffect(() => {
-        if (!blocked && !main?.pause_timestamp) {
+        if (!blocked && !main?.pauseTimestamp) {
             mainTrack.current?.unblock();
         }
-    }, [blocked, main?.pause_timestamp]);
+    }, [blocked, main?.pauseTimestamp]);
 
     useEffect(() => {
         if (main && main.queue.length > 0) {

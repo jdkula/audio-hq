@@ -70,3 +70,20 @@ mutation SetQueue($deckId: uuid!, $newQueue: [track_insert_input!]!) {
         ...DeckInfo
     }
 }
+
+mutation StopMainDeck($workspaceId: uuid!) {
+    delete_deck(where: { workspace_id: { _eq: $workspaceId }, type: { _eq: main } }) {
+        affected_rows
+        returning {
+            id
+        }
+    }
+}
+
+mutation UpdateMainDeck($workspaceId: uuid!, $update: deck_set_input!) {
+    update_deck(where: { workspace_id: { _eq: $workspaceId }, type: { _eq: main } }, _set: $update) {
+        returning {
+            ...DeckInfo
+        }
+    }
+}

@@ -5,10 +5,11 @@
  */
 
 import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
-import React, { FC, KeyboardEvent, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
-import { useUpdateFileMutation } from '../../lib/generated/graphql';
+import * as API from '~/lib/api/models';
+import { useUpdateTrackMutation } from '~/lib/api/hooks';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const EditorContainer = styled.div`
     display: flex;
@@ -36,14 +37,15 @@ interface FileDetailsEditorProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: File_Minimum;
+    file: API.Track;
 }
 
 const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocusTitle, file }) => {
+    const workspaceId = useContext(WorkspaceIdContext);
     const [editName, setEditName] = useState(file.name);
     const [editDescription, setEditDescription] = useState(file.description);
 
-    const [, updateFile] = useUpdateFileMutation();
+    const updateTrack = useUpdateTrackMutation(workspaceId);
 
     useEffect(() => {
         setEditName(file.name);
@@ -52,8 +54,8 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
 
     const saveEdits = () => {
         finishEditing();
-        updateFile({
-            id: file.id,
+        updateTrack.mutate({
+            trackId: file.id,
             update: {
                 name: editName,
                 description: editDescription,

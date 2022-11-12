@@ -22,11 +22,12 @@ export interface Track {
     name: string;
     description: string;
     length: number;
+    ordering: number;
 
     url: string;
 }
 
-export type TrackCreate = Pick<Track, 'path' | 'name' | 'description'> & { order: number | null };
+export type TrackCreate = Pick<Track, 'path' | 'name' | 'description'> & { ordering: number | null };
 export type TrackUpdate = Partial<TrackCreate>;
 
 ////////// Decks
@@ -57,9 +58,21 @@ export interface Job extends TrackCreate {
     modifications: Array<JobModification>;
 
     progress: number;
-    status: string;
+    status: JobStatus;
     assignedWorker: string | null;
+    error?: string;
 }
+
+export type JobStatus =
+    | 'getting ready'
+    | 'assigned'
+    | 'converting'
+    | 'done'
+    | 'downloading'
+    | 'uploading'
+    | 'saving'
+    | 'waiting'
+    | 'error';
 
 export type JobModification = CutModification | FadeModification;
 
@@ -75,4 +88,4 @@ export interface FadeModification {
     outSeconds: number;
 }
 
-export type JobCreate = TrackCreate;
+export type JobCreate = Omit<Job, 'id' | 'progress' | 'status' | 'assignedWorker'>;

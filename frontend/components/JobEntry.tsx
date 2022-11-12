@@ -17,12 +17,13 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { FC, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
-import { Job_Minimum } from '../lib/urql/graphql_type_helper';
-import { Job_Status_Enum_Enum, useDeleteErrorJobMutation } from '~/lib/generated/graphql';
+import { Job } from '~/lib/api/models';
+import { useDeleteJobMutation } from '~/lib/api/hooks';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const JobContainer = styled(Paper)`
     border-radius: 1rem;
@@ -39,16 +40,17 @@ const JobInnerContainer = styled.div`
     align-items: center;
 `;
 
-const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) => {
+const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job }) => {
+    const wsId = useContext(WorkspaceIdContext);
     const percent = Math.floor((job.progress ?? 0) * 1000) / 10;
 
     const [showError, setShowError] = useState(false);
-    const [, deleteJob] = useDeleteErrorJobMutation();
+    const deleteJob = useDeleteJobMutation(wsId);
     // TODO: Cancel
 
     const hasValue =
         job.progress !== null &&
-        (job.status === Job_Status_Enum_Enum.Downloading || job.status === Job_Status_Enum_Enum.Converting) &&
+        (job.status === 'downloading' || job.status === 'converting') &&
         job.progress !== 0 &&
         job.progress !== 100;
 
@@ -71,12 +73,12 @@ const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) =>
                     <Box>
                         <Typography variant="button">{percent}%</Typography>
                     </Box>
-                    {job.status === Job_Status_Enum_Enum.Error && (
+                    {job.status === 'error' && (
                         <>
                             <Button onClick={() => setShowError(true)}>ERROR</Button>
 
                             <Tooltip placement="top" title="Close job" arrow>
-                                <IconButton size="large" onClick={() => deleteJob({ jobId: job.id })}>
+                                <IconButton size="large" onClick={() => deleteJob.mutate({ jobId: job.id })}>
                                     <CloseIcon />
                                 </IconButton>
                             </Tooltip>
@@ -85,8 +87,8 @@ const JobEntry: FC<{ job: Job_Minimum; onCanceled?: () => void }> = ({ job }) =>
                 </Box>
             </JobInnerContainer>
             {hasValue && <LinearProgress variant="determinate" value={percent} />}
-            {!hasValue && job.status !== Job_Status_Enum_Enum.Error && <LinearProgress variant="indeterminate" />}
-            {!hasValue && job.status === Job_Status_Enum_Enum.Error && (
+            {!hasValue && job.status !== 'error' && <LinearProgress variant="indeterminate" />}
+            {!hasValue && job.status === 'error' && (
                 <LinearProgress color="secondary" variant="determinate" value={100} />
             )}
         </JobContainer>

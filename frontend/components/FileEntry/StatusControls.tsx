@@ -14,10 +14,10 @@ import DownloadIcon from '@mui/icons-material/CloudDownload';
 import EditIcon from '@mui/icons-material/Edit';
 import OfflinePinIcon from '@mui/icons-material/OfflinePin';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
 import { FileManagerContext } from '~/lib/utility/context';
 import { useAlt } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
+import * as API from '~/lib/api/models';
 
 const StatusContainerPlacer = styled.div`
     display: flex;
@@ -33,7 +33,7 @@ const StatusContainer = styled.div`
 `;
 
 interface StatusControlsProps {
-    file: File_Minimum;
+    file: API.Track;
     editing: boolean;
     setEditing: (editing: boolean) => void;
     setDelete: (deleting: boolean) => void;
@@ -44,15 +44,15 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
     const favs = useFavorites();
     const altKey = useAlt();
 
-    const cached = !!fileManager.cached.has(file.download_url);
-    const caching = !!fileManager.caching.has(file.download_url);
+    const cached = !!fileManager.cached.has(file.url);
+    const caching = !!fileManager.caching.has(file.url);
 
     const download = async () => {
         fileManager.download(file);
     };
 
     const save = async () => {
-        window.open(file.download_url, '_blank', 'norel noreferrer');
+        window.open(file.url, '_blank', 'norel noreferrer');
     };
 
     const toggleFavorite = () => {

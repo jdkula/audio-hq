@@ -6,15 +6,17 @@
  */
 
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
-import React, { FC } from 'react';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
-import { useDeleteFileMutation } from '../../lib/generated/graphql';
+import React, { FC, useContext } from 'react';
+import { useDeleteTrackMutation } from '~/lib/api/hooks';
+import * as API from '~/lib/api/models';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
-const FileDeleteDialog: FC<DialogProps & { file: File_Minimum }> = ({ file, ...props }) => {
-    const [, deleteFile] = useDeleteFileMutation();
+const FileDeleteDialog: FC<DialogProps & { file: API.Track }> = ({ file, ...props }) => {
+    const workspaceId = useContext(WorkspaceIdContext);
+    const deleteFile = useDeleteTrackMutation(workspaceId);
 
     const doDelete = () => {
-        deleteFile({ job: { file_id: file.id } });
+        deleteFile.mutate({ id: file.id });
         props.onClose?.({}, 'escapeKeyDown');
     };
 

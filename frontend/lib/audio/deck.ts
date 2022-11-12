@@ -5,16 +5,16 @@
  * database's Deck.
  */
 import { FileManager } from '../useWorkspaceDetails';
-import { Deck_Minimum } from '../urql/graphql_type_helper';
 import { EventEmitter } from 'events';
 import { Track } from './track';
+import * as API from '../api/models';
 
 export class Deck extends EventEmitter {
-    private _status: Deck_Minimum;
+    private _status: API.Deck;
 
     private _tracks: Track[];
 
-    constructor(state: Deck_Minimum, fm: FileManager) {
+    constructor(state: API.Deck, fm: FileManager) {
         super();
 
         this._status = state;
@@ -28,14 +28,14 @@ export class Deck extends EventEmitter {
         }
     }
 
-    isReferentFor(state: Deck_Minimum): boolean {
+    isReferentFor(state: API.Deck): boolean {
         return (
             state.queue.length === this._status.queue.length &&
-            this._status.queue.every((qem, idx) => qem.file.download_url === state.queue[idx].file.download_url)
+            this._status.queue.every((qem, idx) => qem.url === state.queue[idx].url)
         );
     }
 
-    reconcile(newState: Deck_Minimum): boolean {
+    reconcile(newState: API.Deck): boolean {
         if (!this.isReferentFor(newState)) {
             return false;
         }

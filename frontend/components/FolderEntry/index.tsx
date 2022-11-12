@@ -29,8 +29,8 @@ import {
 import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
-import { useSetFilesPathMutation, useWorkspaceFilesQuery } from '../../lib/generated/graphql';
 import { WorkspaceIdContext } from '~/lib/utility/context';
+import { useUpdateTrackMutation, useWorkspaceTracks } from '~/lib/api/hooks';
 
 const FolderContainer = styled(Paper)`
     display: grid;
@@ -108,10 +108,10 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 }) => {
     const workspaceId = useContext(WorkspaceIdContext);
 
-    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-    const files = filesRaw?.file ?? [];
+    const { data: filesRaw } = useWorkspaceTracks(workspaceId);
+    const files = filesRaw ?? [];
 
-    const [, updatePath] = useSetFilesPathMutation();
+    const updatePath = useUpdateTrackMutation(workspaceId);
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
@@ -142,9 +142,11 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
     const onRename = () => {
         console.log('subfiles', subfiles(), 'path', path, 'fullPath', fullPath);
         subfiles().forEach((file) =>
-            updatePath({
-                path: [...path, newName, ...file.path.slice(fullPath.length)],
-                files: [file.id],
+            updatePath.mutateAsync({
+                trackId: file.id,
+                update: {
+                    path: [...path, newName, ...file.path.slice(fullPath.length)],
+                },
             }),
         );
         setRenaming(false);
@@ -152,9 +154,11 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 
     const onDelete = () => {
         subfiles().forEach((file) =>
-            updatePath({
-                path: [...path, ...file.path.slice(fullPath.length)],
-                files: [file.id],
+            updatePath.mutateAsync({
+                trackId: file.id,
+                update: {
+                    path: [...path, newName, ...file.path.slice(fullPath.length)],
+                },
             }),
         );
     };

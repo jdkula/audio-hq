@@ -5,13 +5,13 @@
  * HTMLAudioElement towards a given database Track
  */
 import { EventEmitter } from 'events';
-import { Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
 import { FileManager } from '../useWorkspaceDetails';
 import { shouldCacheLRV } from '../sw_client';
 import { globalVolumeLRV } from '../utility/usePersistentData';
 import { getDeckInfo } from './audio_util';
 import { kMaxAudioDriftAllowance } from '../constants';
-import { Deck_Type_Enum_Enum } from '../generated/graphql';
+
+import * as API from '../api/models';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;
@@ -20,7 +20,7 @@ export class Track extends EventEmitter {
 
     private readonly _globalVolumeListener: () => void;
 
-    constructor(private _status: Deck_Minimum, private readonly _qe: Track_Minimum, private readonly _fm: FileManager) {
+    constructor(private _status: API.Deck, private readonly _qe: API.Track, private readonly _fm: FileManager) {
         super();
 
         this._audio = new Audio();
@@ -33,10 +33,10 @@ export class Track extends EventEmitter {
         this.once('internal_audioplayable', this.oncanplay.bind(this));
         this._audio.oncanplay = () => this.emit('internal_audioplayable');
 
-        this._audio.src = this._qe.file.download_url;
+        this._audio.src = this._qe.url;
 
         if (shouldCacheLRV.value) {
-            this._fm.download(this._qe.file);
+            this._fm.download(this._qe);
         }
 
         this._globalVolumeListener = () => this.update(this._status);
@@ -67,7 +67,7 @@ export class Track extends EventEmitter {
 
     private _stopTimeouts: (() => void) | null = null;
 
-    public update(status: Deck_Minimum) {
+    public update(status: API.Deck) {
         this._status = status;
 
         this._stopTimeouts?.();
@@ -85,7 +85,7 @@ export class Track extends EventEmitter {
         const { trackInfo, ...times } = deckInfo;
 
         // Stop SFX after time.
-        if (status.type === Deck_Type_Enum_Enum.Sfx && times.secondsToCurrentPlayhead > times.totalSeconds) {
+        if (status.type === 'sfx' && times.secondsToCurrentPlayhead > times.totalSeconds) {
             this._audio.pause();
             return;
         }
@@ -93,7 +93,7 @@ export class Track extends EventEmitter {
         const nextStart = (trackInfo.startTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
         const nextEnd = (trackInfo.endTime - times.secondsIntoLoop + times.totalSeconds) % times.totalSeconds;
 
-        if (trackInfo.isCurrent && !status.pause_timestamp && globalVolumeLRV.value !== 0) {
+        if (trackInfo.isCurrent && !status.pauseTimestamp && globalVolumeLRV.value !== 0) {
             if (this._audio.paused) {
                 this._audio.play().catch((e) => {
                     console.warn(e);
