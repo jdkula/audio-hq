@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-    - 'https://api.audio-hq.jdkula.dev/v1/graphql':
+    - 'https://audio-hq-api.jdkula.dev/v1/graphql':
           headers:
               'X-Hasura-Admin-Secret': '${HASURA_GRAPHQL_ADMIN_SECRET}'
               'X-Hasura-Role': 'worker'
@@ -17,12 +17,10 @@ generates:
                 uuid: string
                 bigint: number
                 float8: number
-            withHooks: false
-            gqlImport: '@urql/core#gql'
         plugins:
             - 'typescript'
             - 'typescript-operations'
-            - 'typescript-urql'
+            - 'typed-document-node'
     schema.graphql:
         plugins:
             - 'schema-ast'

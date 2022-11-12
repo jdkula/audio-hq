@@ -21,10 +21,10 @@ import {
     UpdateJobProgressMutation,
     UpdateJobProgressMutationVariables,
 } from './generated/graphql';
-import { Client } from '@urql/core';
 import fsProm from 'fs/promises';
 import { Logger } from 'tslog';
 import { myid } from './id';
+import { GraphQLClient } from 'graphql-request';
 
 interface ConvertOptions {
     cut?:
@@ -72,24 +72,22 @@ interface FileOptions {
 }
 
 export class Processor {
-    private _client: Client;
+    private _client: GraphQLClient;
 
-    constructor(client: Client) {
+    constructor(client: GraphQLClient) {
         this._client = client;
     }
 
     private async updateProgress(jobId: string, progress: number, progressStage: string) {
         processorLog.silly(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
         try {
-            const updateData = await this._client
-                .mutation<UpdateJobProgressMutation, UpdateJobProgressMutationVariables>(UpdateJobProgressDocument, {
-                    jobId,
-                    progress,
-                    progressStage: progressStage as Job_Status_Enum_Enum,
-                })
-                .toPromise();
+            const updateData = await this._client.request(UpdateJobProgressDocument, {
+                jobId,
+                progress,
+                progressStage: progressStage as Job_Status_Enum_Enum,
+            });
 
-            if (updateData.data?.update_job_by_pk?.assigned_worker !== myid) {
+            if (updateData?.update_job_by_pk?.assigned_worker !== myid) {
                 processorLog.fatal("Started work on a job we don't own, exiting now!!");
                 process.exit(1);
             }
@@ -145,12 +143,10 @@ export class Processor {
         };
 
         processorLog.silly(`Committing to database...`);
-        await this._client
-            .mutation<CommitJobMutation, CommitJobMutationVariables>(CommitJobDocument, {
-                jobId: id,
-                file,
-            })
-            .toPromise();
+        await this._client.request(CommitJobDocument, {
+            jobId: id,
+            file,
+        });
 
         processorLog.silly(`Job committed`);
         return id;

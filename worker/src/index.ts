@@ -1,31 +1,28 @@
-import { createUrqlClient } from './urql_worker';
 import * as GQL from './generated/graphql';
-import { pipe, subscribe, onEnd } from 'wonka';
 import { Processor } from './processor';
 import { AppFS } from './filesystems/FileSystem';
 
 import { Logger } from 'tslog';
 import { myid } from './id';
+import { createGraphqlRequestClient } from './gql_request_client';
 
 const log = new Logger({ name: 'worker' });
 
-const client = createUrqlClient();
+const client = createGraphqlRequestClient();
 const processor = new Processor(client);
 
 let working = false;
 
 async function reportError(jobId: string, e: any) {
-    await client
-        .mutation<GQL.SetJobErrorMutation, GQL.SetJobErrorMutationVariables>(GQL.SetJobErrorDocument, {
-            jobId,
-            error:
-                e instanceof Error
-                    ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
-                    : e.toString instanceof Function
-                    ? e.toString()
-                    : 'Unknown error',
-        })
-        .toPromise();
+    await client.request(GQL.SetJobErrorDocument, {
+        error:
+            e instanceof Error
+                ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
+                : e.toString instanceof Function
+                ? e.toString()
+                : 'Unknown error',
+        jobId,
+    });
 }
 
 async function doJobs() {
@@ -34,13 +31,11 @@ async function doJobs() {
     try {
         while (true) {
             log.silly('Attempting to claim a job...');
-            const jobRaw = await client
-                .mutation<GQL.ClaimJobMutation, GQL.ClaimJobMutationVariables>(GQL.ClaimJobDocument, {
-                    myId: myid,
-                })
-                .toPromise();
+            const jobRaw = await client.request(GQL.ClaimJobDocument, {
+                myId: myid,
+            });
 
-            const job = jobRaw.data?.claim_job;
+            const job = jobRaw?.claim_job;
             if (!job || !job.id) {
                 log.silly('No job found. Waiting for more jobs...');
                 return;
@@ -103,13 +98,11 @@ async function doDeletion() {
     try {
         while (true) {
             log.silly('Attempting to claim a delete job...');
-            const jobRaw = await client
-                .mutation<GQL.ClaimDeleteJobMutation, GQL.ClaimDeleteJobMutationVariables>(GQL.ClaimDeleteJobDocument, {
-                    myId: myid,
-                })
-                .toPromise();
+            const jobRaw = await client.request(GQL.ClaimDeleteJobDocument, {
+                myId: myid,
+            });
 
-            const job = jobRaw.data?.claim_delete_job;
+            const job = jobRaw?.claim_delete_job;
             if (!job || !job.id) {
                 log.silly('No delete job found. Waiting for more delete jobs...', job);
                 return;
@@ -118,15 +111,10 @@ async function doDeletion() {
             try {
                 log.debug('Delete job received', job);
                 log.silly('Deleting file in database...');
-                await client
-                    .mutation<GQL.CommitDeleteJobMutation, GQL.CommitDeleteJobMutationVariables>(
-                        GQL.CommitDeleteJobDocument,
-                        {
-                            jobId: job.id,
-                            fileId: job.file.id,
-                        },
-                    )
-                    .toPromise();
+                await client.request(GQL.CommitDeleteJobDocument, {
+                    jobId: job.id,
+                    fileId: job.file.id,
+                });
 
                 if (job.file.provider_id) {
                     log.silly('Deleting in AWS...');
@@ -145,69 +133,15 @@ async function doDeletion() {
     }
 }
 
-let ready = false;
-
-function setup() {
-    const newJobs = client.subscription<
-        GQL.NewJobsSubscriptionSubscription,
-        GQL.NewJobsSubscriptionSubscriptionVariables
-    >(GQL.NewJobsSubscriptionDocument, {});
-
-    const newDeleteJobs = client.subscription<
-        GQL.DeleteJobsSubscriptionSubscription,
-        GQL.DeleteJobsSubscriptionSubscriptionVariables
-    >(GQL.DeleteJobsSubscriptionDocument, {});
-
-    function setupJobsSubscription() {
-        pipe(
-            newJobs,
-            onEnd(() => {
-                log.warn('Jobs subscription ended, recreating...');
-                setupJobsSubscription();
-            }),
-            subscribe((result) => {
-                log.silly('Got new jobs data', result.data);
-                if (!result.data || result.data.available_jobs.length == 0) return;
-                doJobs();
-            }),
-        );
-    }
-
-    function setupDeleteJobsSubscription() {
-        pipe(
-            newDeleteJobs,
-            onEnd(() => {
-                log.warn('Delete jobs subscription ended, recreating...');
-                setupDeleteJobsSubscription();
-            }),
-            subscribe((result) => {
-                log.silly('Got new delete jobs data', result.data);
-                if (!result.data || result.data.delete_job.length == 0) return;
-                doDeletion();
-            }),
-        );
-    }
-
-    setupJobsSubscription();
-    setupDeleteJobsSubscription();
-    ready = true;
-    log.info('Worker started');
-}
-
 async function checkIn() {
     log.debug('Checking in...');
-    await client
-        .mutation<GQL.CheckInMutation, GQL.CheckInMutationVariables>(GQL.CheckInDocument, { myId: myid })
-        .toPromise();
-
-    if (!ready) {
-        log.info('Starting subscription...');
-        setup();
-    }
+    await client.request(GQL.CheckInDocument, { myId: myid });
 
     doJobs();
     doDeletion();
 
     setTimeout(checkIn, 10000);
 }
+
+log.info('Worker started.');
 checkIn();
