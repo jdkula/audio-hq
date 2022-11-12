@@ -107,8 +107,9 @@ async function updateCacheStateAll() {
 
 /** Retrieves and gives back cached data, if it exists. */
 async function ahqCache(request) {
-    const audioCacheResponse = await (await audioCache).match(request);
+    const audioCacheResponse = await (await audioCache).match(request.url);
     if (audioCacheResponse) {
+        console.log('Successfully retrieved cached data for audio URL', request.url);
         return audioCacheResponse;
     }
 
