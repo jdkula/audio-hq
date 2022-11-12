@@ -1,21 +1,22 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useContext } from 'react';
-import { queryClient } from '../queryclient';
 import AudioHQApiContext from './context';
 import { Deck, Job, JobCreate, Track, WorkspaceCreate, DeckUpdate, DeckCreate, TrackUpdate } from './models';
 import { v4 as uuid } from 'uuid';
 
 export function useWorkspaceTracks(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     return useQuery(['workspace', workspaceId, 'tracks'], {
         queryFn: () => api.workspace(workspaceId).tracks.list(),
+        refetchInterval: 15000,
+        staleTime: 10000,
     });
 }
 
 export function useWorkspaceJobs(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     return useQuery(['workspace', workspaceId, 'jobs'], {
         queryFn: () => api.workspace(workspaceId).jobs.list(),
     });
@@ -23,7 +24,7 @@ export function useWorkspaceJobs(workspaceId: string) {
 
 export function useCreateUploadJob(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     const jobsQueryKey = ['workspace', workspaceId, 'jobs'];
 
     const mt = useMutation({
@@ -64,7 +65,7 @@ export function useCreateUploadJob(workspaceId: string) {
 
 export function useCreateImportJob(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     const jobsQueryKey = ['workspace', workspaceId, 'jobs'];
 
     const mt = useMutation({
@@ -105,7 +106,7 @@ export function useCreateImportJob(workspaceId: string) {
 
 export function useDeleteTrackMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     const trackQueryKey = ['workspace', workspaceId, 'track'];
 
     const mt = useMutation({
@@ -141,10 +142,11 @@ export function useWorkspaceDecks(workspaceId: string): {
     sfx: Deck[];
 } {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     const { data } = useQuery({
         queryKey: ['workspace', workspaceId, 'decks'],
         queryFn: () => api.workspace(workspaceId).decks.listAll(),
+        refetchInterval: 1000,
     });
 
     const main = data?.filter((x) => x.type === 'main')[0] ?? null;
@@ -156,7 +158,7 @@ export function useWorkspaceDecks(workspaceId: string): {
 
 export function useWorkspaceDetail(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['workspace', workspaceId],
         queryFn: () => api.workspace(workspaceId).get(),
@@ -164,7 +166,7 @@ export function useWorkspaceDetail(workspaceId: string) {
 }
 export function useWorkspaceDetailByName(name: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['workspaceByName', name],
         queryFn: () => api.searchWorkspaces(name),
@@ -173,7 +175,7 @@ export function useWorkspaceDetailByName(name: string) {
 
 export function useCreateWorkspaceMutation() {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ workspace }: { workspace: WorkspaceCreate }) => api.workspaces.create(workspace),
         onMutate: async ({ workspace }) => {
@@ -184,14 +186,14 @@ export function useCreateWorkspaceMutation() {
             queryClient.setQueryData(['workspace', workspace.id], () => workspace);
         },
         onSettled: (_, __, { workspace }) => {
-            queryClient.invalidateQueries(['workspaceByName', workspace.name]);
+            queryClient.invalidateQueries({ queryKey: ['workspaceByName', workspace.name] });
         },
     });
 }
 
 export function useUpdateDeckMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-
+    const queryClient = useQueryClient();
     const decksQueryKey = ['workspace', workspaceId, 'decks'];
 
     return useMutation({
@@ -199,6 +201,7 @@ export function useUpdateDeckMutation(workspaceId: string) {
             return api.workspace(workspaceId).deck(deckId).update(update);
         },
         onMutate: async ({ deckId, update }) => {
+            console.log('on mutate called');
             await queryClient.cancelQueries(decksQueryKey);
             const originalData = queryClient.getQueryData<Deck[]>(decksQueryKey)?.find((dk) => dk.id === deckId);
             queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
@@ -215,11 +218,13 @@ export function useUpdateDeckMutation(workspaceId: string) {
             return { originalData };
         },
         onSuccess: (result, { deckId }) => {
+            console.log('on success called');
             queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
                 decks?.map((dk) => (dk.id === deckId ? result : dk)),
             );
         },
         onError: (_, { deckId }, ctx) => {
+            console.log('on error called');
             if (ctx?.originalData) {
                 const original = ctx.originalData;
                 queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
@@ -228,13 +233,15 @@ export function useUpdateDeckMutation(workspaceId: string) {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries(decksQueryKey);
+            console.log('on onsettled called');
+            queryClient.invalidateQueries({ queryKey: decksQueryKey });
         },
     });
 }
 
 export function useDeleteJobMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
+    const queryClient = useQueryClient();
     const jobsQueryKey = ['workspace', workspaceId, 'jobs'];
 
     return useMutation({
@@ -255,14 +262,15 @@ export function useDeleteJobMutation(workspaceId: string) {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries(jobsQueryKey);
+            queryClient.invalidateQueries({ queryKey: jobsQueryKey });
         },
     });
 }
 
 export function usePlayDeckMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-    const decksQueryKey = ['workspace', workspaceId, 'jobs'];
+    const queryClient = useQueryClient();
+    const decksQueryKey = ['workspace', workspaceId, 'decks'];
 
     return useMutation({
         mutationFn: ({ deck }: { deck: DeckCreate }) => {
@@ -277,9 +285,10 @@ export function usePlayDeckMutation(workspaceId: string) {
             };
 
             if (optimisticDeck.type === 'main') {
-                queryClient.setQueryData<Deck[]>(decksQueryKey, (decks) =>
-                    decks?.map((deck) => (deck.type === 'main' ? optimisticDeck : deck)),
-                );
+                queryClient.setQueryData<Deck[]>(decksQueryKey, (decks) => [
+                    ...(decks?.filter((deck) => deck.type !== 'main') ?? []),
+                    optimisticDeck,
+                ]);
             } else {
                 queryClient.setQueryData<Deck[]>(decksQueryKey, (decks) => [...(decks ?? []), optimisticDeck]);
             }
@@ -311,13 +320,14 @@ export function usePlayDeckMutation(workspaceId: string) {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries(decksQueryKey);
+            queryClient.invalidateQueries({ queryKey: decksQueryKey });
         },
     });
 }
 
 export function useUpdateTrackMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
+    const queryClient = useQueryClient();
     const tracksQueryKey = ['workspace', workspaceId, 'tracks'];
 
     return useMutation({
@@ -356,13 +366,14 @@ export function useUpdateTrackMutation(workspaceId: string) {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries(tracksQueryKey);
+            queryClient.invalidateQueries({ queryKey: tracksQueryKey });
         },
     });
 }
 
 export function useStopDeckMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
+    const queryClient = useQueryClient();
     const decksQueryKey = ['workspace', workspaceId, 'decks'];
 
     return useMutation({
@@ -382,7 +393,7 @@ export function useStopDeckMutation(workspaceId: string) {
             queryClient.setQueryData<Deck[]>(decksQueryKey, (decks) => [...(decks ?? []), original]);
         },
         onSettled: () => {
-            queryClient.invalidateQueries(decksQueryKey);
+            queryClient.invalidateQueries({ queryKey: decksQueryKey });
         },
     });
 }
