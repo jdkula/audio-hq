@@ -128,11 +128,19 @@ export const Explorer: FC = () => {
     const playDeck = usePlayDeckMutation(workspaceId);
     const updateTrack = useUpdateTrackMutation(workspaceId);
 
-    const currentFiles = (
-        viewingFavorites
-            ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<API.Track>(isDefined)
-            : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined)
-    ).filter((file) => online || fileManager.cached.has(file.url));
+    const currentFiles = React.useMemo(
+        () =>
+            (viewingFavorites
+                ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<API.Track>(isDefined)
+                : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined)
+            ).filter((file) => online || fileManager.cached.has(file.url)),
+        [online, viewingFavorites, favs, files, path, searching, searchText, fileManager.cached],
+    );
+
+    const availableFiles = React.useMemo(
+        () => files.filter((file) => online || fileManager.cached.has(file.url)),
+        [files, online, fileManager.cached],
+    );
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
@@ -171,7 +179,7 @@ export const Explorer: FC = () => {
                   onClick={() => finishSearch(path)}
               />
           ))
-        : getFolders(files, path).map((foldername) => (
+        : getFolders(availableFiles, path).map((foldername) => (
               <FolderEntry
                   name={foldername}
                   key={foldername}
