@@ -113,14 +113,25 @@ async function ahqCache(request) {
         return audioCacheResponse;
     }
 
-    const appCacheResponse = await (await appCache).match(request.url);
-    if (appCacheResponse) {
-        if (await offlineEnabled()) {
-            cacheUrl(await appCache, request.url);
+    try {
+        const response = await fetch(request);
+        try {
+            if (new URL(request.url).origin === self.location.origin) {
+                await (await appCache).put(request.url, response.clone());
+                console.log('Successfully updated cache for app url', request.url);
+            }
+        } catch (e) {
+            console.warn('Error caching url', request.url, e);
         }
-        return appCacheResponse;
+        return response;
+    } catch (e) {
+        const appCacheResponse = await (await appCache).match(request.url);
+        if (appCacheResponse) {
+            cacheUrl(await appCache, request.url);
+            return appCacheResponse;
+        }
+        throw e;
     }
-    return await fetch(request);
 }
 
 /** Caches the given URL, automatically testing and caching for bare urls as well. */
@@ -169,8 +180,6 @@ async function clearCache(cacheProm) {
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
     if (!new URL(event.request.url).protocol.startsWith('http')) return;
-
-    console.log('Got fetch request', event.request);
 
     event.respondWith(ahqCache(event.request));
 });
