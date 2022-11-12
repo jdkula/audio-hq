@@ -14,9 +14,21 @@ export const queryClient = new QueryClient({
 });
 
 if (typeof window !== 'undefined') {
+    // @ts-expect-error This is for the sake of serialization below which we expect to work.
+    Date.prototype.toJSON = function (key) {
+        return { $$date: this.toISOString() };
+    };
     const localStoragePersister = createSyncStoragePersister({
         storage: window.localStorage,
         retry: removeOldestQuery,
+        deserialize: (str) => {
+            return JSON.parse(str, (_, datum) => {
+                if (typeof datum === 'object' && datum.$$date) {
+                    return new Date(datum.$$date);
+                }
+                return datum;
+            });
+        },
     });
     persistQueryClient({
         queryClient,

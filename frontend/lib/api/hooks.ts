@@ -201,7 +201,6 @@ export function useUpdateDeckMutation(workspaceId: string) {
             return api.workspace(workspaceId).deck(deckId).update(update);
         },
         onMutate: async ({ deckId, update }) => {
-            console.log('on mutate called');
             await queryClient.cancelQueries(decksQueryKey);
             const originalData = queryClient.getQueryData<Deck[]>(decksQueryKey)?.find((dk) => dk.id === deckId);
             queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
@@ -218,13 +217,11 @@ export function useUpdateDeckMutation(workspaceId: string) {
             return { originalData };
         },
         onSuccess: (result, { deckId }) => {
-            console.log('on success called');
             queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
                 decks?.map((dk) => (dk.id === deckId ? result : dk)),
             );
         },
         onError: (_, { deckId }, ctx) => {
-            console.log('on error called');
             if (ctx?.originalData) {
                 const original = ctx.originalData;
                 queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
@@ -233,7 +230,6 @@ export function useUpdateDeckMutation(workspaceId: string) {
             }
         },
         onSettled: () => {
-            console.log('on onsettled called');
             queryClient.invalidateQueries({ queryKey: decksQueryKey });
         },
     });
