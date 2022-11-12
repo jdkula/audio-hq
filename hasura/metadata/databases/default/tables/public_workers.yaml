@@ -1,21 +1,21 @@
 table:
-  schema: public
   name: workers
+  schema: public
 array_relationships:
   - name: delete_jobs
     using:
       foreign_key_constraint_on:
         column: assigned_worker
         table:
-          schema: public
           name: delete_job
+          schema: public
   - name: jobs
     using:
       foreign_key_constraint_on:
         column: assigned_worker
         table:
-          schema: public
           name: job
+          schema: public
 insert_permissions:
   - role: worker
     permission:
@@ -23,7 +23,6 @@ insert_permissions:
       columns:
         - id
         - last_check_in
-      backend_only: false
 select_permissions:
   - role: worker
     permission:
@@ -41,4 +40,5 @@ update_permissions:
 delete_permissions:
   - role: worker
     permission:
+      backend_only: false
       filter: {}

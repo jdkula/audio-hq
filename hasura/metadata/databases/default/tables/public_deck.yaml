@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: deck
+  schema: public
 object_relationships:
   - name: workspace
     using:
@@ -11,8 +11,8 @@ array_relationships:
       foreign_key_constraint_on:
         column: deck_id
         table:
-          schema: public
           name: track
+          schema: public
 insert_permissions:
   - role: anonymous
     permission:
@@ -25,7 +25,6 @@ insert_permissions:
         - type
         - volume
         - workspace_id
-      backend_only: false
 select_permissions:
   - role: anonymous
     permission:
@@ -52,4 +51,5 @@ update_permissions:
 delete_permissions:
   - role: anonymous
     permission:
+      backend_only: false
       filter: {}

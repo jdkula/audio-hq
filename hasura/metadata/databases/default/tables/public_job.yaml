@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: job
+  schema: public
 object_relationships:
   - name: file_upload
     using:
@@ -20,7 +20,6 @@ insert_permissions:
         - path
         - url
         - workspace_id
-      backend_only: false
 select_permissions:
   - role: anonymous
     permission:
@@ -77,6 +76,7 @@ update_permissions:
 delete_permissions:
   - role: anonymous
     permission:
+      backend_only: false
       filter:
         _or:
           - assigned_worker:
@@ -85,4 +85,5 @@ delete_permissions:
               _eq: error
   - role: worker
     permission:
+      backend_only: false
       filter: {}

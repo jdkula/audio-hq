@@ -1,13 +1,12 @@
 table:
-  schema: public
   name: file_upload
+  schema: public
 insert_permissions:
   - role: anonymous
     permission:
       check: {}
       columns:
         - base64
-      backend_only: false
 select_permissions:
   - role: anonymous
     permission:
@@ -23,4 +22,5 @@ select_permissions:
 delete_permissions:
   - role: worker
     permission:
+      backend_only: false
       filter: {}

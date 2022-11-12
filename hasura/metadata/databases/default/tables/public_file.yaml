@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: file
+  schema: public
 object_relationships:
   - name: workspace
     using:
@@ -19,7 +19,6 @@ insert_permissions:
         - provider_id
         - type
         - workspace_id
-      backend_only: false
 select_permissions:
   - role: anonymous
     permission:
@@ -61,4 +60,5 @@ update_permissions:
 delete_permissions:
   - role: worker
     permission:
+      backend_only: false
       filter: {}

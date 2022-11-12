@@ -1,4 +1,4 @@
 table:
-  schema: public
   name: file_type_enum
+  schema: public
 is_enum: true

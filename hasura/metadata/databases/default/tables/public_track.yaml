@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: track
+  schema: public
 object_relationships:
   - name: deck
     using:
@@ -17,7 +17,6 @@ insert_permissions:
         - file_id
         - id
         - ordering
-      backend_only: false
 select_permissions:
   - role: anonymous
     permission:
@@ -31,4 +30,5 @@ select_permissions:
 delete_permissions:
   - role: anonymous
     permission:
+      backend_only: false
       filter: {}

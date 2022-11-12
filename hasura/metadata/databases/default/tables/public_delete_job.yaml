@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: delete_job
+  schema: public
 object_relationships:
   - name: file
     using:
@@ -11,7 +11,6 @@ insert_permissions:
       check: {}
       columns:
         - file_id
-      backend_only: false
 select_permissions:
   - role: worker
     permission:
@@ -30,4 +29,5 @@ update_permissions:
 delete_permissions:
   - role: worker
     permission:
+      backend_only: false
       filter: {}

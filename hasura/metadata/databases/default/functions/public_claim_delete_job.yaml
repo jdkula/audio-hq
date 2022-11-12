@@ -1,6 +1,6 @@
 function:
-  schema: public
   name: claim_delete_job
+  schema: public
 configuration:
   custom_root_fields: {}
   exposed_as: mutation
