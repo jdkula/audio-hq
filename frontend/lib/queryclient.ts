@@ -1,14 +1,15 @@
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
-import { Persister } from '@tanstack/react-query-persist-client';
+import { Persister, removeOldestQuery } from '@tanstack/react-query-persist-client';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            cacheTime: 1000 * 60 * 60 * 24 * 31, // 31 days
+            cacheTime: Number.POSITIVE_INFINITY, // 31 days
             refetchIntervalInBackground: true,
             refetchInterval: 2000,
             staleTime: 1000,
+            retry: 0,
         },
     },
 });
@@ -27,5 +28,6 @@ if (typeof window !== 'undefined') {
             JSON.parse(str, (_, datum) =>
                 typeof datum === 'object' && datum?.$$date ? new Date(datum.$$date) : datum,
             ),
+        retry: removeOldestQuery,
     });
 }

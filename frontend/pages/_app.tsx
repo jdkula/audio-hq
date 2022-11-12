@@ -83,7 +83,10 @@ export default function App({
     return (
         <PersistQueryClientProvider
             client={queryClient}
-            persistOptions={{ persister: localStoragePersister, maxAge: 1000 * 60 * 60 * 24 * 31 }}
+            persistOptions={{
+                persister: localStoragePersister,
+                maxAge: Number.POSITIVE_INFINITY,
+            }}
         >
             <CacheProvider value={emotionCache}>
                 <ThemeProvider theme={theme}>
