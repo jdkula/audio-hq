@@ -17,7 +17,7 @@ export let localStoragePersister: Persister = null as never;
 
 if (typeof window !== 'undefined') {
     // @ts-expect-error Needed to serialize dates correctly. Yes, it's extremely janky.
-    Date.prototype.toJSON = function (key) {
+    Date.prototype.toJSON = function () {
         return { $$date: this.toISOString() };
     };
 

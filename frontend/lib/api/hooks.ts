@@ -117,7 +117,7 @@ export function useCreateImportJob(workspaceId: string) {
 export function useDeleteTrackMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
     const queryClient = useQueryClient();
-    const trackQueryKey = ['workspace', workspaceId, 'track'];
+    const trackQueryKey = ['workspace', workspaceId, 'tracks'];
 
     const mt = useMutation({
         mutationFn: ({ id }: { id: string }) => {
@@ -137,9 +137,6 @@ export function useDeleteTrackMutation(workspaceId: string) {
                 const deletedTrack = ctx?.deletedTrack;
                 queryClient.setQueryData(trackQueryKey, (data?: Track[]) => [...(data ?? []), deletedTrack]);
             }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: trackQueryKey });
         },
     });
 
