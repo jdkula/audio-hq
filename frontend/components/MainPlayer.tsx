@@ -6,15 +6,16 @@
  */
 
 import { List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { FunctionComponent, useMemo } from 'react';
+import { FunctionComponent, useContext, useMemo } from 'react';
 
 import { AudioControls } from './AudioControls';
 import styled from '@emotion/styled';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import ListHeader from './ListHeader';
-import { Deck_Minimum } from '../lib/urql/graphql_type_helper';
 import useAudio from '../lib/audio/useAudioDetail';
-import { useSetQueueMutation } from '../lib/generated/graphql';
+import { Deck } from '~/lib/api/models';
+import { useUpdateDeckMutation } from '~/lib/api/hooks';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -41,13 +42,14 @@ const PlayTypography = styled(Typography)`
 `;
 
 export const MainPlayer: FunctionComponent<{
-    state: Deck_Minimum | null;
+    state: Deck | null;
 }> = ({ state }) => {
+    const wsId = useContext(WorkspaceIdContext);
     const audioInfo = useAudio(state);
 
-    const [, setQueue] = useSetQueueMutation();
+    const updateDeck = useUpdateDeckMutation(wsId);
 
-    const trackNames = state?.queue.map((qe) => qe.file.name);
+    const trackNames = state?.queue.map((qe) => qe.name);
 
     const tracksQueued = useMemo(
         () =>
@@ -70,13 +72,11 @@ export const MainPlayer: FunctionComponent<{
 
     const skipTo = (idx: number) => {
         const newQueue = [...state.queue.slice(idx + 1), ...state.queue.slice(0, idx + 1)];
-        setQueue({
+        updateDeck.mutate({
             deckId: state.id,
-            newQueue: newQueue.map((qe, i) => ({
-                file_id: qe.file.id,
-                deck_id: state.id,
-                ordering: i,
-            })),
+            update: {
+                queue: newQueue,
+            },
         });
     };
 

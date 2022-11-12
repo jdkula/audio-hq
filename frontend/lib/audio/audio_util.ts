@@ -4,7 +4,7 @@
  * Provides a small set of utility functions used for managing tracks and decks
  */
 import { add, differenceInMilliseconds, sub } from 'date-fns';
-import { Deck_Minimum, Track_Minimum } from '../urql/graphql_type_helper';
+import { Deck, Track } from '../api/models';
 
 export interface DeckInfo {
     secondsToCurrentPlayhead: number;
@@ -14,18 +14,18 @@ export interface DeckInfo {
 }
 
 interface TrackInfo {
-    currentTrack: Track_Minimum;
+    currentTrack: Track;
     startTime: number;
     endTime: number;
     isCurrent: boolean;
     index: number;
 }
 
-export function getDeckInfo(status: Deck_Minimum, track?: Track_Minimum): DeckInfo | null {
-    const effectiveTime = status.pause_timestamp ? new Date(status.pause_timestamp) : new Date();
+export function getDeckInfo(status: Deck, track?: Track): DeckInfo | null {
+    const effectiveTime = status.pauseTimestamp ?? new Date();
 
-    const secondsSinceStart = differenceInMilliseconds(effectiveTime, new Date(status.start_timestamp)) / 1000;
-    const totalSeconds = status.queue.reduce((runningTotal, cur) => runningTotal + cur.file.length / status.speed, 0);
+    const secondsSinceStart = differenceInMilliseconds(effectiveTime, status.startTimestamp) / 1000;
+    const totalSeconds = status.queue.reduce((runningTotal, cur) => runningTotal + cur.length / status.speed, 0);
     const secondsIntoLoop = secondsSinceStart % totalSeconds;
 
     let requestedTrackInfo: TrackInfo | null = null;
@@ -33,9 +33,9 @@ export function getDeckInfo(status: Deck_Minimum, track?: Track_Minimum): DeckIn
 
     // Needs to happen in two passes in order to figure out which file is current
     status.queue.reduce((runningTotal, cur, idx) => {
-        const next = runningTotal + cur.file.length / status.speed;
+        const next = runningTotal + cur.length / status.speed;
         const current = runningTotal <= secondsIntoLoop && secondsIntoLoop < next;
-        if (cur.file.id === track?.file.id) {
+        if (cur.id === track?.id) {
             requestedTrackInfo = {
                 currentTrack: track,
                 startTime: runningTotal,
@@ -71,27 +71,27 @@ export function getDeckInfo(status: Deck_Minimum, track?: Track_Minimum): DeckIn
     };
 }
 
-export function getUnpauseData(state: Deck_Minimum): Partial<Deck_Minimum> {
-    if (!state.pause_timestamp) throw new Error('We must be paused!');
+export function getUnpauseData(state: Deck): Partial<Deck> {
+    if (!state.pauseTimestamp) throw new Error('We must be paused!');
     return {
-        pause_timestamp: null,
-        start_timestamp: add(new Date(state.start_timestamp), {
-            seconds: differenceInMilliseconds(new Date(), new Date(state.pause_timestamp)) / state.speed / 1000,
-        }).toISOString(),
+        pauseTimestamp: null,
+        startTimestamp: add(new Date(state.startTimestamp), {
+            seconds: differenceInMilliseconds(new Date(), new Date(state.pauseTimestamp)) / state.speed / 1000,
+        }),
     };
 }
 
-export function getSpeedChangeData(state: Deck_Minimum, newSpeed: number): Partial<Deck_Minimum> {
-    const effective_now = state.pause_timestamp ? new Date(state.pause_timestamp) : new Date();
+export function getSpeedChangeData(state: Deck, newSpeed: number): Partial<Deck> {
+    const effective_now = state.pauseTimestamp ?? new Date();
 
     return {
         speed: newSpeed,
-        start_timestamp: sub(new Date(), {
+        startTimestamp: sub(new Date(), {
             seconds:
-                (differenceInMilliseconds(effective_now, new Date(state.start_timestamp)) * state.speed) /
+                (differenceInMilliseconds(effective_now, new Date(state.startTimestamp)) * state.speed) /
                 newSpeed /
                 1000,
-        }).toISOString(),
-        pause_timestamp: state.pause_timestamp ? new Date().toISOString() : null,
+        }),
+        pauseTimestamp: state.pauseTimestamp ?? null,
     };
 }

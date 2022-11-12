@@ -22,21 +22,19 @@ import {
     Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { FC, KeyboardEvent, useState } from 'react';
+import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
-import {
-    useCreateWorkspaceMutation,
-    useWorkspaceDetailByNameQuery,
-    useWorkspaceDetailQuery,
-} from '~/lib/generated/graphql';
 import { useShouldCache } from '~/lib/sw_client';
 import { usePeriodicEffect } from '~/lib/utility/hooks';
 import { useLocalRecents, useColorMode, ColorMode } from '~/lib/utility/usePersistentData';
 import { humanFileSize, isDefined } from '~/lib/utility/util';
+import { useCreateWorkspaceMutation, useWorkspaceDetail, useWorkspaceDetailByName } from '~/lib/api/hooks';
+import { Workspace } from '~/lib/api/models';
+import AudioHQApiContext from '~/lib/api/context';
 
 const GlobalFull = () => (
     <Global
@@ -86,21 +84,12 @@ const Logo = styled.div`
     user-select: none;
 `;
 
-interface WorkspaceInfo {
-    id: string;
-    name: string;
-}
-
-const Recent: FC<{ workspaceId: string; onClick: (ws: WorkspaceInfo) => void }> = ({ workspaceId: wsId, onClick }) => {
-    const [{ data }] = useWorkspaceDetailQuery({ variables: { workspaceId: wsId } });
+const Recent: FC<{ workspaceId: string; onClick: (ws: Workspace) => void }> = ({ workspaceId: wsId, onClick }) => {
+    const { data: workspace } = useWorkspaceDetail(wsId);
     return (
         <Box m="5px">
-            <Button
-                onClick={() => data?.workspace_by_pk && onClick(data?.workspace_by_pk)}
-                variant="outlined"
-                disabled={!data?.workspace_by_pk?.name}
-            >
-                {data?.workspace_by_pk?.name ?? <CircularProgress color="inherit" size="1rem" />}
+            <Button onClick={() => workspace && onClick(workspace)} variant="outlined" disabled={!workspace}>
+                {workspace?.name ?? <CircularProgress color="inherit" size="1rem" />}
             </Button>
         </Box>
     );
@@ -108,6 +97,7 @@ const Recent: FC<{ workspaceId: string; onClick: (ws: WorkspaceInfo) => void }> 
 
 export default function Home(): React.ReactElement {
     const router = useRouter();
+    const api = useContext(AudioHQApiContext);
     const [recents] = useLocalRecents();
 
     const [workspaceName, setWorkspaceName] = useState('');
@@ -116,13 +106,8 @@ export default function Home(): React.ReactElement {
     const [shouldCache, setShouldCache] = useShouldCache();
     const [currentlyUsedData, setCurrentlyUsedData] = useState<number | null>(null);
 
-    const [{ fetching, data }, refetch] = useWorkspaceDetailByNameQuery({
-        variables: { workspaceName },
-        requestPolicy: 'cache-and-network',
-    });
-    const [, createWorkspaceMutation] = useCreateWorkspaceMutation();
-
-    const foundWorkspace = data?.workspace[0] ?? null;
+    const { data: foundWorkspaces, isFetching: fetching } = useWorkspaceDetailByName(workspaceName);
+    const createNamespaceMutation = useCreateWorkspaceMutation();
 
     usePeriodicEffect(
         2000,
@@ -142,24 +127,28 @@ export default function Home(): React.ReactElement {
         [shouldCache],
     );
 
-    const createWorkspace = (workspaceName: string) => {
-        createWorkspaceMutation({ name: workspaceName }).then((res) => {
-            const ws = res.data?.insert_workspace_one;
-            if (!ws) return;
-            refetch();
-            visitWorkspace(ws);
+    const createWorkspace = async (workspaceName: string) => {
+        await createNamespaceMutation.mutateAsync({ workspace: { name: workspaceName } }).then((res) => {
+            if (res) return visitWorkspace(res);
         });
     };
 
-    const visitWorkspace = (ws: WorkspaceInfo | null = foundWorkspace) => {
+    const visitWorkspace = async (ws: Workspace | null = foundWorkspaces?.[0] ?? null) => {
+        setLoading(true);
+
         if (!ws) {
             if (workspaceName) {
-                createWorkspace(workspaceName);
+                ws = (await api.searchWorkspaces(workspaceName))[0] ?? null;
+                if (!ws) {
+                    await createWorkspace(workspaceName);
+                } else {
+                    await visitWorkspace(ws);
+                }
             }
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
         setWorkspaceName(ws.name);
         router.push('/workspace', `/workspace/#${encodeURIComponent(ws.id)}`);
     };
@@ -231,14 +220,14 @@ export default function Home(): React.ReactElement {
                         disabled={!workspaceName || fetching}
                         size="large"
                         variant="contained"
-                        color={data?.workspace[0] ? 'primary' : 'secondary'}
+                        color={foundWorkspaces?.[0] ? 'primary' : 'secondary'}
                         onClick={() => visitWorkspace()}
                     >
                         {
                             workspaceName
                                 ? fetching
                                     ? 'Loading...' // Searching for workspace
-                                    : data?.workspace[0]
+                                    : foundWorkspaces?.[0]
                                     ? 'Join' // If workspace found
                                     : 'Create Workspace' // If workspace not found
                                 : 'Enter a workspace name' // If workspaceName is empty

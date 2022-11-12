@@ -14,12 +14,10 @@ import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
-import { Deck_Type_Enum_Enum, usePlayDeckMutation } from '../../lib/generated/graphql';
-import { v4 } from 'uuid';
-import { useWorkspaceDecks } from '~/lib/useWorkspaceDetails';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useAlt } from '~/lib/utility/hooks';
+import * as API from '~/lib/api/models';
+import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -30,7 +28,7 @@ const PlayControlsContainer = styled.div`
 
 interface PlayControlsProps {
     snapshot: DraggableStateSnapshot;
-    file: File_Minimum;
+    file: API.Track;
 }
 
 const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
@@ -42,7 +40,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
 
     const sfxHighlightTimeoutHandle = useRef<number | null>(null);
 
-    const [, playDeck] = usePlayDeckMutation();
+    const playDeck = usePlayDeckMutation(workspaceId);
 
     useEffect(
         () => () => {
@@ -54,15 +52,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     );
 
     const onAmbience = async () => {
-        playDeck({
-            workspaceId,
+        playDeck.mutate({
             deck: {
-                id: v4(),
-                workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
-                type: Deck_Type_Enum_Enum.Ambience,
-                pause_timestamp: null,
-                start_timestamp: new Date().toISOString(),
+                queue: [file],
+                type: 'ambient',
+                pauseTimestamp: null,
+                startTimestamp: new Date(),
                 speed: main?.speed ?? 1,
                 volume: main?.volume ?? 1,
             },
@@ -70,16 +65,12 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     };
 
     const onPlay = async () => {
-        playDeck({
-            workspaceId,
-            isMain: true,
+        playDeck.mutate({
             deck: {
-                id: v4(),
-                workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
-                type: Deck_Type_Enum_Enum.Main,
-                pause_timestamp: null,
-                start_timestamp: new Date().toISOString(),
+                queue: [file],
+                type: 'main',
+                pauseTimestamp: null,
+                startTimestamp: new Date(),
                 speed: main?.speed ?? 1,
                 volume: main?.volume ?? 1,
             },
@@ -93,15 +84,14 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
             sfxHighlightTimeoutHandle.current = null;
         }, 2000) as unknown as number;
 
-        playDeck({
-            workspaceId,
+        playDeck.mutate({
             deck: {
-                id: v4(),
-                workspace_id: workspaceId,
-                queue: { data: [{ file_id: file.id, ordering: 0, id: v4() }] },
-                type: Deck_Type_Enum_Enum.Sfx,
-                pause_timestamp: null,
-                start_timestamp: new Date().toISOString(),
+                queue: [file],
+                type: 'sfx',
+                pauseTimestamp: null,
+                startTimestamp: new Date(),
+                speed: main?.speed ?? 1,
+                volume: main?.volume ?? 1,
             },
         });
     };
@@ -112,7 +102,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     {snapshot.combineTargetFor ? (
                         <CreateNewFolderIcon color="primary" />
                     ) : (
-                        <PlayArrow color={main?.queue.find((qe) => qe.file.id === file.id) ? 'primary' : undefined} />
+                        <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
                     )}
                 </IconButton>
             </Tooltip>
@@ -127,7 +117,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                     <IconButton onClick={onAmbience} size="large">
                         <AddIcon
                             color={
-                                ambience.find((ps) => ps.queue.map((q) => q.file.id).includes(file.id))
+                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
                                     ? 'primary'
                                     : undefined
                             }

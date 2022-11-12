@@ -11,7 +11,6 @@ import React, { FC, useContext } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
-import { useWorkspaceDetailQuery } from '../lib/generated/graphql';
 import WorkspaceNotFound from './WorkspaceNotFound';
 import {
     FileManagerProvider,
@@ -19,6 +18,7 @@ import {
     WorkspaceLocalReactiveValuesProvider,
     WorkspaceNameContext,
 } from '~/lib/utility/context';
+import { useWorkspaceDetail } from '~/lib/api/hooks';
 
 const MediaRoot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
@@ -36,24 +36,20 @@ const MediaRoot: FC<{ children?: React.ReactNode }> = (props) => {
     );
 };
 
-const Root: FC<{
-    workspace?: string | null;
+const WorkspaceRoot: FC<{
+    workspace: string;
     children?: React.ReactNode;
 }> = (props) => {
-    const [{ data: workspaceRaw, fetching }] = useWorkspaceDetailQuery({
-        requestPolicy: 'cache-first',
-        variables: { workspaceId: props.workspace ?? '' },
-        pause: !props.workspace,
-    });
-    const workspaceId = workspaceRaw?.workspace_by_pk?.id;
-    const workspaceName = workspaceRaw?.workspace_by_pk?.name;
+    const { data: workspace, isFetching: fetching } = useWorkspaceDetail(props.workspace);
+    const workspaceId = workspace?.id;
+    const workspaceName = workspace?.name;
 
     if (!fetching && props.workspace && !workspaceName) {
         return <WorkspaceNotFound />;
     }
 
-    if (!props.workspace || !workspaceName || !workspaceId) {
-        return <LoadingPage workspace={workspaceName ?? props.workspace ?? '...'} />;
+    if (!workspaceName || !workspaceId) {
+        return <LoadingPage workspace={workspaceName ?? workspaceId ?? '...'} />;
     }
 
     return (
@@ -67,5 +63,16 @@ const Root: FC<{
             </WorkspaceNameContext.Provider>
         </WorkspaceIdContext.Provider>
     );
+};
+
+const Root: FC<{
+    workspace?: string | null;
+    children?: React.ReactNode;
+}> = (props) => {
+    if (!props.workspace) {
+        return <LoadingPage workspace={'...'} />;
+    }
+
+    return <WorkspaceRoot workspace={props.workspace}>{props.children}</WorkspaceRoot>;
 };
 export default Root;

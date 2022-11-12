@@ -6,9 +6,9 @@
  */
 import { useCallback, useState } from 'react';
 import { Deck_Type_Enum_Enum } from '../generated/graphql';
-import { Deck_Minimum } from '../urql/graphql_type_helper';
 import { usePeriodicEffect } from '../utility/hooks';
 import { getDeckInfo } from './audio_util';
+import * as API from '../api/models';
 
 interface AudioInfo {
     duration: number;
@@ -19,7 +19,7 @@ interface AudioInfo {
     index: number;
 }
 
-export default function useAudioDetail(status: Deck_Minimum | null): AudioInfo {
+export default function useAudioDetail(status: API.Deck | null): AudioInfo {
     const [seek, setSeek] = useState(0);
 
     const data = status ? getDeckInfo(status) : null;
@@ -33,7 +33,7 @@ export default function useAudioDetail(status: Deck_Minimum | null): AudioInfo {
             setSeek(
                 Math.min(
                     currentData.secondsToCurrentPlayhead * status.speed,
-                    currentData.trackInfo.currentTrack.file.length,
+                    currentData.trackInfo.currentTrack.length,
                 ),
             );
             return;
@@ -44,17 +44,17 @@ export default function useAudioDetail(status: Deck_Minimum | null): AudioInfo {
 
     usePeriodicEffect(500, updateData);
 
-    let appearPaused = !!status?.pause_timestamp;
+    let appearPaused = !!status?.pauseTimestamp;
     if (data && status?.type === Deck_Type_Enum_Enum.Sfx) {
-        appearPaused ||= data.secondsToCurrentPlayhead * status.speed > data.trackInfo.currentTrack.file.length;
+        appearPaused ||= data.secondsToCurrentPlayhead * status.speed > data.trackInfo.currentTrack.length;
     }
 
     return {
-        duration: data?.trackInfo.currentTrack.file.length ?? 1,
+        duration: data?.trackInfo.currentTrack.length ?? 1,
         paused: appearPaused,
         time: seek,
         volume: status?.volume ?? 0,
-        name: data?.trackInfo.currentTrack.file.name ?? 'Loading...',
+        name: data?.trackInfo.currentTrack.name ?? 'Loading...',
         index: data?.trackInfo.index ?? 0,
     };
 }

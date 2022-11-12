@@ -6,10 +6,9 @@
  */
 import { sub } from 'date-fns';
 import { useContext, useEffect, useMemo, useRef } from 'react';
+import { useUpdateDeckMutation, useWorkspaceDecks } from '../api/hooks';
 import { kDefaultVolume } from '../constants';
-import { useUpdateDeckMutation } from '../generated/graphql';
 import { useLocalReactiveValue } from '../LocalReactive';
-import { useWorkspaceDecks } from '../useWorkspaceDetails';
 import { WorkspaceNameContext } from '../utility/context';
 import { globalVolumeLRV } from '../utility/usePersistentData';
 import { DeckInfo, getDeckInfo } from './audio_util';
@@ -18,7 +17,7 @@ const useMediaSession = (workspaceId: string): void => {
     const workspaceName = useContext(WorkspaceNameContext);
     const { main } = useWorkspaceDecks(workspaceId);
 
-    const [, updateDeck] = useUpdateDeckMutation();
+    const updateDeck = useUpdateDeckMutation(workspaceId);
 
     const [globalVolume, setGlobalVolume] = useLocalReactiveValue(globalVolumeLRV);
     const previousVolumeValue = useRef<number | null>(null);
@@ -28,7 +27,7 @@ const useMediaSession = (workspaceId: string): void => {
     useEffect(() => {
         if (navigator.mediaSession) {
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentlyPlaying?.trackInfo.currentTrack.file.name ?? 'Nothing Playing',
+                title: currentlyPlaying?.trackInfo.currentTrack.name ?? 'Nothing Playing',
                 artist: `Audio HQ - ${workspaceName ?? ''}`,
             });
         }
@@ -49,24 +48,24 @@ const useMediaSession = (workspaceId: string): void => {
 
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 if (main && currentlyPlaying) {
-                    updateDeck({
+                    updateDeck.mutate({
                         deckId: main.id,
                         update: {
-                            start_timestamp: sub(new Date(), {
+                            startTimestamp: sub(new Date(), {
                                 seconds: currentlyPlaying.trackInfo.startTime,
-                            }).toISOString(),
+                            }),
                         },
                     });
                 }
             });
             navigator.mediaSession.setActionHandler('nexttrack', () => {
                 if (main && currentlyPlaying) {
-                    updateDeck({
+                    updateDeck.mutate({
                         deckId: main.id,
                         update: {
-                            start_timestamp: sub(new Date(), {
+                            startTimestamp: sub(new Date(), {
                                 seconds: currentlyPlaying.trackInfo.endTime,
-                            }).toISOString(),
+                            }),
                         },
                     });
                 }

@@ -19,19 +19,14 @@ import FolderEntry from './FolderEntry';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
 import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
-import { File_Minimum } from '../lib/urql/graphql_type_helper';
-import {
-    Deck_Type_Enum_Enum,
-    usePlayDeckMutation,
-    useUpdateFileMutation,
-    useWorkspaceFilesQuery,
-} from '../lib/generated/graphql';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
 import { isDefined } from '~/lib/utility/util';
+import * as API from '~/lib/api/models';
+import { usePlayDeckMutation, useUpdateTrackMutation, useWorkspaceDecks, useWorkspaceTracks } from '~/lib/api/hooks';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -74,7 +69,7 @@ const JobsContainer = styled.div`
 `;
 
 /** Retrieves all WSFiles given a current path and an optional search string. */
-const getFiles = (files: File_Minimum[], path: string[], searchText?: string): File_Minimum[] => {
+const getFiles = (files: API.Track[], path: string[], searchText?: string): API.Track[] => {
     const re = new RegExp(`.*${searchText}.*`, 'i');
     if (searchText !== undefined) return files.filter((file) => !!file.name.match(re) || !!file.description?.match(re));
     return files.filter((file) => file.path.length === path.length && path.every((v, i) => file.path[i] === v)) ?? [];
@@ -84,7 +79,7 @@ const getFiles = (files: File_Minimum[], path: string[], searchText?: string): F
  * Given a search string, finds all folders that contain tracks matching that search string.
  * Folders are returned as full paths ending at that folder.
  */
-const getSearchFolders = (files: File_Minimum[], searchText: string): string[][] => {
+const getSearchFolders = (files: API.Track[], searchText: string): string[][] => {
     return _.uniqBy(
         files
             .map((file) => file.path)
@@ -98,7 +93,7 @@ const getSearchFolders = (files: File_Minimum[], searchText: string): string[][]
 /**
  * Given a path, finds all child folders.
  */
-const getFolders = (files: File_Minimum[], currentPath: string[]): string[] => {
+const getFolders = (files: API.Track[], currentPath: string[]): string[] => {
     return _.uniq(
         files
             .filter((file) => file.path.length > currentPath.length && currentPath.every((v, i) => file.path[i] === v))
@@ -113,10 +108,12 @@ export const Explorer: FC = () => {
 
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
 
+    const { main } = useWorkspaceDecks(workspaceId);
+
     const favs = useFavorites();
     const [viewingFavorites, setViewingFavorites] = useState(false);
     const [path, setPath] = useLocalReactiveValue(currentPathLRV);
-    const [combining, setCombining] = useState<File_Minimum[]>([]);
+    const [combining, setCombining] = useState<API.Track[]>([]);
 
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -125,34 +122,33 @@ export const Explorer: FC = () => {
 
     const fileManager = useContext(FileManagerContext);
 
-    const [{ data: filesRaw }] = useWorkspaceFilesQuery({ variables: { workspaceId } });
-    const files = (filesRaw?.file ?? []).sort((a, b) => (a.ordering ?? Infinity) - (b.ordering ?? Infinity));
+    const { data: filesRaw } = useWorkspaceTracks(workspaceId);
+    const files = filesRaw ?? [];
 
-    const [, playDeck] = usePlayDeckMutation();
-    const [, updateFile] = useUpdateFileMutation();
+    const playDeck = usePlayDeckMutation(workspaceId);
+    const updateTrack = useUpdateTrackMutation(workspaceId);
 
     const currentFiles = (
         viewingFavorites
-            ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<File_Minimum>(isDefined)
+            ? favs.favorites.map((id) => files.find((file) => file.id === id)).filter<API.Track>(isDefined)
             : getFiles(files, path, searching && searchText.length > 1 ? searchText : undefined)
-    ).filter((file) => online || fileManager.cached.has(file.download_url));
+    ).filter((file) => online || fileManager.cached.has(file.url));
 
     const fileButtons = currentFiles.map((file, i) => <FileEntry file={file} index={i} key={file.id} />);
 
     const playCurrent = () => {
-        let queue = currentFiles.map((f) => f.id);
+        let queue = [...currentFiles];
         if (altKey) {
             queue = _.shuffle(queue);
         }
-        playDeck({
-            workspaceId: workspaceId,
+        playDeck.mutate({
             deck: {
-                workspace_id: workspaceId,
                 speed: 1,
-                start_timestamp: new Date().toISOString(),
-                pause_timestamp: null,
-                type: Deck_Type_Enum_Enum.Main,
-                queue: { data: queue.map((id, i) => ({ file_id: id, ordering: i })) },
+                volume: main?.volume ?? 1,
+                startTimestamp: new Date(),
+                pauseTimestamp: null,
+                type: 'main',
+                queue: queue,
             },
         });
     };
@@ -217,8 +213,8 @@ export const Explorer: FC = () => {
         } else if (result.destination?.droppableId === '___current___' && currentFiles.length > 1) {
             // === Reorder one file around the current folder ===
             const target = currentFiles[result.destination.index];
-            updateFile({
-                id: srcFile.id,
+            updateTrack.mutate({
+                trackId: srcFile.id,
                 update: {
                     ordering: target?.ordering
                         ? target.ordering - result.source.index + result.destination.index
@@ -234,7 +230,7 @@ export const Explorer: FC = () => {
                     ? srcFile.path.slice(0, srcFile.path.length - 1)
                     : [...srcFile.path, folderName];
 
-            updateFile({ id: srcFile.id, update: { path: destPath } });
+            updateTrack.mutate({ trackId: srcFile.id, update: { path: destPath } });
         }
     };
 

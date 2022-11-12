@@ -5,7 +5,7 @@
  * and controls for it (play/pause, seek, speed, volume).
  */
 
-import { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import { FunctionComponent, useCallback, useContext, useEffect, useState } from 'react';
 import { IconButton, Popover, Slider, Tooltip, Typography } from '@mui/material';
 import useAudio from '../lib/audio/useAudioDetail';
 import styled from '@emotion/styled';
@@ -15,16 +15,12 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import SpeedIcon from '@mui/icons-material/Speed';
-import { Deck_Minimum } from '../lib/urql/graphql_type_helper';
 import { sub } from 'date-fns';
-import {
-    Deck_Type_Enum_Enum,
-    UpdateDeckMutationVariables,
-    useStopDeckMutation,
-    useUpdateDeckMutation,
-} from '../lib/generated/graphql';
 import { durationOfLength } from '~/lib/utility/util';
 import { getDeckInfo, getSpeedChangeData, getUnpauseData } from '~/lib/audio/audio_util';
+import * as API from '~/lib/api/models';
+import { useStopDeckMutation, useUpdateDeckMutation } from '~/lib/api/hooks';
+import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const speedMarks = [
     { value: 0.25, label: '1/4x' },
@@ -69,10 +65,12 @@ const Timestamp = styled.div`
 `;
 
 interface AudioControlsProps {
-    state: Deck_Minimum;
+    state: API.Deck;
 }
 
 export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) => {
+    const workspaceId = useContext(WorkspaceIdContext);
+
     // used to apply speed, volume, and seek while seeking without sending them to the server.
     const [tempVolume, setTempVolume] = useState<number | null>(null);
     const [tempSpeed, setTempSpeed] = useState<number | null>(null);
@@ -83,13 +81,12 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
 
     const { duration, paused, time, volume } = useAudio(state);
 
-    const [, updateDeckInternal] = useUpdateDeckMutation();
-    const [, stopPlaying] = useStopDeckMutation();
+    const updateDeckMutation = useUpdateDeckMutation(workspaceId);
+    const stopDeck = useStopDeckMutation(workspaceId);
 
     const updateDeck = useCallback(
-        (update: UpdateDeckMutationVariables['update']) =>
-            updateDeckInternal({ deckId: state.id, update: { ...update } }),
-        [state, updateDeckInternal],
+        (update: API.DeckUpdate) => updateDeckMutation.mutate({ deckId: state.id, update }),
+        [state, updateDeckMutation],
     );
 
     // propagate blocked and/or loading state up (if the parent wants it)
@@ -103,7 +100,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
         }
         const destinationSeek = (currentTrackInfo.trackInfo.startTime + to) / state.speed;
         updateDeck({
-            start_timestamp: sub(new Date(), { seconds: destinationSeek }).toISOString(),
+            startTimestamp: sub(new Date(), { seconds: destinationSeek }),
         });
         setTempSeek(null);
     };
@@ -112,14 +109,14 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
     }
 
     const onPlayPause = () => {
-        if (state.type === Deck_Type_Enum_Enum.Sfx && paused && !state.pause_timestamp) {
+        if (state.type === 'sfx' && paused && !state.pauseTimestamp) {
             updateDeck({
-                start_timestamp: new Date().toISOString(),
+                startTimestamp: new Date(),
             });
-        } else if (state.pause_timestamp) {
+        } else if (state.pauseTimestamp) {
             updateDeck(getUnpauseData(state));
         } else {
-            updateDeck({ pause_timestamp: new Date().toISOString() });
+            updateDeck({ pauseTimestamp: new Date() });
         }
     };
 
@@ -201,7 +198,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                     />
                 </Popover>
                 <Tooltip title="Stop playing" placement="bottom" arrow>
-                    <IconButton onClick={() => stopPlaying({ deckId: state.id })} size="large">
+                    <IconButton onClick={() => stopDeck.mutate({ deckId: state.id })} size="large">
                         <StopIcon />
                     </IconButton>
                 </Tooltip>

@@ -9,8 +9,8 @@ import { Typography } from '@mui/material';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
 import FileDetailsEditor from './FileDetailsEditor';
-import { File_Minimum } from '../../lib/urql/graphql_type_helper';
 import { durationOfLength } from '~/lib/utility/util';
+import * as API from '~/lib/api/models';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -46,7 +46,7 @@ interface FileDetailsProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: File_Minimum;
+    file: API.Track;
 }
 
 const FileDetails: FC<FileDetailsProps> = (props) => {

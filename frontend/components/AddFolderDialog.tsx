@@ -8,17 +8,18 @@
 import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
-import { File_Minimum } from '../lib/urql/graphql_type_helper';
-import { useSetFilesPathMutation } from '../lib/generated/graphql';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
-import { WorkspaceLRVContext } from '~/lib/utility/context';
+import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import * as API from '~/lib/api/models';
+import { useUpdateTrackMutation } from '~/lib/api/hooks';
 
-const FolderAddDialog: FC<{ files: File_Minimum[]; cancel: () => void }> = ({ files, cancel }) => {
+const FolderAddDialog: FC<{ files: API.Track[]; cancel: () => void }> = ({ files, cancel }) => {
+    const workspaceId = useContext(WorkspaceIdContext);
     const [name, setName] = useState('');
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
 
-    const [, setPath] = useSetFilesPathMutation();
+    const updateTrack = useUpdateTrackMutation(workspaceId);
 
     const onCancel = () => {
         setName('');
@@ -30,7 +31,8 @@ const FolderAddDialog: FC<{ files: File_Minimum[]; cancel: () => void }> = ({ fi
 
         // We can assign all files to a new folder by just adding the name on.
         // The captured value of "name" is unaffected by the call to onCancel above.
-        await setPath({ files: files.map((f) => f.id), path: [...currentPath, name] });
+        const targetPath = [...currentPath, name];
+        await Promise.all(files.map((f) => updateTrack.mutateAsync({ trackId: f.id, update: { path: targetPath } })));
     };
 
     const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
