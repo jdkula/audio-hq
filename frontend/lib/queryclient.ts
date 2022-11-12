@@ -1,6 +1,6 @@
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient } from '@tanstack/react-query';
-import { PersistedClient, Persister } from '@tanstack/react-query-persist-client';
-import { del, get, set } from 'idb-keyval';
+import { Persister } from '@tanstack/react-query-persist-client';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -13,18 +13,17 @@ export const queryClient = new QueryClient({
     },
 });
 
-export function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
-    return {
-        persistClient: async (client: PersistedClient) => {
-            await set(idbValidKey, client);
-        },
-        restoreClient: async () => {
-            return await get<PersistedClient>(idbValidKey);
-        },
-        removeClient: async () => {
-            await del(idbValidKey);
-        },
-    } as Persister;
-}
+export let localStoragePersister: Persister = null as never;
 
-export const localStoragePersister: Persister = createIDBPersister();
+if (typeof window !== 'undefined') {
+    // @ts-expect-error Needed to serialize dates correctly. Yes, it's extremely janky.
+    Date.prototype.toJSON = function (key) {
+        return { $$date: this.toISOString() };
+    };
+
+    localStoragePersister = createSyncStoragePersister({
+        storage: window.localStorage,
+        deserialize: (str) =>
+            JSON.parse(str, (_, datum) => (typeof datum === 'object' && datum.$$date ? new Date(datum.$$date) : datum)),
+    });
+}
