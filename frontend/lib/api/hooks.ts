@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 import AudioHQApiContext from './context';
 import { Deck, Job, JobCreate, Track, WorkspaceCreate, DeckUpdate, DeckCreate, TrackUpdate } from './models';
 import { v4 as uuid } from 'uuid';
@@ -15,8 +15,20 @@ export function useWorkspaceTracks(workspaceId: string) {
 
 export function useWorkspaceJobs(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
+    const queryClient = useQueryClient();
+
+    const lastNumJobs = useRef(0);
+    const tracksQueryKey = ['workspace', workspaceId, 'tracks'];
+
     return useQuery(['workspace', workspaceId, 'jobs'], {
         queryFn: () => api.workspace(workspaceId).jobs.list(),
+        onSuccess: (jobData) => {
+            if (jobData.length < lastNumJobs.current) {
+                queryClient.invalidateQueries({ queryKey: tracksQueryKey });
+                queryClient.refetchQueries({ queryKey: tracksQueryKey });
+            }
+            lastNumJobs.current = jobData.length;
+        },
     });
 }
 
