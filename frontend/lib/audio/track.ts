@@ -44,13 +44,11 @@ export class Track extends EventEmitter {
     }
 
     private oncanplay() {
-        console.log('oncanplay triggered');
         this._ready = true;
         this.update(this._status);
     }
 
     private onstart() {
-        console.log('onstart called');
         if (this._audio.paused) {
             this._audio.play().catch((e) => {
                 console.warn(e);
@@ -61,7 +59,6 @@ export class Track extends EventEmitter {
     }
 
     private onend() {
-        console.log('onend called');
         this.update(this._status);
     }
 
