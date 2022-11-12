@@ -6,7 +6,6 @@ import { v4 as uuid } from 'uuid';
 
 export function useWorkspaceTracks(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-    const queryClient = useQueryClient();
     return useQuery(['workspace', workspaceId, 'tracks'], {
         queryFn: () => api.workspace(workspaceId).tracks.list(),
         refetchInterval: 15000,
@@ -16,7 +15,6 @@ export function useWorkspaceTracks(workspaceId: string) {
 
 export function useWorkspaceJobs(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-    const queryClient = useQueryClient();
     return useQuery(['workspace', workspaceId, 'jobs'], {
         queryFn: () => api.workspace(workspaceId).jobs.list(),
     });
@@ -142,7 +140,6 @@ export function useWorkspaceDecks(workspaceId: string): {
     sfx: Deck[];
 } {
     const api = useContext(AudioHQApiContext);
-    const queryClient = useQueryClient();
     const { data } = useQuery({
         queryKey: ['workspace', workspaceId, 'decks'],
         queryFn: () => api.workspace(workspaceId).decks.listAll(),
@@ -158,7 +155,6 @@ export function useWorkspaceDecks(workspaceId: string): {
 
 export function useWorkspaceDetail(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['workspace', workspaceId],
         queryFn: () => api.workspace(workspaceId).get(),
@@ -166,7 +162,6 @@ export function useWorkspaceDetail(workspaceId: string) {
 }
 export function useWorkspaceDetailByName(name: string) {
     const api = useContext(AudioHQApiContext);
-    const queryClient = useQueryClient();
     return useQuery({
         queryKey: ['workspaceByName', name],
         queryFn: () => api.searchWorkspaces(name),

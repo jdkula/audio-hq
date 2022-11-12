@@ -123,7 +123,7 @@ export const Explorer: FC = () => {
     const fileManager = useContext(FileManagerContext);
 
     const { data: filesRaw } = useWorkspaceTracks(workspaceId);
-    const files = filesRaw ?? [];
+    const files = React.useMemo(() => filesRaw ?? [], [filesRaw]);
 
     const playDeck = usePlayDeckMutation(workspaceId);
     const updateTrack = useUpdateTrackMutation(workspaceId);

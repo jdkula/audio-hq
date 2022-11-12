@@ -27,4 +27,4 @@ export function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
     } as Persister;
 }
 
-export let localStoragePersister: Persister = createIDBPersister();
+export const localStoragePersister: Persister = createIDBPersister();
