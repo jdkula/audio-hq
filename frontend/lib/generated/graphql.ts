@@ -400,150 +400,6 @@ export enum Delete_Job_Update_Column {
   Placeholder = '_PLACEHOLDER'
 }
 
-/** columns and relationships of "event" */
-export type Event = {
-  __typename?: 'event';
-  /** An object relationship */
-  deck?: Maybe<Deck>;
-  deck_id?: Maybe<Scalars['uuid']>;
-  event_type: Scalars['String'];
-  /** An object relationship */
-  file?: Maybe<File>;
-  file_id?: Maybe<Scalars['uuid']>;
-  id: Scalars['uuid'];
-  modification_type: Scalars['String'];
-  time: Scalars['timestamptz'];
-  /** An object relationship */
-  track?: Maybe<Track>;
-  track_id?: Maybe<Scalars['uuid']>;
-  /** An object relationship */
-  workspace?: Maybe<Workspace>;
-  workspace_id?: Maybe<Scalars['uuid']>;
-};
-
-/** aggregated selection of "event" */
-export type Event_Aggregate = {
-  __typename?: 'event_aggregate';
-  aggregate?: Maybe<Event_Aggregate_Fields>;
-  nodes: Array<Event>;
-};
-
-/** aggregate fields of "event" */
-export type Event_Aggregate_Fields = {
-  __typename?: 'event_aggregate_fields';
-  count: Scalars['Int'];
-  max?: Maybe<Event_Max_Fields>;
-  min?: Maybe<Event_Min_Fields>;
-};
-
-
-/** aggregate fields of "event" */
-export type Event_Aggregate_FieldsCountArgs = {
-  columns?: InputMaybe<Array<Event_Select_Column>>;
-  distinct?: InputMaybe<Scalars['Boolean']>;
-};
-
-/** Boolean expression to filter rows from the table "event". All fields are combined with a logical 'AND'. */
-export type Event_Bool_Exp = {
-  _and?: InputMaybe<Array<Event_Bool_Exp>>;
-  _not?: InputMaybe<Event_Bool_Exp>;
-  _or?: InputMaybe<Array<Event_Bool_Exp>>;
-  deck?: InputMaybe<Deck_Bool_Exp>;
-  deck_id?: InputMaybe<Uuid_Comparison_Exp>;
-  event_type?: InputMaybe<String_Comparison_Exp>;
-  file?: InputMaybe<File_Bool_Exp>;
-  file_id?: InputMaybe<Uuid_Comparison_Exp>;
-  id?: InputMaybe<Uuid_Comparison_Exp>;
-  modification_type?: InputMaybe<String_Comparison_Exp>;
-  time?: InputMaybe<Timestamptz_Comparison_Exp>;
-  track?: InputMaybe<Track_Bool_Exp>;
-  track_id?: InputMaybe<Uuid_Comparison_Exp>;
-  workspace?: InputMaybe<Workspace_Bool_Exp>;
-  workspace_id?: InputMaybe<Uuid_Comparison_Exp>;
-};
-
-/** aggregate max on columns */
-export type Event_Max_Fields = {
-  __typename?: 'event_max_fields';
-  deck_id?: Maybe<Scalars['uuid']>;
-  event_type?: Maybe<Scalars['String']>;
-  file_id?: Maybe<Scalars['uuid']>;
-  id?: Maybe<Scalars['uuid']>;
-  modification_type?: Maybe<Scalars['String']>;
-  time?: Maybe<Scalars['timestamptz']>;
-  track_id?: Maybe<Scalars['uuid']>;
-  workspace_id?: Maybe<Scalars['uuid']>;
-};
-
-/** aggregate min on columns */
-export type Event_Min_Fields = {
-  __typename?: 'event_min_fields';
-  deck_id?: Maybe<Scalars['uuid']>;
-  event_type?: Maybe<Scalars['String']>;
-  file_id?: Maybe<Scalars['uuid']>;
-  id?: Maybe<Scalars['uuid']>;
-  modification_type?: Maybe<Scalars['String']>;
-  time?: Maybe<Scalars['timestamptz']>;
-  track_id?: Maybe<Scalars['uuid']>;
-  workspace_id?: Maybe<Scalars['uuid']>;
-};
-
-/** Ordering options when selecting data from "event". */
-export type Event_Order_By = {
-  deck?: InputMaybe<Deck_Order_By>;
-  deck_id?: InputMaybe<Order_By>;
-  event_type?: InputMaybe<Order_By>;
-  file?: InputMaybe<File_Order_By>;
-  file_id?: InputMaybe<Order_By>;
-  id?: InputMaybe<Order_By>;
-  modification_type?: InputMaybe<Order_By>;
-  time?: InputMaybe<Order_By>;
-  track?: InputMaybe<Track_Order_By>;
-  track_id?: InputMaybe<Order_By>;
-  workspace?: InputMaybe<Workspace_Order_By>;
-  workspace_id?: InputMaybe<Order_By>;
-};
-
-/** select columns of table "event" */
-export enum Event_Select_Column {
-  /** column name */
-  DeckId = 'deck_id',
-  /** column name */
-  EventType = 'event_type',
-  /** column name */
-  FileId = 'file_id',
-  /** column name */
-  Id = 'id',
-  /** column name */
-  ModificationType = 'modification_type',
-  /** column name */
-  Time = 'time',
-  /** column name */
-  TrackId = 'track_id',
-  /** column name */
-  WorkspaceId = 'workspace_id'
-}
-
-/** Streaming cursor of the table "event" */
-export type Event_Stream_Cursor_Input = {
-  /** Stream column input with initial value */
-  initial_value: Event_Stream_Cursor_Value_Input;
-  /** cursor ordering */
-  ordering?: InputMaybe<Cursor_Ordering>;
-};
-
-/** Initial value of the column from where the streaming should start */
-export type Event_Stream_Cursor_Value_Input = {
-  deck_id?: InputMaybe<Scalars['uuid']>;
-  event_type?: InputMaybe<Scalars['String']>;
-  file_id?: InputMaybe<Scalars['uuid']>;
-  id?: InputMaybe<Scalars['uuid']>;
-  modification_type?: InputMaybe<Scalars['String']>;
-  time?: InputMaybe<Scalars['timestamptz']>;
-  track_id?: InputMaybe<Scalars['uuid']>;
-  workspace_id?: InputMaybe<Scalars['uuid']>;
-};
-
 /** columns and relationships of "file" */
 export type File = {
   __typename?: 'file';
@@ -1558,12 +1414,6 @@ export type Query_Root = {
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
   deck_by_pk?: Maybe<Deck>;
-  /** fetch data from the table: "event" */
-  event: Array<Event>;
-  /** fetch aggregated fields from the table: "event" */
-  event_aggregate: Event_Aggregate;
-  /** fetch data from the table: "event" using primary key columns */
-  event_by_pk?: Maybe<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
@@ -1606,29 +1456,6 @@ export type Query_RootDeckArgs = {
 
 
 export type Query_RootDeck_By_PkArgs = {
-  id: Scalars['uuid'];
-};
-
-
-export type Query_RootEventArgs = {
-  distinct_on?: InputMaybe<Array<Event_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']>;
-  offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<Event_Order_By>>;
-  where?: InputMaybe<Event_Bool_Exp>;
-};
-
-
-export type Query_RootEvent_AggregateArgs = {
-  distinct_on?: InputMaybe<Array<Event_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']>;
-  offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<Event_Order_By>>;
-  where?: InputMaybe<Event_Bool_Exp>;
-};
-
-
-export type Query_RootEvent_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1712,14 +1539,6 @@ export type Subscription_Root = {
   deck_by_pk?: Maybe<Deck>;
   /** fetch data from the table in a streaming manner : "deck" */
   deck_stream: Array<Deck>;
-  /** fetch data from the table: "event" */
-  event: Array<Event>;
-  /** fetch aggregated fields from the table: "event" */
-  event_aggregate: Event_Aggregate;
-  /** fetch data from the table: "event" using primary key columns */
-  event_by_pk?: Maybe<Event>;
-  /** fetch data from the table in a streaming manner : "event" */
-  event_stream: Array<Event>;
   /** fetch data from the table: "file" */
   file: Array<File>;
   /** fetch data from the table: "file" using primary key columns */
@@ -1780,36 +1599,6 @@ export type Subscription_RootDeck_StreamArgs = {
   batch_size: Scalars['Int'];
   cursor: Array<InputMaybe<Deck_Stream_Cursor_Input>>;
   where?: InputMaybe<Deck_Bool_Exp>;
-};
-
-
-export type Subscription_RootEventArgs = {
-  distinct_on?: InputMaybe<Array<Event_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']>;
-  offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<Event_Order_By>>;
-  where?: InputMaybe<Event_Bool_Exp>;
-};
-
-
-export type Subscription_RootEvent_AggregateArgs = {
-  distinct_on?: InputMaybe<Array<Event_Select_Column>>;
-  limit?: InputMaybe<Scalars['Int']>;
-  offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<Event_Order_By>>;
-  where?: InputMaybe<Event_Bool_Exp>;
-};
-
-
-export type Subscription_RootEvent_By_PkArgs = {
-  id: Scalars['uuid'];
-};
-
-
-export type Subscription_RootEvent_StreamArgs = {
-  batch_size: Scalars['Int'];
-  cursor: Array<InputMaybe<Event_Stream_Cursor_Input>>;
-  where?: InputMaybe<Event_Bool_Exp>;
 };
 
 
@@ -2321,13 +2110,14 @@ export type PlayDeckMutationVariables = Exact<{
 
 export type PlayDeckMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'track', id: string }> } | null, insert_deck_one?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
 
-export type SetQueueMutationVariables = Exact<{
+export type UpdateDeckAndSetQueueMutationVariables = Exact<{
   deckId: Scalars['uuid'];
+  update: Deck_Set_Input;
   newQueue: Array<Track_Insert_Input> | Track_Insert_Input;
 }>;
 
 
-export type SetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
+export type UpdateDeckAndSetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
 
 export type StopMainDeckMutationVariables = Exact<{
   workspaceId: Scalars['uuid'];
@@ -2344,19 +2134,14 @@ export type UpdateMainDeckMutationVariables = Exact<{
 
 export type UpdateMainDeckMutation = { __typename?: 'mutation_root', update_deck?: { __typename?: 'deck_mutation_response', returning: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null };
 
-export type DeckEventsSubscriptionVariables = Exact<{
+export type UpdateMainDeckAndSetQueueMutationVariables = Exact<{
   workspaceId: Scalars['uuid'];
+  update: Deck_Set_Input;
+  newQueue: Array<Track_Insert_Input> | Track_Insert_Input;
 }>;
 
 
-export type DeckEventsSubscription = { __typename?: 'subscription_root', event: Array<{ __typename: 'event', id: string, workspace_id?: string | null, time: string, event_type: string, workspace?: { __typename: 'workspace', id: string, created_at: string, updated_at: string, name: string, decks: Array<{ __typename: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null }> };
-
-export type FileEventsSubscriptionVariables = Exact<{
-  workspaceId: Scalars['uuid'];
-}>;
-
-
-export type FileEventsSubscription = { __typename?: 'subscription_root', event: Array<{ __typename: 'event', id: string, workspace_id?: string | null, time: string, event_type: string, workspace?: { __typename: 'workspace', id: string, created_at: string, updated_at: string, name: string, files: Array<{ __typename: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string }> } | null }> };
+export type UpdateMainDeckAndSetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck?: { __typename?: 'deck_mutation_response', returning: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null };
 
 export type FileInfoFragment = { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string };
 
@@ -2445,11 +2230,10 @@ export const DecksDocument = {"kind":"Document","definitions":[{"kind":"Operatio
 export const StopDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StopDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}}]}}]}}]} as unknown as DocumentNode<StopDeckMutation, StopDeckMutationVariables>;
 export const UpdateDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDeckMutation, UpdateDeckMutationVariables>;
 export const PlayDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PlayDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deck"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_insert_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}},"defaultValue":{"kind":"BooleanValue","value":false}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}}]}}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isMain"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_deck_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deck"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<PlayDeckMutation, PlayDeckMutationVariables>;
-export const SetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"start_timestamp"},"value":{"kind":"EnumValue","value":"now"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetQueueMutation, SetQueueMutationVariables>;
+export const UpdateDeckAndSetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeckAndSetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDeckAndSetQueueMutation, UpdateDeckAndSetQueueMutationVariables>;
 export const StopMainDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StopMainDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<StopMainDeckMutation, StopMainDeckMutationVariables>;
 export const UpdateMainDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateMainDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateMainDeckMutation, UpdateMainDeckMutationVariables>;
-export const DeckEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DeckEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"ListValue","values":[{"kind":"StringValue","value":"deck","block":false},{"kind":"StringValue","value":"track","block":false}]}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckEventsSubscription, DeckEventsSubscriptionVariables>;
-export const FileEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"FileEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"event_type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"StringValue","value":"file","block":false}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"1"}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"time"},"value":{"kind":"EnumValue","value":"desc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"workspace"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"files"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<FileEventsSubscription, FileEventsSubscriptionVariables>;
+export const UpdateMainDeckAndSetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateMainDeckAndSetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateMainDeckAndSetQueueMutation, UpdateMainDeckAndSetQueueMutationVariables>;
 export const WorkspaceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"EnumValue","value":"asc_nulls_last"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>;
 export const UpdateFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"file_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateFileMutation, UpdateFileMutationVariables>;
 export const DeleteFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"delete_job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"ListValue","values":[{"kind":"Variable","name":{"kind":"Name","value":"job"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}}]}}]} as unknown as DocumentNode<DeleteFileMutation, DeleteFileMutationVariables>;

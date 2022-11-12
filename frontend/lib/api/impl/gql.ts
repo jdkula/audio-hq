@@ -17,6 +17,7 @@ import {
     UpdateMainDeckDocument,
     WorkspaceJobsDocument,
     DeleteErrorJobDocument,
+    UpdateDeckAndSetQueueDocument,
 } from '~/lib/generated/graphql';
 import AudioHQApi, {
     GlobalWorkspaceApi,
@@ -94,7 +95,7 @@ function toDeck(hdeck: Omit<HDeck, 'workspace' | 'workspace_id'>): Deck {
 
 ////////// Global
 
-export class AudioHQApiImplRest implements AudioHQApi {
+export class AudioHQApiImplGraphQL implements AudioHQApi {
     async searchWorkspaces(query: string): Promise<Workspace[]> {
         const ret = await request(kUrl, WorkspaceDetailByNameDocument, {
             workspaceName: query,
@@ -317,21 +318,40 @@ class SpecificDeckApiImpl implements SpecificDeckApi {
         throw new Error('Method not implemented.');
     }
     async update(update: Partial<Omit<DeckCreate, 'type'>>): Promise<Deck> {
-        const dk = (
-            await request(kUrl, UpdateDeckDocument, {
-                deckId: this._deckId,
-                update: {
-                    pause_timestamp: update.pauseTimestamp?.toISOString(),
-                    start_timestamp: update.startTimestamp?.toISOString(),
-                    speed: update.speed,
-                    volume: update.volume,
-                },
-            })
-        ).update_deck_by_pk;
+        if (update.queue) {
+            const dk = (
+                await request(kUrl, UpdateDeckAndSetQueueDocument, {
+                    deckId: this._deckId,
+                    update: {
+                        pause_timestamp: update.pauseTimestamp === null ? null : update.pauseTimestamp?.toISOString(),
+                        start_timestamp: update.startTimestamp?.toISOString(),
+                        speed: update.speed,
+                        volume: update.volume,
+                    },
+                    newQueue: update.queue.map((q, i) => ({ file_id: q.id, deck_id: this._deckId, ordering: i })),
+                })
+            ).update_deck_by_pk;
 
-        if (!dk) throw new Error('Could not update deck');
+            if (!dk) throw new Error("Couldn't update deck");
 
-        return toDeck(dk as any);
+            return toDeck(dk as any);
+        } else {
+            const dk = (
+                await request(kUrl, UpdateDeckDocument, {
+                    deckId: this._deckId,
+                    update: {
+                        pause_timestamp: update.pauseTimestamp === null ? null : update.pauseTimestamp?.toISOString(),
+                        start_timestamp: update.startTimestamp?.toISOString(),
+                        speed: update.speed,
+                        volume: update.volume,
+                    },
+                })
+            ).update_deck_by_pk;
+
+            if (!dk) throw new Error('Could not update deck');
+
+            return toDeck(dk as any);
+        }
     }
     async delete(): Promise<void> {
         await request(kUrl, StopDeckDocument, {
@@ -350,21 +370,31 @@ class MainDeckApiImpl implements SpecificDeckApi {
         return dk;
     }
     async update(update: DeckUpdate): Promise<Deck> {
-        const dk = (
-            await request(kUrl, UpdateMainDeckDocument, {
-                workspaceId: this._workspaceId,
-                update: {
-                    pause_timestamp: update.pauseTimestamp?.toISOString(),
-                    start_timestamp: update.startTimestamp?.toISOString(),
-                    speed: update.speed,
-                    volume: update.volume,
-                },
-            })
-        ).update_deck?.returning?.[0];
+        if (update.queue) {
+            const wsapi = new SpecificWorkspaceApiImpl(this._workspaceId);
+            const maindeck = await wsapi.decks.getMain();
+            if (!maindeck) {
+                throw new Error('No main deck to update!');
+            }
 
-        if (!dk) throw new Error("Couldn't update main deck");
+            return await wsapi.deck(maindeck.id).update(update);
+        } else {
+            const dk = (
+                await request(kUrl, UpdateMainDeckDocument, {
+                    workspaceId: this._workspaceId,
+                    update: {
+                        pause_timestamp: update.pauseTimestamp?.toISOString(),
+                        start_timestamp: update.startTimestamp?.toISOString(),
+                        speed: update.speed,
+                        volume: update.volume,
+                    },
+                })
+            ).update_deck?.returning?.[0];
 
-        return toDeck(dk as any);
+            if (!dk) throw new Error("Couldn't update main deck");
+
+            return toDeck(dk as any);
+        }
     }
     async delete(): Promise<void> {
         await request(kUrl, StopMainDeckDocument, {

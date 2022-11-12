@@ -76,6 +76,8 @@ export const MainPlayer: FunctionComponent<{
             deckId: state.id,
             update: {
                 queue: newQueue,
+                startTimestamp: new Date(),
+                pauseTimestamp: null,
             },
         });
     };
