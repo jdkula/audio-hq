@@ -30,6 +30,7 @@
         "graphql": "^16.6.0",
         "graphql-request": "^5.0.0",
         "idb-keyval": "^6.2.0",
+        "immutable": "^4.1.0",
         "lodash": "^4.17.21",
         "next": "12.2.5",
         "react": "^17.0.2",

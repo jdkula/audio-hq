@@ -51,7 +51,6 @@ async function cacheUrls(urls) {
 async function cacheAudioAt(url) {
     const cache = await audioCache;
     if ((await cache.keys(url)).length > 0) {
-        updateCacheState(url, 'cached');
         return;
     }
     updateCacheState(url, 'loading');
@@ -200,7 +199,7 @@ broadcastIn.onmessage = (ev) => {
     switch (ev.data.type) {
         // <-- Fetches and caches all the associated URLs with CORS -->
         case 'cache': {
-            cacheUrls(ev.data.urls);
+            cacheUrls(ev.data.urls).then(() => updateCacheStateAll());
             break;
         }
 
