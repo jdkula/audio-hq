@@ -1,21 +1,3 @@
-subscription NewJobsSubscription {
-    available_jobs {
-        id
-    }
-}
-
-subscription DeleteJobsSubscription {
-    delete_job(where: { assigned_worker: { _is_null: true } }) {
-        id
-    }
-}
-
-subscription MyJobsSubscription($myId: uuid!) {
-    job(where: { assigned_worker: { _eq: $myId } }, order_by: [{ created_at: asc }]) {
-        id
-    }
-}
-
 fragment FullJob on job {
     id
     workspace_id
@@ -46,8 +28,10 @@ mutation ClaimJob($myId: uuid!) {
 mutation ClaimDeleteJob($myId: uuid!) {
     claim_delete_job(args: { worker_id: $myId }) {
         id
-        file {
-            id
+        single {
+            dirent {
+                id
+            }
             provider_id
         }
     }
@@ -62,17 +46,21 @@ mutation UpdateJobProgress($jobId: uuid!, $progressStage: job_status_enum_enum!,
     }
 }
 
-mutation CommitJob($jobId: uuid!, $file: file_insert_input!) {
+mutation CommitJob($jobId: uuid!, $entry: directory_entry_insert_input!, $single: single_insert_input!) {
     delete_job_by_pk(id: $jobId) {
         __typename
         id
         url
         name
     }
-    insert_file_one(object: $file) {
+    insert_directory_entry_one(object: $entry) {
         __typename
         id
         name
+    }
+    insert_single_one(object: $single) {
+        __typename
+        id
     }
 }
 
@@ -80,7 +68,7 @@ mutation CommitDeleteJob($jobId: uuid!, $fileId: uuid!) {
     delete_delete_job_by_pk(id: $jobId) {
         id
     }
-    delete_file_by_pk(id: $fileId) {
+    delete_directory_entry_by_pk(id: $fileId) {
         id
     }
 }

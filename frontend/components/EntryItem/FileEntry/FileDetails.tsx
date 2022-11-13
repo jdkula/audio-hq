@@ -46,7 +46,7 @@ interface FileDetailsProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: API.Track;
+    file: API.Single;
 }
 
 const FileDetails: FC<FileDetailsProps> = (props) => {

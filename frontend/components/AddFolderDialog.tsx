@@ -11,15 +11,15 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import * as API from '~/lib/api/models';
-import { useUpdateTrackMutation } from '~/lib/api/hooks';
+import { useUpdateEntryMutation } from '~/lib/api/hooks';
 
-const FolderAddDialog: FC<{ files: API.Track[]; cancel: () => void }> = ({ files, cancel }) => {
+const FolderAddDialog: FC<{ files: API.Entry[]; cancel: () => void }> = ({ files, cancel }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [name, setName] = useState('');
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
 
-    const updateTrack = useUpdateTrackMutation(workspaceId);
+    const updateTrack = useUpdateEntryMutation(workspaceId);
 
     const onCancel = () => {
         setName('');

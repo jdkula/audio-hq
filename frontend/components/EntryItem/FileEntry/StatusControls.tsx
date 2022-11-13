@@ -33,7 +33,7 @@ const StatusContainer = styled.div`
 `;
 
 interface StatusControlsProps {
-    file: API.Track;
+    file: API.Single;
     editing: boolean;
     setEditing: (editing: boolean) => void;
     setDelete: (deleting: boolean) => void;

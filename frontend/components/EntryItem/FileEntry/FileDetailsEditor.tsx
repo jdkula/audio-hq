@@ -8,7 +8,7 @@ import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import * as API from '~/lib/api/models';
-import { useUpdateTrackMutation } from '~/lib/api/hooks';
+import { useUpdateEntryMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const EditorContainer = styled.div`
@@ -37,7 +37,7 @@ interface FileDetailsEditorProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: API.Track;
+    file: API.Entry;
 }
 
 const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocusTitle, file }) => {
@@ -45,7 +45,7 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
     const [editName, setEditName] = useState(file.name);
     const [editDescription, setEditDescription] = useState(file.description);
 
-    const updateTrack = useUpdateTrackMutation(workspaceId);
+    const updateTrack = useUpdateEntryMutation(workspaceId);
 
     useEffect(() => {
         setEditName(file.name);

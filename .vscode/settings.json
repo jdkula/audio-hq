@@ -1,4 +1,5 @@
 {
+  "graphql-config.load.rootDir": "./frontend",
   "VSCodeCounter.showInStatusBar": true,
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "editor.formatOnSave": true,

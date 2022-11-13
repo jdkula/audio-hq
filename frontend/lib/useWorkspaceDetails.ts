@@ -5,16 +5,16 @@ import * as API from './api/models';
 import {
     useCreateImportJob,
     useCreateUploadJob,
-    useDeleteTrackMutation,
+    useDeleteEntryMutation,
     useWorkspaceJobs,
-    useWorkspaceTracks,
+    useWorkspaceEntries,
 } from './api/hooks';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 
 export function useFileManager(workspaceId: string) {
     // <== State ==>
-    const { data: filesData } = useWorkspaceTracks(workspaceId);
+    const { data: filesData } = useWorkspaceEntries(workspaceId);
     const files = useMemo(() => filesData ?? [], [filesData]);
     const { data: jobsData } = useWorkspaceJobs(workspaceId);
     const jobs = useMemo(() => jobsData ?? [], [jobsData]);
@@ -22,7 +22,7 @@ export function useFileManager(workspaceId: string) {
     const uploadJob = useCreateUploadJob(workspaceId);
     const importJob = useCreateImportJob(workspaceId);
 
-    const delFile = useDeleteTrackMutation(workspaceId);
+    const delFile = useDeleteEntryMutation(workspaceId);
 
     // URLs of files in this workspace
     const urls = useMemo(() => files.map((f) => f.url), [files]);
@@ -89,7 +89,7 @@ export function useFileManager(workspaceId: string) {
         delete: async (id: string) => {
             await delFile.mutateAsync({ id });
         },
-        download: (file: API.Track) => {
+        download: (file: API.Entry) => {
             broadcastOut?.postMessage({
                 type: 'cache',
                 urls: [file.url],

@@ -1,13 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useContext, useRef } from 'react';
 import AudioHQApiContext from './context';
-import { Deck, Job, JobCreate, Track, WorkspaceCreate, DeckUpdate, DeckCreate, TrackUpdate } from './models';
+import {
+    Deck,
+    Job,
+    JobCreate,
+    Entry,
+    WorkspaceCreate,
+    DeckUpdate,
+    DeckCreate,
+    EntryUpdate,
+    SingleUpdate,
+} from './models';
 import { v4 as uuid } from 'uuid';
 
-export function useWorkspaceTracks(workspaceId: string) {
+export function useWorkspaceEntries(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
-    return useQuery(['workspace', workspaceId, 'tracks'], {
-        queryFn: () => api.workspace(workspaceId).tracks.list(),
+    return useQuery(['workspace', workspaceId, 'entries'], {
+        queryFn: () => api.workspace(workspaceId).entries.list(),
         refetchInterval: 15000,
         staleTime: 10000,
     });
@@ -18,7 +28,7 @@ export function useWorkspaceJobs(workspaceId: string) {
     const queryClient = useQueryClient();
 
     const lastNumJobs = useRef(0);
-    const tracksQueryKey = ['workspace', workspaceId, 'tracks'];
+    const tracksQueryKey = ['workspace', workspaceId, 'entries'];
 
     return useQuery(['workspace', workspaceId, 'jobs'], {
         queryFn: () => api.workspace(workspaceId).jobs.list(),
@@ -114,28 +124,28 @@ export function useCreateImportJob(workspaceId: string) {
     return mt;
 }
 
-export function useDeleteTrackMutation(workspaceId: string) {
+export function useDeleteEntryMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
     const queryClient = useQueryClient();
-    const trackQueryKey = ['workspace', workspaceId, 'tracks'];
+    const trackQueryKey = ['workspace', workspaceId, 'entries'];
 
     const mt = useMutation({
-        mutationFn: ({ id }: { id: string }) => {
-            return api.workspace(workspaceId).track(id).delete();
+        mutationFn: ({ entry }: { entry: Entry }) => {
+            return api.workspace(workspaceId).entry(entry).delete();
         },
-        onMutate: async ({ id }) => {
+        onMutate: async ({ entry }) => {
             await queryClient.cancelQueries({ queryKey: trackQueryKey });
 
-            const deletedTrack = queryClient.getQueryData<Track[]>(trackQueryKey)?.find((tr) => tr.id === id);
+            const deletedEntry = queryClient.getQueryData<Entry[]>(trackQueryKey)?.find((tr) => tr.id === entry.id);
 
-            queryClient.setQueryData(trackQueryKey, (data?: Track[]) => data?.filter((tr) => tr.id !== id));
+            queryClient.setQueryData(trackQueryKey, (data?: Entry[]) => data?.filter((tr) => tr.id !== entry.id));
 
-            return { deletedTrack };
+            return { deletedEntry: deletedEntry };
         },
         onError: (_, __, ctx) => {
-            if (ctx?.deletedTrack) {
-                const deletedTrack = ctx?.deletedTrack;
-                queryClient.setQueryData(trackQueryKey, (data?: Track[]) => [...(data ?? []), deletedTrack]);
+            if (ctx?.deletedEntry) {
+                const deletedEntry = ctx?.deletedEntry;
+                queryClient.setQueryData(trackQueryKey, (data?: Entry[]) => [...(data ?? []), deletedEntry]);
             }
         },
     });
@@ -325,48 +335,48 @@ export function usePlayDeckMutation(workspaceId: string) {
     });
 }
 
-export function useUpdateTrackMutation(workspaceId: string) {
+export function useUpdateEntryMutation(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
     const queryClient = useQueryClient();
-    const tracksQueryKey = ['workspace', workspaceId, 'tracks'];
+    const entryQueryKey = ['workspace', workspaceId, 'entries'];
 
     return useMutation({
-        mutationFn: ({ trackId, update }: { trackId: string; update: TrackUpdate }) => {
-            return api.workspace(workspaceId).track(trackId).update(update);
+        mutationFn: ({ entry, update }: { entry: Entry; update: EntryUpdate | SingleUpdate }) => {
+            return api.workspace(workspaceId).entry(entry).update(update);
         },
-        onMutate: async ({ trackId, update }) => {
-            await queryClient.cancelQueries(tracksQueryKey);
-            const original = queryClient.getQueryData<Track[]>(tracksQueryKey)?.find((tr) => tr.id === trackId);
+        onMutate: async ({ entry, update }) => {
+            await queryClient.cancelQueries(entryQueryKey);
+            const original = queryClient.getQueryData<Entry[]>(entryQueryKey)?.find((tr) => tr.id === entry.id);
 
             if (!original) return {};
 
-            const optimistic: Track = {
+            const optimistic: Entry = {
                 ...original,
                 ...update,
                 ordering: (update.ordering === null ? Number.POSITIVE_INFINITY : update.ordering) ?? original.ordering,
             };
 
-            queryClient.setQueryData<Track[]>(tracksQueryKey, (tracks) =>
-                tracks?.map((tr) => (tr.id === trackId ? optimistic : tr)),
+            queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
+                tracks?.map((tr) => (tr.id === entry.id ? optimistic : tr)),
             );
             return { original, optimistic };
         },
         onSuccess: (track) => {
-            queryClient.setQueryData<Track[]>(tracksQueryKey, (tracks) =>
+            queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
                 tracks?.map((tr) => (tr.id === track.id ? track : tr)),
             );
         },
-        onError: (_, { trackId }, ctx) => {
+        onError: (_, { entry }, ctx) => {
             if (ctx?.original) {
                 const original = ctx.original;
 
-                queryClient.setQueryData<Track[]>(tracksQueryKey, (tracks) =>
-                    tracks?.map((tr) => (tr.id === trackId ? original : tr)),
+                queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
+                    tracks?.map((tr) => (tr.id === entry.id ? original : tr)),
                 );
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: tracksQueryKey });
+            queryClient.invalidateQueries({ queryKey: entryQueryKey });
         },
     });
 }

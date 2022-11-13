@@ -6,7 +6,6 @@ import {
     Deck_Type_Enum_Enum,
     DeleteFileDocument,
     PlayDeckDocument,
-    UpdateFileDocument,
     WorkspaceDetailByNameDocument,
     WorkspaceDetailDocument,
     WorkspaceFilesDocument,
@@ -18,16 +17,22 @@ import {
     WorkspaceJobsDocument,
     DeleteErrorJobDocument,
     UpdateDeckAndSetQueueDocument,
+    UpdateSingleEntryDocument,
+    UpdateDirectoryEntryDocument,
+    DeleteFolderDocument,
+    MovePathDocument,
 } from '~/lib/generated/graphql';
 import AudioHQApi, {
     GlobalWorkspaceApi,
     SpecificDeckApi,
     SpecificJobApi,
-    SpecificTrackApi,
+    SpecificEntryApi,
     SpecificWorkspaceApi,
     WorkspaceDecksApi,
     WorkspaceJobsApi,
-    WorkspaceTracksApi,
+    WorkspaceEntriesApi,
+    entryIsSingle,
+    entryIsFolder,
 } from '../AudioHQApi';
 import {
     CutModification,
@@ -38,11 +43,14 @@ import {
     FadeModification,
     Job,
     JobCreate,
-    Track,
-    TrackUpdate,
+    Entry,
+    EntryUpdate,
     Workspace,
     WorkspaceCreate,
     WorkspaceUpdate,
+    SingleUpdate,
+    Single,
+    Folder,
 } from '../models';
 
 const kUrl = process.env.NEXT_PUBLIC_HASURA_URL_HTTP as string;
@@ -80,14 +88,16 @@ function toDeck(hdeck: Omit<HDeck, 'workspace' | 'workspace_id'>): Deck {
         queue: hdeck.queue.map(
             (htrack) =>
                 ({
-                    id: htrack.file.id,
-                    description: htrack.file.description,
-                    length: htrack.file.length,
-                    name: htrack.file.name,
-                    path: htrack.file.path,
+                    id: htrack.single.dirent.id,
+                    description: htrack.single.description,
+                    length: htrack.single.length,
+                    name: htrack.single.dirent.name,
+                    path: htrack.single.dirent.path,
                     type: 'single',
-                    url: htrack.file.download_url,
-                } as Track),
+                    url: htrack.single.download_url,
+                    ordering: htrack.ordering,
+                    __internal_id_single: htrack.single.id,
+                } as Single),
         ),
         type: toDeckType(hdeck.type),
     };
@@ -167,12 +177,12 @@ class SpecificWorkspaceApiImpl implements SpecificWorkspaceApi {
         throw new Error('Method not implemented.');
     }
 
-    get tracks(): WorkspaceTracksApi {
-        return new WorkspaceTracksApiImpl(this._id);
+    get entries(): WorkspaceEntriesApi {
+        return new WorkspaceEntriesApiImpl(this._id);
     }
 
-    track(id: string): SpecificTrackApi {
-        return new SpecificTrackApiImpl(this._id, id);
+    entry<T extends Entry>(entry: T): SpecificEntryApi<T> {
+        return new SpecificEntryApiImpl<T>(this._id, entry);
     }
 
     get decks(): WorkspaceDecksApi {
@@ -194,13 +204,13 @@ class SpecificWorkspaceApiImpl implements SpecificWorkspaceApi {
 
 ////////// Tracks
 
-class WorkspaceTracksApiImpl implements WorkspaceTracksApi {
+class WorkspaceEntriesApiImpl implements WorkspaceEntriesApi {
     constructor(private _workspaceId: string) {}
 
-    async list(): Promise<Track[]> {
+    async list(): Promise<Entry[]> {
         const ret = await request(kUrl, WorkspaceFilesDocument, { workspaceId: this._workspaceId });
 
-        return ret.file
+        return ret.directory_entry
             .sort((a, b) => {
                 if (!a && b) {
                     return -1;
@@ -212,55 +222,117 @@ class WorkspaceTracksApiImpl implements WorkspaceTracksApi {
                     return a.ordering! - b.ordering!;
                 }
             })
-            .map((hfile) => ({
-                id: hfile.id,
-                description: hfile.description,
-                length: hfile.length,
-                name: hfile.name,
-                path: hfile.path,
-                type: 'single',
-                url: hfile.download_url,
-                ordering: hfile.ordering ?? Number.POSITIVE_INFINITY,
-            }));
+            .map((hfile) => {
+                if (hfile.single) {
+                    return {
+                        id: hfile.id,
+                        description: hfile.single.description,
+                        length: hfile.single.length,
+                        name: hfile.name,
+                        path: hfile.path,
+                        type: 'single',
+                        url: hfile.single.download_url,
+                        ordering: hfile.ordering ?? Number.POSITIVE_INFINITY,
+                        __internal_id_single: hfile.single.id,
+                    } as Single;
+                } else if (hfile.folder) {
+                    return {
+                        id: hfile.id,
+                        name: hfile.name,
+                        ordering: hfile.ordering ?? Number.POSITIVE_INFINITY,
+                        path: hfile.path,
+                        type: 'folder',
+                    } as Folder;
+                }
+            })
+            .filter<Entry>((x): x is Entry => !!x);
     }
 }
 
-class SpecificTrackApiImpl implements SpecificTrackApi {
-    constructor(private _workspaceId: string, private _trackId: string) {}
+class SpecificEntryApiImpl<T extends Entry> implements SpecificEntryApi<T> {
+    constructor(private _workspaceId: string, private _entry: T) {}
 
-    async get(): Promise<Track> {
+    async get(): Promise<T> {
         throw new Error('Method not implemented.');
     }
-    async update(file: TrackUpdate): Promise<Track> {
-        const ret = await request(kUrl, UpdateFileDocument, {
-            id: this._trackId,
+    async update(updateDef: T extends Single ? SingleUpdate : EntryUpdate): Promise<T> {
+        if (entryIsSingle(this._entry) && (updateDef as SingleUpdate).description) {
+            const ret = await request(kUrl, UpdateSingleEntryDocument, {
+                id: this._entry.id,
+                update: {
+                    name: updateDef.name,
+                    path: updateDef.path,
+                    ordering: updateDef.ordering,
+                },
+                desc: (updateDef as SingleUpdate).description!,
+            });
+            const update = ret.update_directory_entry_by_pk;
+            if (!update || !update.single) {
+                throw new Error('There was no track to update.');
+            }
+            return {
+                id: update.id,
+                description: update.single.description,
+                length: update.single.length,
+                name: update.name,
+                path: update.path,
+                type: 'single',
+                url: update.single.download_url,
+                ordering: update.ordering ?? Number.POSITIVE_INFINITY,
+                __internal_id_single: update.single.id,
+            } as Single as T;
+        } else if (entryIsFolder(this._entry) && (updateDef.path || updateDef.name)) {
+            const name = updateDef.name ?? this._entry.name;
+            const path = updateDef.path ?? this._entry.path;
+            await request(kUrl, MovePathDocument, {
+                workspaceId: this._workspaceId,
+                oldpath: [...this._entry.path, this._entry.name],
+                newpath: [...path, name],
+            });
+        }
+
+        const ret = await request(kUrl, UpdateDirectoryEntryDocument, {
+            id: this._entry.id,
             update: {
-                name: file.name,
-                description: file.description,
-                path: file.path,
-                ordering: file.ordering,
+                name: updateDef.name,
+                path: updateDef.path,
+                ordering: updateDef.ordering,
             },
         });
-
-        const update = ret.update_file_by_pk;
+        const update = ret.update_directory_entry_by_pk;
 
         if (!update) {
             throw new Error('There was no track to update.');
         }
 
-        return {
-            id: update.id,
-            description: update.description,
-            length: update.length,
-            name: update.name,
-            path: update.path,
-            type: 'single',
-            url: update.download_url,
-            ordering: update.ordering ?? Number.POSITIVE_INFINITY,
-        };
+        if (update.single) {
+            return {
+                id: update.id,
+                description: update.single.description,
+                length: update.single.length,
+                name: update.name,
+                path: update.path,
+                type: 'single',
+                url: update.single.download_url,
+                ordering: update.ordering ?? Number.POSITIVE_INFINITY,
+                __internal_id_single: update.single.id,
+            } as Single as T;
+        } else {
+            return {
+                id: update.id,
+                name: update.name,
+                path: update.path,
+                type: 'folder',
+                ordering: update.ordering ?? Number.POSITIVE_INFINITY,
+            } as Folder as T;
+        }
     }
     async delete(): Promise<void> {
-        await request(kUrl, DeleteFileDocument, { job: { file_id: this._trackId } });
+        if (entryIsSingle(this._entry)) {
+            await request(kUrl, DeleteFileDocument, { job: { single_id: this._entry.id } });
+        } else {
+            await request(kUrl, DeleteFolderDocument, { folderId: this._entry.id });
+        }
     }
 }
 
@@ -294,7 +366,12 @@ class WorkspaceDecksApiImpl implements WorkspaceDecksApi {
                 deck: {
                     start_timestamp: deck.startTimestamp.toISOString(),
                     pause_timestamp: deck.pauseTimestamp?.toISOString() ?? null,
-                    queue: { data: deck.queue.map((apitrack, i) => ({ file_id: apitrack.id, ordering: i })) },
+                    queue: {
+                        data: deck.queue.map((apitrack, i) => ({
+                            single_id: apitrack.__internal_id_single,
+                            ordering: i,
+                        })),
+                    },
                     speed: deck.speed,
                     type: toHdeckType(deck.type),
                     volume: deck.volume,

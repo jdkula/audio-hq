@@ -9,9 +9,7 @@ import styled from '@emotion/styled';
 
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
-import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
 import { WorkspaceIdContext } from '~/lib/utility/context';
@@ -27,11 +25,10 @@ const PlayControlsContainer = styled.div`
 `;
 
 interface PlayControlsProps {
-    snapshot: DraggableStateSnapshot;
-    file: API.Track;
+    file: API.Single;
 }
 
-const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
+const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [highlightingSfx, setSfxHighlight] = useState(false);
     const { main, ambience } = useWorkspaceDecks(workspaceId);
@@ -99,11 +96,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
         <PlayControlsContainer>
             <Tooltip title="Play File" placement="left" arrow>
                 <IconButton onClick={onPlay} size="large">
-                    {snapshot.combineTargetFor ? (
-                        <CreateNewFolderIcon color="primary" />
-                    ) : (
-                        <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
-                    )}
+                    <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
             {altKey ? (

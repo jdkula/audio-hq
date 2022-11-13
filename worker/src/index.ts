@@ -113,12 +113,12 @@ async function doDeletion() {
                 log.silly('Deleting file in database...');
                 await client.request(GQL.CommitDeleteJobDocument, {
                     jobId: job.id,
-                    fileId: job.file.id,
+                    fileId: job.single.dirent.id,
                 });
 
-                if (job.file.provider_id) {
+                if (job.single.provider_id) {
                     log.silly('Deleting in AWS...');
-                    await AppFS.delete(job.file.provider_id);
+                    await AppFS.delete(job.single.provider_id);
                 } else {
                     log.debug('No provide ID associated with this file, skipping AWS delete...');
                 }

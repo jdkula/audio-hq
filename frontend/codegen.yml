@@ -1,11 +1,17 @@
 overwrite: true
 schema:
-    - 'https://audio-hq-api.jdkula.dev/v1/graphql':
+    - 'https://audio-hq-api-dev.jdkula.dev/v1/graphql':
           headers:
               'X-Hasura-Admin-Secret': '${HASURA_GRAPHQL_ADMIN_SECRET}'
               'X-Hasura-Role': 'anonymous'
 documents: 'graphql/**/*.graphql'
 generates:
+    graphql.schema.json:
+        plugins:
+            - 'introspection'
+    schema.graphql:
+        plugins:
+            - 'schema-ast'
     lib/generated/graphql.ts:
         config:
             defaultScalarType: unknown
@@ -20,6 +26,3 @@ generates:
             - 'typescript'
             - 'typescript-operations'
             - 'typed-document-node'
-    graphql.schema.json:
-        plugins:
-            - 'introspection'

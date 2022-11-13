@@ -5,16 +5,16 @@ object_relationships:
   - name: deck
     using:
       foreign_key_constraint_on: deck_id
-  - name: file
+  - name: single
     using:
-      foreign_key_constraint_on: file_id
+      foreign_key_constraint_on: single_id
 insert_permissions:
   - role: anonymous
     permission:
       check: {}
       columns:
         - deck_id
-        - file_id
+        - single_id
         - id
         - ordering
 select_permissions:
@@ -23,7 +23,7 @@ select_permissions:
       columns:
         - created_at
         - deck_id
-        - file_id
+        - single_id
         - ordering
         - id
       filter: {}
