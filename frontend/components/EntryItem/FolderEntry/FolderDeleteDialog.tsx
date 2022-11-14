@@ -22,7 +22,10 @@ const FolderDeleteDialog: FC<DialogProps & { folder: string; onConfirm: () => vo
     return (
         <Dialog {...props}>
             <DialogTitle>Really delete {folder}?</DialogTitle>
-            <DialogContent dividers>This will dump all the folder contents into the current folder.</DialogContent>
+            <DialogContent dividers>
+                This will hide all the files and folders inside. You can regain access to them by searching or
+                recreating a folder with the same name.
+            </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onClose?.({}, 'escapeKeyDown')}>Cancel</Button>
                 <Button color="secondary" onClick={doDelete}>

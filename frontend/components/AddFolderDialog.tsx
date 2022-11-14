@@ -9,14 +9,23 @@ import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
-import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
-import { useCreateFolderMutation } from '~/lib/api/hooks';
+import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { useCreateFolderMutation, useWorkspaceEntries } from '~/lib/api/hooks';
+import { entryIsFolder } from '~/lib/api/AudioHQApi';
+import _ from 'lodash';
 
 const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showing, cancel }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [name, setName] = useState('');
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
+
+    const overlappingFolders = useWorkspaceEntries(workspaceId)
+        .data?.filter(entryIsFolder)
+        .filter((entry) => _.isEqual(entry.path, currentPath))
+        .map((entry) => entry.name);
+
+    const nameCollision = overlappingFolders?.includes(name);
 
     const createFolderMutation = useCreateFolderMutation(workspaceId);
 
@@ -32,14 +41,14 @@ const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showin
     };
 
     const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.nativeEvent.code !== 'Enter') return;
+        if (e.nativeEvent.code !== 'Enter' || nameCollision) return;
 
         e.preventDefault();
         createFolder();
     };
 
     return (
-        <Dialog open={!!showing} onClose={onCancel}>
+        <Dialog open={!!showing} onClose={onCancel} fullWidth maxWidth="xs">
             <DialogTitle>Create Folder</DialogTitle>
             <DialogContent dividers>
                 <TextField
@@ -49,11 +58,18 @@ const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showin
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={handleEnter}
                     label="Folder Name"
+                    helperText={nameCollision ? 'That folder already exists; pick a new name' : ''}
+                    error={nameCollision}
+                    autoComplete="off"
+                    fullWidth
+                    autoFocus
                 />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
-                <Button onClick={createFolder}>Create</Button>
+                <Button onClick={createFolder} disabled={nameCollision}>
+                    Create
+                </Button>
             </DialogActions>
         </Dialog>
     );

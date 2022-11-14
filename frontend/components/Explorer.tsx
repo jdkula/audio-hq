@@ -350,7 +350,7 @@ export const Explorer: FC = () => {
                 },
             });
         } else if (result.destination?.index !== undefined) {
-            // === Reorder one file around the current folder ===
+            // === Reorder one entry around the current folder ===
 
             let target: API.Entry | null = null;
             if (!combineThisFolder && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
@@ -364,6 +364,9 @@ export const Explorer: FC = () => {
             } else {
                 target = currentFiles[result.destination.index];
             }
+
+            if (srcFile.type === 'folder' && alwaysAlphasortFolders) return;
+            if (srcFile.type !== 'folder' && alwaysAlphasortFiles) return;
 
             updateEntry.mutate({
                 entry: srcFile,

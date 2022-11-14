@@ -68,16 +68,8 @@ export default function EntryItem({ entry, onNavigate, currentPath, dragSnapshot
 
 export function DraggableEntryItem({ index, ...props }: EntryProps & { index: number }) {
     const prefix = props.entry.type === 'folder' ? '$FOLDER:' : '$SINGLE:';
-
-    const [isAlphasortingFiles] = useLocalReactiveValue(alwaysAlphasortFilesLRV);
-    const [isAlphasortingFolders] = useLocalReactiveValue(alwaysAlphasortFoldersLRV);
-
-    const disabled =
-        (props.entry.type === 'folder' && isAlphasortingFolders) ||
-        (props.entry.type !== 'folder' && isAlphasortingFiles);
-
     return (
-        <Draggable draggableId={prefix + props.entry.id} index={index} isDragDisabled={disabled}>
+        <Draggable draggableId={prefix + props.entry.id} index={index}>
             {(provided, snapshot) => (
                 <div {...provided.dragHandleProps} {...provided.draggableProps} ref={provided.innerRef}>
                     <EntryItem {...props} dragSnapshot={snapshot} />
