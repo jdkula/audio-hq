@@ -3,6 +3,8 @@ import { Paper } from '@mui/material';
 import { Draggable, DraggableStateSnapshot, Droppable, DroppableStateSnapshot } from 'react-beautiful-dnd';
 import { entryIsSingle } from '~/lib/api/AudioHQApi';
 import { Entry, Folder } from '~/lib/api/models';
+import { useLocalReactiveValue } from '~/lib/LocalReactive';
+import { alwaysAlphasortFilesLRV, alwaysAlphasortFoldersLRV } from '~/lib/utility/usePersistentData';
 import FileEntry from './FileEntry';
 import FolderEntry from './FolderEntry';
 
@@ -66,8 +68,16 @@ export default function EntryItem({ entry, onNavigate, currentPath, dragSnapshot
 
 export function DraggableEntryItem({ index, ...props }: EntryProps & { index: number }) {
     const prefix = props.entry.type === 'folder' ? '$FOLDER:' : '$SINGLE:';
+
+    const [isAlphasortingFiles] = useLocalReactiveValue(alwaysAlphasortFilesLRV);
+    const [isAlphasortingFolders] = useLocalReactiveValue(alwaysAlphasortFoldersLRV);
+
+    const disabled =
+        (props.entry.type === 'folder' && isAlphasortingFolders) ||
+        (props.entry.type !== 'folder' && isAlphasortingFiles);
+
     return (
-        <Draggable draggableId={prefix + props.entry.id} index={index}>
+        <Draggable draggableId={prefix + props.entry.id} index={index} isDragDisabled={disabled}>
             {(provided, snapshot) => (
                 <div {...provided.dragHandleProps} {...provided.draggableProps} ref={provided.innerRef}>
                     <EntryItem {...props} dragSnapshot={snapshot} />

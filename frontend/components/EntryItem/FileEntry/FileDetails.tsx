@@ -12,17 +12,7 @@ import FileDetailsEditor from './FileDetailsEditor';
 import { durationOfLength } from '~/lib/utility/util';
 import * as API from '~/lib/api/models';
 import { FileManagerContext } from '~/lib/utility/context';
-import {
-    DownloadDone,
-    DownloadForOffline,
-    FileDownloadDone,
-    OfflineBolt,
-    OfflinePin,
-    OfflinePinOutlined,
-    OfflinePinRounded,
-    OfflinePinSharp,
-    OfflinePinTwoTone,
-} from '@mui/icons-material';
+import { DownloadDone } from '@mui/icons-material';
 
 const DetailsContainer = styled.div`
     display: flex;

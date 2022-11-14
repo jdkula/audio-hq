@@ -9,16 +9,14 @@ import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
-import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
-import * as API from '~/lib/api/models';
-import { useCreateFolderMutation, useUpdateEntryMutation } from '~/lib/api/hooks';
+import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { useCreateFolderMutation } from '~/lib/api/hooks';
 
 const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showing, cancel }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [name, setName] = useState('');
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
-    const fileManager = useContext(FileManagerContext);
 
     const createFolderMutation = useCreateFolderMutation(workspaceId);
 

@@ -8,7 +8,6 @@
  */
 
 import React, { FC, useState } from 'react';
-import { Draggable } from 'react-beautiful-dnd';
 import styled from '@emotion/styled';
 
 import FileDeleteDialog from './FileDeleteDialog';

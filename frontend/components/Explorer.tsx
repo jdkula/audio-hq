@@ -17,6 +17,7 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
+    ListSubheader,
     Paper,
     Popover,
     Tooltip,
@@ -36,7 +37,12 @@ import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
-import { useFavorites } from '~/lib/utility/usePersistentData';
+import {
+    alwaysAlphasortFilesLRV,
+    alwaysAlphasortFoldersLRV,
+    alwaysCombineLRV,
+    useFavorites,
+} from '~/lib/utility/usePersistentData';
 import { isDefined } from '~/lib/utility/util';
 import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useUpdateEntryMutation, useWorkspaceDecks, useWorkspaceEntries } from '~/lib/api/hooks';
@@ -146,24 +152,23 @@ export const Explorer: FC = () => {
     const [displaySettingsOpen, setDisplaySettingsOpen] = useState(false);
     const filterButtonRef = useRef<any>();
 
-    const lastSeparateFoldersSetting = useRef(true);
-    const [separateFoldersSettings, setSeparateFoldersSettings] = useLocalReactiveValue(combineFoldersLRV);
+    const [alwaysCombine, setAlwaysCombine] = useLocalReactiveValue(alwaysCombineLRV);
+    const [alwaysAlphasortFolders, setAlwaysAlphasortFolders] = useLocalReactiveValue(alwaysAlphasortFoldersLRV);
+    const [alwaysAlphasortFiles, setAlwaysAlphasortFiles] = useLocalReactiveValue(alwaysAlphasortFilesLRV);
+    const [combineFolderSettings, setCombineFoldersSettings] = useLocalReactiveValue(combineFoldersLRV);
 
-    const separateFolders = useMemo(() => {
-        console.log(separateFoldersSettings);
-        return (
-            separateFoldersSettings.find((setting) => _.isEqual(setting.path, path))?.combine ??
-            lastSeparateFoldersSetting.current
-        );
-    }, [separateFoldersSettings, path]);
+    const combineThisFolder = useMemo(() => {
+        console.log(combineFolderSettings);
+        return combineFolderSettings.find((setting) => _.isEqual(setting.path, path))?.combine ?? false;
+    }, [combineFolderSettings, path]);
 
-    lastSeparateFoldersSetting.current = separateFolders;
-
-    const setSeparateFolders = (newValue: boolean) => {
-        setSeparateFoldersSettings((cur) =>
+    const setCombineThisFolder = (newValue: boolean) => {
+        setCombineFoldersSettings((cur) =>
             cur.filter((setting) => !_.isEqual(setting.path, path)).concat({ path, combine: newValue }),
         );
     };
+
+    const shouldCombine = !alwaysAlphasortFiles && !alwaysAlphasortFolders && (alwaysCombine || combineThisFolder);
 
     const altKey = useAlt();
 
@@ -193,28 +198,35 @@ export const Explorer: FC = () => {
         return arr.filter((file) => online || (isSingle(file) && fileManager.cached.has(file.url)));
     }, [online, viewingFavorites, favs, entries, path, searching, searchText, fileManager.cached]);
 
-    const items = useMemo(
-        () =>
-            currentFiles
-                .filter((entry) => !separateFolders || !entryIsFolder(entry))
-                .map((file, i) => (
-                    <DraggableEntryItem
-                        entry={file}
-                        key={file.id}
-                        currentPath={path}
-                        index={i}
-                        onNavigate={(folder) => {
-                            setPath((path) => [...path, folder.name]);
-                        }}
-                    />
-                )),
-        [currentFiles, separateFolders, path, setPath],
-    );
+    const items = useMemo(() => {
+        let entries = currentFiles.filter((entry) => shouldCombine || !entryIsFolder(entry));
+
+        if (alwaysAlphasortFiles) {
+            entries = entries.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        return entries.map((file, i) => (
+            <DraggableEntryItem
+                entry={file}
+                key={file.id}
+                currentPath={path}
+                index={i}
+                onNavigate={(folder) => {
+                    setPath((path) => [...path, folder.name]);
+                }}
+            />
+        ));
+    }, [currentFiles, shouldCombine, path, setPath, alwaysAlphasortFiles]);
 
     const plainSinglesData = useMemo(() => {
-        if (!separateFolders) return [];
-        return currentFiles.filter((e) => !entryIsFolder(e));
-    }, [currentFiles, separateFolders]);
+        if (shouldCombine) return [];
+
+        const ret = currentFiles.filter((e) => !entryIsFolder(e));
+        if (alwaysAlphasortFiles) {
+            return ret.sort((a, b) => a.name.localeCompare(b.name));
+        }
+        return ret;
+    }, [currentFiles, shouldCombine, alwaysAlphasortFiles]);
     const plainSinglesView = useMemo(
         () =>
             plainSinglesData.map((entry) => (
@@ -231,9 +243,13 @@ export const Explorer: FC = () => {
     );
 
     const foldersData = useMemo(() => {
-        if (!separateFolders) return [];
-        return currentFiles.filter(entryIsFolder);
-    }, [currentFiles, separateFolders]);
+        if (shouldCombine) return [];
+        const ret = currentFiles.filter(entryIsFolder);
+        if (alwaysAlphasortFolders) {
+            return ret.sort((a, b) => a.name.localeCompare(b.name));
+        }
+        return ret;
+    }, [currentFiles, shouldCombine, alwaysAlphasortFolders]);
 
     const draggableFolders = useMemo(
         () =>
@@ -341,10 +357,10 @@ export const Explorer: FC = () => {
             // === Reorder one file around the current folder ===
 
             let target: API.Entry | null = null;
-            if (separateFolders && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
+            if (!combineThisFolder && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
                 target = foldersData[result.destination.index];
             } else if (
-                separateFolders &&
+                !combineThisFolder &&
                 result.destination.droppableId === '___main___' &&
                 srcFile.type !== 'folder'
             ) {
@@ -421,18 +437,58 @@ export const Explorer: FC = () => {
                     </ListItem>
                     <ListItem disablePadding>
                         <ListItemButton
-                            onClick={() => setSeparateFolders(!separateFolders)}
-                            disabled={viewingFavorites}
+                            onClick={() => setAlwaysAlphasortFiles(!alwaysAlphasortFiles)}
+                            disabled={alwaysCombine}
+                        >
+                            <ListItemIcon>
+                                <Checkbox edge="start" checked={alwaysAlphasortFiles} tabIndex={-1} disableRipple />
+                            </ListItemIcon>
+                            <ListItemText primary="Always alphabetically sort files" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            onClick={() => setAlwaysAlphasortFolders(!alwaysAlphasortFolders)}
+                            disabled={alwaysCombine}
+                        >
+                            <ListItemIcon>
+                                <Checkbox edge="start" checked={alwaysAlphasortFolders} tabIndex={-1} disableRipple />
+                            </ListItemIcon>
+                            <ListItemText primary="Always alphabetically sort folders" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            onClick={() => setAlwaysCombine(!alwaysCombine)}
+                            disabled={alwaysAlphasortFiles || alwaysAlphasortFolders}
+                        >
+                            <ListItemIcon>
+                                <Checkbox edge="start" checked={alwaysCombine} tabIndex={-1} disableRipple />
+                            </ListItemIcon>
+                            <ListItemText primary="Always combine folders and files together" />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+                <Divider />
+                <List subheader={<ListSubheader component="div">Per Folder</ListSubheader>}>
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            onClick={() => setCombineThisFolder(!combineThisFolder)}
+                            disabled={alwaysCombine || alwaysAlphasortFiles || alwaysAlphasortFolders}
                         >
                             <ListItemIcon>
                                 <Checkbox
                                     edge="start"
-                                    checked={!viewingFavorites && separateFolders}
+                                    checked={
+                                        !alwaysAlphasortFiles &&
+                                        !alwaysAlphasortFolders &&
+                                        (alwaysCombine || combineThisFolder)
+                                    }
                                     tabIndex={-1}
                                     disableRipple
                                 />
                             </ListItemIcon>
-                            <ListItemText primary="Separate folders from files" />
+                            <ListItemText primary="Combine folders and files together" />
                         </ListItemButton>
                     </ListItem>
                 </List>
@@ -486,7 +542,7 @@ export const Explorer: FC = () => {
                             </NoFilesContainer>
                         ) : (
                             <>
-                                {separateFolders && !viewingFavorites && (
+                                {!shouldCombine && !viewingFavorites && (
                                     <>
                                         {isDragging === 'file' ? (
                                             droppableFolders
@@ -504,7 +560,7 @@ export const Explorer: FC = () => {
                                     </>
                                 )}
 
-                                {separateFolders && isDragging === 'folder' ? (
+                                {!shouldCombine && isDragging === 'folder' ? (
                                     plainSinglesView
                                 ) : (
                                     <Droppable

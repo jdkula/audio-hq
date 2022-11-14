@@ -4,7 +4,16 @@
  * Contains hooks that give access to persisted data used in the frontend.
  */
 import { useCallback, useContext } from 'react';
-import { kColorModeKey, kDefaultVolume, kGlobalVolumeKey, kMaxRecents, kRecentsKey } from '../constants';
+import {
+    kColorModeKey,
+    kDefaultVolume,
+    kFileAlwaysAlphasort,
+    kFolderAlwaysAlphasort,
+    kFolderAlwaysCombine,
+    kGlobalVolumeKey,
+    kMaxRecents,
+    kRecentsKey,
+} from '../constants';
 import { LocalStorageReactiveValue, useLocalReactiveValue } from '../LocalReactive';
 import { WorkspaceLRVContext } from './context';
 
@@ -57,3 +66,9 @@ export const globalVolumeLRV = new LocalStorageReactiveValue<number>(kGlobalVolu
 export function useGlobalVolume() {
     return useLocalReactiveValue(globalVolumeLRV);
 }
+
+// <== Filtering ==>
+
+export const alwaysCombineLRV = new LocalStorageReactiveValue(kFolderAlwaysCombine, false);
+export const alwaysAlphasortFoldersLRV = new LocalStorageReactiveValue(kFolderAlwaysAlphasort, false);
+export const alwaysAlphasortFilesLRV = new LocalStorageReactiveValue(kFileAlwaysAlphasort, false);

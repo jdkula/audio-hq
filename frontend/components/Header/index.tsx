@@ -6,19 +6,7 @@
  * volume, cache all workspace songs, and add tracks.
  */
 
-import {
-    AppBar,
-    Button,
-    Collapse,
-    Hidden,
-    LinearProgress,
-    Link,
-    SvgIcon,
-    Toolbar,
-    Typography,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
+import { AppBar, Button, Hidden, Link, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
 import React, { FC, FunctionComponent, useContext, useState } from 'react';
 import Head from 'next/head';
@@ -28,10 +16,9 @@ import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
 import NextLink from 'next/link';
 import { useLocalReactiveValue } from '../../lib/LocalReactive';
-import { WorkspaceNameContext, FileManagerContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { WorkspaceNameContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useIsOnline } from '~/lib/utility/hooks';
 import { AHQIcon } from '../AHQIcon';
-import { entryIsSingle } from '~/lib/api/AudioHQApi';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -77,15 +64,11 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => {
 
 export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     const workspaceName = useContext(WorkspaceNameContext);
-    const fileManager = useContext(FileManagerContext);
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
 
     const [adding, setAdding] = useState(false);
 
     const [path] = useLocalReactiveValue(currentPathLRV);
-
-    const allCached = fileManager.cached.size >= fileManager.files.filter(entryIsSingle).length;
-    const isCaching = fileManager.caching.size > 0;
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));

@@ -4,7 +4,7 @@
  * Provides an editor for the track details of a given file.
  */
 
-import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
+import { ClickAwayListener, TextField } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
 import * as API from '~/lib/api/models';
@@ -21,12 +21,6 @@ const TextFieldContainer = styled.div`
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-`;
-
-const ControlsContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 `;
 
 const Spacer = styled.div<{ space?: string }>`

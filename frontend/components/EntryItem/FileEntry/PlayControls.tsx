@@ -9,11 +9,10 @@ import styled from '@emotion/styled';
 
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
 import { WorkspaceIdContext } from '~/lib/utility/context';
-import { useAlt } from '~/lib/utility/hooks';
 import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
 

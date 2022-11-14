@@ -5,14 +5,13 @@
  * download, or delete a song.
  */
 
-import { CircularProgress, IconButton, Tooltip } from '@mui/material';
-import React, { FC, useContext } from 'react';
+import { IconButton, Tooltip } from '@mui/material';
+import React, { FC } from 'react';
 import styled from '@emotion/styled';
 
 import DeleteForever from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { FileManagerContext } from '~/lib/utility/context';
 import { useAlt } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
 import * as API from '~/lib/api/models';

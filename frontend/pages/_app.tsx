@@ -18,7 +18,6 @@ import { deepmerge } from '@mui/utils';
 import { CacheProvider, EmotionCache } from '@emotion/react';
 import { createEmotionCache } from '~/lib/ssr';
 import { useColorMode } from '~/lib/utility/usePersistentData';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
 import { AudioHQApiImplGraphQL } from '~/lib/api/impl/gql';

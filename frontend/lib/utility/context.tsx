@@ -43,7 +43,7 @@ export function WorkspaceLocalReactiveValuesProvider(props: { workspaceId: strin
             favorites: new LocalStorageReactiveValue(kFavoritesKeyPrefix + props.workspaceId, []),
             lastSfxPlayed: new LocalStorageReactiveValue(kLastSFXPlayedKeyPrefix + props.workspaceId, 0),
             combineFoldersSettings: new LocalStorageReactiveValue(kFolderCombinePrefix + props.workspaceId, [
-                { path: [], combine: true },
+                { path: [], combine: false },
             ]),
         }),
         [props.workspaceId],

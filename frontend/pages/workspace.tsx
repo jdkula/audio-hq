@@ -36,7 +36,7 @@ const MainApp: FC = () => {
     const [tabValue, setTabValue] = useState(0);
 
     const workspaceId = useContext(WorkspaceIdContext);
-    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
+    const { main } = useWorkspaceDecks(workspaceId);
 
     if (isSmall) {
         return (
@@ -117,7 +117,6 @@ const Container = styled.div<{ hideAmbience?: boolean }>`
 
 const Sub: FC = () => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const { ambience, sfx } = useWorkspaceDecks(workspaceId);
 
     const [, addRecents] = useLocalRecents();
     useEffect(() => {

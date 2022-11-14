@@ -3,7 +3,7 @@
  * =============
  * Provides functions, hooks, and types for interacting with the service worker
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { kCacheEnabledKey } from './constants';
 import { LocalIDBReactiveValue, LocalReactiveValue, useLocalReactiveValue } from './LocalReactive';
 import { Map } from 'immutable';
