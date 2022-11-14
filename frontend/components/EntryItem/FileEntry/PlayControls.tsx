@@ -30,25 +30,18 @@ interface PlayControlsProps {
 
 const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const [highlightingSfx, setSfxHighlight] = useState(false);
-    const { main, ambience } = useWorkspaceDecks(workspaceId);
+    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
-    const altKey = useAlt();
+    const [debouncingAmbience, setDebouncingAmbience] = useState(false);
+    const [debouncingSfx, setDebouncingSfx] = useState(false);
 
-    const sfxHighlightTimeoutHandle = useRef<number | null>(null);
+    const isPlayingAsAmbience = !!ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id));
+    const isPlayingAsSFX = !!sfx.find((ps) => ps.queue.map((q) => q.id).includes(file.id));
 
     const playDeck = usePlayDeckMutation(workspaceId);
 
-    useEffect(
-        () => () => {
-            if (sfxHighlightTimeoutHandle.current) {
-                clearTimeout(sfxHighlightTimeoutHandle.current);
-            }
-        },
-        [],
-    );
-
     const onAmbience = async () => {
+        setDebouncingAmbience(true);
         playDeck.mutate({
             deck: {
                 queue: [file],
@@ -59,6 +52,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                 volume: main?.volume ?? 1,
             },
         });
+        setTimeout(setDebouncingAmbience, 250, false);
     };
 
     const onPlay = async () => {
@@ -75,12 +69,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     };
 
     const onSfx = async () => {
-        setSfxHighlight(true);
-        sfxHighlightTimeoutHandle.current = setTimeout(() => {
-            setSfxHighlight(false);
-            sfxHighlightTimeoutHandle.current = null;
-        }, 2000) as unknown as number;
-
+        setDebouncingSfx(true);
         playDeck.mutate({
             deck: {
                 queue: [file],
@@ -91,6 +80,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                 volume: main?.volume ?? 1,
             },
         });
+        setTimeout(setDebouncingSfx, 250, false);
     };
     return (
         <PlayControlsContainer>
@@ -100,17 +90,21 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                 </IconButton>
             </Tooltip>
             <Tooltip title="Play File As Ambience" placement="top" arrow>
-                <IconButton onClick={onAmbience} size="small">
-                    <AddIcon
-                        color={
-                            ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id)) ? 'primary' : undefined
-                        }
-                    />
+                <IconButton
+                    onClick={onAmbience}
+                    size="small"
+                    disabled={isPlayingAsAmbience || isPlayingAsSFX || debouncingAmbience}
+                >
+                    <AddIcon color={isPlayingAsAmbience ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
             <Tooltip title="Play File As SFX" placement="top" arrow>
-                <IconButton onClick={onSfx} size="small">
-                    <BlurOn color={highlightingSfx ? 'primary' : undefined} />
+                <IconButton
+                    onClick={onSfx}
+                    size="small"
+                    disabled={isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx}
+                >
+                    <BlurOn color={isPlayingAsSFX ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
         </PlayControlsContainer>
