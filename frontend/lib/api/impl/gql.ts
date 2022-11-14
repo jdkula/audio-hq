@@ -341,7 +341,7 @@ class SpecificEntryApiImpl<T extends Entry> implements SpecificEntryApi<T> {
     }
     async delete(): Promise<void> {
         if (entryIsSingle(this._entry)) {
-            await request(kUrl, DeleteFileDocument, { job: { single_id: this._entry.id } });
+            await request(kUrl, DeleteFileDocument, { job: { single_id: this._entry.__internal_id_single } });
         } else {
             await request(kUrl, DeleteFolderDocument, { folderId: this._entry.id });
         }
