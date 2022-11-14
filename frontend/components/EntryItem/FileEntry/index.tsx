@@ -15,6 +15,7 @@ import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
 import * as API from '~/lib/api/models';
+import { useIsOnline } from '~/lib/utility/hooks';
 
 export const FileContainer = styled.div`
     width: 100%;
@@ -37,6 +38,7 @@ export const FileContainer = styled.div`
 `;
 
 const FileEntry: FC<{ file: API.Single }> = ({ file }) => {
+    const online = useIsOnline();
     const [showDelete, setDelete] = useState(false);
 
     const [editing, setEditing] = useState(false);
@@ -61,14 +63,14 @@ const FileEntry: FC<{ file: API.Single }> = ({ file }) => {
                 <FileDetails
                     file={file}
                     autoFocusTitle={autoFocusTitle}
-                    editing={editing}
+                    editing={online !== false && editing}
                     startEditing={startEditing}
                     finishEditing={cancelEdits}
                 />
 
                 <StatusControls
                     file={file}
-                    editing={editing}
+                    editing={online !== false && editing}
                     setEditing={(editing) => (editing ? startEditing() : cancelEdits())}
                     setDelete={(deleting) => setDelete(deleting)}
                 />

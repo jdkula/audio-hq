@@ -29,6 +29,7 @@ import FolderDeleteDialog from './FolderDeleteDialog';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useDeleteEntryMutation, useUpdateEntryMutation } from '~/lib/api/hooks';
 import { Folder } from '~/lib/api/models';
+import { useIsOnline } from '~/lib/utility/hooks';
 
 const FolderContainer = styled.div`
     display: grid;
@@ -93,6 +94,7 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
     onClick,
     dragging,
 }) => {
+    const online = useIsOnline();
     const workspaceId = useContext(WorkspaceIdContext);
 
     const updateEntry = useUpdateEntryMutation(workspaceId);
@@ -181,12 +183,12 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
     const controls = (
         <ControlsContainer>
             <Tooltip placement="left" title="Rename" arrow>
-                <IconButton onClick={startRenaming} size="large">
+                <IconButton onClick={startRenaming} size="large" disabled={online === false}>
                     <EditIcon color={renaming ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
             <Tooltip placement="left" title="Delete Folder" arrow>
-                <IconButton onClick={onDeleteInitiate} size="large">
+                <IconButton onClick={onDeleteInitiate} size="large" disabled={online === false}>
                     <DeleteForever />
                 </IconButton>
             </Tooltip>

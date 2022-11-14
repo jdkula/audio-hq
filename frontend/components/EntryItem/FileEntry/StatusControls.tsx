@@ -12,7 +12,7 @@ import styled from '@emotion/styled';
 import DeleteForever from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { useAlt } from '~/lib/utility/hooks';
+import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
 import * as API from '~/lib/api/models';
 
@@ -37,6 +37,7 @@ interface StatusControlsProps {
 }
 
 const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, setDelete }) => {
+    const online = useIsOnline();
     const favs = useFavorites();
     const altKey = useAlt();
 
@@ -52,14 +53,14 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
         <StatusContainerPlacer>
             <StatusContainer>
                 <Tooltip placement="top-end" title="Rename" arrow>
-                    <IconButton onClick={() => setEditing(!editing)} size="large">
+                    <IconButton onClick={() => setEditing(!editing)} size="large" disabled={online === false}>
                         <EditIcon color={editing ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
 
                 {altKey ? (
                     <Tooltip placement="top-end" title="Delete" arrow>
-                        <IconButton onClick={() => setDelete(true)} size="large">
+                        <IconButton onClick={() => setDelete(true)} size="large" disabled={online === false}>
                             <DeleteForever />
                         </IconButton>
                     </Tooltip>

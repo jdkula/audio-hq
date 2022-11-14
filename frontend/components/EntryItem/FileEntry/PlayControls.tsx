@@ -11,10 +11,11 @@ import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
 import React, { FC, useContext, useState } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { BlurOn } from '@mui/icons-material';
-import { WorkspaceIdContext } from '~/lib/utility/context';
+import { BlurOn, OfflineBolt } from '@mui/icons-material';
+import { FileManagerContext, WorkspaceIdContext } from '~/lib/utility/context';
 import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
+import { useIsOnline } from '~/lib/utility/hooks';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -28,6 +29,10 @@ interface PlayControlsProps {
 }
 
 const PlayControls: FC<PlayControlsProps> = ({ file }) => {
+    const online = useIsOnline();
+    const fileManager = useContext(FileManagerContext);
+    const cached = !!fileManager.cached.has(file.url);
+
     const workspaceId = useContext(WorkspaceIdContext);
     const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
@@ -84,15 +89,21 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     return (
         <PlayControlsContainer>
             <Tooltip title="Play File" placement="left" arrow>
-                <IconButton onClick={onPlay} size="large">
-                    <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
+                <IconButton onClick={onPlay} size="large" disabled={!online && !cached}>
+                    {online !== false || cached ? (
+                        <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
+                    ) : (
+                        <OfflineBolt />
+                    )}
                 </IconButton>
             </Tooltip>
             <Tooltip title="Play File As Ambience" placement="top" arrow>
                 <IconButton
                     onClick={onAmbience}
                     size="small"
-                    disabled={isPlayingAsAmbience || isPlayingAsSFX || debouncingAmbience}
+                    disabled={
+                        (online === false && !cached) || isPlayingAsAmbience || isPlayingAsSFX || debouncingAmbience
+                    }
                 >
                     <AddIcon color={isPlayingAsAmbience ? 'primary' : undefined} />
                 </IconButton>
@@ -101,7 +112,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                 <IconButton
                     onClick={onSfx}
                     size="small"
-                    disabled={isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx}
+                    disabled={(online === false && !cached) || isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx}
                 >
                     <BlurOn color={isPlayingAsSFX ? 'primary' : undefined} />
                 </IconButton>

@@ -133,7 +133,6 @@ const getEntries = (files: API.Entry[], path: string[], searchText?: string): AP
 };
 
 export const Explorer: FC = () => {
-    const online = useIsOnline();
     const workspaceId = useContext(WorkspaceIdContext);
 
     const { currentPath: currentPathLRV, combineFoldersSettings: combineFoldersLRV } = useContext(WorkspaceLRVContext);
@@ -194,8 +193,8 @@ export const Explorer: FC = () => {
             arr = getEntries(entries, path, searching && searchText.length > 1 ? searchText : undefined);
         }
 
-        return arr.filter((file) => online || (isSingle(file) && fileManager.cached.has(file.url)));
-    }, [online, viewingFavorites, favs, entries, path, searching, searchText, fileManager.cached]);
+        return arr;
+    }, [viewingFavorites, favs, entries, path, searching, searchText, fileManager.cached]);
 
     const items = useMemo(() => {
         let entries = currentFiles.filter((entry) => shouldCombine || !entryIsFolder(entry));

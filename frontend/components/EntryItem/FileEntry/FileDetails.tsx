@@ -13,6 +13,7 @@ import { durationOfLength } from '~/lib/utility/util';
 import * as API from '~/lib/api/models';
 import { FileManagerContext } from '~/lib/utility/context';
 import { DownloadDone } from '@mui/icons-material';
+import { useIsOnline } from '~/lib/utility/hooks';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -58,11 +59,14 @@ interface FileDetailsProps {
 }
 
 const FileDetails: FC<FileDetailsProps> = (props) => {
+    const online = useIsOnline();
     const { editing, startEditing, file } = props;
 
     const fileManager = useContext(FileManagerContext);
     const cached = !!fileManager.cached.has(file.url);
     const caching = !!fileManager.caching.has(file.url);
+
+    const unavailable = online === false && !cached;
 
     let cacheIcon: JSX.Element | null = null;
     if (caching) {
@@ -90,18 +94,27 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                     <FileDetailsEditor {...props} />
                 ) : (
                     <TextContainer>
-                        <Typography variant="body1" component="span" onDoubleClick={() => startEditing(true)}>
+                        <Typography
+                            color={unavailable ? 'GrayText' : undefined}
+                            variant="body1"
+                            component="span"
+                            onDoubleClick={() => startEditing(true)}
+                        >
                             {file.name || 'Untitled file...'}
                         </Typography>
                         {file.description && (
-                            <Typography variant="caption" onDoubleClick={() => startEditing(false)}>
+                            <Typography
+                                variant="caption"
+                                onDoubleClick={() => startEditing(false)}
+                                color={unavailable ? 'GrayText' : undefined}
+                            >
                                 {file.description}
                             </Typography>
                         )}
                     </TextContainer>
                 )}
             </EditorContainer>
-            <TimestampContainer $editing={editing} variant="body1">
+            <TimestampContainer $editing={editing} variant="body1" color={unavailable ? 'GrayText' : undefined}>
                 {cacheIcon}
                 {durationOfLength(file.length)}
             </TimestampContainer>
