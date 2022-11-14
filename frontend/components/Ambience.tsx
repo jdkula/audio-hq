@@ -77,9 +77,16 @@ export const Ambience: FunctionComponent = () => {
         return (
             <AmbienceContainer>
                 <EmptyContainer>
-                    <Typography variant="h4">No Ambience Playing</Typography>
+                    <Typography variant="h4">No Background Tracks</Typography>
                     <CenteredTypography variant="subtitle1">
-                        Use the <AddIcon /> button to add some!
+                        Use the &nbsp;
+                        <AddIcon />
+                        &nbsp; button to add looping ambience!
+                    </CenteredTypography>
+                    <CenteredTypography variant="subtitle1">
+                        ...or use the &nbsp;
+                        <BlurOn />
+                        &nbsp; button to add sound effects!
                     </CenteredTypography>
                 </EmptyContainer>
             </AmbienceContainer>

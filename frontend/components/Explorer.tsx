@@ -6,18 +6,32 @@
  * as well as is the interface by which users may play music.
  */
 
-import { Breadcrumbs, Button, Divider, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import React, { FC, useContext, useMemo, useState } from 'react';
+import {
+    Breadcrumbs,
+    Button,
+    Checkbox,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Paper,
+    Popover,
+    Tooltip,
+    Typography,
+} from '@mui/material';
+import React, { FC, useContext, useMemo, useRef, useState } from 'react';
 
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 import { DragDropContext, DropResult, Droppable } from 'react-beautiful-dnd';
 import styled from '@emotion/styled';
 import FolderAddDialog from './AddFolderDialog';
-import FolderEntry from './EntryItem/FolderEntry';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
-import { Favorite, FavoriteBorder, PlaylistPlay, Shuffle } from '@mui/icons-material';
+import { ArrowBack, CreateNewFolder, FilterAlt, PlaylistPlay, Shuffle } from '@mui/icons-material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
@@ -78,12 +92,21 @@ const FileListContainer = styled.div`
 `;
 
 const FileListScrollContainer = styled.div`
+    margin-top: 0.5rem;
     height: 99%;
 `;
 
 const JobsContainer = styled.div`
     height: 250px;
     overflow: auto;
+`;
+
+const NoFilesContainer = styled(Typography)`
+    margin: 4rem 1rem;
+
+    text-align: center;
+
+    opacity: 0.75;
 `;
 
 function isSingle(entry: API.Entry): entry is API.Single {
@@ -107,18 +130,40 @@ export const Explorer: FC = () => {
     const online = useIsOnline();
     const workspaceId = useContext(WorkspaceIdContext);
 
-    const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
+    const { currentPath: currentPathLRV, combineFoldersSettings: combineFoldersLRV } = useContext(WorkspaceLRVContext);
 
     const { main } = useWorkspaceDecks(workspaceId);
 
     const favs = useFavorites();
     const [viewingFavorites, setViewingFavorites] = useState(false);
     const [path, setPath] = useLocalReactiveValue(currentPathLRV);
-    const [combining, setCombining] = useState<API.Entry[]>([]);
+    const [addingFolder, setAddingFolder] = useState(false);
     const [isDragging, setDragging] = useState<false | 'folder' | 'file'>(false);
 
     const [searching, setSearching] = useState(false);
     const [searchText, setSearchText] = useState('');
+
+    const [displaySettingsOpen, setDisplaySettingsOpen] = useState(false);
+    const filterButtonRef = useRef<any>();
+
+    const lastSeparateFoldersSetting = useRef(true);
+    const [separateFoldersSettings, setSeparateFoldersSettings] = useLocalReactiveValue(combineFoldersLRV);
+
+    const separateFolders = useMemo(() => {
+        console.log(separateFoldersSettings);
+        return (
+            separateFoldersSettings.find((setting) => _.isEqual(setting.path, path))?.combine ??
+            lastSeparateFoldersSetting.current
+        );
+    }, [separateFoldersSettings, path]);
+
+    lastSeparateFoldersSetting.current = separateFolders;
+
+    const setSeparateFolders = (newValue: boolean) => {
+        setSeparateFoldersSettings((cur) =>
+            cur.filter((setting) => !_.isEqual(setting.path, path)).concat({ path, combine: newValue }),
+        );
+    };
 
     const altKey = useAlt();
 
@@ -135,8 +180,6 @@ export const Explorer: FC = () => {
 
     const playDeck = usePlayDeckMutation(workspaceId);
     const updateEntry = useUpdateEntryMutation(workspaceId);
-
-    const separateFolders = false;
 
     const currentFiles = React.useMemo(() => {
         let arr: API.Entry[] = [];
@@ -192,32 +235,36 @@ export const Explorer: FC = () => {
         return currentFiles.filter(entryIsFolder);
     }, [currentFiles, separateFolders]);
 
-    const draggableFolders = useMemo(() => {
-        foldersData.map((folder, i) => (
-            <DraggableEntryItem
-                entry={folder}
-                key={folder.id}
-                currentPath={path}
-                index={i}
-                onNavigate={(folder) => {
-                    setPath((path) => [...path, folder.name]);
-                }}
-            />
-        ));
-    }, [foldersData, path, setPath]);
+    const draggableFolders = useMemo(
+        () =>
+            foldersData.map((folder, i) => (
+                <DraggableEntryItem
+                    entry={folder}
+                    key={folder.id}
+                    currentPath={path}
+                    index={i}
+                    onNavigate={(folder) => {
+                        setPath((path) => [...path, folder.name]);
+                    }}
+                />
+            )),
+        [foldersData, path, setPath],
+    );
 
-    const droppableFolders = useMemo(() => {
-        foldersData.map((folder) => (
-            <DroppableEntryItem
-                entry={folder}
-                key={folder.id}
-                currentPath={path}
-                onNavigate={(folder) => {
-                    setPath((path) => [...path, folder.name]);
-                }}
-            />
-        ));
-    }, [foldersData, path, setPath]);
+    const droppableFolders = useMemo(
+        () =>
+            foldersData.map((folder) => (
+                <DroppableEntryItem
+                    entry={folder}
+                    key={folder.id}
+                    currentPath={path}
+                    onNavigate={(folder) => {
+                        setPath((path) => [...path, folder.name]);
+                    }}
+                />
+            )),
+        [foldersData, path, setPath],
+    );
 
     const playCurrent = () => {
         let queue = [...currentFiles].filter(entryIsSingle);
@@ -319,6 +366,18 @@ export const Explorer: FC = () => {
 
     const toolbarContents = (
         <>
+            <IconButton
+                onClick={() => {
+                    if (viewingFavorites) {
+                        setViewingFavorites(false);
+                    } else {
+                        setPath((path) => path.slice(0, -1));
+                    }
+                }}
+                disabled={path.length === 0}
+            >
+                <ArrowBack />
+            </IconButton>
             <BreadcrumbsContainer>
                 {viewingFavorites ? (
                     <Button>Favorites</Button>
@@ -334,11 +393,51 @@ export const Explorer: FC = () => {
                     setSearching={(searching) => (searching ? setSearching(true) : finishSearch())}
                 />
             )}
-            <Tooltip arrow placement="bottom" title="Show only favorites">
-                <IconButton onClick={() => setViewingFavorites(!viewingFavorites)} size="large">
-                    {viewingFavorites ? <Favorite color="primary" /> : <FavoriteBorder />}
+            <Tooltip arrow placement="bottom" title="Create Folder">
+                <IconButton onClick={() => setAddingFolder(true)} size="large">
+                    <CreateNewFolder />
                 </IconButton>
             </Tooltip>
+            <Tooltip arrow placement="bottom" title="Change Display Settings">
+                <IconButton onClick={() => setDisplaySettingsOpen(true)} size="large" ref={filterButtonRef}>
+                    <FilterAlt />
+                </IconButton>
+            </Tooltip>
+            <Popover
+                open={displaySettingsOpen}
+                anchorEl={filterButtonRef.current}
+                onClose={() => setDisplaySettingsOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <List>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setViewingFavorites(!viewingFavorites)}>
+                            <ListItemIcon>
+                                <Checkbox edge="start" checked={viewingFavorites} tabIndex={-1} disableRipple />
+                            </ListItemIcon>
+                            <ListItemText primary="Show only favorites" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton
+                            onClick={() => setSeparateFolders(!separateFolders)}
+                            disabled={viewingFavorites}
+                        >
+                            <ListItemIcon>
+                                <Checkbox
+                                    edge="start"
+                                    checked={!viewingFavorites && separateFolders}
+                                    tabIndex={-1}
+                                    disableRipple
+                                />
+                            </ListItemIcon>
+                            <ListItemText primary="Separate folders from files" />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+            </Popover>
+
             <Tooltip
                 arrow
                 placement="bottom"
@@ -362,7 +461,7 @@ export const Explorer: FC = () => {
             >
                 <ExplorerToolbar square variant="elevation" color="primary">
                     {toolbarContents}
-                    <Droppable droppableId="___up___">
+                    <Droppable droppableId="___up___" isDropDisabled={path.length === 0}>
                         {(provided, snapshot) => (
                             <GoUpContainer
                                 enabled={path.length > 0 && !!isDragging}
@@ -376,39 +475,52 @@ export const Explorer: FC = () => {
                         )}
                     </Droppable>
                 </ExplorerToolbar>
-                <FolderAddDialog files={combining} cancel={() => setCombining([])} />
+                <FolderAddDialog showing={addingFolder} cancel={() => setAddingFolder(false)} />
 
                 <FileListContainer>
                     <FileListScrollContainer>
-                        {separateFolders && !viewingFavorites && (
+                        {items.length === 0 ? (
+                            <NoFilesContainer fontStyle="italic">
+                                Hmm, looks like there aren’t any files or folders I can find
+                                {path.length > 0 && ' in this folder'}.
+                            </NoFilesContainer>
+                        ) : (
                             <>
-                                {isDragging === 'file' ? (
-                                    droppableFolders
+                                {separateFolders && !viewingFavorites && (
+                                    <>
+                                        {isDragging === 'file' ? (
+                                            droppableFolders
+                                        ) : (
+                                            <Droppable isCombineEnabled droppableId="___folders___">
+                                                {(provided) => (
+                                                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                        {draggableFolders}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                )}
+                                            </Droppable>
+                                        )}
+                                        {foldersData.length > 0 && <Divider style={{ margin: '0.5rem 0' }} />}
+                                    </>
+                                )}
+
+                                {separateFolders && isDragging === 'folder' ? (
+                                    plainSinglesView
                                 ) : (
-                                    <Droppable isCombineEnabled droppableId="___folders___">
+                                    <Droppable
+                                        isDropDisabled={viewingFavorites}
+                                        isCombineEnabled={isDragging !== 'folder'}
+                                        droppableId="___main___"
+                                    >
                                         {(provided) => (
                                             <div {...provided.droppableProps} ref={provided.innerRef}>
-                                                {draggableFolders}
+                                                {items}
                                                 {provided.placeholder}
                                             </div>
                                         )}
                                     </Droppable>
                                 )}
-                                <Divider />
                             </>
-                        )}
-
-                        {separateFolders && isDragging === 'folder' ? (
-                            plainSinglesView
-                        ) : (
-                            <Droppable isDropDisabled={viewingFavorites} isCombineEnabled droppableId="___main___">
-                                {(provided) => (
-                                    <div {...provided.droppableProps} ref={provided.innerRef}>
-                                        {items}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
                         )}
                     </FileListScrollContainer>
                 </FileListContainer>

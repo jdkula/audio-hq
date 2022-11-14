@@ -21,6 +21,7 @@ import {
     UpdateDirectoryEntryDocument,
     DeleteFolderDocument,
     MovePathDocument,
+    CreateFolderDocument,
 } from '~/lib/generated/graphql';
 import AudioHQApi, {
     GlobalWorkspaceApi,
@@ -207,20 +208,31 @@ class SpecificWorkspaceApiImpl implements SpecificWorkspaceApi {
 class WorkspaceEntriesApiImpl implements WorkspaceEntriesApi {
     constructor(private _workspaceId: string) {}
 
+    async createFolder(name: string, basePath: string[], ordering?: number): Promise<Folder> {
+        const ret = await request(kUrl, CreateFolderDocument, {
+            name: name,
+            ordering: ordering ?? null,
+            path: basePath,
+            workspaceId: this._workspaceId,
+        });
+
+        if (!ret.insert_folder_one) throw new Error('Could not create folder');
+
+        return {
+            id: ret.insert_folder_one.dirent.id,
+            name: ret.insert_folder_one.dirent.name,
+            ordering: ret.insert_folder_one.dirent.ordering ?? Number.POSITIVE_INFINITY,
+            path: ret.insert_folder_one.dirent.path,
+            type: 'folder',
+        };
+    }
+
     async list(): Promise<Entry[]> {
         const ret = await request(kUrl, WorkspaceFilesDocument, { workspaceId: this._workspaceId });
 
         return ret.directory_entry
             .sort((a, b) => {
-                if (!a && b) {
-                    return -1;
-                } else if (a && !b) {
-                    return 1;
-                } else if (!a && !b) {
-                    return 0;
-                } else {
-                    return a.ordering! - b.ordering!;
-                }
+                return (a.ordering ?? Number.POSITIVE_INFINITY) - (b.ordering ?? Number.POSITIVE_INFINITY);
             })
             .map((hfile) => {
                 if (hfile.single) {

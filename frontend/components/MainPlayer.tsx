@@ -64,7 +64,7 @@ export const MainPlayer: FunctionComponent<{
             <MainPlayerContainer>
                 <Typography variant="h4">Nothing Playing</Typography>
                 <PlayTypography variant="subtitle1">
-                    Use the <PlayIcon /> button to add some!
+                    Use the <PlayIcon /> button to play some music!
                 </PlayTypography>
             </MainPlayerContainer>
         );

@@ -5,7 +5,7 @@
  */
 
 import { Box, Button, ClickAwayListener, TextField } from '@mui/material';
-import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
+import React, { FC, KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
 import * as API from '~/lib/api/models';
 import { useUpdateEntryMutation } from '~/lib/api/hooks';
@@ -37,7 +37,7 @@ interface FileDetailsEditorProps {
     finishEditing: () => void;
 
     autoFocusTitle: boolean;
-    file: API.Entry;
+    file: API.Single;
 }
 
 const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocusTitle, file }) => {
@@ -55,13 +55,17 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
     const saveEdits = () => {
         finishEditing();
         updateTrack.mutate({
-            trackId: file.id,
+            entry: file,
             update: {
                 name: editName,
                 description: editDescription,
             },
         });
     };
+    const saveEditsRef = useRef(saveEdits);
+    saveEditsRef.current = saveEdits;
+
+    useEffect(() => () => saveEditsRef.current(), []);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {
@@ -73,7 +77,7 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
         }
     };
     return (
-        <ClickAwayListener onClickAway={finishEditing}>
+        <ClickAwayListener onClickAway={saveEdits}>
             <EditorContainer>
                 <TextFieldContainer>
                     <TextField
@@ -99,16 +103,6 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
                         onKeyDown={handleKeyDown}
                     />
                 </TextFieldContainer>
-                <Box mx="4px" />
-                <ControlsContainer>
-                    <Button fullWidth onClick={saveEdits} variant="outlined" color="primary">
-                        Save
-                    </Button>
-                    <Spacer space="0.25rem" />
-                    <Button fullWidth onClick={finishEditing} variant="outlined" color="inherit">
-                        Cancel
-                    </Button>
-                </ControlsContainer>
             </EditorContainer>
         </ClickAwayListener>
     );

@@ -10,7 +10,7 @@ const EntryContainerInner = styled(Paper)`
     display: flex;
     justify-content: stretch;
     align-items: center;
-    height: 4rem;
+    min-height: 3rem;
     width: auto;
 
     border-radius: 3rem;

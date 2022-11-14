@@ -72,3 +72,16 @@ mutation DeleteFolder($folderId: uuid!) {
         id
     }
 }
+
+mutation CreateFolder($name: String!, $path: jsonb!, $ordering: bigint, $workspaceId: uuid!) {
+    insert_folder_one(
+        object: { dirent: { data: { name: $name, path: $path, ordering: $ordering, workspace_id: $workspaceId } } }
+    ) {
+        dirent {
+            id
+            path
+            ordering
+            name
+        }
+    }
+}

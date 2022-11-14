@@ -4,7 +4,12 @@
  * Provides React contexts and providers
  */
 import { createContext, ReactNode, useMemo } from 'react';
-import { kCurrentPathKeyPrefix, kFavoritesKeyPrefix, kLastSFXPlayedKeyPrefix } from '~/lib/constants';
+import {
+    kCurrentPathKeyPrefix,
+    kFavoritesKeyPrefix,
+    kFolderCombinePrefix,
+    kLastSFXPlayedKeyPrefix,
+} from '~/lib/constants';
 import { LocalReactiveValue, LocalStorageReactiveValue } from '~/lib/LocalReactive';
 import { FileManager, useFileManager } from '~/lib/useWorkspaceDetails';
 
@@ -26,7 +31,9 @@ export interface WorkspaceLRVContextType {
     favorites: LocalReactiveValue<string[]>;
     currentPath: LocalReactiveValue<string[]>;
     lastSfxPlayed: LocalReactiveValue<number>;
+    combineFoldersSettings: LocalReactiveValue<Array<{ path: string[]; combine: boolean }>>;
 }
+
 export const WorkspaceLRVContext = createContext<WorkspaceLRVContextType>(null as never);
 
 export function WorkspaceLocalReactiveValuesProvider(props: { workspaceId: string; children?: ReactNode }) {
@@ -35,6 +42,9 @@ export function WorkspaceLocalReactiveValuesProvider(props: { workspaceId: strin
             currentPath: new LocalStorageReactiveValue(kCurrentPathKeyPrefix + props.workspaceId, []),
             favorites: new LocalStorageReactiveValue(kFavoritesKeyPrefix + props.workspaceId, []),
             lastSfxPlayed: new LocalStorageReactiveValue(kLastSFXPlayedKeyPrefix + props.workspaceId, 0),
+            combineFoldersSettings: new LocalStorageReactiveValue(kFolderCombinePrefix + props.workspaceId, [
+                { path: [], combine: true },
+            ]),
         }),
         [props.workspaceId],
     );

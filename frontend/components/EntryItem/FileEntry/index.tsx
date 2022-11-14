@@ -34,7 +34,6 @@ export const FileContainer = styled.div`
             'playcontrols filecontrols'
             'details      details';
         padding: 1rem 2rem;
-        height: 7rem;
     }
 `;
 

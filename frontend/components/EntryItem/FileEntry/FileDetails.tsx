@@ -5,12 +5,24 @@
  * that can be double-clicked to reveal an editor.
  */
 
-import { Typography } from '@mui/material';
-import React, { FC } from 'react';
+import { CircularProgress, Tooltip, Typography } from '@mui/material';
+import React, { FC, useContext } from 'react';
 import styled from '@emotion/styled';
 import FileDetailsEditor from './FileDetailsEditor';
 import { durationOfLength } from '~/lib/utility/util';
 import * as API from '~/lib/api/models';
+import { FileManagerContext } from '~/lib/utility/context';
+import {
+    DownloadDone,
+    DownloadForOffline,
+    FileDownloadDone,
+    OfflineBolt,
+    OfflinePin,
+    OfflinePinOutlined,
+    OfflinePinRounded,
+    OfflinePinSharp,
+    OfflinePinTwoTone,
+} from '@mui/icons-material';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -38,6 +50,12 @@ const TimestampContainer = styled(Typography, {
     padding-left: 1rem;
     text-align: right;
     ${({ $editing }) => ($editing ? '' : 'flex-grow: 1;')}
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    column-gap: 1rem;
 `;
 
 interface FileDetailsProps {
@@ -51,6 +69,29 @@ interface FileDetailsProps {
 
 const FileDetails: FC<FileDetailsProps> = (props) => {
     const { editing, startEditing, file } = props;
+
+    const fileManager = useContext(FileManagerContext);
+    const cached = !!fileManager.cached.has(file.url);
+    const caching = !!fileManager.caching.has(file.url);
+
+    let cacheIcon: JSX.Element | null = null;
+    if (caching) {
+        cacheIcon = (
+            <Tooltip placement="top" arrow title="Caching...">
+                <CircularProgress variant="indeterminate" size="0.75rem" color="inherit" style={{ color: '#888' }} />
+            </Tooltip>
+        );
+    } else if (cached) {
+        cacheIcon = (
+            <Tooltip placement="top" arrow title="This audio is cached.">
+                <DownloadDone
+                    fontSize="inherit"
+                    color="inherit"
+                    style={{ fontSize: '1rem', color: '#888', opacity: 0.5 }}
+                />
+            </Tooltip>
+        );
+    }
 
     return (
         <DetailsContainer>
@@ -71,6 +112,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                 )}
             </EditorContainer>
             <TimestampContainer $editing={editing} variant="body1">
+                {cacheIcon}
                 {durationOfLength(file.length)}
             </TimestampContainer>
         </DetailsContainer>

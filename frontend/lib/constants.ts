@@ -13,6 +13,9 @@ export const kLastSFXPlayedKeyPrefix = '__ahq_last_sfx_played::' as const;
 // Local Storage. Prefixed before the workspace id. A set of "favorited" items in that workspace.
 export const kFavoritesKeyPrefix = '__ahq_favorites::' as const;
 
+// Local Storage. Prefixed before the workspace id. Whether or not the user prefers to combine folders and files for a given path.
+export const kFolderCombinePrefix = '__ahq_folder_combine::' as const;
+
 // Local Storage. The volume for the user.
 export const kGlobalVolumeKey = '__ahq_global_volume' as const;
 

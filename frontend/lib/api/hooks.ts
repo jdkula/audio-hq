@@ -12,7 +12,7 @@ import {
     EntryUpdate,
     SingleUpdate,
 } from './models';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid, v4 } from 'uuid';
 
 export function useWorkspaceEntries(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
@@ -356,8 +356,8 @@ export function useUpdateEntryMutation(workspaceId: string) {
                 ordering: (update.ordering === null ? Number.POSITIVE_INFINITY : update.ordering) ?? original.ordering,
             };
 
-            queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
-                tracks?.map((tr) => (tr.id === entry.id ? optimistic : tr)),
+            queryClient.setQueryData<Entry[]>(entryQueryKey, (entries) =>
+                entries?.map((tr) => (tr.id === entry.id ? optimistic : tr)),
             );
             return { original, optimistic };
         },
@@ -406,4 +406,43 @@ export function useStopDeckMutation(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: decksQueryKey });
         },
     });
+}
+
+export function useCreateFolderMutation(workspaceId: string) {
+    const api = useContext(AudioHQApiContext);
+    const queryClient = useQueryClient();
+    const entriesQueryKey = ['workspace', workspaceId, 'entries'];
+
+    const mt = useMutation({
+        mutationFn: ({ name, basePath, ordering }: { name: string; basePath: string[]; ordering?: number }) => {
+            return api.workspace(workspaceId).entries.createFolder(name, basePath, ordering);
+        },
+        onMutate: async ({ name, basePath, ordering }) => {
+            await queryClient.cancelQueries({ queryKey: entriesQueryKey });
+
+            const optimisticId = v4();
+            queryClient.setQueryData(entriesQueryKey, (data?: Entry[]) => [
+                ...(data ?? []),
+                {
+                    type: 'folder' as const,
+                    id: optimisticId,
+                    name,
+                    path: basePath,
+                    ordering: ordering ?? Number.POSITIVE_INFINITY,
+                },
+            ]);
+
+            return { optimisticId };
+        },
+        onError: (_, __, ctx) => {
+            if (ctx?.optimisticId) {
+                const optimisticId = ctx.optimisticId;
+                queryClient.setQueryData(entriesQueryKey, (data?: Entry[]) =>
+                    data?.filter((ent) => ent.id === optimisticId),
+                );
+            }
+        },
+    });
+
+    return mt;
 }

@@ -103,7 +103,7 @@ export default function Home(): React.ReactElement {
     const [workspaceName, setWorkspaceName] = useState('');
     const [loading, setLoading] = useState(false);
     const [colorMode, setColorMode] = useColorMode();
-    const [shouldCache, setShouldCache] = useShouldCache();
+    const [shouldCache, setShouldCache, clearCache] = useShouldCache();
     const [currentlyUsedData, setCurrentlyUsedData] = useState<number | null>(null);
 
     const { data: foundWorkspaces, isFetching: fetching } = useWorkspaceDetailByName(workspaceName);
@@ -168,14 +168,18 @@ export default function Home(): React.ReactElement {
                     control={<Switch checked={shouldCache} onChange={(_, checked) => setShouldCache(checked)} />}
                     label={
                         <Box>
-                            <Typography>NEW! Offline Mode</Typography>
+                            <Typography>Offline Mode</Typography>
                             <Collapse in={isDefined(currentlyUsedData)}>
                                 <Typography variant="body2">
                                     Current usage:{' '}
                                     {isDefined(currentlyUsedData)
                                         ? humanFileSize(currentlyUsedData, /* si = */ true)
                                         : '...'}
+                                    .
                                 </Typography>
+                                <Link href="#" fontSize="8pt" style={{ display: 'block' }} onClick={() => clearCache()}>
+                                    Click here to clear cache.
+                                </Link>
                             </Collapse>
                         </Box>
                     }

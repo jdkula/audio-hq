@@ -48,6 +48,7 @@ export interface SpecificWorkspaceApi {
 ////////// Tracks
 
 export interface WorkspaceEntriesApi {
+    createFolder(name: string, basePath: string[], ordering?: number): Promise<Folder>;
     list(): Promise<Array<Entry>>;
 }
 

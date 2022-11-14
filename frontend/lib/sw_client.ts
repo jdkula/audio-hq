@@ -34,7 +34,7 @@ interface WorkerTargetedMessageOut {
 }
 
 interface BulkCacheRequestMessageOut {
-    type: 'is-cached-bulk' | 'cache-off' | 'cache-on';
+    type: 'is-cached-bulk' | 'cache-off' | 'cache-on' | 'clear-cache';
 }
 
 interface CacheUpdateData {
@@ -87,6 +87,10 @@ export function useIsCached(urls: string[]): CacheUpdateData[] {
 export function useShouldCache() {
     const shouldCache = useLocalReactiveValue(shouldCacheLRV);
 
+    const clearCache = useCallback(() => {
+        broadcastOut?.postMessage({ type: 'clear-cache' } as BroadcastMessage);
+    }, []);
+
     const callback = useCallback((value) => {
         if (value) {
             broadcastOut?.postMessage({ type: 'cache-on' } as BroadcastMessage);
@@ -115,5 +119,5 @@ export function useShouldCache() {
         };
     }, [callback]);
 
-    return shouldCache;
+    return [...shouldCache, clearCache] as const;
 }

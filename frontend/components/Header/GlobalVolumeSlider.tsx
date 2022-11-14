@@ -20,8 +20,9 @@ const Container = styled.div`
 `;
 
 const SliderContainer = styled.div`
-    margin: 0.25rem 1rem;
-    min-width: 10rem;
+    margin: 1.25rem 1rem;
+    height: 10rem;
+    min-width: 1rem;
 `;
 
 const GlobalVolumeSlider: FC = () => {
@@ -34,7 +35,7 @@ const GlobalVolumeSlider: FC = () => {
 
     return (
         <Container>
-            {!isXSmall && <Typography variant="body1">Your Volume Controls</Typography>}
+            {/* {!isXSmall && <Typography variant="body1">Your Volume Controls</Typography>} */}
             <Tooltip title="Your Volume" placement="bottom" arrow>
                 <IconButton
                     color="inherit"
@@ -49,8 +50,8 @@ const GlobalVolumeSlider: FC = () => {
                 open={volumeOpen}
                 onClose={() => setVolumeOpen(false)}
                 anchorEl={anchorEl}
-                anchorOrigin={{ vertical: 'center', horizontal: 'left' }}
-                transformOrigin={{ vertical: 'center', horizontal: 'right' }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
                 <SliderContainer>
                     <Slider
@@ -59,6 +60,8 @@ const GlobalVolumeSlider: FC = () => {
                         step={0.01}
                         value={globalVolume}
                         onChange={(_, val) => setGlobalVolume(val as number)}
+                        orientation="vertical"
+                        style={{ height: '100%' }}
                     />
                 </SliderContainer>
             </Popover>

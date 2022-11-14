@@ -223,7 +223,7 @@ broadcastIn.onmessage = (ev) => {
         }
 
         // <-- Turns off and deletes all data from the cache -->
-        case 'cache-off': {
+        case 'clear-cache': {
             Promise.all([clearCache(audioCache), clearCache(appCache)])
                 .then(() => updateCacheStateAll())
                 .then(() => console.log('Cleared caches'));

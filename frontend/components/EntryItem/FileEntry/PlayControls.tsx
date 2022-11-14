@@ -99,25 +99,20 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                     <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
-            {altKey ? (
-                <Tooltip title="Play File As SFX" placement="left" arrow>
-                    <IconButton onClick={onSfx} size="large">
-                        <BlurOn color={highlightingSfx ? 'primary' : undefined} />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Play File As Ambience (alt/option to play as SFX)" placement="left" arrow>
-                    <IconButton onClick={onAmbience} size="large">
-                        <AddIcon
-                            color={
-                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
-                                    ? 'primary'
-                                    : undefined
-                            }
-                        />
-                    </IconButton>
-                </Tooltip>
-            )}
+            <Tooltip title="Play File As Ambience" placement="top" arrow>
+                <IconButton onClick={onAmbience} size="small">
+                    <AddIcon
+                        color={
+                            ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id)) ? 'primary' : undefined
+                        }
+                    />
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Play File As SFX" placement="top" arrow>
+                <IconButton onClick={onSfx} size="small">
+                    <BlurOn color={highlightingSfx ? 'primary' : undefined} />
+                </IconButton>
+            </Tooltip>
         </PlayControlsContainer>
     );
 };
