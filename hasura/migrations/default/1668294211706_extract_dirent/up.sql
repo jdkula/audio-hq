@@ -179,7 +179,7 @@ WITH
       workspace_id,
       dirname,
       dirpath,
-      NULL
+      -10
     FROM
       dirids
     RETURNING
