@@ -70,55 +70,6 @@ ADD
   COLUMN directory_entry_id uuid UNIQUE REFERENCES directory_entry(id) ON DELETE cascade ON UPDATE cascade;
 
 
--- Recreate triggers
-CREATE
-OR REPLACE FUNCTION public.reconcile_ordering() RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE directory_entry
-    SET ordering = rows.row_number * 100
-    FROM (SELECT directory_entry.id, row_number() over (PARTITION BY workspace_id ORDER BY ordering NULLS LAST) as row_number
-          FROM directory_entry) as rows
-    WHERE directory_entry.id = rows.id;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE
-OR REPLACE FUNCTION public.order_is_reconciled() RETURNS bool AS $$
-DECLARE
-    _result bool;
-BEGIN
-    SELECT count(*) = 0
-    INTO _result
-    FROM (SELECT directory_entry.id,
-                 directory_entry.ordering,
-                 (row_number() over (PARTITION BY workspace_id ORDER BY ordering NULLS LAST)) *
-                 100 AS reconciled_ordering
-          FROM directory_entry) as order_check
-    WHERE order_check.ordering IS DISTINCT FROM order_check.reconciled_ordering;
-    RETURN _result;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE TRIGGER
-  reconcile_ordering
-AFTER
-UPDATE
-  OF ordering
-  OR
-INSERT
-  ON public.directory_entry FOR EACH STATEMENT
-  WHEN (NOT public.order_is_reconciled())
-EXECUTE
-  PROCEDURE public.reconcile_ordering();
-
-
-COMMENT
-  ON TRIGGER reconcile_ordering ON public.directory_entry IS 'trigger to set value of column updated_at to current timestamp on row update';
-
-
 -- Load data into directory_entry from singles, and then drop redundant columns
 WITH
   dirids AS (
@@ -193,6 +144,29 @@ FROM
   new_entries;
 
 
+-- Manually sort
+UPDATE
+  directory_entry
+SET
+  ordering = rows.row_number * 100
+FROM
+  (
+    SELECT
+      directory_entry.id,
+      row_number() over (
+        PARTITION BY workspace_id
+        ORDER BY
+          ordering ASC NULLS LAST,
+          name ASC
+      ) as row_number
+    FROM
+      directory_entry
+  ) as rows
+WHERE
+  directory_entry.id = rows.id;
+
+
+-- Data has been migrated; drop from old
 ALTER TABLE
   single DROP COLUMN name,
   DROP COLUMN ordering,
@@ -207,3 +181,52 @@ ALTER COLUMN
   directory_entry_id
 SET
   NOT NULL;
+
+
+-- Recreate triggers
+CREATE
+OR REPLACE FUNCTION public.reconcile_ordering() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE directory_entry
+    SET ordering = rows.row_number * 100
+    FROM (SELECT directory_entry.id, row_number() over (PARTITION BY workspace_id ORDER BY ordering ASC NULLS LAST, name ASC) as row_number
+          FROM directory_entry) as rows
+    WHERE directory_entry.id = rows.id;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE
+OR REPLACE FUNCTION public.order_is_reconciled() RETURNS bool AS $$
+DECLARE
+    _result bool;
+BEGIN
+    SELECT count(*) = 0
+    INTO _result
+    FROM (SELECT directory_entry.id,
+                 directory_entry.ordering,
+                 (row_number() over (PARTITION BY workspace_id ORDER BY ordering ASC NULLS LAST, name ASC)) *
+                 100 AS reconciled_ordering
+          FROM directory_entry) as order_check
+    WHERE order_check.ordering IS DISTINCT FROM order_check.reconciled_ordering;
+    RETURN _result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER
+  reconcile_ordering
+AFTER
+UPDATE
+  OF ordering
+  OR
+INSERT
+  ON public.directory_entry FOR EACH STATEMENT
+  WHEN (NOT public.order_is_reconciled())
+EXECUTE
+  PROCEDURE public.reconcile_ordering();
+
+
+COMMENT
+  ON TRIGGER reconcile_ordering ON public.directory_entry IS 'trigger to set value of column updated_at to current timestamp on row update';
