@@ -6,7 +6,7 @@
  * of Audio HQ's personal global volume.
  */
 
-import { IconButton, Popover, Slider, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { IconButton, Popover, Slider, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import React, { FC, useState } from 'react';
 import styled from '@emotion/styled';
 
@@ -27,7 +27,6 @@ const SliderContainer = styled.div`
 
 const GlobalVolumeSlider: FC = () => {
     const theme = useTheme();
-    const isXSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [globalVolume, setGlobalVolume] = useGlobalVolume();
     const [volumeOpen, setVolumeOpen] = useState(false);

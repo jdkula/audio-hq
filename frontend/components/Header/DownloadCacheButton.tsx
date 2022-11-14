@@ -6,18 +6,17 @@
  * updates as they are downloading.
  */
 
-import { Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { CircularProgress, IconButton, Tooltip } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import { GetApp, OfflinePin } from '@mui/icons-material';
 
-import CircularProgressWithLabel from '../CircularProgressWithLabel';
 import styled from '@emotion/styled';
 import { FileManagerContext } from '~/lib/utility/context';
 import { entryIsSingle } from '~/lib/api/AudioHQApi';
 
 const DownloadButtonContainer = styled.div`
     color: white;
-    margin: 0 0.5rem;
+    margin: 0 1rem;
     position: relative;
 `;
 
