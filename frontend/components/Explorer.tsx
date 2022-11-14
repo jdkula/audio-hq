@@ -32,7 +32,7 @@ import styled from '@emotion/styled';
 import FolderAddDialog from './AddFolderDialog';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
-import { ArrowBack, CreateNewFolder, FilterAlt, PlaylistPlay, Shuffle } from '@mui/icons-material';
+import { ArrowBack, CreateNewFolder, Favorite, FilterAlt, MoreVert, PlaylistPlay, Shuffle } from '@mui/icons-material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
@@ -389,7 +389,7 @@ export const Explorer: FC = () => {
                         setPath((path) => path.slice(0, -1));
                     }
                 }}
-                disabled={path.length === 0}
+                disabled={!viewingFavorites && path.length === 0}
             >
                 <ArrowBack />
             </IconButton>
@@ -413,9 +413,18 @@ export const Explorer: FC = () => {
                     <CreateNewFolder />
                 </IconButton>
             </Tooltip>
+            <Tooltip
+                arrow
+                placement="bottom"
+                title={altKey ? 'Shuffle folder' : 'Play and loop folder (alt/option to shuffle)'}
+            >
+                <IconButton onClick={playCurrent} size="large">
+                    {altKey ? <Shuffle /> : <PlaylistPlay />}
+                </IconButton>
+            </Tooltip>
             <Tooltip arrow placement="bottom" title="Change Display Settings">
                 <IconButton onClick={() => setDisplaySettingsOpen(true)} size="large" ref={filterButtonRef}>
-                    <FilterAlt />
+                    <MoreVert />
                 </IconButton>
             </Tooltip>
             <Popover
@@ -427,11 +436,17 @@ export const Explorer: FC = () => {
             >
                 <List>
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => setViewingFavorites(!viewingFavorites)}>
+                        <ListItemButton
+                            onClick={() => {
+                                setViewingFavorites(true);
+                                setDisplaySettingsOpen(false);
+                            }}
+                            disabled={viewingFavorites}
+                        >
                             <ListItemIcon>
-                                <Checkbox edge="start" checked={viewingFavorites} tabIndex={-1} disableRipple />
+                                <Favorite />
                             </ListItemIcon>
-                            <ListItemText primary="Show only favorites" />
+                            <ListItemText primary="View Favorites" />
                         </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
@@ -492,16 +507,6 @@ export const Explorer: FC = () => {
                     </ListItem>
                 </List>
             </Popover>
-
-            <Tooltip
-                arrow
-                placement="bottom"
-                title={altKey ? 'Shuffle folder' : 'Play and loop folder (alt/option to shuffle)'}
-            >
-                <IconButton onClick={playCurrent} size="large">
-                    {altKey ? <Shuffle /> : <PlaylistPlay />}
-                </IconButton>
-            </Tooltip>
         </>
     );
 
@@ -535,8 +540,14 @@ export const Explorer: FC = () => {
                     <FileListScrollContainer>
                         {items.length === 0 ? (
                             <NoFilesContainer fontStyle="italic">
-                                Hmm, looks like there aren’t any files or folders I can find
-                                {path.length > 0 && ' in this folder'}.
+                                {viewingFavorites ? (
+                                    'Hmm, looks like you don’t have any favorites! Press the heart icon to add some.'
+                                ) : (
+                                    <>
+                                        Hmm, looks like there aren’t any files or folders I can find
+                                        {path.length > 0 && ' in this folder'}.
+                                    </>
+                                )}
                             </NoFilesContainer>
                         ) : (
                             <>
