@@ -32,11 +32,11 @@ import styled from '@emotion/styled';
 import FolderAddDialog from './AddFolderDialog';
 import JobEntry from './JobEntry';
 import SearchBar from './SearchBar';
-import { ArrowBack, CreateNewFolder, Favorite, FilterAlt, MoreVert, PlaylistPlay, Shuffle } from '@mui/icons-material';
+import { ArrowBack, CreateNewFolder, Favorite, MoreVert, PlaylistPlay, Shuffle } from '@mui/icons-material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import _ from 'lodash';
 import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
-import { useAlt, useIsOnline } from '~/lib/utility/hooks';
+import { useAlt } from '~/lib/utility/hooks';
 import {
     alwaysAlphasortFilesLRV,
     alwaysAlphasortFoldersLRV,
@@ -194,7 +194,7 @@ export const Explorer: FC = () => {
         }
 
         return arr;
-    }, [viewingFavorites, favs, entries, path, searching, searchText, fileManager.cached]);
+    }, [viewingFavorites, favs, entries, path, searching, searchText]);
 
     const items = useMemo(() => {
         let entries = currentFiles.filter((entry) => shouldCombine || !entryIsFolder(entry));

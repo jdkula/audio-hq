@@ -9,7 +9,7 @@ import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
-import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useCreateFolderMutation, useWorkspaceEntries } from '~/lib/api/hooks';
 import { entryIsFolder } from '~/lib/api/AudioHQApi';
 import _ from 'lodash';
