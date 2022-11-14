@@ -9,9 +9,7 @@ import styled from '@emotion/styled';
 
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
-import { DraggableStateSnapshot } from 'react-beautiful-dnd';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn } from '@mui/icons-material';
 import { WorkspaceIdContext } from '~/lib/utility/context';
@@ -27,31 +25,23 @@ const PlayControlsContainer = styled.div`
 `;
 
 interface PlayControlsProps {
-    snapshot: DraggableStateSnapshot;
-    file: API.Track;
+    file: API.Single;
 }
 
-const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
+const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const [highlightingSfx, setSfxHighlight] = useState(false);
-    const { main, ambience } = useWorkspaceDecks(workspaceId);
+    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
 
-    const altKey = useAlt();
+    const [debouncingAmbience, setDebouncingAmbience] = useState(false);
+    const [debouncingSfx, setDebouncingSfx] = useState(false);
 
-    const sfxHighlightTimeoutHandle = useRef<number | null>(null);
+    const isPlayingAsAmbience = !!ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id));
+    const isPlayingAsSFX = !!sfx.find((ps) => ps.queue.map((q) => q.id).includes(file.id));
 
     const playDeck = usePlayDeckMutation(workspaceId);
 
-    useEffect(
-        () => () => {
-            if (sfxHighlightTimeoutHandle.current) {
-                clearTimeout(sfxHighlightTimeoutHandle.current);
-            }
-        },
-        [],
-    );
-
     const onAmbience = async () => {
+        setDebouncingAmbience(true);
         playDeck.mutate({
             deck: {
                 queue: [file],
@@ -62,6 +52,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 volume: main?.volume ?? 1,
             },
         });
+        setTimeout(setDebouncingAmbience, 250, false);
     };
 
     const onPlay = async () => {
@@ -78,12 +69,7 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
     };
 
     const onSfx = async () => {
-        setSfxHighlight(true);
-        sfxHighlightTimeoutHandle.current = setTimeout(() => {
-            setSfxHighlight(false);
-            sfxHighlightTimeoutHandle.current = null;
-        }, 2000) as unknown as number;
-
+        setDebouncingSfx(true);
         playDeck.mutate({
             deck: {
                 queue: [file],
@@ -94,37 +80,33 @@ const PlayControls: FC<PlayControlsProps> = ({ snapshot, file }) => {
                 volume: main?.volume ?? 1,
             },
         });
+        setTimeout(setDebouncingSfx, 250, false);
     };
     return (
         <PlayControlsContainer>
             <Tooltip title="Play File" placement="left" arrow>
                 <IconButton onClick={onPlay} size="large">
-                    {snapshot.combineTargetFor ? (
-                        <CreateNewFolderIcon color="primary" />
-                    ) : (
-                        <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
-                    )}
+                    <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
                 </IconButton>
             </Tooltip>
-            {altKey ? (
-                <Tooltip title="Play File As SFX" placement="left" arrow>
-                    <IconButton onClick={onSfx} size="large">
-                        <BlurOn color={highlightingSfx ? 'primary' : undefined} />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Play File As Ambience (alt/option to play as SFX)" placement="left" arrow>
-                    <IconButton onClick={onAmbience} size="large">
-                        <AddIcon
-                            color={
-                                ambience.find((ps) => ps.queue.map((q) => q.id).includes(file.id))
-                                    ? 'primary'
-                                    : undefined
-                            }
-                        />
-                    </IconButton>
-                </Tooltip>
-            )}
+            <Tooltip title="Play File As Ambience" placement="top" arrow>
+                <IconButton
+                    onClick={onAmbience}
+                    size="small"
+                    disabled={isPlayingAsAmbience || isPlayingAsSFX || debouncingAmbience}
+                >
+                    <AddIcon color={isPlayingAsAmbience ? 'primary' : undefined} />
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Play File As SFX" placement="top" arrow>
+                <IconButton
+                    onClick={onSfx}
+                    size="small"
+                    disabled={isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx}
+                >
+                    <BlurOn color={isPlayingAsSFX ? 'primary' : undefined} />
+                </IconButton>
+            </Tooltip>
         </PlayControlsContainer>
     );
 };

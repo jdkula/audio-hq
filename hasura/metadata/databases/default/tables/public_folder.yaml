@@ -1,0 +1,40 @@
+table:
+  name: folder
+  schema: public
+object_relationships:
+  - name: dirent
+    using:
+      foreign_key_constraint_on: directory_entry_id
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - created_at
+        - directory_entry_id
+        - updated_at
+  - role: worker
+    permission:
+      check: {}
+      columns:
+        - created_at
+        - updated_at
+        - directory_entry_id
+        - id
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - created_at
+        - updated_at
+        - directory_entry_id
+        - id
+      filter: {}
+  - role: worker
+    permission:
+      columns:
+        - created_at
+        - updated_at
+        - directory_entry_id
+        - id
+      filter: {}

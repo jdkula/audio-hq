@@ -85,10 +85,10 @@ export enum Cursor_Ordering {
 export type Delete_Job = {
   __typename?: 'delete_job';
   assigned_worker?: Maybe<Scalars['uuid']>;
-  /** An object relationship */
-  file: File;
-  file_id: Scalars['uuid'];
   id: Scalars['uuid'];
+  /** An object relationship */
+  single: Single;
+  single_id: Scalars['uuid'];
 };
 
 /** order by aggregate values of table "delete_job" */
@@ -104,23 +104,23 @@ export type Delete_Job_Bool_Exp = {
   _not?: InputMaybe<Delete_Job_Bool_Exp>;
   _or?: InputMaybe<Array<Delete_Job_Bool_Exp>>;
   assigned_worker?: InputMaybe<Uuid_Comparison_Exp>;
-  file?: InputMaybe<File_Bool_Exp>;
-  file_id?: InputMaybe<Uuid_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
+  single?: InputMaybe<Single_Bool_Exp>;
+  single_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
 /** order by max() on columns of table "delete_job" */
 export type Delete_Job_Max_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** order by min() on columns of table "delete_job" */
 export type Delete_Job_Min_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "delete_job" */
@@ -135,9 +135,9 @@ export type Delete_Job_Mutation_Response = {
 /** Ordering options when selecting data from "delete_job". */
 export type Delete_Job_Order_By = {
   assigned_worker?: InputMaybe<Order_By>;
-  file?: InputMaybe<File_Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
+  single?: InputMaybe<Single_Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** primary key columns input for table: delete_job */
@@ -150,9 +150,9 @@ export enum Delete_Job_Select_Column {
   /** column name */
   AssignedWorker = 'assigned_worker',
   /** column name */
-  FileId = 'file_id',
+  Id = 'id',
   /** column name */
-  Id = 'id'
+  SingleId = 'single_id'
 }
 
 /** input type for updating data in table "delete_job" */
@@ -171,8 +171,8 @@ export type Delete_Job_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Delete_Job_Stream_Cursor_Value_Input = {
   assigned_worker?: InputMaybe<Scalars['uuid']>;
-  file_id?: InputMaybe<Scalars['uuid']>;
   id?: InputMaybe<Scalars['uuid']>;
+  single_id?: InputMaybe<Scalars['uuid']>;
 };
 
 export type Delete_Job_Updates = {
@@ -181,103 +181,103 @@ export type Delete_Job_Updates = {
   where: Delete_Job_Bool_Exp;
 };
 
-/** columns and relationships of "file" */
-export type File = {
-  __typename?: 'file';
-  description: Scalars['String'];
-  download_url: Scalars['String'];
+/** columns and relationships of "directory_entry" */
+export type Directory_Entry = {
+  __typename?: 'directory_entry';
+  created_at: Scalars['timestamptz'];
+  /** An object relationship */
+  folder?: Maybe<Folder>;
   id: Scalars['uuid'];
-  length: Scalars['numeric'];
   name: Scalars['String'];
   ordering?: Maybe<Scalars['bigint']>;
   path: Scalars['jsonb'];
-  provider_id?: Maybe<Scalars['String']>;
-  type: File_Type_Enum_Enum;
+  /** An object relationship */
+  single?: Maybe<Single>;
+  updated_at: Scalars['timestamptz'];
   workspace_id: Scalars['uuid'];
 };
 
 
-/** columns and relationships of "file" */
-export type FilePathArgs = {
+/** columns and relationships of "directory_entry" */
+export type Directory_EntryPathArgs = {
   path?: InputMaybe<Scalars['String']>;
 };
 
-/** Boolean expression to filter rows from the table "file". All fields are combined with a logical 'AND'. */
-export type File_Bool_Exp = {
-  _and?: InputMaybe<Array<File_Bool_Exp>>;
-  _not?: InputMaybe<File_Bool_Exp>;
-  _or?: InputMaybe<Array<File_Bool_Exp>>;
-  description?: InputMaybe<String_Comparison_Exp>;
-  download_url?: InputMaybe<String_Comparison_Exp>;
+/** Boolean expression to filter rows from the table "directory_entry". All fields are combined with a logical 'AND'. */
+export type Directory_Entry_Bool_Exp = {
+  _and?: InputMaybe<Array<Directory_Entry_Bool_Exp>>;
+  _not?: InputMaybe<Directory_Entry_Bool_Exp>;
+  _or?: InputMaybe<Array<Directory_Entry_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  folder?: InputMaybe<Folder_Bool_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
-  length?: InputMaybe<Numeric_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   ordering?: InputMaybe<Bigint_Comparison_Exp>;
   path?: InputMaybe<Jsonb_Comparison_Exp>;
-  provider_id?: InputMaybe<String_Comparison_Exp>;
-  type?: InputMaybe<File_Type_Enum_Enum_Comparison_Exp>;
+  single?: InputMaybe<Single_Bool_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   workspace_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
-/** unique or primary key constraints on table "file" */
-export enum File_Constraint {
+/** unique or primary key constraints on table "directory_entry" */
+export enum Directory_Entry_Constraint {
   /** unique or primary key constraint on columns "id" */
-  FilePkey = 'file_pkey'
+  DirectoryEntryPkey = 'directory_entry_pkey'
 }
 
-/** input type for inserting data into table "file" */
-export type File_Insert_Input = {
-  description?: InputMaybe<Scalars['String']>;
-  download_url?: InputMaybe<Scalars['String']>;
-  length?: InputMaybe<Scalars['numeric']>;
+/** input type for inserting data into table "directory_entry" */
+export type Directory_Entry_Insert_Input = {
+  folder?: InputMaybe<Folder_Obj_Rel_Insert_Input>;
+  id?: InputMaybe<Scalars['uuid']>;
   name?: InputMaybe<Scalars['String']>;
   ordering?: InputMaybe<Scalars['bigint']>;
   path?: InputMaybe<Scalars['jsonb']>;
-  provider_id?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<File_Type_Enum_Enum>;
+  single?: InputMaybe<Single_Obj_Rel_Insert_Input>;
   workspace_id?: InputMaybe<Scalars['uuid']>;
 };
 
-/** response of any mutation on the table "file" */
-export type File_Mutation_Response = {
-  __typename?: 'file_mutation_response';
+/** response of any mutation on the table "directory_entry" */
+export type Directory_Entry_Mutation_Response = {
+  __typename?: 'directory_entry_mutation_response';
   /** number of rows affected by the mutation */
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
-  returning: Array<File>;
+  returning: Array<Directory_Entry>;
 };
 
-/** on_conflict condition type for table "file" */
-export type File_On_Conflict = {
-  constraint: File_Constraint;
-  update_columns?: Array<File_Update_Column>;
-  where?: InputMaybe<File_Bool_Exp>;
+/** input type for inserting object relation for remote table "directory_entry" */
+export type Directory_Entry_Obj_Rel_Insert_Input = {
+  data: Directory_Entry_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
 };
 
-/** Ordering options when selecting data from "file". */
-export type File_Order_By = {
-  description?: InputMaybe<Order_By>;
-  download_url?: InputMaybe<Order_By>;
+/** on_conflict condition type for table "directory_entry" */
+export type Directory_Entry_On_Conflict = {
+  constraint: Directory_Entry_Constraint;
+  update_columns?: Array<Directory_Entry_Update_Column>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "directory_entry". */
+export type Directory_Entry_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  folder?: InputMaybe<Folder_Order_By>;
   id?: InputMaybe<Order_By>;
-  length?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
   path?: InputMaybe<Order_By>;
-  provider_id?: InputMaybe<Order_By>;
-  type?: InputMaybe<Order_By>;
+  single?: InputMaybe<Single_Order_By>;
+  updated_at?: InputMaybe<Order_By>;
   workspace_id?: InputMaybe<Order_By>;
 };
 
-/** select columns of table "file" */
-export enum File_Select_Column {
+/** select columns of table "directory_entry" */
+export enum Directory_Entry_Select_Column {
   /** column name */
-  Description = 'description',
-  /** column name */
-  DownloadUrl = 'download_url',
+  CreatedAt = 'created_at',
   /** column name */
   Id = 'id',
-  /** column name */
-  Length = 'length',
   /** column name */
   Name = 'name',
   /** column name */
@@ -285,53 +285,32 @@ export enum File_Select_Column {
   /** column name */
   Path = 'path',
   /** column name */
-  ProviderId = 'provider_id',
-  /** column name */
-  Type = 'type',
+  UpdatedAt = 'updated_at',
   /** column name */
   WorkspaceId = 'workspace_id'
 }
 
-/** Streaming cursor of the table "file" */
-export type File_Stream_Cursor_Input = {
+/** Streaming cursor of the table "directory_entry" */
+export type Directory_Entry_Stream_Cursor_Input = {
   /** Stream column input with initial value */
-  initial_value: File_Stream_Cursor_Value_Input;
+  initial_value: Directory_Entry_Stream_Cursor_Value_Input;
   /** cursor ordering */
   ordering?: InputMaybe<Cursor_Ordering>;
 };
 
 /** Initial value of the column from where the streaming should start */
-export type File_Stream_Cursor_Value_Input = {
-  description?: InputMaybe<Scalars['String']>;
-  download_url?: InputMaybe<Scalars['String']>;
+export type Directory_Entry_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
   id?: InputMaybe<Scalars['uuid']>;
-  length?: InputMaybe<Scalars['numeric']>;
   name?: InputMaybe<Scalars['String']>;
   ordering?: InputMaybe<Scalars['bigint']>;
   path?: InputMaybe<Scalars['jsonb']>;
-  provider_id?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<File_Type_Enum_Enum>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
   workspace_id?: InputMaybe<Scalars['uuid']>;
 };
 
-export enum File_Type_Enum_Enum {
-  /** a single audio file */
-  Audio = 'audio',
-  /** a set of audio files */
-  Audioset = 'audioset'
-}
-
-/** Boolean expression to compare columns of type "file_type_enum_enum". All fields are combined with logical 'AND'. */
-export type File_Type_Enum_Enum_Comparison_Exp = {
-  _eq?: InputMaybe<File_Type_Enum_Enum>;
-  _in?: InputMaybe<Array<File_Type_Enum_Enum>>;
-  _is_null?: InputMaybe<Scalars['Boolean']>;
-  _neq?: InputMaybe<File_Type_Enum_Enum>;
-  _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
-};
-
-/** placeholder for update columns of table "file" (current role has no relevant permissions) */
-export enum File_Update_Column {
+/** placeholder for update columns of table "directory_entry" (current role has no relevant permissions) */
+export enum Directory_Entry_Update_Column {
   /** placeholder (do not use) */
   Placeholder = '_PLACEHOLDER'
 }
@@ -401,6 +380,112 @@ export type Float8_Comparison_Exp = {
   _neq?: InputMaybe<Scalars['float8']>;
   _nin?: InputMaybe<Array<Scalars['float8']>>;
 };
+
+/** columns and relationships of "folder" */
+export type Folder = {
+  __typename?: 'folder';
+  created_at: Scalars['timestamptz'];
+  directory_entry_id: Scalars['uuid'];
+  /** An object relationship */
+  dirent: Directory_Entry;
+  id: Scalars['uuid'];
+  updated_at: Scalars['timestamptz'];
+};
+
+/** Boolean expression to filter rows from the table "folder". All fields are combined with a logical 'AND'. */
+export type Folder_Bool_Exp = {
+  _and?: InputMaybe<Array<Folder_Bool_Exp>>;
+  _not?: InputMaybe<Folder_Bool_Exp>;
+  _or?: InputMaybe<Array<Folder_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  directory_entry_id?: InputMaybe<Uuid_Comparison_Exp>;
+  dirent?: InputMaybe<Directory_Entry_Bool_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "folder" */
+export enum Folder_Constraint {
+  /** unique or primary key constraint on columns "directory_entry_id" */
+  FolderDirectoryEntryIdKey = 'folder_directory_entry_id_key',
+  /** unique or primary key constraint on columns "id" */
+  FolderPkey = 'folder_pkey'
+}
+
+/** input type for inserting data into table "folder" */
+export type Folder_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  dirent?: InputMaybe<Directory_Entry_Obj_Rel_Insert_Input>;
+  id?: InputMaybe<Scalars['uuid']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
+/** response of any mutation on the table "folder" */
+export type Folder_Mutation_Response = {
+  __typename?: 'folder_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Folder>;
+};
+
+/** input type for inserting object relation for remote table "folder" */
+export type Folder_Obj_Rel_Insert_Input = {
+  data: Folder_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
+};
+
+/** on_conflict condition type for table "folder" */
+export type Folder_On_Conflict = {
+  constraint: Folder_Constraint;
+  update_columns?: Array<Folder_Update_Column>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "folder". */
+export type Folder_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  directory_entry_id?: InputMaybe<Order_By>;
+  dirent?: InputMaybe<Directory_Entry_Order_By>;
+  id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "folder" */
+export enum Folder_Select_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  DirectoryEntryId = 'directory_entry_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  UpdatedAt = 'updated_at'
+}
+
+/** Streaming cursor of the table "folder" */
+export type Folder_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Folder_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Folder_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
+/** placeholder for update columns of table "folder" (current role has no relevant permissions) */
+export enum Folder_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** columns and relationships of "job" */
 export type Job = {
@@ -766,10 +851,10 @@ export type Mutation_Root = {
   delete_delete_job?: Maybe<Delete_Job_Mutation_Response>;
   /** delete single row from the table: "delete_job" */
   delete_delete_job_by_pk?: Maybe<Delete_Job>;
-  /** delete data from the table: "file" */
-  delete_file?: Maybe<File_Mutation_Response>;
-  /** delete single row from the table: "file" */
-  delete_file_by_pk?: Maybe<File>;
+  /** delete data from the table: "directory_entry" */
+  delete_directory_entry?: Maybe<Directory_Entry_Mutation_Response>;
+  /** delete single row from the table: "directory_entry" */
+  delete_directory_entry_by_pk?: Maybe<Directory_Entry>;
   /** delete data from the table: "file_upload" */
   delete_file_upload?: Maybe<File_Upload_Mutation_Response>;
   /** delete single row from the table: "file_upload" */
@@ -778,14 +863,26 @@ export type Mutation_Root = {
   delete_job?: Maybe<Job_Mutation_Response>;
   /** delete single row from the table: "job" */
   delete_job_by_pk?: Maybe<Job>;
+  /** delete data from the table: "single" */
+  delete_single?: Maybe<Single_Mutation_Response>;
+  /** delete single row from the table: "single" */
+  delete_single_by_pk?: Maybe<Single>;
   /** delete data from the table: "workers" */
   delete_workers?: Maybe<Workers_Mutation_Response>;
   /** delete single row from the table: "workers" */
   delete_workers_by_pk?: Maybe<Workers>;
-  /** insert data into the table: "file" */
-  insert_file?: Maybe<File_Mutation_Response>;
-  /** insert a single row into the table: "file" */
-  insert_file_one?: Maybe<File>;
+  /** insert data into the table: "directory_entry" */
+  insert_directory_entry?: Maybe<Directory_Entry_Mutation_Response>;
+  /** insert a single row into the table: "directory_entry" */
+  insert_directory_entry_one?: Maybe<Directory_Entry>;
+  /** insert data into the table: "folder" */
+  insert_folder?: Maybe<Folder_Mutation_Response>;
+  /** insert a single row into the table: "folder" */
+  insert_folder_one?: Maybe<Folder>;
+  /** insert data into the table: "single" */
+  insert_single?: Maybe<Single_Mutation_Response>;
+  /** insert a single row into the table: "single" */
+  insert_single_one?: Maybe<Single>;
   /** insert data into the table: "workers" */
   insert_workers?: Maybe<Workers_Mutation_Response>;
   /** insert a single row into the table: "workers" */
@@ -846,13 +943,13 @@ export type Mutation_RootDelete_Delete_Job_By_PkArgs = {
 
 
 /** mutation root */
-export type Mutation_RootDelete_FileArgs = {
-  where: File_Bool_Exp;
+export type Mutation_RootDelete_Directory_EntryArgs = {
+  where: Directory_Entry_Bool_Exp;
 };
 
 
 /** mutation root */
-export type Mutation_RootDelete_File_By_PkArgs = {
+export type Mutation_RootDelete_Directory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -882,6 +979,18 @@ export type Mutation_RootDelete_Job_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_SingleArgs = {
+  where: Single_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Single_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_WorkersArgs = {
   where: Workers_Bool_Exp;
 };
@@ -894,16 +1003,44 @@ export type Mutation_RootDelete_Workers_By_PkArgs = {
 
 
 /** mutation root */
-export type Mutation_RootInsert_FileArgs = {
-  objects: Array<File_Insert_Input>;
-  on_conflict?: InputMaybe<File_On_Conflict>;
+export type Mutation_RootInsert_Directory_EntryArgs = {
+  objects: Array<Directory_Entry_Insert_Input>;
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
 };
 
 
 /** mutation root */
-export type Mutation_RootInsert_File_OneArgs = {
-  object: File_Insert_Input;
-  on_conflict?: InputMaybe<File_On_Conflict>;
+export type Mutation_RootInsert_Directory_Entry_OneArgs = {
+  object: Directory_Entry_Insert_Input;
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_FolderArgs = {
+  objects: Array<Folder_Insert_Input>;
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Folder_OneArgs = {
+  object: Folder_Insert_Input;
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_SingleArgs = {
+  objects: Array<Single_Insert_Input>;
+  on_conflict?: InputMaybe<Single_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Single_OneArgs = {
+  object: Single_Insert_Input;
+  on_conflict?: InputMaybe<Single_On_Conflict>;
 };
 
 
@@ -1019,18 +1156,26 @@ export type Query_Root = {
   delete_job: Array<Delete_Job>;
   /** fetch data from the table: "delete_job" using primary key columns */
   delete_job_by_pk?: Maybe<Delete_Job>;
-  /** fetch data from the table: "file" */
-  file: Array<File>;
-  /** fetch data from the table: "file" using primary key columns */
-  file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "directory_entry" */
+  directory_entry: Array<Directory_Entry>;
+  /** fetch data from the table: "directory_entry" using primary key columns */
+  directory_entry_by_pk?: Maybe<Directory_Entry>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
+  /** fetch data from the table: "folder" */
+  folder: Array<Folder>;
+  /** fetch data from the table: "folder" using primary key columns */
+  folder_by_pk?: Maybe<Folder>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
+  /** fetch data from the table: "single" */
+  single: Array<Single>;
+  /** fetch data from the table: "single" using primary key columns */
+  single_by_pk?: Maybe<Single>;
   /** fetch data from the table: "workers" */
   workers: Array<Workers>;
   /** fetch data from the table: "workers" using primary key columns */
@@ -1061,16 +1206,16 @@ export type Query_RootDelete_Job_By_PkArgs = {
 };
 
 
-export type Query_RootFileArgs = {
-  distinct_on?: InputMaybe<Array<File_Select_Column>>;
+export type Query_RootDirectory_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Directory_Entry_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<File_Order_By>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  order_by?: InputMaybe<Array<Directory_Entry_Order_By>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
-export type Query_RootFile_By_PkArgs = {
+export type Query_RootDirectory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1089,6 +1234,20 @@ export type Query_RootFile_Upload_By_PkArgs = {
 };
 
 
+export type Query_RootFolderArgs = {
+  distinct_on?: InputMaybe<Array<Folder_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Folder_Order_By>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
+export type Query_RootFolder_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
 export type Query_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1099,6 +1258,20 @@ export type Query_RootJobArgs = {
 
 
 export type Query_RootJob_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Query_RootSingleArgs = {
+  distinct_on?: InputMaybe<Array<Single_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Single_Order_By>>;
+  where?: InputMaybe<Single_Bool_Exp>;
+};
+
+
+export type Query_RootSingle_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1116,6 +1289,126 @@ export type Query_RootWorkers_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
+/** columns and relationships of "single" */
+export type Single = {
+  __typename?: 'single';
+  description: Scalars['String'];
+  directory_entry_id: Scalars['uuid'];
+  /** An object relationship */
+  dirent: Directory_Entry;
+  download_url: Scalars['String'];
+  id: Scalars['uuid'];
+  length: Scalars['numeric'];
+  provider_id?: Maybe<Scalars['String']>;
+};
+
+/** Boolean expression to filter rows from the table "single". All fields are combined with a logical 'AND'. */
+export type Single_Bool_Exp = {
+  _and?: InputMaybe<Array<Single_Bool_Exp>>;
+  _not?: InputMaybe<Single_Bool_Exp>;
+  _or?: InputMaybe<Array<Single_Bool_Exp>>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  directory_entry_id?: InputMaybe<Uuid_Comparison_Exp>;
+  dirent?: InputMaybe<Directory_Entry_Bool_Exp>;
+  download_url?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+  length?: InputMaybe<Numeric_Comparison_Exp>;
+  provider_id?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "single" */
+export enum Single_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  FilePkey = 'file_pkey',
+  /** unique or primary key constraint on columns "directory_entry_id" */
+  SingleDirectoryEntryIdKey = 'single_directory_entry_id_key'
+}
+
+/** input type for inserting data into table "single" */
+export type Single_Insert_Input = {
+  description?: InputMaybe<Scalars['String']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  dirent?: InputMaybe<Directory_Entry_Obj_Rel_Insert_Input>;
+  download_url?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  length?: InputMaybe<Scalars['numeric']>;
+  provider_id?: InputMaybe<Scalars['String']>;
+};
+
+/** response of any mutation on the table "single" */
+export type Single_Mutation_Response = {
+  __typename?: 'single_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Single>;
+};
+
+/** input type for inserting object relation for remote table "single" */
+export type Single_Obj_Rel_Insert_Input = {
+  data: Single_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Single_On_Conflict>;
+};
+
+/** on_conflict condition type for table "single" */
+export type Single_On_Conflict = {
+  constraint: Single_Constraint;
+  update_columns?: Array<Single_Update_Column>;
+  where?: InputMaybe<Single_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "single". */
+export type Single_Order_By = {
+  description?: InputMaybe<Order_By>;
+  directory_entry_id?: InputMaybe<Order_By>;
+  dirent?: InputMaybe<Directory_Entry_Order_By>;
+  download_url?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  length?: InputMaybe<Order_By>;
+  provider_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "single" */
+export enum Single_Select_Column {
+  /** column name */
+  Description = 'description',
+  /** column name */
+  DirectoryEntryId = 'directory_entry_id',
+  /** column name */
+  DownloadUrl = 'download_url',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  Length = 'length',
+  /** column name */
+  ProviderId = 'provider_id'
+}
+
+/** Streaming cursor of the table "single" */
+export type Single_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Single_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Single_Stream_Cursor_Value_Input = {
+  description?: InputMaybe<Scalars['String']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  download_url?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  length?: InputMaybe<Scalars['numeric']>;
+  provider_id?: InputMaybe<Scalars['String']>;
+};
+
+/** placeholder for update columns of table "single" (current role has no relevant permissions) */
+export enum Single_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
+
 export type Subscription_Root = {
   __typename?: 'subscription_root';
   /** execute function "available_jobs" which returns "job" */
@@ -1126,24 +1419,36 @@ export type Subscription_Root = {
   delete_job_by_pk?: Maybe<Delete_Job>;
   /** fetch data from the table in a streaming manner : "delete_job" */
   delete_job_stream: Array<Delete_Job>;
-  /** fetch data from the table: "file" */
-  file: Array<File>;
-  /** fetch data from the table: "file" using primary key columns */
-  file_by_pk?: Maybe<File>;
-  /** fetch data from the table in a streaming manner : "file" */
-  file_stream: Array<File>;
+  /** fetch data from the table: "directory_entry" */
+  directory_entry: Array<Directory_Entry>;
+  /** fetch data from the table: "directory_entry" using primary key columns */
+  directory_entry_by_pk?: Maybe<Directory_Entry>;
+  /** fetch data from the table in a streaming manner : "directory_entry" */
+  directory_entry_stream: Array<Directory_Entry>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table in a streaming manner : "file_upload" */
   file_upload_stream: Array<File_Upload>;
+  /** fetch data from the table: "folder" */
+  folder: Array<Folder>;
+  /** fetch data from the table: "folder" using primary key columns */
+  folder_by_pk?: Maybe<Folder>;
+  /** fetch data from the table in a streaming manner : "folder" */
+  folder_stream: Array<Folder>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
   /** fetch data from the table in a streaming manner : "job" */
   job_stream: Array<Job>;
+  /** fetch data from the table: "single" */
+  single: Array<Single>;
+  /** fetch data from the table: "single" using primary key columns */
+  single_by_pk?: Maybe<Single>;
+  /** fetch data from the table in a streaming manner : "single" */
+  single_stream: Array<Single>;
   /** fetch data from the table: "workers" */
   workers: Array<Workers>;
   /** fetch data from the table: "workers" using primary key columns */
@@ -1183,24 +1488,24 @@ export type Subscription_RootDelete_Job_StreamArgs = {
 };
 
 
-export type Subscription_RootFileArgs = {
-  distinct_on?: InputMaybe<Array<File_Select_Column>>;
+export type Subscription_RootDirectory_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Directory_Entry_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<File_Order_By>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  order_by?: InputMaybe<Array<Directory_Entry_Order_By>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
-export type Subscription_RootFile_By_PkArgs = {
+export type Subscription_RootDirectory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
 
-export type Subscription_RootFile_StreamArgs = {
+export type Subscription_RootDirectory_Entry_StreamArgs = {
   batch_size: Scalars['Int'];
-  cursor: Array<InputMaybe<File_Stream_Cursor_Input>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  cursor: Array<InputMaybe<Directory_Entry_Stream_Cursor_Input>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
@@ -1225,6 +1530,27 @@ export type Subscription_RootFile_Upload_StreamArgs = {
 };
 
 
+export type Subscription_RootFolderArgs = {
+  distinct_on?: InputMaybe<Array<Folder_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Folder_Order_By>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
+export type Subscription_RootFolder_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFolder_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Folder_Stream_Cursor_Input>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
 export type Subscription_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1243,6 +1569,27 @@ export type Subscription_RootJob_StreamArgs = {
   batch_size: Scalars['Int'];
   cursor: Array<InputMaybe<Job_Stream_Cursor_Input>>;
   where?: InputMaybe<Job_Bool_Exp>;
+};
+
+
+export type Subscription_RootSingleArgs = {
+  distinct_on?: InputMaybe<Array<Single_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Single_Order_By>>;
+  where?: InputMaybe<Single_Bool_Exp>;
+};
+
+
+export type Subscription_RootSingle_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootSingle_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Single_Stream_Cursor_Input>>;
+  where?: InputMaybe<Single_Bool_Exp>;
 };
 
 
@@ -1414,23 +1761,6 @@ export type Workers_Updates = {
   where: Workers_Bool_Exp;
 };
 
-export type NewJobsSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
-
-
-export type NewJobsSubscriptionSubscription = { __typename?: 'subscription_root', available_jobs: Array<{ __typename?: 'job', id: string }> };
-
-export type DeleteJobsSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
-
-
-export type DeleteJobsSubscriptionSubscription = { __typename?: 'subscription_root', delete_job: Array<{ __typename?: 'delete_job', id: string }> };
-
-export type MyJobsSubscriptionSubscriptionVariables = Exact<{
-  myId: Scalars['uuid'];
-}>;
-
-
-export type MyJobsSubscriptionSubscription = { __typename?: 'subscription_root', job: Array<{ __typename?: 'job', id: string }> };
-
 export type FullJobFragment = { __typename?: 'job', id: string, workspace_id: string, url?: string | null, progress?: number | null, status: Job_Status_Enum_Enum, name: string, description: string, path: any, option_cut_start?: number | null, option_cut_end?: number | null, option_fade_in?: number | null, option_fade_out?: number | null, file_upload?: { __typename?: 'file_upload', id: string, base64: string } | null };
 
 export type ClaimJobMutationVariables = Exact<{
@@ -1445,7 +1775,7 @@ export type ClaimDeleteJobMutationVariables = Exact<{
 }>;
 
 
-export type ClaimDeleteJobMutation = { __typename?: 'mutation_root', claim_delete_job?: { __typename?: 'delete_job', id: string, file: { __typename?: 'file', id: string, provider_id?: string | null } } | null };
+export type ClaimDeleteJobMutation = { __typename?: 'mutation_root', claim_delete_job?: { __typename?: 'delete_job', id: string, single: { __typename?: 'single', provider_id?: string | null, dirent: { __typename?: 'directory_entry', id: string } } } | null };
 
 export type UpdateJobProgressMutationVariables = Exact<{
   jobId: Scalars['uuid'];
@@ -1458,11 +1788,12 @@ export type UpdateJobProgressMutation = { __typename?: 'mutation_root', update_j
 
 export type CommitJobMutationVariables = Exact<{
   jobId: Scalars['uuid'];
-  file: File_Insert_Input;
+  entry: Directory_Entry_Insert_Input;
+  single: Single_Insert_Input;
 }>;
 
 
-export type CommitJobMutation = { __typename?: 'mutation_root', delete_job_by_pk?: { __typename: 'job', id: string, url?: string | null, name: string } | null, insert_file_one?: { __typename: 'file', id: string, name: string } | null };
+export type CommitJobMutation = { __typename?: 'mutation_root', delete_job_by_pk?: { __typename: 'job', id: string, url?: string | null, name: string } | null, insert_directory_entry_one?: { __typename: 'directory_entry', id: string, name: string } | null, insert_single_one?: { __typename: 'single', id: string } | null };
 
 export type CommitDeleteJobMutationVariables = Exact<{
   jobId: Scalars['uuid'];
@@ -1470,7 +1801,7 @@ export type CommitDeleteJobMutationVariables = Exact<{
 }>;
 
 
-export type CommitDeleteJobMutation = { __typename?: 'mutation_root', delete_delete_job_by_pk?: { __typename?: 'delete_job', id: string } | null, delete_file_by_pk?: { __typename?: 'file', id: string } | null };
+export type CommitDeleteJobMutation = { __typename?: 'mutation_root', delete_delete_job_by_pk?: { __typename?: 'delete_job', id: string } | null, delete_directory_entry_by_pk?: { __typename?: 'directory_entry', id: string } | null };
 
 export type SetJobErrorMutationVariables = Exact<{
   jobId: Scalars['uuid'];
@@ -1488,13 +1819,10 @@ export type CheckInMutationVariables = Exact<{
 export type CheckInMutation = { __typename?: 'mutation_root', insert_workers_one?: { __typename?: 'workers', id: string, last_check_in: Date } | null };
 
 export const FullJobFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FullJob"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"job"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"file_upload"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"base64"}}]}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_start"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_end"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_in"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_out"}}]}}]} as unknown as DocumentNode<FullJobFragment, unknown>;
-export const NewJobsSubscriptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"NewJobsSubscription"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"available_jobs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<NewJobsSubscriptionSubscription, NewJobsSubscriptionSubscriptionVariables>;
-export const DeleteJobsSubscriptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"DeleteJobsSubscription"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"assigned_worker"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_is_null"},"value":{"kind":"BooleanValue","value":true}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteJobsSubscriptionSubscription, DeleteJobsSubscriptionSubscriptionVariables>;
-export const MyJobsSubscriptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"MyJobsSubscription"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"assigned_worker"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"asc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<MyJobsSubscriptionSubscription, MyJobsSubscriptionSubscriptionVariables>;
 export const ClaimJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"worker_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FullJob"}}]}}]}},...FullJobFragmentDoc.definitions]} as unknown as DocumentNode<ClaimJobMutation, ClaimJobMutationVariables>;
-export const ClaimDeleteJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimDeleteJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"worker_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"file"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"provider_id"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimDeleteJobMutation, ClaimDeleteJobMutationVariables>;
+export const ClaimDeleteJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimDeleteJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"worker_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"single"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dirent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"provider_id"}}]}}]}}]}}]} as unknown as DocumentNode<ClaimDeleteJobMutation, ClaimDeleteJobMutationVariables>;
 export const UpdateJobProgressDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateJobProgress"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"progressStage"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"job_status_enum_enum"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"progress"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"numeric"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"progressStage"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"progress"},"value":{"kind":"Variable","name":{"kind":"Name","value":"progress"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"assigned_worker"}}]}}]}}]} as unknown as DocumentNode<UpdateJobProgressMutation, UpdateJobProgressMutationVariables>;
-export const CommitJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"file"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"file_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_file_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"file"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<CommitJobMutation, CommitJobMutationVariables>;
-export const CommitDeleteJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitDeleteJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delete_file_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CommitDeleteJobMutation, CommitDeleteJobMutationVariables>;
+export const CommitJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"entry"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"directory_entry_insert_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"single"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"single_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_directory_entry_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"entry"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_single_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"single"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CommitJobMutation, CommitJobMutationVariables>;
+export const CommitDeleteJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitDeleteJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delete_directory_entry_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CommitDeleteJobMutation, CommitDeleteJobMutationVariables>;
 export const SetJobErrorDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetJobError"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"error"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"error"},"value":{"kind":"Variable","name":{"kind":"Name","value":"error"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"error"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FullJob"}}]}}]}},...FullJobFragmentDoc.definitions]} as unknown as DocumentNode<SetJobErrorMutation, SetJobErrorMutationVariables>;
 export const CheckInDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CheckIn"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_workers_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"last_check_in"},"value":{"kind":"EnumValue","value":"now"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"on_conflict"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"constraint"},"value":{"kind":"EnumValue","value":"workers_pkey"}},{"kind":"ObjectField","name":{"kind":"Name","value":"update_columns"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"last_check_in"}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"last_check_in"}}]}}]}}]} as unknown as DocumentNode<CheckInMutation, CheckInMutationVariables>;

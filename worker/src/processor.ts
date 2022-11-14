@@ -15,7 +15,6 @@ import {
     CommitJobDocument,
     CommitJobMutation,
     CommitJobMutationVariables,
-    File_Type_Enum_Enum,
     Job_Status_Enum_Enum,
     UpdateJobProgressDocument,
     UpdateJobProgressMutation,
@@ -130,22 +129,26 @@ export class Processor {
         );
         processorLog.silly(`Saved to S3`);
 
-        const file: CommitJobMutationVariables['file'] = {
-            name: name,
-            path: path ?? [],
-            type: File_Type_Enum_Enum.Audio,
-            length: duration,
-            description: description,
-            workspace_id: workspace,
-            provider_id: id + kAudioExtension,
-            download_url: dlurl,
-            ordering: null,
-        };
-
         processorLog.silly(`Committing to database...`);
+        const eid = v4();
+        const sid = v4();
         await this._client.request(CommitJobDocument, {
             jobId: id,
-            file,
+            entry: {
+                id: eid,
+                name: name,
+                path: path ?? [],
+                workspace_id: workspace,
+                ordering: null,
+            },
+            single: {
+                id: sid,
+                length: duration,
+                description: description,
+                provider_id: id + kAudioExtension,
+                download_url: dlurl,
+                directory_entry_id: eid,
+            },
         });
 
         processorLog.silly(`Job committed`);

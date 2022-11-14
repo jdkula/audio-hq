@@ -10,7 +10,7 @@ import { VolumeDown, VolumeMute, VolumeOff, VolumeUp } from '@mui/icons-material
 const VolumeButton: FC<{ volume: number }> = ({ volume }) => {
     let volumeIcon;
     if (volume === 0) {
-        volumeIcon = <VolumeOff color="secondary" />;
+        volumeIcon = <VolumeOff color="error" />;
     } else if (volume < 0.2) {
         volumeIcon = <VolumeMute />;
     } else if (volume < 0.5) {

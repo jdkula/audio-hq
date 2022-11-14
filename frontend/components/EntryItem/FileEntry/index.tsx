@@ -7,7 +7,6 @@
  * display file information.
  */
 
-import { Paper } from '@mui/material';
 import React, { FC, useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import styled from '@emotion/styled';
@@ -18,24 +17,15 @@ import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
 import * as API from '~/lib/api/models';
 
-export const FileContainer = styled(Paper)`
+export const FileContainer = styled.div`
+    width: 100%;
     display: grid;
     grid-template-columns: auto 1fr auto;
     grid-template-rows: auto;
     grid-template-areas: 'playcontrols details filecontrols';
 
-    margin: 0.5rem 1rem;
-    border-radius: 3rem;
-    overflow: hidden;
-    padding: 0.25rem 0.25rem;
-    transition: background-color 0.25s;
     align-content: center;
     align-items: center;
-    min-height: 50px;
-
-    &:hover {
-        background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#333' : '#eee')};
-    }
 
     ${({ theme }) => theme.breakpoints.down('sm')} {
         grid-template-columns: 1fr 1fr;
@@ -47,7 +37,7 @@ export const FileContainer = styled(Paper)`
     }
 `;
 
-const FileEntry: FC<{ file: API.Track; index: number }> = ({ file, index }) => {
+const FileEntry: FC<{ file: API.Single }> = ({ file }) => {
     const [showDelete, setDelete] = useState(false);
 
     const [editing, setEditing] = useState(false);
@@ -66,28 +56,24 @@ const FileEntry: FC<{ file: API.Track; index: number }> = ({ file, index }) => {
     return (
         <>
             <FileDeleteDialog open={showDelete} file={file} onClose={() => setDelete(false)} />
-            <Draggable draggableId={file.id} index={index}>
-                {(provided, snapshot) => (
-                    <FileContainer {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
-                        <PlayControls snapshot={snapshot} file={file} />
+            <FileContainer>
+                <PlayControls file={file} />
 
-                        <FileDetails
-                            file={file}
-                            autoFocusTitle={autoFocusTitle}
-                            editing={editing}
-                            startEditing={startEditing}
-                            finishEditing={cancelEdits}
-                        />
+                <FileDetails
+                    file={file}
+                    autoFocusTitle={autoFocusTitle}
+                    editing={editing}
+                    startEditing={startEditing}
+                    finishEditing={cancelEdits}
+                />
 
-                        <StatusControls
-                            file={file}
-                            editing={editing}
-                            setEditing={(editing) => (editing ? startEditing() : cancelEdits())}
-                            setDelete={(deleting) => setDelete(deleting)}
-                        />
-                    </FileContainer>
-                )}
-            </Draggable>
+                <StatusControls
+                    file={file}
+                    editing={editing}
+                    setEditing={(editing) => (editing ? startEditing() : cancelEdits())}
+                    setDelete={(deleting) => setDelete(deleting)}
+                />
+            </FileContainer>
         </>
     );
 };

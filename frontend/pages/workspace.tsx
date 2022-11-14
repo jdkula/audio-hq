@@ -24,7 +24,7 @@ const TabContainer = styled.div`
     grid-template-columns: auto;
 
     & > * {
-        grid-area: unset;
+        grid-area: unset !important;
         overflow: auto;
     }
 `;
@@ -42,8 +42,13 @@ const MainApp: FC = () => {
         return (
             <>
                 <Header host />
-                <AppBar position="static" color="default" style={{ gridArea: 'tabs' }}>
-                    <Tabs variant="fullWidth" value={tabValue} onChange={(_, v) => setTabValue(v)}>
+                <AppBar position="static" color="default" style={{ gridArea: 'tabs', boxShadow: 'none' }}>
+                    <Tabs
+                        variant="fullWidth"
+                        value={tabValue}
+                        onChange={(_, v) => setTabValue(v)}
+                        style={{ zIndex: 100 }}
+                    >
                         <Tab label="Main" />
                         <Tab label="Ambience" />
                         <Tab label="Explorer" />
@@ -68,7 +73,7 @@ const MainApp: FC = () => {
             <Header host />
             <MainPlayer state={main} />
             <Explorer />
-            {(ambience.length > 0 || sfx.length > 0) && <Ambience />}
+            <Ambience />
         </>
     );
 };
@@ -122,7 +127,7 @@ const Sub: FC = () => {
     }, [addRecents, workspaceId]);
 
     return (
-        <Container hideAmbience={ambience.length + sfx.length === 0}>
+        <Container>
             <MainApp />
         </Container>
     );

@@ -6,11 +6,14 @@ import {
     DeckUpdate,
     Job,
     JobCreate,
-    Track,
-    TrackUpdate,
+    Entry,
+    EntryUpdate,
     Workspace,
     WorkspaceCreate,
     WorkspaceUpdate,
+    SingleUpdate,
+    Single,
+    Folder,
 } from './models';
 
 export default interface AudioHQApi {
@@ -31,8 +34,8 @@ export interface SpecificWorkspaceApi {
     update(workspace: WorkspaceUpdate): Promise<Workspace>;
     delete(): Promise<void>;
 
-    tracks: WorkspaceTracksApi;
-    track(id: string): SpecificTrackApi;
+    entries: WorkspaceEntriesApi;
+    entry<T extends Entry>(entry: T): SpecificEntryApi<T>;
 
     decks: WorkspaceDecksApi;
     mainDeck: SpecificDeckApi;
@@ -44,13 +47,14 @@ export interface SpecificWorkspaceApi {
 
 ////////// Tracks
 
-export interface WorkspaceTracksApi {
-    list(): Promise<Array<Track>>;
+export interface WorkspaceEntriesApi {
+    createFolder(name: string, basePath: string[], ordering?: number): Promise<Folder>;
+    list(): Promise<Array<Entry>>;
 }
 
-export interface SpecificTrackApi {
-    get(): Promise<Track>;
-    update(file: TrackUpdate): Promise<Track>;
+export interface SpecificEntryApi<T extends Entry> {
+    get(): Promise<T>;
+    update(update: T extends Single ? SingleUpdate : EntryUpdate): Promise<T>;
     delete(): Promise<void>;
 }
 
@@ -80,4 +84,14 @@ export interface WorkspaceJobsApi {
 export interface SpecificJobApi {
     cancel(): Promise<void>;
     get(): Promise<Job>;
+}
+
+/// Helpers
+
+export function entryIsSingle(entry: Entry): entry is Single {
+    return entry.type === 'single';
+}
+
+export function entryIsFolder(entry: Entry): entry is Folder {
+    return entry.type === 'folder';
 }

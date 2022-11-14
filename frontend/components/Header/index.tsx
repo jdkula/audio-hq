@@ -13,6 +13,7 @@ import {
     Hidden,
     LinearProgress,
     Link,
+    SvgIcon,
     Toolbar,
     Typography,
     useMediaQuery,
@@ -29,6 +30,8 @@ import NextLink from 'next/link';
 import { useLocalReactiveValue } from '../../lib/LocalReactive';
 import { WorkspaceNameContext, FileManagerContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useIsOnline } from '~/lib/utility/hooks';
+import { AHQIcon } from '../AHQIcon';
+import { entryIsSingle } from '~/lib/api/AudioHQApi';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -54,10 +57,10 @@ const AddTrackButton: FC<{ startAdding: () => void }> = ({ startAdding }) => {
         <>
             <Hidden smDown>
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     color={'secondary'}
                     onClick={startAdding}
-                    startIcon={!online ? <OfflineBolt /> : <Add />}
+                    endIcon={!online ? <OfflineBolt /> : <Add />}
                     disabled={!online}
                 >
                     {!online ? 'Offline' : 'Add a Track'}
@@ -81,7 +84,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
 
     const [path] = useLocalReactiveValue(currentPathLRV);
 
-    const allCached = fileManager.cached.size >= fileManager.files.length;
+    const allCached = fileManager.cached.size >= fileManager.files.filter(entryIsSingle).length;
     const isCaching = fileManager.caching.size > 0;
 
     const theme = useTheme();
@@ -103,8 +106,13 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                     <Title>
                         <NextLink href={'/'}>
                             <Link href={'/'} color="inherit" underline="hover">
-                                <Typography variant={isSmall ? 'h5' : 'h4'}>
-                                    Audio HQ – {workspaceName || 'Loading...'}
+                                <Typography
+                                    variant={isSmall ? 'h5' : 'h4'}
+                                    style={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                    <AHQIcon fontSize="inherit" style={{ fontSize: '3.5rem' }} />
+                                    <span style={{ margin: '0 0.5rem' }} />
+                                    {workspaceName || 'Loading...'}
                                 </Typography>
                             </Link>
                         </NextLink>
@@ -115,14 +123,12 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
                             </>
                         )}
                     </Title>
-                    {host && <GlobalVolumeSlider />}
-                    {!allCached && !isCaching && online !== false && <DownloadCacheButton />}
+                    {online !== false && <DownloadCacheButton />}
                     {host && <AddTrackButton startAdding={() => setAdding(true)} />}
+                    <span style={{ margin: '0 0.5rem' }} />
+                    {host && <GlobalVolumeSlider />}
                 </ToolbarContent>
             </Toolbar>
-            <Collapse in={isCaching}>
-                <LinearProgress />
-            </Collapse>
         </AppBar>
     );
 };

@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-    - 'https://audio-hq-api.jdkula.dev/v1/graphql':
+    - 'https://audio-hq-api-dev.jdkula.dev/v1/graphql':
           headers:
               'X-Hasura-Admin-Secret': '${HASURA_GRAPHQL_ADMIN_SECRET}'
               'X-Hasura-Role': 'worker'

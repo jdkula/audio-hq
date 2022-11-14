@@ -5,16 +5,17 @@ import * as API from './api/models';
 import {
     useCreateImportJob,
     useCreateUploadJob,
-    useDeleteTrackMutation,
+    useDeleteEntryMutation,
     useWorkspaceJobs,
-    useWorkspaceTracks,
+    useWorkspaceEntries,
 } from './api/hooks';
+import { entryIsSingle } from './api/AudioHQApi';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 
 export function useFileManager(workspaceId: string) {
     // <== State ==>
-    const { data: filesData } = useWorkspaceTracks(workspaceId);
+    const { data: filesData } = useWorkspaceEntries(workspaceId);
     const files = useMemo(() => filesData ?? [], [filesData]);
     const { data: jobsData } = useWorkspaceJobs(workspaceId);
     const jobs = useMemo(() => jobsData ?? [], [jobsData]);
@@ -22,10 +23,10 @@ export function useFileManager(workspaceId: string) {
     const uploadJob = useCreateUploadJob(workspaceId);
     const importJob = useCreateImportJob(workspaceId);
 
-    const delFile = useDeleteTrackMutation(workspaceId);
+    const delFile = useDeleteEntryMutation(workspaceId);
 
     // URLs of files in this workspace
-    const urls = useMemo(() => files.map((f) => f.url), [files]);
+    const urls = useMemo(() => files.filter(entryIsSingle).map((f) => f.url), [files]);
     const cacheInfo = useIsCached(urls);
 
     // Load the cache info into two sets of URLs
@@ -86,10 +87,10 @@ export function useFileManager(workspaceId: string) {
                 info: job,
             });
         },
-        delete: async (id: string) => {
-            await delFile.mutateAsync({ id });
+        delete: async (entry: API.Entry) => {
+            await delFile.mutateAsync({ entry });
         },
-        download: (file: API.Track) => {
+        download: (file: API.Single) => {
             broadcastOut?.postMessage({
                 type: 'cache',
                 urls: [file.url],
@@ -137,11 +138,11 @@ export function useFileManager(workspaceId: string) {
         downloadAll: async () => {
             console.log(
                 'Downloading all. Uncached:',
-                files.filter((f) => !cached.has(f.url)),
+                files.filter(entryIsSingle).filter((f) => !cached.has(f.url)),
             );
             broadcastOut?.postMessage({
                 type: 'cache',
-                urls: files.map((f) => f.url),
+                urls: files.filter(entryIsSingle).map((f) => f.url),
             } as BroadcastMessage);
         },
     };

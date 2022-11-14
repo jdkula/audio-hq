@@ -377,7 +377,7 @@ export enum Delete_Job_Constraint {
 
 /** input type for inserting data into table "delete_job" */
 export type Delete_Job_Insert_Input = {
-  file_id?: InputMaybe<Scalars['uuid']>;
+  single_id?: InputMaybe<Scalars['uuid']>;
 };
 
 /** response of any mutation on the table "delete_job" */
@@ -400,156 +400,188 @@ export enum Delete_Job_Update_Column {
   Placeholder = '_PLACEHOLDER'
 }
 
-/** columns and relationships of "file" */
-export type File = {
-  __typename?: 'file';
-  description: Scalars['String'];
-  download_url: Scalars['String'];
+/** columns and relationships of "directory_entry" */
+export type Directory_Entry = {
+  __typename?: 'directory_entry';
+  created_at: Scalars['timestamptz'];
+  /** An object relationship */
+  folder?: Maybe<Folder>;
   id: Scalars['uuid'];
-  length: Scalars['numeric'];
   name: Scalars['String'];
   ordering?: Maybe<Scalars['bigint']>;
   path: Scalars['jsonb'];
-  type: File_Type_Enum_Enum;
+  /** An object relationship */
+  single?: Maybe<Single>;
+  updated_at: Scalars['timestamptz'];
   /** An object relationship */
   workspace: Workspace;
   workspace_id: Scalars['uuid'];
 };
 
 
-/** columns and relationships of "file" */
-export type FilePathArgs = {
+/** columns and relationships of "directory_entry" */
+export type Directory_EntryPathArgs = {
   path?: InputMaybe<Scalars['String']>;
 };
 
-/** order by aggregate values of table "file" */
-export type File_Aggregate_Order_By = {
-  avg?: InputMaybe<File_Avg_Order_By>;
+/** order by aggregate values of table "directory_entry" */
+export type Directory_Entry_Aggregate_Order_By = {
+  avg?: InputMaybe<Directory_Entry_Avg_Order_By>;
   count?: InputMaybe<Order_By>;
-  max?: InputMaybe<File_Max_Order_By>;
-  min?: InputMaybe<File_Min_Order_By>;
-  stddev?: InputMaybe<File_Stddev_Order_By>;
-  stddev_pop?: InputMaybe<File_Stddev_Pop_Order_By>;
-  stddev_samp?: InputMaybe<File_Stddev_Samp_Order_By>;
-  sum?: InputMaybe<File_Sum_Order_By>;
-  var_pop?: InputMaybe<File_Var_Pop_Order_By>;
-  var_samp?: InputMaybe<File_Var_Samp_Order_By>;
-  variance?: InputMaybe<File_Variance_Order_By>;
+  max?: InputMaybe<Directory_Entry_Max_Order_By>;
+  min?: InputMaybe<Directory_Entry_Min_Order_By>;
+  stddev?: InputMaybe<Directory_Entry_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Directory_Entry_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Directory_Entry_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Directory_Entry_Sum_Order_By>;
+  var_pop?: InputMaybe<Directory_Entry_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Directory_Entry_Var_Samp_Order_By>;
+  variance?: InputMaybe<Directory_Entry_Variance_Order_By>;
 };
 
 /** append existing jsonb value of filtered columns with new jsonb value */
-export type File_Append_Input = {
+export type Directory_Entry_Append_Input = {
   path?: InputMaybe<Scalars['jsonb']>;
 };
 
-/** order by avg() on columns of table "file" */
-export type File_Avg_Order_By = {
-  length?: InputMaybe<Order_By>;
+/** input type for inserting array relation for remote table "directory_entry" */
+export type Directory_Entry_Arr_Rel_Insert_Input = {
+  data: Array<Directory_Entry_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
+};
+
+/** order by avg() on columns of table "directory_entry" */
+export type Directory_Entry_Avg_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
-/** Boolean expression to filter rows from the table "file". All fields are combined with a logical 'AND'. */
-export type File_Bool_Exp = {
-  _and?: InputMaybe<Array<File_Bool_Exp>>;
-  _not?: InputMaybe<File_Bool_Exp>;
-  _or?: InputMaybe<Array<File_Bool_Exp>>;
-  description?: InputMaybe<String_Comparison_Exp>;
-  download_url?: InputMaybe<String_Comparison_Exp>;
+/** Boolean expression to filter rows from the table "directory_entry". All fields are combined with a logical 'AND'. */
+export type Directory_Entry_Bool_Exp = {
+  _and?: InputMaybe<Array<Directory_Entry_Bool_Exp>>;
+  _not?: InputMaybe<Directory_Entry_Bool_Exp>;
+  _or?: InputMaybe<Array<Directory_Entry_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  folder?: InputMaybe<Folder_Bool_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
-  length?: InputMaybe<Numeric_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
   ordering?: InputMaybe<Bigint_Comparison_Exp>;
   path?: InputMaybe<Jsonb_Comparison_Exp>;
-  type?: InputMaybe<File_Type_Enum_Enum_Comparison_Exp>;
+  single?: InputMaybe<Single_Bool_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   workspace?: InputMaybe<Workspace_Bool_Exp>;
   workspace_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
+/** unique or primary key constraints on table "directory_entry" */
+export enum Directory_Entry_Constraint {
+  /** unique or primary key constraint on columns "id" */
+  DirectoryEntryPkey = 'directory_entry_pkey'
+}
+
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
-export type File_Delete_At_Path_Input = {
+export type Directory_Entry_Delete_At_Path_Input = {
   path?: InputMaybe<Array<Scalars['String']>>;
 };
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
-export type File_Delete_Elem_Input = {
+export type Directory_Entry_Delete_Elem_Input = {
   path?: InputMaybe<Scalars['Int']>;
 };
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
-export type File_Delete_Key_Input = {
+export type Directory_Entry_Delete_Key_Input = {
   path?: InputMaybe<Scalars['String']>;
 };
 
-/** input type for incrementing numeric columns in table "file" */
-export type File_Inc_Input = {
+/** input type for incrementing numeric columns in table "directory_entry" */
+export type Directory_Entry_Inc_Input = {
   ordering?: InputMaybe<Scalars['bigint']>;
 };
 
-/** order by max() on columns of table "file" */
-export type File_Max_Order_By = {
-  description?: InputMaybe<Order_By>;
-  download_url?: InputMaybe<Order_By>;
+/** input type for inserting data into table "directory_entry" */
+export type Directory_Entry_Insert_Input = {
+  folder?: InputMaybe<Folder_Obj_Rel_Insert_Input>;
+  name?: InputMaybe<Scalars['String']>;
+  ordering?: InputMaybe<Scalars['bigint']>;
+  path?: InputMaybe<Scalars['jsonb']>;
+  workspace?: InputMaybe<Workspace_Obj_Rel_Insert_Input>;
+  workspace_id?: InputMaybe<Scalars['uuid']>;
+};
+
+/** order by max() on columns of table "directory_entry" */
+export type Directory_Entry_Max_Order_By = {
+  created_at?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  length?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
   workspace_id?: InputMaybe<Order_By>;
 };
 
-/** order by min() on columns of table "file" */
-export type File_Min_Order_By = {
-  description?: InputMaybe<Order_By>;
-  download_url?: InputMaybe<Order_By>;
+/** order by min() on columns of table "directory_entry" */
+export type Directory_Entry_Min_Order_By = {
+  created_at?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  length?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
   workspace_id?: InputMaybe<Order_By>;
 };
 
-/** response of any mutation on the table "file" */
-export type File_Mutation_Response = {
-  __typename?: 'file_mutation_response';
+/** response of any mutation on the table "directory_entry" */
+export type Directory_Entry_Mutation_Response = {
+  __typename?: 'directory_entry_mutation_response';
   /** number of rows affected by the mutation */
   affected_rows: Scalars['Int'];
   /** data from the rows affected by the mutation */
-  returning: Array<File>;
+  returning: Array<Directory_Entry>;
 };
 
-/** Ordering options when selecting data from "file". */
-export type File_Order_By = {
-  description?: InputMaybe<Order_By>;
-  download_url?: InputMaybe<Order_By>;
+/** input type for inserting object relation for remote table "directory_entry" */
+export type Directory_Entry_Obj_Rel_Insert_Input = {
+  data: Directory_Entry_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
+};
+
+/** on_conflict condition type for table "directory_entry" */
+export type Directory_Entry_On_Conflict = {
+  constraint: Directory_Entry_Constraint;
+  update_columns?: Array<Directory_Entry_Update_Column>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "directory_entry". */
+export type Directory_Entry_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  folder?: InputMaybe<Folder_Order_By>;
   id?: InputMaybe<Order_By>;
-  length?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
   path?: InputMaybe<Order_By>;
-  type?: InputMaybe<Order_By>;
+  single?: InputMaybe<Single_Order_By>;
+  updated_at?: InputMaybe<Order_By>;
   workspace?: InputMaybe<Workspace_Order_By>;
   workspace_id?: InputMaybe<Order_By>;
 };
 
-/** primary key columns input for table: file */
-export type File_Pk_Columns_Input = {
+/** primary key columns input for table: directory_entry */
+export type Directory_Entry_Pk_Columns_Input = {
   id: Scalars['uuid'];
 };
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
-export type File_Prepend_Input = {
+export type Directory_Entry_Prepend_Input = {
   path?: InputMaybe<Scalars['jsonb']>;
 };
 
-/** select columns of table "file" */
-export enum File_Select_Column {
+/** select columns of table "directory_entry" */
+export enum Directory_Entry_Select_Column {
   /** column name */
-  Description = 'description',
-  /** column name */
-  DownloadUrl = 'download_url',
+  CreatedAt = 'created_at',
   /** column name */
   Id = 'id',
-  /** column name */
-  Length = 'length',
   /** column name */
   Name = 'name',
   /** column name */
@@ -557,96 +589,98 @@ export enum File_Select_Column {
   /** column name */
   Path = 'path',
   /** column name */
-  Type = 'type',
+  UpdatedAt = 'updated_at',
   /** column name */
   WorkspaceId = 'workspace_id'
 }
 
-/** input type for updating data in table "file" */
-export type File_Set_Input = {
-  description?: InputMaybe<Scalars['String']>;
+/** input type for updating data in table "directory_entry" */
+export type Directory_Entry_Set_Input = {
   name?: InputMaybe<Scalars['String']>;
   ordering?: InputMaybe<Scalars['bigint']>;
   path?: InputMaybe<Scalars['jsonb']>;
 };
 
-/** order by stddev() on columns of table "file" */
-export type File_Stddev_Order_By = {
-  length?: InputMaybe<Order_By>;
+/** order by stddev() on columns of table "directory_entry" */
+export type Directory_Entry_Stddev_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
-/** order by stddev_pop() on columns of table "file" */
-export type File_Stddev_Pop_Order_By = {
-  length?: InputMaybe<Order_By>;
+/** order by stddev_pop() on columns of table "directory_entry" */
+export type Directory_Entry_Stddev_Pop_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
-/** order by stddev_samp() on columns of table "file" */
-export type File_Stddev_Samp_Order_By = {
-  length?: InputMaybe<Order_By>;
+/** order by stddev_samp() on columns of table "directory_entry" */
+export type Directory_Entry_Stddev_Samp_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
-/** Streaming cursor of the table "file" */
-export type File_Stream_Cursor_Input = {
+/** Streaming cursor of the table "directory_entry" */
+export type Directory_Entry_Stream_Cursor_Input = {
   /** Stream column input with initial value */
-  initial_value: File_Stream_Cursor_Value_Input;
+  initial_value: Directory_Entry_Stream_Cursor_Value_Input;
   /** cursor ordering */
   ordering?: InputMaybe<Cursor_Ordering>;
 };
 
 /** Initial value of the column from where the streaming should start */
-export type File_Stream_Cursor_Value_Input = {
-  description?: InputMaybe<Scalars['String']>;
-  download_url?: InputMaybe<Scalars['String']>;
+export type Directory_Entry_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
   id?: InputMaybe<Scalars['uuid']>;
-  length?: InputMaybe<Scalars['numeric']>;
   name?: InputMaybe<Scalars['String']>;
   ordering?: InputMaybe<Scalars['bigint']>;
   path?: InputMaybe<Scalars['jsonb']>;
-  type?: InputMaybe<File_Type_Enum_Enum>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
   workspace_id?: InputMaybe<Scalars['uuid']>;
 };
 
-/** order by sum() on columns of table "file" */
-export type File_Sum_Order_By = {
-  length?: InputMaybe<Order_By>;
+/** order by sum() on columns of table "directory_entry" */
+export type Directory_Entry_Sum_Order_By = {
   ordering?: InputMaybe<Order_By>;
 };
 
-export enum File_Type_Enum_Enum {
-  /** a single audio file */
-  Audio = 'audio',
-  /** a set of audio files */
-  Audioset = 'audioset'
+/** update columns of table "directory_entry" */
+export enum Directory_Entry_Update_Column {
+  /** column name */
+  Name = 'name',
+  /** column name */
+  Ordering = 'ordering',
+  /** column name */
+  Path = 'path'
 }
 
-/** Boolean expression to compare columns of type "file_type_enum_enum". All fields are combined with logical 'AND'. */
-export type File_Type_Enum_Enum_Comparison_Exp = {
-  _eq?: InputMaybe<File_Type_Enum_Enum>;
-  _in?: InputMaybe<Array<File_Type_Enum_Enum>>;
-  _is_null?: InputMaybe<Scalars['Boolean']>;
-  _neq?: InputMaybe<File_Type_Enum_Enum>;
-  _nin?: InputMaybe<Array<File_Type_Enum_Enum>>;
+export type Directory_Entry_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Directory_Entry_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Directory_Entry_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Directory_Entry_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Directory_Entry_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Directory_Entry_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Directory_Entry_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Directory_Entry_Set_Input>;
+  where: Directory_Entry_Bool_Exp;
 };
 
-export type File_Updates = {
-  /** append existing jsonb value of filtered columns with new jsonb value */
-  _append?: InputMaybe<File_Append_Input>;
-  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
-  _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
-  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
-  _delete_elem?: InputMaybe<File_Delete_Elem_Input>;
-  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
-  _delete_key?: InputMaybe<File_Delete_Key_Input>;
-  /** increments the numeric columns with given value of the filtered values */
-  _inc?: InputMaybe<File_Inc_Input>;
-  /** prepend existing jsonb value of filtered columns with new jsonb value */
-  _prepend?: InputMaybe<File_Prepend_Input>;
-  /** sets the columns of the filtered rows to the given values */
-  _set?: InputMaybe<File_Set_Input>;
-  where: File_Bool_Exp;
+/** order by var_pop() on columns of table "directory_entry" */
+export type Directory_Entry_Var_Pop_Order_By = {
+  ordering?: InputMaybe<Order_By>;
+};
+
+/** order by var_samp() on columns of table "directory_entry" */
+export type Directory_Entry_Var_Samp_Order_By = {
+  ordering?: InputMaybe<Order_By>;
+};
+
+/** order by variance() on columns of table "directory_entry" */
+export type Directory_Entry_Variance_Order_By = {
+  ordering?: InputMaybe<Order_By>;
 };
 
 /** columns and relationships of "file_upload" */
@@ -727,24 +761,6 @@ export enum File_Upload_Update_Column {
   Placeholder = '_PLACEHOLDER'
 }
 
-/** order by var_pop() on columns of table "file" */
-export type File_Var_Pop_Order_By = {
-  length?: InputMaybe<Order_By>;
-  ordering?: InputMaybe<Order_By>;
-};
-
-/** order by var_samp() on columns of table "file" */
-export type File_Var_Samp_Order_By = {
-  length?: InputMaybe<Order_By>;
-  ordering?: InputMaybe<Order_By>;
-};
-
-/** order by variance() on columns of table "file" */
-export type File_Variance_Order_By = {
-  length?: InputMaybe<Order_By>;
-  ordering?: InputMaybe<Order_By>;
-};
-
 /** Boolean expression to compare columns of type "float8". All fields are combined with logical 'AND'. */
 export type Float8_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['float8']>;
@@ -757,6 +773,111 @@ export type Float8_Comparison_Exp = {
   _neq?: InputMaybe<Scalars['float8']>;
   _nin?: InputMaybe<Array<Scalars['float8']>>;
 };
+
+/** columns and relationships of "folder" */
+export type Folder = {
+  __typename?: 'folder';
+  created_at: Scalars['timestamptz'];
+  directory_entry_id: Scalars['uuid'];
+  /** An object relationship */
+  dirent: Directory_Entry;
+  id: Scalars['uuid'];
+  updated_at: Scalars['timestamptz'];
+};
+
+/** Boolean expression to filter rows from the table "folder". All fields are combined with a logical 'AND'. */
+export type Folder_Bool_Exp = {
+  _and?: InputMaybe<Array<Folder_Bool_Exp>>;
+  _not?: InputMaybe<Folder_Bool_Exp>;
+  _or?: InputMaybe<Array<Folder_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  directory_entry_id?: InputMaybe<Uuid_Comparison_Exp>;
+  dirent?: InputMaybe<Directory_Entry_Bool_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "folder" */
+export enum Folder_Constraint {
+  /** unique or primary key constraint on columns "directory_entry_id" */
+  FolderDirectoryEntryIdKey = 'folder_directory_entry_id_key',
+  /** unique or primary key constraint on columns "id" */
+  FolderPkey = 'folder_pkey'
+}
+
+/** input type for inserting data into table "folder" */
+export type Folder_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  dirent?: InputMaybe<Directory_Entry_Obj_Rel_Insert_Input>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
+/** response of any mutation on the table "folder" */
+export type Folder_Mutation_Response = {
+  __typename?: 'folder_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Folder>;
+};
+
+/** input type for inserting object relation for remote table "folder" */
+export type Folder_Obj_Rel_Insert_Input = {
+  data: Folder_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
+};
+
+/** on_conflict condition type for table "folder" */
+export type Folder_On_Conflict = {
+  constraint: Folder_Constraint;
+  update_columns?: Array<Folder_Update_Column>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "folder". */
+export type Folder_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  directory_entry_id?: InputMaybe<Order_By>;
+  dirent?: InputMaybe<Directory_Entry_Order_By>;
+  id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "folder" */
+export enum Folder_Select_Column {
+  /** column name */
+  CreatedAt = 'created_at',
+  /** column name */
+  DirectoryEntryId = 'directory_entry_id',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  UpdatedAt = 'updated_at'
+}
+
+/** Streaming cursor of the table "folder" */
+export type Folder_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Folder_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Folder_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']>;
+};
+
+/** placeholder for update columns of table "folder" (current role has no relevant permissions) */
+export enum Folder_Update_Column {
+  /** placeholder (do not use) */
+  Placeholder = '_PLACEHOLDER'
+}
 
 /** columns and relationships of "job" */
 export type Job = {
@@ -1140,6 +1261,10 @@ export type Mutation_Root = {
   delete_deck?: Maybe<Deck_Mutation_Response>;
   /** delete single row from the table: "deck" */
   delete_deck_by_pk?: Maybe<Deck>;
+  /** delete data from the table: "directory_entry" */
+  delete_directory_entry?: Maybe<Directory_Entry_Mutation_Response>;
+  /** delete single row from the table: "directory_entry" */
+  delete_directory_entry_by_pk?: Maybe<Directory_Entry>;
   /** delete data from the table: "job" */
   delete_job?: Maybe<Job_Mutation_Response>;
   /** delete single row from the table: "job" */
@@ -1154,10 +1279,18 @@ export type Mutation_Root = {
   insert_deck_one?: Maybe<Deck>;
   /** insert data into the table: "delete_job" */
   insert_delete_job?: Maybe<Delete_Job_Mutation_Response>;
+  /** insert data into the table: "directory_entry" */
+  insert_directory_entry?: Maybe<Directory_Entry_Mutation_Response>;
+  /** insert a single row into the table: "directory_entry" */
+  insert_directory_entry_one?: Maybe<Directory_Entry>;
   /** insert data into the table: "file_upload" */
   insert_file_upload?: Maybe<File_Upload_Mutation_Response>;
   /** insert a single row into the table: "file_upload" */
   insert_file_upload_one?: Maybe<File_Upload>;
+  /** insert data into the table: "folder" */
+  insert_folder?: Maybe<Folder_Mutation_Response>;
+  /** insert a single row into the table: "folder" */
+  insert_folder_one?: Maybe<Folder>;
   /** insert data into the table: "job" */
   insert_job?: Maybe<Job_Mutation_Response>;
   /** insert a single row into the table: "job" */
@@ -1176,12 +1309,18 @@ export type Mutation_Root = {
   update_deck_by_pk?: Maybe<Deck>;
   /** update multiples rows of table: "deck" */
   update_deck_many?: Maybe<Array<Maybe<Deck_Mutation_Response>>>;
-  /** update data of the table: "file" */
-  update_file?: Maybe<File_Mutation_Response>;
-  /** update single row of the table: "file" */
-  update_file_by_pk?: Maybe<File>;
-  /** update multiples rows of table: "file" */
-  update_file_many?: Maybe<Array<Maybe<File_Mutation_Response>>>;
+  /** update data of the table: "directory_entry" */
+  update_directory_entry?: Maybe<Directory_Entry_Mutation_Response>;
+  /** update single row of the table: "directory_entry" */
+  update_directory_entry_by_pk?: Maybe<Directory_Entry>;
+  /** update multiples rows of table: "directory_entry" */
+  update_directory_entry_many?: Maybe<Array<Maybe<Directory_Entry_Mutation_Response>>>;
+  /** update data of the table: "single" */
+  update_single?: Maybe<Single_Mutation_Response>;
+  /** update single row of the table: "single" */
+  update_single_by_pk?: Maybe<Single>;
+  /** update multiples rows of table: "single" */
+  update_single_many?: Maybe<Array<Maybe<Single_Mutation_Response>>>;
   /** update data of the table: "workspace" */
   update_workspace?: Maybe<Workspace_Mutation_Response>;
   /** update single row of the table: "workspace" */
@@ -1199,6 +1338,18 @@ export type Mutation_RootDelete_DeckArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Deck_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Directory_EntryArgs = {
+  where: Directory_Entry_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Directory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1249,6 +1400,20 @@ export type Mutation_RootInsert_Delete_JobArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Directory_EntryArgs = {
+  objects: Array<Directory_Entry_Insert_Input>;
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Directory_Entry_OneArgs = {
+  object: Directory_Entry_Insert_Input;
+  on_conflict?: InputMaybe<Directory_Entry_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_File_UploadArgs = {
   objects: Array<File_Upload_Insert_Input>;
   on_conflict?: InputMaybe<File_Upload_On_Conflict>;
@@ -1259,6 +1424,20 @@ export type Mutation_RootInsert_File_UploadArgs = {
 export type Mutation_RootInsert_File_Upload_OneArgs = {
   object: File_Upload_Insert_Input;
   on_conflict?: InputMaybe<File_Upload_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_FolderArgs = {
+  objects: Array<Folder_Insert_Input>;
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Folder_OneArgs = {
+  object: Folder_Insert_Input;
+  on_conflict?: InputMaybe<Folder_On_Conflict>;
 };
 
 
@@ -1327,34 +1506,54 @@ export type Mutation_RootUpdate_Deck_ManyArgs = {
 
 
 /** mutation root */
-export type Mutation_RootUpdate_FileArgs = {
-  _append?: InputMaybe<File_Append_Input>;
-  _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
-  _delete_elem?: InputMaybe<File_Delete_Elem_Input>;
-  _delete_key?: InputMaybe<File_Delete_Key_Input>;
-  _inc?: InputMaybe<File_Inc_Input>;
-  _prepend?: InputMaybe<File_Prepend_Input>;
-  _set?: InputMaybe<File_Set_Input>;
-  where: File_Bool_Exp;
+export type Mutation_RootUpdate_Directory_EntryArgs = {
+  _append?: InputMaybe<Directory_Entry_Append_Input>;
+  _delete_at_path?: InputMaybe<Directory_Entry_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Directory_Entry_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Directory_Entry_Delete_Key_Input>;
+  _inc?: InputMaybe<Directory_Entry_Inc_Input>;
+  _prepend?: InputMaybe<Directory_Entry_Prepend_Input>;
+  _set?: InputMaybe<Directory_Entry_Set_Input>;
+  where: Directory_Entry_Bool_Exp;
 };
 
 
 /** mutation root */
-export type Mutation_RootUpdate_File_By_PkArgs = {
-  _append?: InputMaybe<File_Append_Input>;
-  _delete_at_path?: InputMaybe<File_Delete_At_Path_Input>;
-  _delete_elem?: InputMaybe<File_Delete_Elem_Input>;
-  _delete_key?: InputMaybe<File_Delete_Key_Input>;
-  _inc?: InputMaybe<File_Inc_Input>;
-  _prepend?: InputMaybe<File_Prepend_Input>;
-  _set?: InputMaybe<File_Set_Input>;
-  pk_columns: File_Pk_Columns_Input;
+export type Mutation_RootUpdate_Directory_Entry_By_PkArgs = {
+  _append?: InputMaybe<Directory_Entry_Append_Input>;
+  _delete_at_path?: InputMaybe<Directory_Entry_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Directory_Entry_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Directory_Entry_Delete_Key_Input>;
+  _inc?: InputMaybe<Directory_Entry_Inc_Input>;
+  _prepend?: InputMaybe<Directory_Entry_Prepend_Input>;
+  _set?: InputMaybe<Directory_Entry_Set_Input>;
+  pk_columns: Directory_Entry_Pk_Columns_Input;
 };
 
 
 /** mutation root */
-export type Mutation_RootUpdate_File_ManyArgs = {
-  updates: Array<File_Updates>;
+export type Mutation_RootUpdate_Directory_Entry_ManyArgs = {
+  updates: Array<Directory_Entry_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_SingleArgs = {
+  _set?: InputMaybe<Single_Set_Input>;
+  where: Single_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Single_By_PkArgs = {
+  _set?: InputMaybe<Single_Set_Input>;
+  pk_columns: Single_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Single_ManyArgs = {
+  updates: Array<Single_Updates>;
 };
 
 
@@ -1414,18 +1613,26 @@ export type Query_Root = {
   deck: Array<Deck>;
   /** fetch data from the table: "deck" using primary key columns */
   deck_by_pk?: Maybe<Deck>;
-  /** fetch data from the table: "file" */
-  file: Array<File>;
-  /** fetch data from the table: "file" using primary key columns */
-  file_by_pk?: Maybe<File>;
+  /** fetch data from the table: "directory_entry" */
+  directory_entry: Array<Directory_Entry>;
+  /** fetch data from the table: "directory_entry" using primary key columns */
+  directory_entry_by_pk?: Maybe<Directory_Entry>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
+  /** fetch data from the table: "folder" */
+  folder: Array<Folder>;
+  /** fetch data from the table: "folder" using primary key columns */
+  folder_by_pk?: Maybe<Folder>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
+  /** fetch data from the table: "single" */
+  single: Array<Single>;
+  /** fetch data from the table: "single" using primary key columns */
+  single_by_pk?: Maybe<Single>;
   /** fetch data from the table: "track" */
   track: Array<Track>;
   /** fetch data from the table: "track" using primary key columns */
@@ -1460,16 +1667,16 @@ export type Query_RootDeck_By_PkArgs = {
 };
 
 
-export type Query_RootFileArgs = {
-  distinct_on?: InputMaybe<Array<File_Select_Column>>;
+export type Query_RootDirectory_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Directory_Entry_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<File_Order_By>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  order_by?: InputMaybe<Array<Directory_Entry_Order_By>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
-export type Query_RootFile_By_PkArgs = {
+export type Query_RootDirectory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1488,6 +1695,20 @@ export type Query_RootFile_Upload_By_PkArgs = {
 };
 
 
+export type Query_RootFolderArgs = {
+  distinct_on?: InputMaybe<Array<Folder_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Folder_Order_By>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
+export type Query_RootFolder_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
 export type Query_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1498,6 +1719,20 @@ export type Query_RootJobArgs = {
 
 
 export type Query_RootJob_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Query_RootSingleArgs = {
+  distinct_on?: InputMaybe<Array<Single_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Single_Order_By>>;
+  where?: InputMaybe<Single_Bool_Exp>;
+};
+
+
+export type Query_RootSingle_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
@@ -1529,6 +1764,97 @@ export type Query_RootWorkspace_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
+/** columns and relationships of "single" */
+export type Single = {
+  __typename?: 'single';
+  description: Scalars['String'];
+  directory_entry_id: Scalars['uuid'];
+  /** An object relationship */
+  dirent: Directory_Entry;
+  download_url: Scalars['String'];
+  id: Scalars['uuid'];
+  length: Scalars['numeric'];
+};
+
+/** Boolean expression to filter rows from the table "single". All fields are combined with a logical 'AND'. */
+export type Single_Bool_Exp = {
+  _and?: InputMaybe<Array<Single_Bool_Exp>>;
+  _not?: InputMaybe<Single_Bool_Exp>;
+  _or?: InputMaybe<Array<Single_Bool_Exp>>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  directory_entry_id?: InputMaybe<Uuid_Comparison_Exp>;
+  dirent?: InputMaybe<Directory_Entry_Bool_Exp>;
+  download_url?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+  length?: InputMaybe<Numeric_Comparison_Exp>;
+};
+
+/** response of any mutation on the table "single" */
+export type Single_Mutation_Response = {
+  __typename?: 'single_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Single>;
+};
+
+/** Ordering options when selecting data from "single". */
+export type Single_Order_By = {
+  description?: InputMaybe<Order_By>;
+  directory_entry_id?: InputMaybe<Order_By>;
+  dirent?: InputMaybe<Directory_Entry_Order_By>;
+  download_url?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  length?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: single */
+export type Single_Pk_Columns_Input = {
+  id: Scalars['uuid'];
+};
+
+/** select columns of table "single" */
+export enum Single_Select_Column {
+  /** column name */
+  Description = 'description',
+  /** column name */
+  DirectoryEntryId = 'directory_entry_id',
+  /** column name */
+  DownloadUrl = 'download_url',
+  /** column name */
+  Id = 'id',
+  /** column name */
+  Length = 'length'
+}
+
+/** input type for updating data in table "single" */
+export type Single_Set_Input = {
+  description?: InputMaybe<Scalars['String']>;
+};
+
+/** Streaming cursor of the table "single" */
+export type Single_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Single_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Single_Stream_Cursor_Value_Input = {
+  description?: InputMaybe<Scalars['String']>;
+  directory_entry_id?: InputMaybe<Scalars['uuid']>;
+  download_url?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['uuid']>;
+  length?: InputMaybe<Scalars['numeric']>;
+};
+
+export type Single_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Single_Set_Input>;
+  where: Single_Bool_Exp;
+};
+
 export type Subscription_Root = {
   __typename?: 'subscription_root';
   /** execute function "available_jobs" which returns "job" */
@@ -1539,24 +1865,36 @@ export type Subscription_Root = {
   deck_by_pk?: Maybe<Deck>;
   /** fetch data from the table in a streaming manner : "deck" */
   deck_stream: Array<Deck>;
-  /** fetch data from the table: "file" */
-  file: Array<File>;
-  /** fetch data from the table: "file" using primary key columns */
-  file_by_pk?: Maybe<File>;
-  /** fetch data from the table in a streaming manner : "file" */
-  file_stream: Array<File>;
+  /** fetch data from the table: "directory_entry" */
+  directory_entry: Array<Directory_Entry>;
+  /** fetch data from the table: "directory_entry" using primary key columns */
+  directory_entry_by_pk?: Maybe<Directory_Entry>;
+  /** fetch data from the table in a streaming manner : "directory_entry" */
+  directory_entry_stream: Array<Directory_Entry>;
   /** fetch data from the table: "file_upload" */
   file_upload: Array<File_Upload>;
   /** fetch data from the table: "file_upload" using primary key columns */
   file_upload_by_pk?: Maybe<File_Upload>;
   /** fetch data from the table in a streaming manner : "file_upload" */
   file_upload_stream: Array<File_Upload>;
+  /** fetch data from the table: "folder" */
+  folder: Array<Folder>;
+  /** fetch data from the table: "folder" using primary key columns */
+  folder_by_pk?: Maybe<Folder>;
+  /** fetch data from the table in a streaming manner : "folder" */
+  folder_stream: Array<Folder>;
   /** fetch data from the table: "job" */
   job: Array<Job>;
   /** fetch data from the table: "job" using primary key columns */
   job_by_pk?: Maybe<Job>;
   /** fetch data from the table in a streaming manner : "job" */
   job_stream: Array<Job>;
+  /** fetch data from the table: "single" */
+  single: Array<Single>;
+  /** fetch data from the table: "single" using primary key columns */
+  single_by_pk?: Maybe<Single>;
+  /** fetch data from the table in a streaming manner : "single" */
+  single_stream: Array<Single>;
   /** fetch data from the table: "track" */
   track: Array<Track>;
   /** fetch data from the table: "track" using primary key columns */
@@ -1602,24 +1940,24 @@ export type Subscription_RootDeck_StreamArgs = {
 };
 
 
-export type Subscription_RootFileArgs = {
-  distinct_on?: InputMaybe<Array<File_Select_Column>>;
+export type Subscription_RootDirectory_EntryArgs = {
+  distinct_on?: InputMaybe<Array<Directory_Entry_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<File_Order_By>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  order_by?: InputMaybe<Array<Directory_Entry_Order_By>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
-export type Subscription_RootFile_By_PkArgs = {
+export type Subscription_RootDirectory_Entry_By_PkArgs = {
   id: Scalars['uuid'];
 };
 
 
-export type Subscription_RootFile_StreamArgs = {
+export type Subscription_RootDirectory_Entry_StreamArgs = {
   batch_size: Scalars['Int'];
-  cursor: Array<InputMaybe<File_Stream_Cursor_Input>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  cursor: Array<InputMaybe<Directory_Entry_Stream_Cursor_Input>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
@@ -1644,6 +1982,27 @@ export type Subscription_RootFile_Upload_StreamArgs = {
 };
 
 
+export type Subscription_RootFolderArgs = {
+  distinct_on?: InputMaybe<Array<Folder_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Folder_Order_By>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
+export type Subscription_RootFolder_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootFolder_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Folder_Stream_Cursor_Input>>;
+  where?: InputMaybe<Folder_Bool_Exp>;
+};
+
+
 export type Subscription_RootJobArgs = {
   distinct_on?: InputMaybe<Array<Job_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -1662,6 +2021,27 @@ export type Subscription_RootJob_StreamArgs = {
   batch_size: Scalars['Int'];
   cursor: Array<InputMaybe<Job_Stream_Cursor_Input>>;
   where?: InputMaybe<Job_Bool_Exp>;
+};
+
+
+export type Subscription_RootSingleArgs = {
+  distinct_on?: InputMaybe<Array<Single_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Single_Order_By>>;
+  where?: InputMaybe<Single_Bool_Exp>;
+};
+
+
+export type Subscription_RootSingle_By_PkArgs = {
+  id: Scalars['uuid'];
+};
+
+
+export type Subscription_RootSingle_StreamArgs = {
+  batch_size: Scalars['Int'];
+  cursor: Array<InputMaybe<Single_Stream_Cursor_Input>>;
+  where?: InputMaybe<Single_Bool_Exp>;
 };
 
 
@@ -1726,11 +2106,11 @@ export type Track = {
   /** An object relationship */
   deck: Deck;
   deck_id: Scalars['uuid'];
-  /** An object relationship */
-  file: File;
-  file_id: Scalars['uuid'];
   id: Scalars['uuid'];
   ordering: Scalars['bigint'];
+  /** An object relationship */
+  single: Single;
+  single_id: Scalars['uuid'];
 };
 
 /** order by aggregate values of table "track" */
@@ -1768,10 +2148,10 @@ export type Track_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   deck?: InputMaybe<Deck_Bool_Exp>;
   deck_id?: InputMaybe<Uuid_Comparison_Exp>;
-  file?: InputMaybe<File_Bool_Exp>;
-  file_id?: InputMaybe<Uuid_Comparison_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   ordering?: InputMaybe<Bigint_Comparison_Exp>;
+  single?: InputMaybe<Single_Bool_Exp>;
+  single_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
 /** unique or primary key constraints on table "track" */
@@ -1784,27 +2164,27 @@ export enum Track_Constraint {
 export type Track_Insert_Input = {
   deck?: InputMaybe<Deck_Obj_Rel_Insert_Input>;
   deck_id?: InputMaybe<Scalars['uuid']>;
-  file_id?: InputMaybe<Scalars['uuid']>;
   id?: InputMaybe<Scalars['uuid']>;
   ordering?: InputMaybe<Scalars['bigint']>;
+  single_id?: InputMaybe<Scalars['uuid']>;
 };
 
 /** order by max() on columns of table "track" */
 export type Track_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   deck_id?: InputMaybe<Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** order by min() on columns of table "track" */
 export type Track_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   deck_id?: InputMaybe<Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "track" */
@@ -1828,10 +2208,10 @@ export type Track_Order_By = {
   created_at?: InputMaybe<Order_By>;
   deck?: InputMaybe<Deck_Order_By>;
   deck_id?: InputMaybe<Order_By>;
-  file?: InputMaybe<File_Order_By>;
-  file_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   ordering?: InputMaybe<Order_By>;
+  single?: InputMaybe<Single_Order_By>;
+  single_id?: InputMaybe<Order_By>;
 };
 
 /** select columns of table "track" */
@@ -1841,11 +2221,11 @@ export enum Track_Select_Column {
   /** column name */
   DeckId = 'deck_id',
   /** column name */
-  FileId = 'file_id',
-  /** column name */
   Id = 'id',
   /** column name */
-  Ordering = 'ordering'
+  Ordering = 'ordering',
+  /** column name */
+  SingleId = 'single_id'
 }
 
 /** order by stddev() on columns of table "track" */
@@ -1875,9 +2255,9 @@ export type Track_Stream_Cursor_Input = {
 export type Track_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']>;
   deck_id?: InputMaybe<Scalars['uuid']>;
-  file_id?: InputMaybe<Scalars['uuid']>;
   id?: InputMaybe<Scalars['uuid']>;
   ordering?: InputMaybe<Scalars['bigint']>;
+  single_id?: InputMaybe<Scalars['uuid']>;
 };
 
 /** order by sum() on columns of table "track" */
@@ -1926,7 +2306,7 @@ export type Workspace = {
   /** An array relationship */
   decks: Array<Deck>;
   /** An array relationship */
-  files: Array<File>;
+  dirents: Array<Directory_Entry>;
   id: Scalars['uuid'];
   /** An array relationship */
   jobs: Array<Job>;
@@ -1946,12 +2326,12 @@ export type WorkspaceDecksArgs = {
 
 
 /** columns and relationships of "workspace" */
-export type WorkspaceFilesArgs = {
-  distinct_on?: InputMaybe<Array<File_Select_Column>>;
+export type WorkspaceDirentsArgs = {
+  distinct_on?: InputMaybe<Array<Directory_Entry_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
-  order_by?: InputMaybe<Array<File_Order_By>>;
-  where?: InputMaybe<File_Bool_Exp>;
+  order_by?: InputMaybe<Array<Directory_Entry_Order_By>>;
+  where?: InputMaybe<Directory_Entry_Bool_Exp>;
 };
 
 
@@ -1971,7 +2351,7 @@ export type Workspace_Bool_Exp = {
   _or?: InputMaybe<Array<Workspace_Bool_Exp>>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   decks?: InputMaybe<Deck_Bool_Exp>;
-  files?: InputMaybe<File_Bool_Exp>;
+  dirents?: InputMaybe<Directory_Entry_Bool_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   jobs?: InputMaybe<Job_Bool_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
@@ -1987,6 +2367,7 @@ export enum Workspace_Constraint {
 /** input type for inserting data into table "workspace" */
 export type Workspace_Insert_Input = {
   decks?: InputMaybe<Deck_Arr_Rel_Insert_Input>;
+  dirents?: InputMaybe<Directory_Entry_Arr_Rel_Insert_Input>;
   jobs?: InputMaybe<Job_Arr_Rel_Insert_Input>;
   name?: InputMaybe<Scalars['String']>;
 };
@@ -2018,7 +2399,7 @@ export type Workspace_On_Conflict = {
 export type Workspace_Order_By = {
   created_at?: InputMaybe<Order_By>;
   decks_aggregate?: InputMaybe<Deck_Aggregate_Order_By>;
-  files_aggregate?: InputMaybe<File_Aggregate_Order_By>;
+  dirents_aggregate?: InputMaybe<Directory_Entry_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   jobs_aggregate?: InputMaybe<Job_Aggregate_Order_By>;
   name?: InputMaybe<Order_By>;
@@ -2075,16 +2456,16 @@ export type Workspace_Updates = {
   where: Workspace_Bool_Exp;
 };
 
-export type TrackInfoFragment = { __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } };
+export type TrackInfoFragment = { __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } };
 
-export type DeckInfoFragment = { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> };
+export type DeckInfoFragment = { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> };
 
 export type DecksQueryVariables = Exact<{
   workspaceId: Scalars['uuid'];
 }>;
 
 
-export type DecksQuery = { __typename?: 'query_root', workspace_by_pk?: { __typename?: 'workspace', id: string, decks: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null };
+export type DecksQuery = { __typename?: 'query_root', workspace_by_pk?: { __typename?: 'workspace', id: string, decks: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> }> } | null };
 
 export type StopDeckMutationVariables = Exact<{
   deckId: Scalars['uuid'];
@@ -2099,7 +2480,7 @@ export type UpdateDeckMutationVariables = Exact<{
 }>;
 
 
-export type UpdateDeckMutation = { __typename?: 'mutation_root', update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
+export type UpdateDeckMutation = { __typename?: 'mutation_root', update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> } | null };
 
 export type PlayDeckMutationVariables = Exact<{
   workspaceId: Scalars['uuid'];
@@ -2108,7 +2489,7 @@ export type PlayDeckMutationVariables = Exact<{
 }>;
 
 
-export type PlayDeckMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'track', id: string }> } | null, insert_deck_one?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
+export type PlayDeckMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'track', id: string }> } | null, insert_deck_one?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> } | null };
 
 export type UpdateDeckAndSetQueueMutationVariables = Exact<{
   deckId: Scalars['uuid'];
@@ -2117,7 +2498,7 @@ export type UpdateDeckAndSetQueueMutationVariables = Exact<{
 }>;
 
 
-export type UpdateDeckAndSetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> } | null };
+export type UpdateDeckAndSetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck_by_pk?: { __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> } | null };
 
 export type StopMainDeckMutationVariables = Exact<{
   workspaceId: Scalars['uuid'];
@@ -2132,33 +2513,35 @@ export type UpdateMainDeckMutationVariables = Exact<{
 }>;
 
 
-export type UpdateMainDeckMutation = { __typename?: 'mutation_root', update_deck?: { __typename?: 'deck_mutation_response', returning: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null };
+export type UpdateMainDeckMutation = { __typename?: 'mutation_root', update_deck?: { __typename?: 'deck_mutation_response', returning: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, single: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } }> }> } | null };
 
-export type UpdateMainDeckAndSetQueueMutationVariables = Exact<{
-  workspaceId: Scalars['uuid'];
-  update: Deck_Set_Input;
-  newQueue: Array<Track_Insert_Input> | Track_Insert_Input;
-}>;
+export type SingleInfoFragment = { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } };
 
-
-export type UpdateMainDeckAndSetQueueMutation = { __typename?: 'mutation_root', delete_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, insert_track?: { __typename?: 'track_mutation_response', affected_rows: number } | null, update_deck?: { __typename?: 'deck_mutation_response', returning: Array<{ __typename?: 'deck', id: string, type: Deck_Type_Enum_Enum, volume: number, speed: number, pause_timestamp?: string | null, start_timestamp: string, workspace_id: string, created_at: string, queue: Array<{ __typename?: 'track', id: string, created_at: string, deck_id: string, ordering: number, file: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } }> }> } | null };
-
-export type FileInfoFragment = { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string };
+export type FileInfoFragment = { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any, single?: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } | null, folder?: { __typename?: 'folder', id: string } | null };
 
 export type WorkspaceFilesQueryVariables = Exact<{
   workspaceId: Scalars['uuid'];
 }>;
 
 
-export type WorkspaceFilesQuery = { __typename?: 'query_root', file: Array<{ __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string }> };
+export type WorkspaceFilesQuery = { __typename?: 'query_root', directory_entry: Array<{ __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any, single?: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } | null, folder?: { __typename?: 'folder', id: string } | null }> };
 
-export type UpdateFileMutationVariables = Exact<{
+export type UpdateDirectoryEntryMutationVariables = Exact<{
   id: Scalars['uuid'];
-  update: File_Set_Input;
+  update: Directory_Entry_Set_Input;
 }>;
 
 
-export type UpdateFileMutation = { __typename?: 'mutation_root', update_file_by_pk?: { __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string } | null };
+export type UpdateDirectoryEntryMutation = { __typename?: 'mutation_root', update_directory_entry_by_pk?: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any, single?: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } | null, folder?: { __typename?: 'folder', id: string } | null } | null };
+
+export type UpdateSingleEntryMutationVariables = Exact<{
+  id: Scalars['uuid'];
+  update: Directory_Entry_Set_Input;
+  desc: Scalars['String'];
+}>;
+
+
+export type UpdateSingleEntryMutation = { __typename?: 'mutation_root', update_single?: { __typename?: 'single_mutation_response', returning: Array<{ __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } }> } | null, update_directory_entry_by_pk?: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any, single?: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } | null, folder?: { __typename?: 'folder', id: string } | null } | null };
 
 export type DeleteFileMutationVariables = Exact<{
   job: Delete_Job_Insert_Input;
@@ -2167,13 +2550,31 @@ export type DeleteFileMutationVariables = Exact<{
 
 export type DeleteFileMutation = { __typename?: 'mutation_root', insert_delete_job?: { __typename?: 'delete_job_mutation_response', affected_rows: number } | null };
 
-export type SetFilesPathMutationVariables = Exact<{
-  files: Array<Scalars['uuid']> | Scalars['uuid'];
-  path?: InputMaybe<Scalars['jsonb']>;
+export type MovePathMutationVariables = Exact<{
+  workspaceId: Scalars['uuid'];
+  oldpath: Scalars['jsonb'];
+  newpath: Scalars['jsonb'];
 }>;
 
 
-export type SetFilesPathMutation = { __typename?: 'mutation_root', update_file?: { __typename?: 'file_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'file', id: string, type: File_Type_Enum_Enum, path: any, name: string, description: string, length: number, ordering?: number | null, workspace_id: string, download_url: string }> } | null };
+export type MovePathMutation = { __typename?: 'mutation_root', update_directory_entry?: { __typename?: 'directory_entry_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any, single?: { __typename?: 'single', id: string, description: string, length: number, download_url: string, dirent: { __typename?: 'directory_entry', id: string, name: string, ordering?: number | null, path: any } } | null, folder?: { __typename?: 'folder', id: string } | null }> } | null };
+
+export type DeleteFolderMutationVariables = Exact<{
+  folderId: Scalars['uuid'];
+}>;
+
+
+export type DeleteFolderMutation = { __typename?: 'mutation_root', delete_directory_entry_by_pk?: { __typename?: 'directory_entry', id: string } | null };
+
+export type CreateFolderMutationVariables = Exact<{
+  name: Scalars['String'];
+  path: Scalars['jsonb'];
+  ordering?: InputMaybe<Scalars['bigint']>;
+  workspaceId: Scalars['uuid'];
+}>;
+
+
+export type CreateFolderMutation = { __typename?: 'mutation_root', insert_folder_one?: { __typename?: 'folder', dirent: { __typename?: 'directory_entry', id: string, path: any, ordering?: number | null, name: string } } | null };
 
 export type JobInfoFragment = { __typename?: 'job', id: string, url?: string | null, name: string, description: string, path: any, option_cut_start?: unknown | null, option_cut_end?: unknown | null, option_fade_in?: unknown | null, option_fade_out?: unknown | null, progress?: number | null, status: Job_Status_Enum_Enum, assigned_worker?: string | null, error?: string | null, created_at: string };
 
@@ -2221,9 +2622,10 @@ export type CreateWorkspaceMutationVariables = Exact<{
 
 export type CreateWorkspaceMutation = { __typename?: 'mutation_root', insert_workspace_one?: { __typename?: 'workspace', id: string, name: string, created_at: string, updated_at: string } | null };
 
-export const FileInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FileInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"file"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"length"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"download_url"}}]}}]} as unknown as DocumentNode<FileInfoFragment, unknown>;
-export const TrackInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TrackInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"track"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"file"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"deck_id"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<TrackInfoFragment, unknown>;
+export const SingleInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SingleInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"single"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"length"}},{"kind":"Field","name":{"kind":"Name","value":"download_url"}},{"kind":"Field","name":{"kind":"Name","value":"dirent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}}]}}]} as unknown as DocumentNode<SingleInfoFragment, unknown>;
+export const TrackInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TrackInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"track"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"single"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SingleInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"deck_id"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}}]}},...SingleInfoFragmentDoc.definitions]} as unknown as DocumentNode<TrackInfoFragment, unknown>;
 export const DeckInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"DeckInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"deck"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"volume"}},{"kind":"Field","name":{"kind":"Name","value":"speed"}},{"kind":"Field","name":{"kind":"Name","value":"pause_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"start_timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"queue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TrackInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},...TrackInfoFragmentDoc.definitions]} as unknown as DocumentNode<DeckInfoFragment, unknown>;
+export const FileInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FileInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"directory_entry"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"single"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SingleInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"folder"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}},...SingleInfoFragmentDoc.definitions]} as unknown as DocumentNode<FileInfoFragment, unknown>;
 export const JobInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"JobInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"job"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_start"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_end"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_in"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_out"}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"assigned_worker"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]} as unknown as DocumentNode<JobInfoFragment, unknown>;
 export const WorkspaceInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WorkspaceInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"workspace"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]} as unknown as DocumentNode<WorkspaceInfoFragment, unknown>;
 export const DecksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Decks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workspace_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<DecksQuery, DecksQueryVariables>;
@@ -2233,11 +2635,13 @@ export const PlayDeckDocument = {"kind":"Document","definitions":[{"kind":"Opera
 export const UpdateDeckAndSetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDeckAndSetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deckId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDeckAndSetQueueMutation, UpdateDeckAndSetQueueMutationVariables>;
 export const StopMainDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StopMainDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<StopMainDeckMutation, StopMainDeckMutationVariables>;
 export const UpdateMainDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateMainDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateMainDeckMutation, UpdateMainDeckMutationVariables>;
-export const UpdateMainDeckAndSetQueueDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateMainDeckAndSetQueue"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"deck_set_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"track_insert_input"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"deck"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_track"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newQueue"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_deck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"type"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"EnumValue","value":"main"}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DeckInfo"}}]}}]}}]}},...DeckInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateMainDeckAndSetQueueMutation, UpdateMainDeckAndSetQueueMutationVariables>;
-export const WorkspaceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"EnumValue","value":"asc_nulls_last"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>;
-export const UpdateFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"file_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateFileMutation, UpdateFileMutationVariables>;
+export const WorkspaceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"directory_entry"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"EnumValue","value":"asc_nulls_last"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceFilesQuery, WorkspaceFilesQueryVariables>;
+export const UpdateDirectoryEntryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateDirectoryEntry"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"directory_entry_set_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_directory_entry_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateDirectoryEntryMutation, UpdateDirectoryEntryMutationVariables>;
+export const UpdateSingleEntryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateSingleEntry"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"update"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"directory_entry_set_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"desc"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_single"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"description"},"value":{"kind":"Variable","name":{"kind":"Name","value":"desc"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"directory_entry_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SingleInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"update_directory_entry_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"Variable","name":{"kind":"Name","value":"update"}}},{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}},...SingleInfoFragmentDoc.definitions,...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<UpdateSingleEntryMutation, UpdateSingleEntryMutationVariables>;
 export const DeleteFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"delete_job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_delete_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"objects"},"value":{"kind":"ListValue","values":[{"kind":"Variable","name":{"kind":"Name","value":"job"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}}]}}]}}]} as unknown as DocumentNode<DeleteFileMutation, DeleteFileMutationVariables>;
-export const SetFilesPathDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetFilesPath"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"files"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"path"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_file"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_in"},"value":{"kind":"Variable","name":{"kind":"Name","value":"files"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"Variable","name":{"kind":"Name","value":"path"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<SetFilesPathMutation, SetFilesPathMutationVariables>;
+export const MovePathDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MovePath"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldpath"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newpath"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_directory_entry"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}},{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldpath"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newpath"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"affected_rows"}},{"kind":"Field","name":{"kind":"Name","value":"returning"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FileInfo"}}]}}]}}]}},...FileInfoFragmentDoc.definitions]} as unknown as DocumentNode<MovePathMutation, MovePathMutationVariables>;
+export const DeleteFolderDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteFolder"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"folderId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_directory_entry_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"folderId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteFolderMutation, DeleteFolderMutationVariables>;
+export const CreateFolderDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateFolder"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"path"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"jsonb"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ordering"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"bigint"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_folder_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"dirent"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"data"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"path"},"value":{"kind":"Variable","name":{"kind":"Name","value":"path"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"ordering"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ordering"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dirent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"ordering"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]} as unknown as DocumentNode<CreateFolderMutation, CreateFolderMutationVariables>;
 export const WorkspaceJobsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"WorkspaceJobs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"where"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"workspace_id"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"_eq"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workspaceId"}}}]}}]}},{"kind":"Argument","name":{"kind":"Name","value":"order_by"},"value":{"kind":"ListValue","values":[{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"assign_time"},"value":{"kind":"EnumValue","value":"asc"}}]},{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"created_at"},"value":{"kind":"EnumValue","value":"asc"}}]}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<WorkspaceJobsQuery, WorkspaceJobsQueryVariables>;
 export const AddJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"job"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"job_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_job_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"job"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"JobInfo"}}]}}]}},...JobInfoFragmentDoc.definitions]} as unknown as DocumentNode<AddJobMutation, AddJobMutationVariables>;
 export const DeleteErrorJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteErrorJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<DeleteErrorJobMutation, DeleteErrorJobMutationVariables>;

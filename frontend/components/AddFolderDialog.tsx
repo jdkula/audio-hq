@@ -9,42 +9,40 @@ import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useLocalReactiveValue } from '../lib/LocalReactive';
-import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
+import { FileManagerContext, WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import * as API from '~/lib/api/models';
-import { useUpdateTrackMutation } from '~/lib/api/hooks';
+import { useCreateFolderMutation, useUpdateEntryMutation } from '~/lib/api/hooks';
 
-const FolderAddDialog: FC<{ files: API.Track[]; cancel: () => void }> = ({ files, cancel }) => {
+const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showing, cancel }) => {
     const workspaceId = useContext(WorkspaceIdContext);
     const [name, setName] = useState('');
     const { currentPath: currentPathLRV } = useContext(WorkspaceLRVContext);
     const [currentPath] = useLocalReactiveValue(currentPathLRV);
+    const fileManager = useContext(FileManagerContext);
 
-    const updateTrack = useUpdateTrackMutation(workspaceId);
+    const createFolderMutation = useCreateFolderMutation(workspaceId);
 
     const onCancel = () => {
         setName('');
         cancel();
     };
 
-    const addFilesToFolder = async () => {
+    const createFolder = async () => {
         onCancel();
 
-        // We can assign all files to a new folder by just adding the name on.
-        // The captured value of "name" is unaffected by the call to onCancel above.
-        const targetPath = [...currentPath, name];
-        await Promise.all(files.map((f) => updateTrack.mutateAsync({ trackId: f.id, update: { path: targetPath } })));
+        createFolderMutation.mutate({ name, basePath: currentPath });
     };
 
     const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code !== 'Enter') return;
 
         e.preventDefault();
-        addFilesToFolder();
+        createFolder();
     };
 
     return (
-        <Dialog open={files.length > 0} onClose={onCancel}>
-            <DialogTitle>Add Folder</DialogTitle>
+        <Dialog open={!!showing} onClose={onCancel}>
+            <DialogTitle>Create Folder</DialogTitle>
             <DialogContent dividers>
                 <TextField
                     id="folder-name"
@@ -57,7 +55,7 @@ const FolderAddDialog: FC<{ files: API.Track[]; cancel: () => void }> = ({ files
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
-                <Button onClick={addFilesToFolder}>Add</Button>
+                <Button onClick={createFolder}>Create</Button>
             </DialogActions>
         </Dialog>
     );

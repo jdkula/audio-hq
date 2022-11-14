@@ -2,21 +2,21 @@ table:
   name: delete_job
   schema: public
 object_relationships:
-  - name: file
+  - name: single
     using:
-      foreign_key_constraint_on: file_id
+      foreign_key_constraint_on: single_id
 insert_permissions:
   - role: anonymous
     permission:
       check: {}
       columns:
-        - file_id
+        - single_id
 select_permissions:
   - role: worker
     permission:
       columns:
         - assigned_worker
-        - file_id
+        - single_id
         - id
       filter: {}
 update_permissions:

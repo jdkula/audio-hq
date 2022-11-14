@@ -9,9 +9,7 @@
 
 import React, { FC, KeyboardEvent, MouseEvent, useContext, useState } from 'react';
 import FolderIcon from '@mui/icons-material/Folder';
-import { Droppable } from 'react-beautiful-dnd';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 
@@ -21,7 +19,6 @@ import {
     ClickAwayListener,
     IconButton,
     IconButtonProps,
-    Paper,
     TextField,
     Tooltip,
     Typography,
@@ -30,25 +27,18 @@ import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
 import { WorkspaceIdContext } from '~/lib/utility/context';
-import { useUpdateTrackMutation, useWorkspaceTracks } from '~/lib/api/hooks';
+import { useDeleteEntryMutation, useUpdateEntryMutation } from '~/lib/api/hooks';
+import { Folder } from '~/lib/api/models';
 
-const FolderContainer = styled(Paper)`
+const FolderContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-rows: auto;
 
-    margin: 0.5rem 1rem;
-    border-radius: 3rem;
-    overflow: hidden;
-    padding: 0.25rem 0.25rem;
-    transition: background-color 0.25s;
+    width: 100%;
+
     align-content: center;
     align-items: center;
-    min-height: 50px;
-
-    &:hover {
-        background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#333' : '#eee')};
-    }
 `;
 
 const ControlsContainer = styled.div`
@@ -78,15 +68,12 @@ const MainContainer = styled.div`
 
 interface FolderButtonProps extends IconButtonProps {
     dragging?: boolean;
-    up?: boolean;
 }
 
-const FolderButton: FC<FolderButtonProps> = ({ dragging, up, ...props }) => {
+const FolderButton: FC<FolderButtonProps> = ({ dragging, ...props }) => {
     let icon;
     if (dragging) {
         icon = <FolderOpenIcon color="primary" />;
-    } else if (up) {
-        icon = <ArrowBackIcon />;
     } else {
         icon = <FolderIcon />;
     }
@@ -100,67 +87,50 @@ const FolderButton: FC<FolderButtonProps> = ({ dragging, up, ...props }) => {
     );
 };
 
-const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: boolean }> = ({
-    name,
+const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dragging?: boolean }> = ({
+    folder,
     path,
     onClick,
-    up,
+    dragging,
 }) => {
     const workspaceId = useContext(WorkspaceIdContext);
 
-    const { data: filesRaw } = useWorkspaceTracks(workspaceId);
-    const files = filesRaw ?? [];
-
-    const updatePath = useUpdateTrackMutation(workspaceId);
+    const updateEntry = useUpdateEntryMutation(workspaceId);
+    const deleteEntry = useDeleteEntryMutation(workspaceId);
 
     const [renaming, setRenaming] = useState(false);
     const [newName, setNewName] = useState('');
 
     const [deleting, setDeleting] = useState(false);
 
-    const fullPath = [...path, name];
+    const fullPath = [...path, folder.name];
 
     const startRenaming = (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        if (up) return;
         setRenaming(!renaming);
-        setNewName(name);
+        setNewName(folder.name);
     };
 
     const stopRenaming = () => {
         setRenaming(!renaming);
-        setNewName(name);
+        setNewName(folder.name);
     };
 
-    const subfiles = () =>
-        files.filter(
-            (file) =>
-                file.path.length >= fullPath.length && fullPath.every((pathElement, i) => pathElement === file.path[i]),
-        );
-
     const onRename = () => {
-        console.log('subfiles', subfiles(), 'path', path, 'fullPath', fullPath);
-        subfiles().forEach((file) =>
-            updatePath.mutateAsync({
-                trackId: file.id,
-                update: {
-                    path: [...path, newName, ...file.path.slice(fullPath.length)],
-                },
-            }),
-        );
+        updateEntry.mutateAsync({
+            entry: folder,
+            update: {
+                name: newName,
+            },
+        });
         setRenaming(false);
     };
 
     const onDelete = () => {
-        subfiles().forEach((file) =>
-            updatePath.mutateAsync({
-                trackId: file.id,
-                update: {
-                    path: [...path, newName, ...file.path.slice(fullPath.length)],
-                },
-            }),
-        );
+        deleteEntry.mutateAsync({
+            entry: folder,
+        });
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -181,7 +151,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
 
     const nameComponent = (
         <Typography variant="body1" component="span">
-            {name || 'Untitled Folder...'}
+            {folder.name || 'Untitled Folder...'}
         </Typography>
     );
 
@@ -206,7 +176,7 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         </ClickAwayListener>
     );
 
-    const main = up || !renaming ? nameComponent : editor;
+    const main = !renaming ? nameComponent : editor;
 
     const controls = (
         <ControlsContainer>
@@ -223,26 +193,21 @@ const FolderEntry: FC<{ name: string; path: string[]; onClick: () => void; up?: 
         </ControlsContainer>
     );
     return (
-        <Droppable droppableId={up ? '___back___' : `___folder_${name}`}>
-            {(provided, snapshot) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                    <FolderDeleteDialog
-                        folder={name}
-                        onConfirm={onDelete}
-                        open={deleting}
-                        onClose={() => setDeleting(false)}
-                    />
-                    <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
-                        <MainContainer>
-                            <FolderButton dragging={snapshot.isDraggingOver} up={up} />
-                            {main}
-                        </MainContainer>
-                        <div style={{ display: 'none' }}>{provided.placeholder}</div>
-                        {!up && controls}
-                    </FolderContainer>
-                </div>
-            )}
-        </Droppable>
+        <>
+            <FolderDeleteDialog
+                folder={folder.name}
+                onConfirm={onDelete}
+                open={deleting}
+                onClose={() => setDeleting(false)}
+            />
+            <FolderContainer onClick={onClick} style={{ cursor: 'pointer' }}>
+                <MainContainer>
+                    <FolderButton dragging={dragging} />
+                    {main}
+                </MainContainer>
+                {controls}
+            </FolderContainer>
+        </>
     );
 };
 

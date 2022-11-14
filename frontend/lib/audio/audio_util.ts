@@ -4,7 +4,7 @@
  * Provides a small set of utility functions used for managing tracks and decks
  */
 import { add, differenceInMilliseconds, sub } from 'date-fns';
-import { Deck, Track } from '../api/models';
+import { Deck, Single } from '../api/models';
 
 export interface DeckInfo {
     secondsToCurrentPlayhead: number;
@@ -14,14 +14,14 @@ export interface DeckInfo {
 }
 
 interface TrackInfo {
-    currentTrack: Track;
+    currentTrack: Single;
     startTime: number;
     endTime: number;
     isCurrent: boolean;
     index: number;
 }
 
-export function getDeckInfo(status: Deck, track?: Track): DeckInfo | null {
+export function getDeckInfo(status: Deck, track?: Single): DeckInfo | null {
     const effectiveTime = status.pauseTimestamp ?? new Date();
 
     const secondsSinceStart = differenceInMilliseconds(effectiveTime, status.startTimestamp) / 1000;

@@ -7,16 +7,16 @@
 
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { FC, useContext } from 'react';
-import { useDeleteTrackMutation } from '~/lib/api/hooks';
+import { useDeleteEntryMutation } from '~/lib/api/hooks';
 import * as API from '~/lib/api/models';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 
-const FileDeleteDialog: FC<DialogProps & { file: API.Track }> = ({ file, ...props }) => {
+const FileDeleteDialog: FC<DialogProps & { file: API.Entry }> = ({ file, ...props }) => {
     const workspaceId = useContext(WorkspaceIdContext);
-    const deleteFile = useDeleteTrackMutation(workspaceId);
+    const deleteFile = useDeleteEntryMutation(workspaceId);
 
     const doDelete = () => {
-        deleteFile.mutate({ id: file.id });
+        deleteFile.mutate({ entry: file });
         props.onClose?.({}, 'escapeKeyDown');
     };
 

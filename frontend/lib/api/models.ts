@@ -10,25 +10,36 @@ export interface Workspace {
 export type WorkspaceCreate = Pick<Workspace, 'name'>;
 export type WorkspaceUpdate = Partial<WorkspaceCreate>;
 
-////////// Tracks
+////////// Entries
 
-export type TrackType = 'single';
+export type EntryType = 'single' | 'directory';
 
-export interface Track {
+interface EntryBase {
     id: string;
-    type: TrackType;
     path: Array<string>;
-
     name: string;
-    description: string;
-    length: number;
     ordering: number;
-
-    url: string;
 }
 
-export type TrackCreate = Pick<Track, 'path' | 'name' | 'description'> & { ordering: number | null };
-export type TrackUpdate = Partial<TrackCreate>;
+export type Entry = Single | Folder;
+
+export interface Single extends EntryBase {
+    type: 'single';
+    description: string;
+    length: number;
+    url: string;
+
+    __internal_id_single: string;
+}
+
+export interface Folder extends EntryBase {
+    type: 'folder';
+}
+
+export type EntryCreate = Pick<Entry, 'path' | 'name'> & { ordering: number | null };
+export type SingleCreate = EntryCreate & { description: string };
+export type EntryUpdate = Partial<EntryCreate>;
+export type SingleUpdate = Partial<SingleCreate>;
 
 ////////// Decks
 
@@ -43,7 +54,7 @@ export interface Deck {
     pauseTimestamp: Date | null;
     startTimestamp: Date;
 
-    queue: Array<Track>;
+    queue: Array<Single>;
 
     createdAt: Date;
 }
@@ -53,7 +64,7 @@ export type DeckUpdate = Partial<Omit<DeckCreate, 'type'>>;
 
 ////////// Jobs
 
-export interface Job extends TrackCreate {
+export interface Job extends SingleCreate {
     id: string;
     modifications: Array<JobModification>;
 

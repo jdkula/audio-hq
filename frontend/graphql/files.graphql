@@ -1,26 +1,50 @@
-fragment FileInfo on file {
+fragment SingleInfo on single {
     id
-    type
-    path
-
-    name
     description
     length
-    ordering
-
-    workspace_id
 
     download_url
+
+    dirent {
+        id
+        name
+        ordering
+        path
+    }
+}
+
+fragment FileInfo on directory_entry {
+    id
+    single {
+        ...SingleInfo
+    }
+    folder {
+        id
+    }
+    name
+    ordering
+    path
 }
 
 query WorkspaceFiles($workspaceId: uuid!) {
-    file(where: { workspace_id: { _eq: $workspaceId } }, order_by: [{ ordering: asc_nulls_last }]) {
+    directory_entry(where: { workspace_id: { _eq: $workspaceId } }, order_by: [{ ordering: asc_nulls_last }]) {
         ...FileInfo
     }
 }
 
-mutation UpdateFile($id: uuid!, $update: file_set_input!) {
-    update_file_by_pk(_set: $update, pk_columns: { id: $id }) {
+mutation UpdateDirectoryEntry($id: uuid!, $update: directory_entry_set_input!) {
+    update_directory_entry_by_pk(_set: $update, pk_columns: { id: $id }) {
+        ...FileInfo
+    }
+}
+
+mutation UpdateSingleEntry($id: uuid!, $update: directory_entry_set_input!, $desc: String!) {
+    update_single(_set: { description: $desc }, where: { directory_entry_id: { _eq: $id } }) {
+        returning {
+            ...SingleInfo
+        }
+    }
+    update_directory_entry_by_pk(_set: $update, pk_columns: { id: $id }) {
         ...FileInfo
     }
 }
@@ -31,11 +55,33 @@ mutation DeleteFile($job: delete_job_insert_input!) {
     }
 }
 
-mutation SetFilesPath($files: [uuid!]!, $path: jsonb) {
-    update_file(where: { id: { _in: $files } }, _set: { path: $path }) {
+mutation MovePath($workspaceId: uuid!, $oldpath: jsonb!, $newpath: jsonb!) {
+    update_directory_entry(
+        where: { workspace_id: { _eq: $workspaceId }, path: { _eq: $oldpath } }
+        _set: { path: $newpath }
+    ) {
         affected_rows
         returning {
             ...FileInfo
+        }
+    }
+}
+
+mutation DeleteFolder($folderId: uuid!) {
+    delete_directory_entry_by_pk(id: $folderId) {
+        id
+    }
+}
+
+mutation CreateFolder($name: String!, $path: jsonb!, $ordering: bigint, $workspaceId: uuid!) {
+    insert_folder_one(
+        object: { dirent: { data: { name: $name, path: $path, ordering: $ordering, workspace_id: $workspaceId } } }
+    ) {
+        dirent {
+            id
+            path
+            ordering
+            name
         }
     }
 }

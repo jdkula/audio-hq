@@ -20,7 +20,7 @@ export class Track extends EventEmitter {
 
     private readonly _globalVolumeListener: () => void;
 
-    constructor(private _status: API.Deck, private readonly _qe: API.Track, private readonly _fm: FileManager) {
+    constructor(private _status: API.Deck, private readonly _qe: API.Single, private readonly _fm: FileManager) {
         super();
 
         this._audio = new Audio();

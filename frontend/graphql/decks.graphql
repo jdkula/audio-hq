@@ -1,8 +1,8 @@
 fragment TrackInfo on track {
     id
     created_at
-    file {
-        ...FileInfo
+    single {
+        ...SingleInfo
     }
     deck_id
     ordering
