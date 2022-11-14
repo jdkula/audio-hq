@@ -58,7 +58,6 @@ export class Deck extends EventEmitter {
     }
 
     destroy() {
-        console.log('Destroying...');
         this._tracks.forEach((track) => track.destroy());
         this.removeAllListeners();
     }

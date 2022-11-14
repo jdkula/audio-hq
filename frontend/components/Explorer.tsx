@@ -158,7 +158,6 @@ export const Explorer: FC = () => {
     const [combineFolderSettings, setCombineFoldersSettings] = useLocalReactiveValue(combineFoldersLRV);
 
     const combineThisFolder = useMemo(() => {
-        console.log(combineFolderSettings);
         return combineFolderSettings.find((setting) => _.isEqual(setting.path, path))?.combine ?? false;
     }, [combineFolderSettings, path]);
 
@@ -333,8 +332,6 @@ export const Explorer: FC = () => {
                 file.id === result.combine?.draggableId.replace(/^\$FOLDER:/, '') ||
                 file.id === result.destination?.droppableId.replace(/^\$FOLDER:/, ''),
         );
-
-        console.log('Drop', { result, srcFile, dstFolder });
 
         if (!srcFile) throw new Error("You dragged something that wasn't an entry, somehow??");
 
@@ -511,7 +508,6 @@ export const Explorer: FC = () => {
             <DragDropContext
                 onDragEnd={handleDrag}
                 onBeforeCapture={(init) => {
-                    console.log('INITTING CAPTURE:', init.draggableId, init.draggableId.startsWith('$FOLDER:'));
                     setDragging(init.draggableId.startsWith('$FOLDER:') ? 'folder' : 'file');
                 }}
             >

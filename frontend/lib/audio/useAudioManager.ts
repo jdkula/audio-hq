@@ -67,7 +67,6 @@ export default function useAudioManager(workspaceId: string) {
             if (main && mainTrack.current?.reconcile(main)) {
                 return;
             }
-            // console.log('Creating new track!');
 
             mainTrack.current?.destroy();
             mainTrack.current = createTrack(main);
