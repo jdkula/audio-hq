@@ -79,12 +79,26 @@ mutation SetJobError($jobId: uuid!, $error: String!) {
     }
 }
 
-mutation CheckIn($myId: uuid!) {
+mutation CheckIn($myId: uuid!, $checkinFrequency: Int!, $workerStart: timestamptz!) {
     insert_workers_one(
-        object: { id: $myId, last_check_in: now }
-        on_conflict: { constraint: workers_pkey, update_columns: [last_check_in] }
+        object: { id: $myId, last_check_in: now, checkin_frequency_s: $checkinFrequency, worker_start: $workerStart }
+        on_conflict: { constraint: workers_pkey, update_columns: [last_check_in, worker_start, last_check_in] }
     ) {
         id
         last_check_in
+    }
+}
+
+query GetWorkerTimestamps {
+    workers {
+        id
+        checkin_frequency_s
+        worker_start
+    }
+}
+
+mutation PruneWorkers {
+    prune_workers {
+        id
     }
 }

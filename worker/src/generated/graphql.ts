@@ -15,8 +15,21 @@ export type Scalars = {
   float8: number;
   jsonb: any;
   numeric: number;
-  timestamptz: Date;
+  timestamptz: string;
   uuid: string;
+};
+
+/** Boolean expression to compare columns of type "Int". All fields are combined with logical 'AND'. */
+export type Int_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['Int']>;
+  _gt?: InputMaybe<Scalars['Int']>;
+  _gte?: InputMaybe<Scalars['Int']>;
+  _in?: InputMaybe<Array<Scalars['Int']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']>;
+  _lt?: InputMaybe<Scalars['Int']>;
+  _lte?: InputMaybe<Scalars['Int']>;
+  _neq?: InputMaybe<Scalars['Int']>;
+  _nin?: InputMaybe<Array<Scalars['Int']>>;
 };
 
 /** Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'. */
@@ -887,6 +900,8 @@ export type Mutation_Root = {
   insert_workers?: Maybe<Workers_Mutation_Response>;
   /** insert a single row into the table: "workers" */
   insert_workers_one?: Maybe<Workers>;
+  /** execute VOLATILE function "prune_workers" which returns "workers" */
+  prune_workers: Array<Workers>;
   /** update data of the table: "delete_job" */
   update_delete_job?: Maybe<Delete_Job_Mutation_Response>;
   /** update single row of the table: "delete_job" */
@@ -1059,6 +1074,16 @@ export type Mutation_RootInsert_Workers_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootPrune_WorkersArgs = {
+  distinct_on?: InputMaybe<Array<Workers_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  order_by?: InputMaybe<Array<Workers_Order_By>>;
+  where?: InputMaybe<Workers_Bool_Exp>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Delete_JobArgs = {
   _set?: InputMaybe<Delete_Job_Set_Input>;
   where: Delete_Job_Bool_Exp;
@@ -1102,6 +1127,7 @@ export type Mutation_RootUpdate_Job_ManyArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_WorkersArgs = {
+  _inc?: InputMaybe<Workers_Inc_Input>;
   _set?: InputMaybe<Workers_Set_Input>;
   where: Workers_Bool_Exp;
 };
@@ -1109,6 +1135,7 @@ export type Mutation_RootUpdate_WorkersArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Workers_By_PkArgs = {
+  _inc?: InputMaybe<Workers_Inc_Input>;
   _set?: InputMaybe<Workers_Set_Input>;
   pk_columns: Workers_Pk_Columns_Input;
 };
@@ -1642,12 +1669,14 @@ export type Uuid_Comparison_Exp = {
 /** columns and relationships of "workers" */
 export type Workers = {
   __typename?: 'workers';
+  checkin_frequency_s: Scalars['Int'];
   /** An array relationship */
   delete_jobs: Array<Delete_Job>;
   id: Scalars['uuid'];
   /** An array relationship */
   jobs: Array<Job>;
   last_check_in: Scalars['timestamptz'];
+  worker_start: Scalars['timestamptz'];
 };
 
 
@@ -1675,10 +1704,12 @@ export type Workers_Bool_Exp = {
   _and?: InputMaybe<Array<Workers_Bool_Exp>>;
   _not?: InputMaybe<Workers_Bool_Exp>;
   _or?: InputMaybe<Array<Workers_Bool_Exp>>;
+  checkin_frequency_s?: InputMaybe<Int_Comparison_Exp>;
   delete_jobs?: InputMaybe<Delete_Job_Bool_Exp>;
   id?: InputMaybe<Uuid_Comparison_Exp>;
   jobs?: InputMaybe<Job_Bool_Exp>;
   last_check_in?: InputMaybe<Timestamptz_Comparison_Exp>;
+  worker_start?: InputMaybe<Timestamptz_Comparison_Exp>;
 };
 
 /** unique or primary key constraints on table "workers" */
@@ -1687,10 +1718,17 @@ export enum Workers_Constraint {
   WorkersPkey = 'workers_pkey'
 }
 
+/** input type for incrementing numeric columns in table "workers" */
+export type Workers_Inc_Input = {
+  checkin_frequency_s?: InputMaybe<Scalars['Int']>;
+};
+
 /** input type for inserting data into table "workers" */
 export type Workers_Insert_Input = {
+  checkin_frequency_s?: InputMaybe<Scalars['Int']>;
   id?: InputMaybe<Scalars['uuid']>;
   last_check_in?: InputMaybe<Scalars['timestamptz']>;
+  worker_start?: InputMaybe<Scalars['timestamptz']>;
 };
 
 /** response of any mutation on the table "workers" */
@@ -1711,10 +1749,12 @@ export type Workers_On_Conflict = {
 
 /** Ordering options when selecting data from "workers". */
 export type Workers_Order_By = {
+  checkin_frequency_s?: InputMaybe<Order_By>;
   delete_jobs_aggregate?: InputMaybe<Delete_Job_Aggregate_Order_By>;
   id?: InputMaybe<Order_By>;
   jobs_aggregate?: InputMaybe<Job_Aggregate_Order_By>;
   last_check_in?: InputMaybe<Order_By>;
+  worker_start?: InputMaybe<Order_By>;
 };
 
 /** primary key columns input for table: workers */
@@ -1725,14 +1765,20 @@ export type Workers_Pk_Columns_Input = {
 /** select columns of table "workers" */
 export enum Workers_Select_Column {
   /** column name */
+  CheckinFrequencyS = 'checkin_frequency_s',
+  /** column name */
   Id = 'id',
   /** column name */
-  LastCheckIn = 'last_check_in'
+  LastCheckIn = 'last_check_in',
+  /** column name */
+  WorkerStart = 'worker_start'
 }
 
 /** input type for updating data in table "workers" */
 export type Workers_Set_Input = {
+  checkin_frequency_s?: InputMaybe<Scalars['Int']>;
   last_check_in?: InputMaybe<Scalars['timestamptz']>;
+  worker_start?: InputMaybe<Scalars['timestamptz']>;
 };
 
 /** Streaming cursor of the table "workers" */
@@ -1745,17 +1791,25 @@ export type Workers_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Workers_Stream_Cursor_Value_Input = {
+  checkin_frequency_s?: InputMaybe<Scalars['Int']>;
   id?: InputMaybe<Scalars['uuid']>;
   last_check_in?: InputMaybe<Scalars['timestamptz']>;
+  worker_start?: InputMaybe<Scalars['timestamptz']>;
 };
 
 /** update columns of table "workers" */
 export enum Workers_Update_Column {
   /** column name */
-  LastCheckIn = 'last_check_in'
+  CheckinFrequencyS = 'checkin_frequency_s',
+  /** column name */
+  LastCheckIn = 'last_check_in',
+  /** column name */
+  WorkerStart = 'worker_start'
 }
 
 export type Workers_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Workers_Inc_Input>;
   /** sets the columns of the filtered rows to the given values */
   _set?: InputMaybe<Workers_Set_Input>;
   where: Workers_Bool_Exp;
@@ -1813,10 +1867,22 @@ export type SetJobErrorMutation = { __typename?: 'mutation_root', update_job_by_
 
 export type CheckInMutationVariables = Exact<{
   myId: Scalars['uuid'];
+  checkinFrequency: Scalars['Int'];
+  workerStart: Scalars['timestamptz'];
 }>;
 
 
-export type CheckInMutation = { __typename?: 'mutation_root', insert_workers_one?: { __typename?: 'workers', id: string, last_check_in: Date } | null };
+export type CheckInMutation = { __typename?: 'mutation_root', insert_workers_one?: { __typename?: 'workers', id: string, last_check_in: string } | null };
+
+export type GetWorkerTimestampsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetWorkerTimestampsQuery = { __typename?: 'query_root', workers: Array<{ __typename?: 'workers', id: string, checkin_frequency_s: number, worker_start: string }> };
+
+export type PruneWorkersMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PruneWorkersMutation = { __typename?: 'mutation_root', prune_workers: Array<{ __typename?: 'workers', id: string }> };
 
 export const FullJobFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FullJob"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"job"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"workspace_id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"file_upload"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"base64"}}]}},{"kind":"Field","name":{"kind":"Name","value":"progress"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"path"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_start"}},{"kind":"Field","name":{"kind":"Name","value":"option_cut_end"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_in"}},{"kind":"Field","name":{"kind":"Name","value":"option_fade_out"}}]}}]} as unknown as DocumentNode<FullJobFragment, unknown>;
 export const ClaimJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim_job"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"args"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"worker_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FullJob"}}]}}]}},...FullJobFragmentDoc.definitions]} as unknown as DocumentNode<ClaimJobMutation, ClaimJobMutationVariables>;
@@ -1825,4 +1891,6 @@ export const UpdateJobProgressDocument = {"kind":"Document","definitions":[{"kin
 export const CommitJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"entry"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"directory_entry_insert_input"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"single"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"single_insert_input"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_directory_entry_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"entry"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"insert_single_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"single"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CommitJobMutation, CommitJobMutationVariables>;
 export const CommitDeleteJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CommitDeleteJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"delete_delete_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delete_directory_entry_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"fileId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CommitDeleteJobMutation, CommitDeleteJobMutationVariables>;
 export const SetJobErrorDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetJobError"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"error"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"update_job_by_pk"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pk_columns"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"jobId"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"_set"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"error"},"value":{"kind":"Variable","name":{"kind":"Name","value":"error"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"status"},"value":{"kind":"EnumValue","value":"error"}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FullJob"}}]}}]}},...FullJobFragmentDoc.definitions]} as unknown as DocumentNode<SetJobErrorMutation, SetJobErrorMutationVariables>;
-export const CheckInDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CheckIn"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_workers_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"last_check_in"},"value":{"kind":"EnumValue","value":"now"}}]}},{"kind":"Argument","name":{"kind":"Name","value":"on_conflict"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"constraint"},"value":{"kind":"EnumValue","value":"workers_pkey"}},{"kind":"ObjectField","name":{"kind":"Name","value":"update_columns"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"last_check_in"}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"last_check_in"}}]}}]}}]} as unknown as DocumentNode<CheckInMutation, CheckInMutationVariables>;
+export const CheckInDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CheckIn"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"myId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"uuid"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"checkinFrequency"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workerStart"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"timestamptz"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"insert_workers_one"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"myId"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"last_check_in"},"value":{"kind":"EnumValue","value":"now"}},{"kind":"ObjectField","name":{"kind":"Name","value":"checkin_frequency_s"},"value":{"kind":"Variable","name":{"kind":"Name","value":"checkinFrequency"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"worker_start"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workerStart"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"on_conflict"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"constraint"},"value":{"kind":"EnumValue","value":"workers_pkey"}},{"kind":"ObjectField","name":{"kind":"Name","value":"update_columns"},"value":{"kind":"ListValue","values":[{"kind":"EnumValue","value":"last_check_in"},{"kind":"EnumValue","value":"worker_start"},{"kind":"EnumValue","value":"last_check_in"}]}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"last_check_in"}}]}}]}}]} as unknown as DocumentNode<CheckInMutation, CheckInMutationVariables>;
+export const GetWorkerTimestampsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetWorkerTimestamps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"workers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"checkin_frequency_s"}},{"kind":"Field","name":{"kind":"Name","value":"worker_start"}}]}}]}}]} as unknown as DocumentNode<GetWorkerTimestampsQuery, GetWorkerTimestampsQueryVariables>;
+export const PruneWorkersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PruneWorkers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"prune_workers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<PruneWorkersMutation, PruneWorkersMutationVariables>;

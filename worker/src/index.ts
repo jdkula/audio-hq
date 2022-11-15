@@ -104,7 +104,7 @@ async function doDeletion() {
 
             const job = jobRaw?.claim_delete_job;
             if (!job || !job.id) {
-                log.silly('No delete job found. Waiting for more delete jobs...', job);
+                log.silly('No delete job found. Waiting for more delete jobs...');
                 return;
             }
 
@@ -133,15 +133,103 @@ async function doDeletion() {
     }
 }
 
-async function checkIn() {
-    log.debug('Checking in...');
-    await client.request(GQL.CheckInDocument, { myId: myid });
+function getWrappedDistance(x: number, y: number, wrapAt: number): number {
+    const big = Math.max(x, y) % wrapAt;
+    const small = Math.min(x, y) % wrapAt;
 
-    doJobs();
-    doDeletion();
+    const forwardDistance = big - small;
+    const backwardDistance = small + wrapAt - big;
 
-    setTimeout(checkIn, 10000);
+    return Math.min(forwardDistance, backwardDistance);
 }
 
-log.info('Worker started.');
-checkIn();
+function getMsToNextCheckin(offset: number, frequency_s: number): number {
+    const msIntoBlock = Date.now() % (frequency_s * 1000);
+    const target = offset * 1000;
+
+    if (target <= msIntoBlock) {
+        return target + frequency_s * 1000 - msIntoBlock;
+    }
+    return target - msIntoBlock;
+}
+
+async function getIdealOffset(checkinFrequency: number): Promise<number> {
+    const workerStartHistogram: number[] = new Array(checkinFrequency);
+    const workerStartOptimizationHistogram: number[] = new Array(checkinFrequency);
+    workerStartHistogram.fill(0);
+    workerStartOptimizationHistogram.fill(0);
+
+    const workers = await client.request(GQL.GetWorkerTimestampsDocument);
+    log.silly('STARTUP: Got worker timestamps');
+
+    for (const worker of workers.workers) {
+        let start = (new Date(worker.worker_start).getTime() / 1000) % checkinFrequency;
+        while (start < checkinFrequency) {
+            workerStartHistogram[Math.floor(start)] += 1;
+            start += worker.checkin_frequency_s;
+        }
+    }
+
+    for (let i = 0; i < checkinFrequency; i++) {
+        const numWorkersInBucket = workerStartHistogram[i];
+        for (let j = 0; j < checkinFrequency; j++) {
+            workerStartOptimizationHistogram[j] +=
+                numWorkersInBucket * (1 / (1 + getWrappedDistance(i, j, checkinFrequency)));
+        }
+    }
+
+    const idealStartOffset = workerStartOptimizationHistogram.indexOf(
+        workerStartOptimizationHistogram.reduce((prev, cur) => Math.min(prev, cur), Number.POSITIVE_INFINITY),
+    );
+
+    return idealStartOffset;
+}
+
+async function setup() {
+    const checkinFrequency = parseInt(process.env['CHECKIN_FREQUENCY'] ?? '10');
+    log.silly('STARTUP: Got checkin frequency', checkinFrequency, 'sec');
+
+    const idealOffset =
+        'CHECKIN_OFFSET' in process.env
+            ? parseInt(process.env['CHECKIN_OFFSET']!)
+            : await getIdealOffset(checkinFrequency);
+
+    await client.request(GQL.PruneWorkersDocument);
+    log.silly('STARTUP: Pruned workers');
+
+    const startTime = new Date(Date.now() + getMsToNextCheckin(idealOffset, checkinFrequency)).toISOString();
+
+    log.info(
+        'STARTUP: Will check in at',
+        startTime,
+        '(with offset',
+        idealOffset,
+        '– in',
+        getMsToNextCheckin(idealOffset, checkinFrequency),
+        'ms), and every',
+        checkinFrequency,
+        'seconds after that',
+    );
+
+    async function checkIn() {
+        log.debug('Checking in...');
+        await client.request(GQL.CheckInDocument, {
+            myId: myid,
+            checkinFrequency,
+            workerStart: startTime,
+        });
+
+        doJobs();
+        doDeletion();
+
+        const nextCheckin = getMsToNextCheckin(idealOffset, checkinFrequency);
+        log.silly('Will check in again in ' + nextCheckin + 'ms');
+
+        setTimeout(checkIn, nextCheckin);
+    }
+
+    log.info('Worker started.');
+    setTimeout(checkIn, getMsToNextCheckin(idealOffset, checkinFrequency));
+}
+
+setup();

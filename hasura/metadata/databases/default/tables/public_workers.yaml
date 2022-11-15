@@ -21,20 +21,26 @@ insert_permissions:
     permission:
       check: {}
       columns:
+        - checkin_frequency_s
         - id
         - last_check_in
+        - worker_start
 select_permissions:
   - role: worker
     permission:
       columns:
-        - last_check_in
+        - checkin_frequency_s
         - id
+        - last_check_in
+        - worker_start
       filter: {}
 update_permissions:
   - role: worker
     permission:
       columns:
+        - checkin_frequency_s
         - last_check_in
+        - worker_start
       filter: {}
       check: {}
 delete_permissions:

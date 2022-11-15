@@ -1,3 +1,4 @@
 - "!include public_available_jobs.yaml"
 - "!include public_claim_delete_job.yaml"
 - "!include public_claim_job.yaml"
+- "!include public_prune_workers.yaml"
