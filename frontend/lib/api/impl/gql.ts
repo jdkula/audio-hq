@@ -417,7 +417,11 @@ class SpecificDeckApiImpl implements SpecificDeckApi {
                         speed: update.speed,
                         volume: update.volume,
                     },
-                    newQueue: update.queue.map((q, i) => ({ file_id: q.id, deck_id: this._deckId, ordering: i })),
+                    newQueue: update.queue.map((q, i) => ({
+                        single_id: q.__internal_id_single,
+                        deck_id: this._deckId,
+                        ordering: i,
+                    })),
                 })
             ).update_deck_by_pk;
 
