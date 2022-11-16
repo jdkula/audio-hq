@@ -353,13 +353,9 @@ export const Explorer: FC = () => {
             // === Reorder one entry around the current folder ===
 
             let target: API.Entry | null = null;
-            if (!combineThisFolder && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
+            if (!shouldCombine && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
                 target = foldersData[result.destination.index];
-            } else if (
-                !combineThisFolder &&
-                result.destination.droppableId === '___main___' &&
-                srcFile.type !== 'folder'
-            ) {
+            } else if (!shouldCombine && result.destination.droppableId === '___main___' && srcFile.type !== 'folder') {
                 target = plainSinglesData[result.destination.index];
             } else {
                 target = currentFiles[result.destination.index];
@@ -367,6 +363,19 @@ export const Explorer: FC = () => {
 
             if (srcFile.type === 'folder' && alwaysAlphasortFolders) return;
             if (srcFile.type !== 'folder' && alwaysAlphasortFiles) return;
+
+            console.log('Reordering!', {
+                srcFile,
+                target,
+                result,
+                ordering: target?.ordering ? target.ordering - result.source.index + result.destination.index : null,
+                combineThisFolder,
+                arrays: {
+                    currentFiles,
+                    plainSinglesData,
+                    foldersData,
+                },
+            });
 
             updateEntry.mutate({
                 entry: srcFile,

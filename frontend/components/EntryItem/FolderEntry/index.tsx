@@ -27,9 +27,11 @@ import { DeleteForever } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
 import { WorkspaceIdContext } from '~/lib/utility/context';
-import { useDeleteEntryMutation, useUpdateEntryMutation } from '~/lib/api/hooks';
+import { useDeleteEntryMutation, useUpdateEntryMutation, useWorkspaceEntries } from '~/lib/api/hooks';
 import { Folder } from '~/lib/api/models';
 import { useIsOnline } from '~/lib/utility/hooks';
+import { entryIsFolder } from '~/lib/api/AudioHQApi';
+import _ from 'lodash';
 
 const FolderContainer = styled.div`
     display: grid;
@@ -107,6 +109,14 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
 
     const fullPath = [...path, folder.name];
 
+    const overlappingFolders = useWorkspaceEntries(workspaceId)
+        .data?.filter(entryIsFolder)
+        .filter((entry) => _.isEqual(entry.path, path))
+        .filter((entry) => entry.id !== folder.id)
+        .map((entry) => entry.name);
+
+    const nameCollision = overlappingFolders?.includes(newName);
+
     const startRenaming = (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
@@ -120,6 +130,8 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
     };
 
     const onRename = () => {
+        if (nameCollision || newName.length === 0) return;
+
         updateEntry.mutateAsync({
             entry: folder,
             update: {
@@ -160,20 +172,22 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
     const editor = (
         <ClickAwayListener onClickAway={stopRenaming}>
             <EditorContainer onClick={(e) => e.stopPropagation()}>
-                <Tooltip title="Pro tip: Enter the name of another folder to merge them!" placement="top" arrow>
-                    <TextField
-                        id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
-                        fullWidth
-                        autoFocus
-                        label="Name"
-                        variant="outlined"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                    />
-                </Tooltip>
+                <TextField
+                    id={encodeURIComponent(JSON.stringify(fullPath)) + '-name'}
+                    fullWidth
+                    autoFocus
+                    label="Name"
+                    variant="outlined"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    error={nameCollision}
+                    helperText={nameCollision ? 'That name is already taken.' : ''}
+                />
 
-                <SaveButton onClick={onRename}>Save</SaveButton>
+                <SaveButton onClick={onRename} disabled={nameCollision || newName.length === 0}>
+                    Save
+                </SaveButton>
             </EditorContainer>
         </ClickAwayListener>
     );
