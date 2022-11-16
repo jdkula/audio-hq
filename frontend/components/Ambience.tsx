@@ -61,19 +61,29 @@ export const Ambience: FunctionComponent = () => {
 
     const controls = [...sfx, ...ambience]
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-        .map((deck) => (
-            <AmbienceControlsContainer key={deck.id}>
-                <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Tooltip arrow title="Sound FX" placement="top" enterDelay={0}>
-                        <Collapse in={deck.type === Deck_Type_Enum_Enum.Sfx}>
-                            <BlurOn sx={{ marginRight: 2 }} />
-                        </Collapse>
-                    </Tooltip>
-                    {getDeckInfo(deck)?.trackInfo.currentTrack.name ?? 'Loading...'}
-                </Typography>
-                <AudioControls state={deck} />
-            </AmbienceControlsContainer>
-        ));
+        .map((deck) => {
+            const deckInfo = getDeckInfo(deck);
+
+            return (
+                <AmbienceControlsContainer key={deck.id}>
+                    <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center' }}>
+                        {deck.type === Deck_Type_Enum_Enum.Sfx && (
+                            <Tooltip arrow title="Sound FX" placement="top" enterDelay={0}>
+                                <BlurOn sx={{ marginRight: 2 }} />
+                            </Tooltip>
+                        )}
+                        {deckInfo?.trackInfo.currentTrack.name ?? 'Loading...'}
+                    </Typography>
+                    {deckInfo?.trackInfo.currentTrack.description && (
+                        <Typography variant="body2" style={{ opacity: 0.7, fontSize: '8pt' }}>
+                            {deckInfo?.trackInfo.currentTrack.description}
+                        </Typography>
+                    )}
+
+                    <AudioControls state={deck} />
+                </AmbienceControlsContainer>
+            );
+        });
 
     if (controls.length === 0) {
         return (
