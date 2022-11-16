@@ -364,19 +364,6 @@ export const Explorer: FC = () => {
             if (srcFile.type === 'folder' && alwaysAlphasortFolders) return;
             if (srcFile.type !== 'folder' && alwaysAlphasortFiles) return;
 
-            console.log('Reordering!', {
-                srcFile,
-                target,
-                result,
-                ordering: target?.ordering ? target.ordering - result.source.index + result.destination.index : null,
-                combineThisFolder,
-                arrays: {
-                    currentFiles,
-                    plainSinglesData,
-                    foldersData,
-                },
-            });
-
             updateEntry.mutate({
                 entry: srcFile,
                 update: {

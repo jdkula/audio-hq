@@ -26,7 +26,6 @@ const MainPlayerContainer = styled.div`
     display: grid;
     grid-template-rows: min-content min-content auto auto;
     grid-template-columns: auto;
-    row-gap: 1rem;
     border: 1px solid black;
     align-items: center;
     justify-content: center;
@@ -49,14 +48,14 @@ export const MainPlayer: FunctionComponent<{
 
     const updateDeck = useUpdateDeckMutation(wsId);
 
-    const trackNames = state?.queue.map((qe) => qe.name);
+    const trackInfo = state?.queue.map((qe) => ({ name: qe.name, description: qe.description }));
 
     const tracksQueued = useMemo(
         () =>
-            !audioInfo || !trackNames
+            !audioInfo || !trackInfo
                 ? []
-                : [...trackNames.slice(audioInfo.index + 1), ...trackNames.slice(0, audioInfo.index + 1)],
-        [trackNames, audioInfo],
+                : [...trackInfo.slice(audioInfo.index + 1), ...trackInfo.slice(0, audioInfo.index + 1)],
+        [trackInfo, audioInfo],
     );
 
     if (!state) {
@@ -84,9 +83,23 @@ export const MainPlayer: FunctionComponent<{
 
     return (
         <MainPlayerContainer>
-            <Typography variant="h5" component="span">
-                {trackNames?.[audioInfo.index] ?? 'Loading...'}
+            <Typography
+                variant="h5"
+                component="span"
+                style={{ marginBottom: trackInfo?.[audioInfo.index]?.description ? 0 : '1rem' }}
+            >
+                {trackInfo?.[audioInfo.index]?.name ?? 'Loading...'}
             </Typography>
+            {trackInfo?.[audioInfo.index]?.description && (
+                <Typography
+                    variant="body2"
+                    component="span"
+                    style={{ marginBottom: '1rem', fontSize: '8pt', opacity: 0.7 }}
+                    fontStyle="italic"
+                >
+                    {trackInfo?.[audioInfo.index]?.description ?? 'Loading...'}
+                </Typography>
+            )}
             <AudioControls state={state} />
             {tracksQueued.length > 1 && (
                 <>
@@ -98,12 +111,12 @@ export const MainPlayer: FunctionComponent<{
                         }}
                     >
                         <List>
-                            {tracksQueued.map((trackName, idx) => (
+                            {tracksQueued.map((trackInfo, idx) => (
                                 <ListItemButton key={idx} onClick={() => skipTo(audioInfo.index + idx)}>
                                     <ListItemIcon>
                                         <PlayIcon />
                                     </ListItemIcon>
-                                    <ListItemText>{trackName}</ListItemText>
+                                    <ListItemText>{trackInfo.name}</ListItemText>
                                 </ListItemButton>
                             ))}
                         </List>

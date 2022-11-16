@@ -268,7 +268,7 @@ class SpecificEntryApiImpl<T extends Entry> implements SpecificEntryApi<T> {
         throw new Error('Method not implemented.');
     }
     async update(updateDef: T extends Single ? SingleUpdate : EntryUpdate): Promise<T> {
-        if (entryIsSingle(this._entry) && (updateDef as SingleUpdate).description) {
+        if (entryIsSingle(this._entry) && (updateDef as SingleUpdate).description !== undefined) {
             const ret = await request(kUrl, UpdateSingleEntryDocument, {
                 id: this._entry.id,
                 update: {

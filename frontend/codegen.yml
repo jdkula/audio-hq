@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-    - 'https://audio-hq-api-dev.jdkula.dev/v1/graphql':
+    - '${HASURA_URL_BASE}/v1/graphql':
           headers:
               'X-Hasura-Admin-Secret': '${HASURA_GRAPHQL_ADMIN_SECRET}'
               'X-Hasura-Role': 'anonymous'
@@ -15,6 +15,7 @@ generates:
     lib/generated/graphql.ts:
         config:
             defaultScalarType: unknown
+            dedupeFragments: true
             scalars:
                 bytea: string
                 jsonb: any
