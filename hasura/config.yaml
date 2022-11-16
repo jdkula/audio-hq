@@ -1,5 +1,4 @@
 version: 3
-endpoint: https://audio-hq-api-dev.jdkula.dev
 metadata_directory: metadata
 actions:
   kind: synchronous

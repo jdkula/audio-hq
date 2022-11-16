@@ -77,6 +77,7 @@ async function doJobs() {
                     path: job.path,
                     workspace: job.workspace_id,
                     description: job.description,
+                    source: job.url ?? undefined,
                 });
 
                 log.debug('Job finished');

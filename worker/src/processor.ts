@@ -11,15 +11,7 @@ import { v4, v4 as uuidv4 } from 'uuid';
 import { spawn } from 'child_process';
 import { AppFS } from './filesystems/FileSystem';
 import which from 'which';
-import {
-    CommitJobDocument,
-    CommitJobMutation,
-    CommitJobMutationVariables,
-    Job_Status_Enum_Enum,
-    UpdateJobProgressDocument,
-    UpdateJobProgressMutation,
-    UpdateJobProgressMutationVariables,
-} from './generated/graphql';
+import { CommitJobDocument, Job_Status_Enum_Enum, UpdateJobProgressDocument } from './generated/graphql';
 import fsProm from 'fs/promises';
 import { Logger } from 'tslog';
 import { myid } from './id';
@@ -68,6 +60,7 @@ interface FileOptions {
     workspace: string;
     path?: string[];
     description?: string;
+    source?: string;
 }
 
 export class Processor {
@@ -113,7 +106,11 @@ export class Processor {
         return outPath;
     }
 
-    async addFile(id: string, filepath: string, { name, workspace, path, description }: FileOptions): Promise<string> {
+    async addFile(
+        id: string,
+        filepath: string,
+        { name, workspace, path, description, source }: FileOptions,
+    ): Promise<string> {
         processorLog.debug(`Saving file ${filepath} to S3 + Database...`);
         const duration = await getAudioDurationInSeconds(filepath);
         processorLog.silly(`Got ${filepath} as ${duration} seconds long`);
@@ -148,6 +145,7 @@ export class Processor {
                 provider_id: id + kAudioExtension,
                 download_url: dlurl,
                 directory_entry_id: eid,
+                source_url: source ?? null,
             },
         });
 

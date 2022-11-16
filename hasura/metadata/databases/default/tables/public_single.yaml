@@ -10,12 +10,13 @@ insert_permissions:
     permission:
       check: {}
       columns:
-        - length
         - description
-        - download_url
-        - provider_id
         - directory_entry_id
+        - download_url
         - id
+        - length
+        - provider_id
+        - source_url
 select_permissions:
   - role: anonymous
     permission:
@@ -25,6 +26,7 @@ select_permissions:
         - download_url
         - id
         - length
+        - source_url
       filter: {}
   - role: worker
     permission:

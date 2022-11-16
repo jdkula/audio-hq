@@ -1360,6 +1360,7 @@ export type Single_Insert_Input = {
   id?: InputMaybe<Scalars['uuid']>;
   length?: InputMaybe<Scalars['numeric']>;
   provider_id?: InputMaybe<Scalars['String']>;
+  source_url?: InputMaybe<Scalars['String']>;
 };
 
 /** response of any mutation on the table "single" */
