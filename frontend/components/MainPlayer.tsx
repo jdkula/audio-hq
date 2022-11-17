@@ -16,6 +16,8 @@ import useAudio from '../lib/audio/useAudioDetail';
 import { Deck } from '~/lib/api/models';
 import { useUpdateDeckMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
+import { useLocalReactiveValue } from '~/lib/LocalReactive';
+import { hideDescriptionsLRV } from '~/lib/utility/usePersistentData';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -58,6 +60,8 @@ export const MainPlayer: FunctionComponent<{
         [trackInfo, audioInfo],
     );
 
+    const [hideDescriptions] = useLocalReactiveValue(hideDescriptionsLRV);
+
     if (!state) {
         return (
             <MainPlayerContainer>
@@ -90,7 +94,7 @@ export const MainPlayer: FunctionComponent<{
             >
                 {trackInfo?.[audioInfo.index]?.name ?? 'Loading...'}
             </Typography>
-            {trackInfo?.[audioInfo.index]?.description && (
+            {trackInfo?.[audioInfo.index]?.description && !hideDescriptions && (
                 <Typography
                     variant="body2"
                     component="span"

@@ -11,6 +11,7 @@ import {
     kFolderAlwaysAlphasort,
     kFolderAlwaysCombine,
     kGlobalVolumeKey,
+    kHideDescriptions,
     kMaxRecents,
     kRecentsKey,
 } from '../constants';
@@ -72,3 +73,4 @@ export function useGlobalVolume() {
 export const alwaysCombineLRV = new LocalStorageReactiveValue(kFolderAlwaysCombine, false);
 export const alwaysAlphasortFoldersLRV = new LocalStorageReactiveValue(kFolderAlwaysAlphasort, false);
 export const alwaysAlphasortFilesLRV = new LocalStorageReactiveValue(kFileAlwaysAlphasort, false);
+export const hideDescriptionsLRV = new LocalStorageReactiveValue(kHideDescriptions, false);

@@ -5,7 +5,7 @@
  * Displays controls for all ambient tracks playing in the workspace.
  */
 
-import { Collapse, Paper, Tooltip, Typography } from '@mui/material';
+import { Paper, Tooltip, Typography } from '@mui/material';
 import { FunctionComponent, useContext } from 'react';
 import styled from '@emotion/styled';
 import { AudioControls } from './AudioControls';
@@ -16,6 +16,8 @@ import { getDeckInfo } from '~/lib/audio/audio_util';
 import { Deck_Type_Enum_Enum } from '~/lib/generated/graphql';
 import { BlurOn } from '@mui/icons-material';
 import { useWorkspaceDecks } from '~/lib/api/hooks';
+import { hideDescriptionsLRV } from '~/lib/utility/usePersistentData';
+import { useLocalReactiveValue } from '~/lib/LocalReactive';
 
 const AmbienceContainer = styled.div`
     border: 1px solid black;
@@ -59,6 +61,8 @@ export const Ambience: FunctionComponent = () => {
     const workspaceId = useContext(WorkspaceIdContext);
     const { ambience, sfx } = useWorkspaceDecks(workspaceId);
 
+    const [hideDescriptions] = useLocalReactiveValue(hideDescriptionsLRV);
+
     const controls = [...sfx, ...ambience]
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
         .map((deck) => {
@@ -74,7 +78,7 @@ export const Ambience: FunctionComponent = () => {
                         )}
                         {deckInfo?.trackInfo.currentTrack.name ?? 'Loading...'}
                     </Typography>
-                    {deckInfo?.trackInfo.currentTrack.description && (
+                    {deckInfo?.trackInfo.currentTrack.description && !hideDescriptions && (
                         <Typography variant="body2" style={{ opacity: 0.7, fontSize: '8pt' }}>
                             {deckInfo?.trackInfo.currentTrack.description}
                         </Typography>

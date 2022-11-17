@@ -14,6 +14,8 @@ import * as API from '~/lib/api/models';
 import { FileManagerContext } from '~/lib/utility/context';
 import { DownloadDone } from '@mui/icons-material';
 import { useIsOnline } from '~/lib/utility/hooks';
+import { hideDescriptionsLRV } from '~/lib/utility/usePersistentData';
+import { useLocalReactiveValue } from '~/lib/LocalReactive';
 
 const DetailsContainer = styled.div`
     display: flex;
@@ -68,6 +70,8 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
 
     const unavailable = online === false && !cached;
 
+    const [hideDescriptions] = useLocalReactiveValue(hideDescriptionsLRV);
+
     let cacheIcon: JSX.Element | null = null;
     if (caching) {
         cacheIcon = (
@@ -102,7 +106,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                         >
                             {file.name || 'Untitled file...'}
                         </Typography>
-                        {file.description && (
+                        {file.description && !hideDescriptions && (
                             <Typography
                                 variant="caption"
                                 onDoubleClick={() => startEditing(false)}

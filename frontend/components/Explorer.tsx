@@ -41,6 +41,7 @@ import {
     alwaysAlphasortFilesLRV,
     alwaysAlphasortFoldersLRV,
     alwaysCombineLRV,
+    hideDescriptionsLRV,
     useFavorites,
 } from '~/lib/utility/usePersistentData';
 import { isDefined } from '~/lib/utility/util';
@@ -155,6 +156,7 @@ export const Explorer: FC = () => {
     const [alwaysAlphasortFolders, setAlwaysAlphasortFolders] = useLocalReactiveValue(alwaysAlphasortFoldersLRV);
     const [alwaysAlphasortFiles, setAlwaysAlphasortFiles] = useLocalReactiveValue(alwaysAlphasortFilesLRV);
     const [combineFolderSettings, setCombineFoldersSettings] = useLocalReactiveValue(combineFoldersLRV);
+    const [hideDescriptions, setHideDescriptions] = useLocalReactiveValue(hideDescriptionsLRV);
 
     const combineThisFolder = useMemo(() => {
         return combineFolderSettings.find((setting) => _.isEqual(setting.path, path))?.combine ?? false;
@@ -445,6 +447,15 @@ export const Explorer: FC = () => {
                             <ListItemText primary="View Favorites" />
                         </ListItemButton>
                     </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setHideDescriptions(!hideDescriptions)}>
+                            <ListItemIcon>
+                                <Checkbox edge="start" checked={hideDescriptions} tabIndex={-1} disableRipple />
+                            </ListItemIcon>
+                            <ListItemText primary="Hide audio descriptions" />
+                        </ListItemButton>
+                    </ListItem>
+
                     <ListItem disablePadding>
                         <ListItemButton
                             onClick={() => setAlwaysAlphasortFiles(!alwaysAlphasortFiles)}

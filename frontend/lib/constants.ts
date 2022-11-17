@@ -19,6 +19,9 @@ export const kFolderCombinePrefix = '__ahq_folder_combine::' as const;
 // Local Storage. Whether or not the user prefers to combine folders and files for a given path.
 export const kFolderAlwaysCombine = '__ahq_folder_combine_always' as const;
 
+// Local Storage. Whether or not the user prefers to hide audio descriptions.
+export const kHideDescriptions = '__ahq_folder_hide_descriptions' as const;
+
 // Local Storage. Whether or not the user prefers to always alphabetically sort folders.
 export const kFolderAlwaysAlphasort = '__ahq_folder_always_alphasort' as const;
 
