@@ -90,7 +90,7 @@ export const MainPlayer: FunctionComponent<{
             <Typography
                 variant="h5"
                 component="span"
-                style={{ marginBottom: trackInfo?.[audioInfo.index]?.description ? 0 : '1rem' }}
+                style={{ marginBottom: trackInfo?.[audioInfo.index]?.description && !hideDescriptions ? 0 : '1rem' }}
             >
                 {trackInfo?.[audioInfo.index]?.name ?? 'Loading...'}
             </Typography>
