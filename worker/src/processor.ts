@@ -30,8 +30,8 @@ interface ConvertOptions {
 }
 
 const processorLog = new Logger({ name: 'processor' });
-const ytdlLog = processorLog.getChildLogger({ name: 'youtube-dl' });
-const ffmpegLog = processorLog.getChildLogger({ name: 'ffmpeg' });
+const ytdlLog = processorLog.getSubLogger({ name: 'youtube-dl' });
+const ffmpegLog = processorLog.getSubLogger({ name: 'ffmpeg' });
 
 if (!process.env.TEMP_DIR) {
     process.env.TEMP_DIR = '/tmp/audio-hq/storage';
