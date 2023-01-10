@@ -17,6 +17,7 @@ import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { differenceInSeconds, sub, subSeconds } from 'date-fns';
+import { getDeckInfo } from '~/lib/audio/audio_util';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -80,15 +81,20 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
             return;
         }
 
+        const info = getDeckInfo(main);
+        if (!info) return;
+
         const startDate = main.pauseTimestamp ?? new Date();
-        const timeElapsed =
-            differenceInSeconds(startDate, main.startTimestamp) %
-            main.queue.reduce((seconds, next) => next.length + seconds, 0);
+        const timeElapsed = (differenceInSeconds(startDate, main.startTimestamp) + file.length) % info.totalSeconds;
+
+
+        const copy = [...main.queue];
+        copy.splice(info.trackInfo.index, 0, file);
 
         playDeck.mutate({
             deck: {
                 ...main,
-                queue: [...main.queue, file],
+                queue: copy,
                 startTimestamp: subSeconds(startDate, timeElapsed),
             },
         });
