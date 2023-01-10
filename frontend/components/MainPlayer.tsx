@@ -5,7 +5,7 @@
  * audio controls for the primary track.
  */
 
-import { List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { FunctionComponent, useContext, useMemo } from 'react';
 
 import { AudioControls } from './AudioControls';
@@ -18,6 +18,8 @@ import { useUpdateDeckMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useLocalReactiveValue } from '~/lib/LocalReactive';
 import { hideDescriptionsLRV } from '~/lib/utility/usePersistentData';
+import { HighlightOff } from '@mui/icons-material';
+import { differenceInSeconds, subSeconds } from 'date-fns';
 
 const MainPlayerContainer = styled.div`
     grid-area: nowplaying;
@@ -56,7 +58,7 @@ export const MainPlayer: FunctionComponent<{
         () =>
             !audioInfo || !trackInfo
                 ? []
-                : [...trackInfo.slice(audioInfo.index + 1), ...trackInfo.slice(0, audioInfo.index + 1)],
+                : [...trackInfo.slice(audioInfo.index + 1), ...trackInfo.slice(0, audioInfo.index)],
         [trackInfo, audioInfo],
     );
 
@@ -85,6 +87,25 @@ export const MainPlayer: FunctionComponent<{
         });
     };
 
+    const removeFromQueue = (idx: number) => {
+        const startDate = state.pauseTimestamp ?? new Date();
+        let timeElapsed =
+            differenceInSeconds(startDate, state.startTimestamp) %
+            state.queue.reduce((seconds, next) => next.length + seconds, 0);
+        if (idx < audioInfo.index) {
+            timeElapsed -= state.queue[idx].length;
+        }
+
+        const newQueue = [...state.queue.slice(0, idx), ...state.queue.slice(idx + 1)];
+        updateDeck.mutate({
+            deckId: state.id,
+            update: {
+                queue: newQueue,
+                startTimestamp: subSeconds(startDate, timeElapsed),
+            },
+        });
+    };
+
     return (
         <MainPlayerContainer>
             <Typography
@@ -105,7 +126,7 @@ export const MainPlayer: FunctionComponent<{
                 </Typography>
             )}
             <AudioControls state={state} />
-            {tracksQueued.length > 1 && (
+            {tracksQueued.length >= 1 && (
                 <>
                     <ListHeader>Up Next</ListHeader>
                     <div
@@ -116,12 +137,27 @@ export const MainPlayer: FunctionComponent<{
                     >
                         <List>
                             {tracksQueued.map((trackInfo, idx) => (
-                                <ListItemButton key={idx} onClick={() => skipTo(audioInfo.index + idx)}>
-                                    <ListItemIcon>
-                                        <PlayIcon />
-                                    </ListItemIcon>
-                                    <ListItemText>{trackInfo.name}</ListItemText>
-                                </ListItemButton>
+                                <ListItem
+                                    disableGutters
+                                    disablePadding
+                                    key={idx}
+                                    secondaryAction={
+                                        <IconButton
+                                            onClick={() =>
+                                                removeFromQueue((audioInfo.index + idx + 1) % state.queue.length)
+                                            }
+                                        >
+                                            <HighlightOff />
+                                        </IconButton>
+                                    }
+                                >
+                                    <ListItemButton onClick={() => skipTo(audioInfo.index + idx)}>
+                                        <ListItemIcon>
+                                            <PlayIcon />
+                                        </ListItemIcon>
+                                        <ListItemText>{trackInfo.name}</ListItemText>
+                                    </ListItemButton>
+                                </ListItem>
                             ))}
                         </List>
                     </div>

@@ -79,16 +79,13 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
         <AppBar position="static" style={{ gridArea: 'header' }}>
             <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
             <Head>
-                <title>
-                    Audio HQ – {workspaceName || 'Loading...'}
-                    {!host ? ' – Minimal View' : ''}
-                </title>
+                <title>{`Audio HQ – ${workspaceName || 'Loading...'}${!host ? ' – Minimal View' : ''}`}</title>
             </Head>
             <Toolbar>
                 <ToolbarContent>
                     <Title>
-                        <NextLink href={'/'}>
-                            <Link href={'/'} color="inherit" underline="hover">
+                        <NextLink href={'/'} passHref legacyBehavior>
+                            <Link color="inherit" underline="hover">
                                 <Typography
                                     variant={isSmall ? 'h5' : 'h4'}
                                     style={{ display: 'flex', alignItems: 'center' }}

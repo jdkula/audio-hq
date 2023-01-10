@@ -1,9 +1,9 @@
 import { amber, cyan } from '@mui/material/colors';
 
 import { Theme, ThemeOptions } from '@mui/material';
-import { DefaultTheme } from '@mui/styles';
+import { DefaultTheme } from '@mui/system';
 
-declare module '@mui/styles/defaultTheme' {
+declare module '@mui/system' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }

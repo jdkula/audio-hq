@@ -11,11 +11,12 @@ import PlayArrow from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
 import React, { FC, useContext, useState } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { BlurOn, OfflineBolt } from '@mui/icons-material';
+import { BlurOn, OfflineBolt, QueueMusic } from '@mui/icons-material';
 import { FileManagerContext, WorkspaceIdContext } from '~/lib/utility/context';
 import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
-import { useIsOnline } from '~/lib/utility/hooks';
+import { useAlt, useIsOnline } from '~/lib/utility/hooks';
+import { differenceInSeconds, sub, subSeconds } from 'date-fns';
 
 const PlayControlsContainer = styled.div`
     display: flex;
@@ -32,6 +33,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
     const online = useIsOnline();
     const fileManager = useContext(FileManagerContext);
     const cached = !!fileManager.cached.has(file.url);
+    const alt = useAlt();
 
     const workspaceId = useContext(WorkspaceIdContext);
     const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
@@ -72,6 +74,26 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
         });
     };
 
+    const onAddToQueue = async () => {
+        if (!main) {
+            await onPlay();
+            return;
+        }
+
+        const startDate = main.pauseTimestamp ?? new Date();
+        const timeElapsed =
+            differenceInSeconds(startDate, main.startTimestamp) %
+            main.queue.reduce((seconds, next) => next.length + seconds, 0);
+
+        playDeck.mutate({
+            deck: {
+                ...main,
+                queue: [...main.queue, file],
+                startTimestamp: subSeconds(startDate, timeElapsed),
+            },
+        });
+    };
+
     const onSfx = async () => {
         setDebouncingSfx(true);
         playDeck.mutate({
@@ -86,12 +108,19 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
         });
         setTimeout(setDebouncingSfx, 250, false);
     };
+
+    const playColor = main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined;
+
     return (
         <PlayControlsContainer>
-            <Tooltip title="Play File" placement="left" arrow>
-                <IconButton onClick={onPlay} size="large" disabled={!online && !cached}>
+            <Tooltip title={alt ? 'Queue Track' : 'Play File (alt/option to queue)'} placement="left" arrow>
+                <IconButton onClick={alt ? onAddToQueue : onPlay} size="large" disabled={!online && !cached}>
                     {online !== false || cached ? (
-                        <PlayArrow color={main?.queue.find((qe) => qe.id === file.id) ? 'primary' : undefined} />
+                        alt ? (
+                            <QueueMusic color={playColor} />
+                        ) : (
+                            <PlayArrow color={playColor} />
+                        )
                     ) : (
                         <OfflineBolt />
                     )}

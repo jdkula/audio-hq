@@ -32,7 +32,7 @@ const LoadingPage: FC<{ workspace: string }> = ({ workspace }) => {
     return (
         <LoadingBase>
             <Head>
-                <title>Audio HQ - {workspace} - Loading...</title>
+                <title>{`Audio HQ - ${workspace} - Loading...`}</title>
             </Head>
             <Inner>
                 <Typography variant="h2">Audio HQ</Typography>
