@@ -91,7 +91,7 @@ export function useShouldCache() {
         broadcastOut?.postMessage({ type: 'clear-cache' } as BroadcastMessage);
     }, []);
 
-    const callback = useCallback((value) => {
+    const callback = useCallback((value: boolean) => {
         if (value) {
             broadcastOut?.postMessage({ type: 'cache-on' } as BroadcastMessage);
             if (navigator.storage?.persist as unknown) {
