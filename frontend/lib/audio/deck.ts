@@ -15,7 +15,7 @@ export class Deck extends EventEmitter {
     static pruneCache() {
         for (let i = Deck._trackCache.length - 1; i >= 0; i--) {
             if (this._trackCache[i].owner === null) {
-                const [{track}] = this._trackCache.splice(i, 1);
+                const [{ track }] = this._trackCache.splice(i, 1);
                 track.destroy();
             }
         }
@@ -82,13 +82,14 @@ export class Deck extends EventEmitter {
 
     disownTracks() {
         Deck._trackCache.forEach((cacheEntry) => {
-            if (this._tracks.includes(cacheEntry.track)) {
+            if (this._tracks.includes(cacheEntry.track) && cacheEntry.owner === this) {
                 cacheEntry.owner = null;
             }
         });
     }
 
     destroy() {
+        this.disownTracks();
         this.removeAllListeners();
     }
 }

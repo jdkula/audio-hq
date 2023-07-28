@@ -74,11 +74,11 @@ export default function useAudioManager(workspaceId: string) {
             if (old) {
                 old.destroy();
             }
-            Deck.pruneCache();
         } else if (!main) {
             mainTrack.current?.destroy();
             mainTrack.current = null;
         }
+        Deck.pruneCache();
     }, [fileManager, main, createTrack]);
 
     useEffect(() => {
@@ -103,7 +103,7 @@ export default function useAudioManager(workspaceId: string) {
                 ambientTracks.current.push(tr);
             }
         }
-        
+
         Deck.pruneCache();
     }, [ambience, sfx, fileManager, createTrack]);
 
