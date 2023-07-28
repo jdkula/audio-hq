@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package audiohq;
+
+import "./entry.proto";
+
+enum JobStatus {
+    GETTING_READY = 1;
+    WAITING = 2;
+    ASSIGNED = 3;
+    DOWNLOADING = 4;
+    CONVERTING = 5;
+    UPLOADING = 6;
+    SAVING = 7;
+    DONE = 8;
+    ERROR = 9;
+}
+
+message Job {
+    string id = 0;
+    SingleMutate details = 1;
+    repeated Modification modifications = 2;
+
+    float progress = 3;
+    JobStatus status = 4;
+    oneof assignment {
+        bool unassigned = 5;
+        string assignedWorker = 6;
+    }
+    oneof error {
+        bool ok = 7;
+        string errorDetails = 8;
+    }
+
+    string url = 9;
+}
+
+message Modification {
+    oneof modification {
+        CutModification cut = 1;
+        FadeModification fade = 2;
+    }
+}
+
+message CutModification {
+    double startSeconds = 1;
+    double endSeconds = 2;
+}
+
+message FadeModification {
+    double inSeconds = 1;
+    double outSeconds = 2;
+}
+
+message JobCreate {
+    SingleMutate details = 1;
+    repeated Modification modifications = 2;
+    string url = 3;
+}
+
+message ListJobsResponse {
+    repeated Job results = 1;
+}

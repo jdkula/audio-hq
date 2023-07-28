@@ -465,7 +465,7 @@ class MainDeckApiImpl implements SpecificDeckApi {
     async update(update: DeckUpdate): Promise<Deck> {
         if (update.queue) {
             const wsapi = new SpecificWorkspaceApiImpl(this._workspaceId);
-            const maindeck = await wsapi.decks.getMain();
+            const maindeck = (await wsapi.decks.listAll()).find(deck => deck.type === 'main');
             if (!maindeck) {
                 throw new Error('No main deck to update!');
             }

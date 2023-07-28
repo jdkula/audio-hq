@@ -116,7 +116,10 @@ async function ahqCache(request) {
     try {
         const response = await fetch(request);
         try {
-            if (new URL(request.url).origin === self.location.origin) {
+            if (
+                new URL(request.url).origin === self.location.origin &&
+                !new URL(request.url).pathname.includes('/api')
+            ) {
                 await (await appCache).put(request.url, response.clone());
                 console.log('Successfully updated cache for app url', request.url);
             }

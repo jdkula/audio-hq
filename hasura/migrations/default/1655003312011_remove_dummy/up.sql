@@ -1,1 +1,0 @@
-ALTER TABLE deck DROP COLUMN dummy;

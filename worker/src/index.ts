@@ -1,89 +1,81 @@
-import * as GQL from './generated/graphql';
 import { Processor } from './processor';
 import { AppFS } from './filesystems/FileSystem';
 
 import { Logger } from 'tslog';
 import { myid } from './id';
-import { createGraphqlRequestClient } from './gql_request_client';
+import { mongo } from './common/db/mongodb';
+import { audiohq } from './common/generated/proto.js';
+import { ObjectId } from 'mongodb';
 
 const log = new Logger({ name: 'worker' });
 
-const client = createGraphqlRequestClient();
-const processor = new Processor(client);
+const processor = new Processor();
 
 let working = false;
 
-async function reportError(jobId: string, e: any) {
-    await client.request(GQL.SetJobErrorDocument, {
-        error:
-            e instanceof Error
-                ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
-                : e.toString instanceof Function
-                ? e.toString()
-                : 'Unknown error',
-        jobId,
-    });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function reportError(jobId: ObjectId, e: any) {
+    await (
+        await mongo
+    ).jobs.findOneAndUpdate(
+        { _id: jobId },
+        {
+            $set: {
+                status: audiohq.JobStatus.ERROR,
+                errorInfo:
+                    e instanceof Error
+                        ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
+                        : e.toString instanceof Function
+                        ? e.toString()
+                        : 'Unknown error',
+            },
+        },
+    );
 }
 
 async function doJobs() {
     if (working) return;
     working = true;
+    const db = await mongo;
     try {
         while (true) {
             log.silly('Attempting to claim a job...');
-            const jobRaw = await client.request(GQL.ClaimJobDocument, {
-                myId: myid,
-            });
+            const job = await db.jobs.findOneAndUpdate({ assignedWorker: null }, { $set: { assignedWorker: myid } });
 
-            const job = jobRaw?.claim_job;
-            if (!job || !job.id) {
+            if (!job.value) {
                 log.silly('No job found. Waiting for more jobs...');
                 return;
             }
 
             try {
-                log.debug('Job found', job);
-                let inPath;
-                if (job.file_upload) {
-                    log.silly('Raw file upload found. Saving to disk...');
-                    inPath = await processor.saveInput(job.file_upload.base64);
-                } else if (job.url) {
-                    log.silly('Import found. Downloading...');
-                    let cut: any = { start: job.option_cut_start, end: job.option_cut_end };
-                    if (!cut.start) cut = undefined;
+                // log.debug('Job found', job.value);
+                log.silly('Import found. Downloading...');
+                const cut = job.value.modifications?.find((x) => x.cut)?.cut;
+                const fade = job.value.modifications?.find((x) => x.fade)?.fade;
 
-                    inPath = await processor.download(job.url, job.id, {
-                        cut,
-                        fadeIn: job.option_fade_in ?? undefined,
-                        fadeOut: job.option_fade_out ?? undefined,
-                    });
-                } else {
-                    throw new Error('Neither job nor file upload is defined!');
-                }
+                const inPath = await processor.download(job.value.url!, job.value._id);
 
                 log.silly('Converting...');
-                let cut: any = { start: job.option_cut_start, end: job.option_cut_end };
-                if (!cut.start) cut = undefined;
 
-                const outPath = await processor.convert(inPath, job.id, {
-                    cut,
-                    fadeIn: job.option_fade_in ?? undefined,
-                    fadeOut: job.option_fade_out ?? undefined,
+                const outPath = await processor.convert(inPath, job.value._id, {
+                    cut: cut ? { start: cut.startSeconds!, end: cut.endSeconds! } : null,
+                    fadeIn: fade?.inSeconds ?? undefined,
+                    fadeOut: fade?.outSeconds ?? undefined,
                 });
 
                 log.silly('Adding to AHQ...');
-                await processor.addFile(job.id, outPath, {
-                    name: job.name,
-                    path: job.path,
-                    workspace: job.workspace_id,
-                    description: job.description,
-                    source: job.url ?? undefined,
+                await processor.addFile(job.value._id, outPath, {
+                    name: job.value.details!.name!,
+                    path: job.value.details!.path!,
+                    workspace: job.value._workspace,
+                    description: job.value.details!.description!,
+                    source: job.value.url ?? undefined,
                 });
 
                 log.debug('Job finished');
             } catch (e) {
                 log.warn('Got error while processing job:', e);
-                reportError(job.id, e);
+                reportError(job.value._id, e);
             }
         }
     } finally {
@@ -93,35 +85,89 @@ async function doJobs() {
 
 let deleting = false;
 
+async function pruneWorkers() {
+    const db = await mongo;
+    const session = db.client.startSession({
+        defaultTransactionOptions: {
+            readPreference: 'primary',
+            readConcern: { level: 'local' },
+            writeConcern: { w: 'majority' },
+        },
+    });
+
+    try {
+        await session.withTransaction(async () => {
+            const result = await db.workers
+                .find(
+                    {
+                        $expr: {
+                            $lt: [
+                                '$lastCheckinTime',
+                                { $add: ['$lastCheckinTime', { $multiply: ['$checkinFrequency', 3] }] },
+                            ],
+                        },
+                    },
+                    { session },
+                )
+                .toArray();
+
+            await db.workers.deleteMany({ _id: { $in: result.map((wk) => wk._id) } }, { session });
+            await db.jobs.updateMany(
+                { assignedWorker: { $in: result.map((wk) => wk._id) } },
+                { $set: { assignedWorker: null } },
+                { session },
+            );
+        });
+    } finally {
+        await session.endSession();
+    }
+}
+
 async function doDeletion() {
     if (deleting) return;
     deleting = true;
+    const db = await mongo;
     try {
         while (true) {
             log.silly('Attempting to claim a delete job...');
-            const jobRaw = await client.request(GQL.ClaimDeleteJobDocument, {
-                myId: myid,
-            });
 
-            const job = jobRaw?.claim_delete_job;
-            if (!job || !job.id) {
+            await pruneWorkers();
+            const jobRaw = await db.deletejobs.findOneAndUpdate(
+                { assignedWorker: null },
+                { $set: { assignedWorker: myid } },
+            );
+
+            if (!jobRaw.ok || !jobRaw.value) {
                 log.silly('No delete job found. Waiting for more delete jobs...');
                 return;
             }
+            const job = jobRaw.value;
 
             try {
                 log.debug('Delete job received', job);
                 log.silly('Deleting file in database...');
-                await client.request(GQL.CommitDeleteJobDocument, {
-                    jobId: job.id,
-                    fileId: job.single.dirent.id,
+
+                const session = db.client.startSession({
+                    defaultTransactionOptions: {
+                        readPreference: 'primary',
+                        readConcern: { level: 'local' },
+                        writeConcern: { w: 'majority' },
+                    },
                 });
 
-                if (job.single.provider_id) {
-                    log.silly('Deleting in AWS...');
-                    await AppFS.delete(job.single.provider_id);
-                } else {
-                    log.debug('No provide ID associated with this file, skipping AWS delete...');
+                try {
+                    await session.withTransaction(async () => {
+                        if (job.providerId) {
+                            log.silly('Deleting in AWS...');
+                            await AppFS.delete(job.providerId);
+                        } else {
+                            log.debug('No provide ID associated with this file, skipping AWS delete...');
+                        }
+                        await db.entries.deleteOne({ _id: job.entryId }, { session });
+                        await db.deletejobs.deleteOne({ _id: job._id }, { session });
+                    });
+                } finally {
+                    await session.endSession();
                 }
 
                 log.debug('Delete job finished');
@@ -160,14 +206,17 @@ async function getIdealOffset(checkinFrequency: number): Promise<number> {
     workerStartHistogram.fill(0);
     workerStartOptimizationHistogram.fill(0);
 
-    const workers = await client.request(GQL.GetWorkerTimestampsDocument);
-    log.silly('STARTUP: Got worker timestamps');
+    const db = await mongo;
 
-    for (const worker of workers.workers) {
-        let start = (new Date(worker.worker_start).getTime() / 1000) % checkinFrequency;
+    await pruneWorkers();
+    log.silly('STARTUP: Got worker timestamps');
+    const workers = await db.workers.find().toArray();
+
+    for (const worker of workers) {
+        let start = (new Date(worker.startTime).getTime() / 1000) % checkinFrequency;
         while (start < checkinFrequency) {
             workerStartHistogram[Math.floor(start)] += 1;
-            start += worker.checkin_frequency_s;
+            start += worker.checkinFrequency;
         }
     }
 
@@ -190,15 +239,19 @@ async function setup() {
     const checkinFrequency = parseInt(process.env['CHECKIN_FREQUENCY'] ?? '10');
     log.silly('STARTUP: Got checkin frequency', checkinFrequency, 'sec');
 
+    const db = await mongo;
+
     const idealOffset =
         'CHECKIN_OFFSET' in process.env
             ? parseInt(process.env['CHECKIN_OFFSET']!)
             : await getIdealOffset(checkinFrequency);
 
-    await client.request(GQL.PruneWorkersDocument);
+    await db.workers.deleteMany({
+        $expr: { $lt: ['$lastCheckinTime', { $add: ['$lastCheckinTime', { $multiply: ['$checkinFrequency', 3] }] }] },
+    });
     log.silly('STARTUP: Pruned workers');
 
-    const startTime = new Date(Date.now() + getMsToNextCheckin(idealOffset, checkinFrequency)).toISOString();
+    const startTime = new Date(Date.now() + getMsToNextCheckin(idealOffset, checkinFrequency)).getTime();
 
     log.info(
         'STARTUP: Will check in at',
@@ -214,12 +267,13 @@ async function setup() {
 
     async function checkIn() {
         log.debug('Checking in...');
-        await client.request(GQL.CheckInDocument, {
-            myId: myid,
-            checkinFrequency,
-            workerStart: startTime,
-        });
+        await db.workers.findOneAndUpdate(
+            { _id: myid },
+            { $set: { checkinFrequency, startTime, lastCheckinTime: Date.now() } },
+            { upsert: true },
+        );
 
+        await pruneWorkers();
         doJobs();
         doDeletion();
 

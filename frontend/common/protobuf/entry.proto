@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package audiohq;
+
+message Entry {
+    string id = 1;
+    
+    oneof value {
+        Single single = 2;
+        Folder folder = 3;
+    }
+}
+
+message Single {
+    reserved 1, 5;
+
+    repeated string path = 2;
+    string name = 3;
+    sint32 ordering = 4;
+    
+    string description = 6;
+    uint64 length = 7;
+    string url = 8;
+}
+
+message SingleMutate {
+    repeated string path = 2;
+    string name = 3;
+    oneof mod_ordering {
+        sint32 ordering = 4;
+        bool last = 5;
+    }
+    string description = 6;
+}
+
+message Folder {
+    reserved 1;
+
+    repeated string path = 2;
+    string name = 3;
+    sint32 ordering = 4;
+}
+
+message FolderMutate {
+    repeated string path = 2;
+    string name = 3;
+    oneof mod_ordering {
+        sint32 ordering = 4;
+        bool last = 5;
+    }
+}
+
+message ListEntriesResponse {
+    repeated Entry entries = 1;
+}
+
+message EntryMutate {
+    oneof mutation {
+        EntryMutate entry = 1;
+        FolderMutate folder = 2;
+    }
+}

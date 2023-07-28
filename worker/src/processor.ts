@@ -11,11 +11,13 @@ import { v4, v4 as uuidv4 } from 'uuid';
 import { spawn } from 'child_process';
 import { AppFS } from './filesystems/FileSystem';
 import which from 'which';
-import { CommitJobDocument, Job_Status_Enum_Enum, UpdateJobProgressDocument } from './generated/graphql';
 import fsProm from 'fs/promises';
 import { Logger } from 'tslog';
 import { myid } from './id';
-import { GraphQLClient } from 'graphql-request';
+import { ObjectId } from 'mongodb';
+import { mongo } from './common/db/mongodb';
+import { asString } from './common/db/oid_helpers';
+import { audiohq } from './common/generated/proto.js';
 
 interface ConvertOptions {
     cut?:
@@ -57,29 +59,29 @@ processorLog.silly('youtube-dl found');
 
 interface FileOptions {
     name: string;
-    workspace: string;
+    workspace: ObjectId;
     path?: string[];
     description?: string;
     source?: string;
 }
 
 export class Processor {
-    private _client: GraphQLClient;
+    private async updateProgress(jobId: ObjectId, progress: number, progressStage: audiohq.JobStatus) {
+        const db = await mongo;
 
-    constructor(client: GraphQLClient) {
-        this._client = client;
-    }
-
-    private async updateProgress(jobId: string, progress: number, progressStage: string) {
         processorLog.silly(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
         try {
-            const updateData = await this._client.request(UpdateJobProgressDocument, {
-                jobId,
-                progress,
-                progressStage: progressStage as Job_Status_Enum_Enum,
-            });
+            const updateData = await db.jobs.updateOne(
+                { _id: jobId, assignedWorker: myid },
+                {
+                    $set: {
+                        progress,
+                        status: progressStage,
+                    },
+                },
+            );
 
-            if (updateData?.update_job_by_pk?.assigned_worker !== myid) {
+            if (updateData.matchedCount === 0) {
                 processorLog.fatal("Started work on a job we don't own, exiting now!!");
                 process.exit(1);
             }
@@ -107,53 +109,69 @@ export class Processor {
     }
 
     async addFile(
-        id: string,
+        jobId: ObjectId,
         filepath: string,
         { name, workspace, path, description, source }: FileOptions,
-    ): Promise<string> {
+    ): Promise<ObjectId> {
         processorLog.debug(`Saving file ${filepath} to S3 + Database...`);
         const duration = await getAudioDurationInSeconds(filepath);
         processorLog.silly(`Got ${filepath} as ${duration} seconds long`);
 
-        this.updateProgress(id, 0, 'saving');
+        this.updateProgress(jobId, 0, audiohq.JobStatus.SAVING);
 
-        processorLog.silly(`Saving to S3...`);
-        const dlurl = await AppFS.write(
-            filepath,
-            id + kAudioExtension,
-            kAudioType,
-            (progress) => progress && this.updateProgress(id, progress, 'saving'),
-        );
-        processorLog.silly(`Saved to S3`);
+        const db = await mongo;
 
-        processorLog.silly(`Committing to database...`);
-        const eid = v4();
-        const sid = v4();
-        await this._client.request(CommitJobDocument, {
-            jobId: id,
-            entry: {
-                id: eid,
-                name: name,
-                path: path ?? [],
-                workspace_id: workspace,
-                ordering: null,
-            },
-            single: {
-                id: sid,
-                length: duration,
-                description: description,
-                provider_id: id + kAudioExtension,
-                download_url: dlurl,
-                directory_entry_id: eid,
-                source_url: source ?? null,
+        const session = db.client.startSession({
+            defaultTransactionOptions: {
+                readPreference: 'primary',
+                readConcern: { level: 'local' },
+                writeConcern: { w: 'majority' },
             },
         });
+        try {
+            let id: ObjectId | undefined = undefined;
+            await session.withTransaction(async () => {
+                processorLog.silly(`Saving to S3...`);
+                const dlurl = await AppFS.write(
+                    filepath,
+                    asString(jobId) + kAudioExtension,
+                    kAudioType,
+                    (progress) => progress && this.updateProgress(jobId, progress, audiohq.JobStatus.SAVING),
+                );
+                processorLog.silly(`Saved to S3`);
+        
+                processorLog.silly(`Committing to database...`);
+        
+                const inserted = await db.entries.insertOne(
+                    {
+                        _workspace: workspace,
+                        single: {
+                            description: description ?? '',
+                            name: name,
+                            path: path ?? [],
+                            url: dlurl,
+                            length: duration,
+                            ordering: null,
+                            source: source ?? "",
+                            provider_id: asString(jobId) + kAudioExtension,
+                        },
+                    },
+                    { session },
+                );
+                await db.jobs.deleteOne({ _id: jobId });
+                processorLog.silly(`Job committed`);
+                id = inserted.insertedId;
+            });
 
-        processorLog.silly(`Job committed`);
-        return id;
+            if (!id) throw Error();
+
+            return id;
+        } finally {
+            await session.endSession();
+        }
     }
 
-    async download(url: string, id: string, options?: ConvertOptions): Promise<string> {
+    async download(url: string, jobId: ObjectId): Promise<string> {
         const basedir = kBaseDir;
 
         try {
@@ -167,7 +185,7 @@ export class Processor {
         const outPath = path.join(basedir, uuid + '.%(ext)s');
         processorLog.debug(`Downloading ${url} with pattern ${outPath}`);
 
-        this.updateProgress(id, 0, 'downloading');
+        this.updateProgress(jobId, 0, audiohq.JobStatus.DOWNLOADING);
 
         return new Promise<string>((resolve, reject) => {
             const ytdl = spawn(ytdlPath, ['--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url], {
@@ -177,8 +195,8 @@ export class Processor {
             ytdl.stdout.on('data', (data: string) => {
                 ytdlLog.silly(data.toString());
                 const foundPercent = data.toString().match(/\[download\]\s*(\d+\.\d+)%/);
-                if (id && foundPercent?.[1]) {
-                    this.updateProgress(id, parseFloat(foundPercent[1]) / 100, 'downloading');
+                if (jobId && foundPercent?.[1]) {
+                    this.updateProgress(jobId, parseFloat(foundPercent[1]) / 100, audiohq.JobStatus.DOWNLOADING);
                 }
             });
 
@@ -202,7 +220,7 @@ export class Processor {
         });
     }
 
-    async convert(input: string, id: string, options?: ConvertOptions): Promise<string> {
+    async convert(input: string, jobId: ObjectId, options?: ConvertOptions): Promise<string> {
         const basedir = kBaseDir;
 
         try {
@@ -216,7 +234,7 @@ export class Processor {
         const outPath = path.join(basedir, uuid + '.mp3');
         processorLog.debug(`Converting ${input} to ${outPath}`);
 
-        this.updateProgress(id, 0, 'converting');
+        this.updateProgress(jobId, 0, audiohq.JobStatus.CONVERTING);
 
         return new Promise<string>((resolve, reject) => {
             let cmd = ffmpeg(input).noVideo().audioQuality(3);
@@ -285,7 +303,7 @@ export class Processor {
                 .on('progress', (info) => {
                     ffmpegLog.silly('Got progress', info.percent);
                     const percentBoost = options?.cut && ofDuration < length ? length / ofDuration : 1;
-                    this.updateProgress(id, (info.percent / 100) * percentBoost, 'converting');
+                    this.updateProgress(jobId, (info.percent / 100) * percentBoost, audiohq.JobStatus.CONVERTING);
                 })
                 .save(outPath);
         });
@@ -298,18 +316,8 @@ function fromTimestamp(ffmpegTimestamp: string): number {
 }
 
 async function getAudioDurationInSeconds(filepath: string): Promise<number> {
-    const ffprobe = await new Promise<string>((resolve, reject) => {
-        which('ffprobe', (err, path) => {
-            if (err || !path) {
-                reject(err);
-            } else {
-                resolve(path);
-            }
-        });
-    });
-
     return new Promise<number>((resolve, reject) => {
-        const child = spawn(ffprobe, [
+        const child = spawn('ffprobe', [
             '-v',
             'error',
             '-select_streams',
@@ -324,6 +332,7 @@ async function getAudioDurationInSeconds(filepath: string): Promise<number> {
             result += data.toString();
         });
         child.on('close', () => {
+            processorLog.silly(`ffprobe done`);
             const search = 'duration=';
             let idx = result.indexOf(search);
             if (idx === -1) {

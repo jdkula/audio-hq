@@ -85,11 +85,10 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
         if (!info) return;
 
         const startDate = main.pauseTimestamp ?? new Date();
-        const timeElapsed = (differenceInSeconds(startDate, main.startTimestamp) + file.length) % info.totalSeconds;
+        const timeElapsed = differenceInSeconds(startDate, main.startTimestamp) % info.totalSeconds;
 
 
-        const copy = [...main.queue];
-        copy.splice(info.trackInfo.index, 0, file);
+        const copy = [...main.queue, file];
 
         playDeck.mutate({
             deck: {

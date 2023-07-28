@@ -62,8 +62,6 @@ export interface SpecificEntryApi<T extends Entry> {
 
 export interface WorkspaceDecksApi {
     listAll(): Promise<Array<Deck>>;
-    getMain(): Promise<Deck | null>;
-    listAmbient(): Promise<Array<Deck>>;
     create(deck: DeckCreate): Promise<Deck>;
 }
 

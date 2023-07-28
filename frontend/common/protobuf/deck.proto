@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package audiohq;
+
+import "./entry.proto";
+
+enum DeckType {
+    MAIN = 1;
+    AMBIENT = 2;
+    SFX = 3;
+}
+
+message Deck {
+    string id = 1;
+    DeckType type = 2;
+
+    float volume = 3;
+    float speed = 4;
+
+    uint64 startTimestamp = 5;
+    oneof paused {
+        bool playing = 6;
+        uint64 pausedTimestamp = 7;
+    }
+
+    repeated string queue = 8;
+
+    uint64 createdAt = 9;
+}
+
+message DeckCreate {
+    DeckType type = 2;
+
+    float volume = 3;
+    float speed = 4;
+
+    uint64 startTimestamp = 5;
+    oneof paused {
+        bool playing = 6;
+        uint64 pausedTimestamp = 7;
+    }
+
+    repeated string queue = 8;
+}
+
+message DeckMutate {
+    float volume = 3;
+    float speed = 4;
+
+    uint64 startTimestamp = 5;
+    oneof paused {
+        bool playing = 6;
+        uint64 pausedTimestamp = 7;
+    }
+
+    repeated string queue = 8;
+}
+
+message ListDecksResponse {
+    repeated Deck results = 1;
+}

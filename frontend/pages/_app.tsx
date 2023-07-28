@@ -20,7 +20,7 @@ import { createEmotionCache } from '~/lib/ssr';
 import { useColorMode } from '~/lib/utility/usePersistentData';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
-import { AudioHQApiImplGraphQL } from '~/lib/api/impl/gql';
+import { AudioHQApiImplRest } from '~/lib/api/impl/rest';
 import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 
@@ -35,7 +35,7 @@ export default function App({
     pageProps,
     emotionCache = clientSideEmotionCache,
 }: SSRServerProps): ReactElement {
-    const apiClient = useRef(new AudioHQApiImplGraphQL());
+    const apiClient = useRef(new AudioHQApiImplRest(process.env.NEXT_PUBLIC_API_BASE as string));
 
     // Set up theming
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');

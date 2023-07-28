@@ -1,1 +1,0 @@
-ALTER TABLE public.deck ADD COLUMN dummy timestamptz;

@@ -42,3 +42,5 @@ deploy-prod.sh
 cookies.txt
 
 public/*dist*
+
+test_data/

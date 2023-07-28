@@ -1,2 +1,2 @@
 import { v4 } from 'uuid';
-export const myid = v4();
+export const myid = v4().toString();

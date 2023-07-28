@@ -1,1 +1,0 @@
-ALTER TABLE public.job DROP COLUMN file_upload;
