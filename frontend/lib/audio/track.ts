@@ -20,7 +20,7 @@ export class Track extends EventEmitter {
 
     private readonly _globalVolumeListener: () => void;
 
-    constructor(private _status: API.Deck, private readonly _qe: API.Single, private readonly _fm: FileManager) {
+    constructor(private _deck: API.Deck, private readonly _single: API.Single, private readonly _fm: FileManager) {
         super();
 
         this._audio = new Audio();
@@ -33,19 +33,19 @@ export class Track extends EventEmitter {
         this.once('internal_audioplayable', this.oncanplay.bind(this));
         this._audio.oncanplay = () => this.emit('internal_audioplayable');
 
-        this._audio.src = this._qe.url;
+        this._audio.src = this._single.url;
 
         if (shouldCacheLRV.value) {
-            this._fm.download(this._qe);
+            this._fm.download(this._single);
         }
 
-        this._globalVolumeListener = () => this.update(this._status);
+        this._globalVolumeListener = () => this.update(this._deck);
         globalVolumeLRV.on('set', this._globalVolumeListener);
     }
 
     private oncanplay() {
         this._ready = true;
-        this.update(this._status);
+        this.update(this._deck);
     }
 
     private onstart() {
@@ -55,24 +55,24 @@ export class Track extends EventEmitter {
                 this.emit('blocked', e);
             });
         }
-        this.update(this._status);
+        this.update(this._deck);
     }
 
     private onend() {
-        this.update(this._status);
+        this.update(this._deck);
     }
 
     private _stopTimeouts: (() => void) | null = null;
 
     public update(status: API.Deck) {
-        this._status = status;
+        this._deck = status;
 
         this._stopTimeouts?.();
         this._stopTimeouts = null;
 
         if (!this._ready) return;
 
-        const deckInfo = getDeckInfo(status, this._qe);
+        const deckInfo = getDeckInfo(status, this._single);
 
         if (!deckInfo) {
             this._audio.pause();
@@ -97,14 +97,14 @@ export class Track extends EventEmitter {
                     this.emit('blocked', e);
                 });
             }
-            const targetTime = (times.secondsIntoLoop - trackInfo.startTime) * this._status.speed;
+            const targetTime = (times.secondsIntoLoop - trackInfo.startTime) * this._deck.speed;
             if (Math.abs(this._audio.currentTime - targetTime) > kMaxAudioDriftAllowance) {
                 // only update if we're off by more than 3/2 a second. Prevents skipping with
                 // extra updates.
                 this._audio.currentTime = targetTime;
             }
-            this._audio.volume = this._status.volume * globalVolumeLRV.value;
-            this._audio.playbackRate = this._status.speed;
+            this._audio.volume = this._deck.volume * globalVolumeLRV.value;
+            this._audio.playbackRate = this._deck.speed;
         } else {
             this._audio.volume = 0;
             if (!this._audio.paused) {
@@ -139,7 +139,7 @@ export class Track extends EventEmitter {
     public async unblock() {
         try {
             await this._audio.play();
-            this.update(this._status);
+            this.update(this._deck);
         } catch (e) {
             console.warn(e);
             this.emit('blocked', e);

@@ -116,10 +116,7 @@ async function ahqCache(request) {
     try {
         const response = await fetch(request);
         try {
-            if (
-                new URL(request.url).origin === self.location.origin &&
-                !new URL(request.url).pathname.includes('/api')
-            ) {
+            if (new URL(request.url).origin === self.location.origin) {
                 await (await appCache).put(request.url, response.clone());
                 console.log('Successfully updated cache for app url', request.url);
             }
@@ -181,8 +178,9 @@ async function clearCache(cacheProm) {
 
 /** Respond with cached data if possible, using a SWR "cache-and-network" pattern */
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
     if (event.request.method !== 'GET') return;
-    if (!new URL(event.request.url).protocol.startsWith('http')) return;
+    if (!url.protocol.startsWith('http') || (url.origin === self.location.origin && url.pathname.includes("api"))) return;
 
     event.respondWith(ahqCache(event.request));
 });

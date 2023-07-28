@@ -16,7 +16,7 @@ import { FileManagerContext, WorkspaceIdContext } from '~/lib/utility/context';
 import * as API from '~/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
-import { differenceInSeconds, sub, subSeconds } from 'date-fns';
+import { differenceInSeconds, subSeconds } from 'date-fns';
 import { getDeckInfo } from '~/lib/audio/audio_util';
 
 const PlayControlsContainer = styled.div`

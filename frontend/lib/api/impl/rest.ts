@@ -153,6 +153,7 @@ class SpecificWorkspaceApiImplRest implements SpecificWorkspaceApi {
 
     entry(entry: Single): SpecificSingleApiImplRest;
     entry(entry: Folder): SpecificFolderApiImplRest;
+    entry(entry: Entry): SpecificFolderApiImplRest;
     entry(entry: Entry): SpecificEntryApi<Entry> {
         if (entry.type === 'single') {
             return new SpecificSingleApiImplRest(this.baseUrl, this._id, entry);
@@ -326,20 +327,6 @@ class SpecificSingleApiImplRest implements SpecificEntryApi<Single> {
     }
 }
 
-function protoSingleToSingle(id: string, single: audiohq.ISingle): Single {
-    return {
-        type: 'single',
-        id: id,
-        name: single.name!,
-        ordering: single.ordering!,
-        path: single.path!,
-        description: single.description!,
-        length: single.length!,
-        url: single.url!,
-        __internal_id_single: id,
-    } satisfies Single;
-}
-
 function protoDeckToDeck(deck: audiohq.IDeck, singles: Single[]): Deck {
     return {
         id: deck.id!,
@@ -374,6 +361,7 @@ class WorkspaceDecksApiImplRest implements WorkspaceDecksApi {
     ) {}
 
     async listAll(): Promise<Deck[]>;
+    async listAll(cachedSingles?: Single[]): Promise<Deck[]>
     async listAll(cachedSingles?: Single[]): Promise<Deck[]> {
         const proto = audiohq.ListDecksResponse.decode(
             (await axios.get(`${this.baseUrl}/workspaces/${this._workspaceId}/decks`)).data,
@@ -477,29 +465,6 @@ function protoJobStatusToJobStatus(jobType: audiohq.JobStatus): JobStatus {
             return 'done';
         case audiohq.JobStatus.ERROR:
             return 'error';
-    }
-}
-
-function jobStatusToProtoJobStatus(status: JobStatus): audiohq.JobStatus {
-    switch (status) {
-        case 'getting ready':
-            return audiohq.JobStatus.GETTING_READY;
-        case 'waiting':
-            return audiohq.JobStatus.WAITING;
-        case 'assigned':
-            return audiohq.JobStatus.ASSIGNED;
-        case 'downloading':
-            return audiohq.JobStatus.DOWNLOADING;
-        case 'converting':
-            return audiohq.JobStatus.CONVERTING;
-        case 'uploading':
-            return audiohq.JobStatus.UPLOADING;
-        case 'saving':
-            return audiohq.JobStatus.SAVING;
-        case 'done':
-            return audiohq.JobStatus.DONE;
-        case 'error':
-            return audiohq.JobStatus.ERROR;
     }
 }
 

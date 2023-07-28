@@ -63,13 +63,18 @@ export default function useAudioManager(workspaceId: string) {
 
     useEffect(() => {
         if (main && main.queue.length > 0) {
-            // TODO: Code smell...
             if (main && mainTrack.current?.reconcile(main)) {
                 return;
             }
 
-            mainTrack.current?.destroy();
+            const old = mainTrack.current;
+            old?.disownTracks();
             mainTrack.current = createTrack(main);
+
+            if (old) {
+                old.destroy();
+            }
+            Deck.pruneCache();
         } else if (!main) {
             mainTrack.current?.destroy();
             mainTrack.current = null;
@@ -77,16 +82,18 @@ export default function useAudioManager(workspaceId: string) {
     }, [fileManager, main, createTrack]);
 
     useEffect(() => {
+        const toDestroy: Deck[] = [];
         for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
-            const track = ambientTracks.current[i];
-            const matchedState = [...ambience, ...sfx].find((ps) => track.isReferentFor(ps));
-            if (!matchedState) {
-                track.destroy();
+            const deck = ambientTracks.current[i];
+            const matchedState = [...ambience, ...sfx].find((deckDef) => deck.isReferentFor(deckDef));
+            if (!matchedState || !deck.reconcile(matchedState)) {
+                toDestroy.push(deck);
                 ambientTracks.current.splice(i, 1);
-            } else if (!track.reconcile(matchedState)) {
-                track.destroy();
-                ambientTracks.current[i] = createTrack(matchedState);
             }
+        }
+
+        for (const deck of toDestroy) {
+            deck.disownTracks();
         }
 
         for (const amb of [...ambience, ...sfx]) {
@@ -96,6 +103,8 @@ export default function useAudioManager(workspaceId: string) {
                 ambientTracks.current.push(tr);
             }
         }
+        
+        Deck.pruneCache();
     }, [ambience, sfx, fileManager, createTrack]);
 
     return {

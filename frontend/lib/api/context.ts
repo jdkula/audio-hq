@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import AudioHQApi from './AudioHQApi';
+import { AudioHQApiImplRest } from './impl/rest';
 
-const AudioHQApiContext = createContext<AudioHQApi>(null as never);
+const AudioHQApiContext = createContext<AudioHQApiImplRest>(null as never);
 
 export default AudioHQApiContext;

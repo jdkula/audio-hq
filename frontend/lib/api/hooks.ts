@@ -11,6 +11,7 @@ import {
     DeckCreate,
     EntryUpdate,
     SingleUpdate,
+    Single,
 } from './models';
 import { v4 as uuid, v4 } from 'uuid';
 
@@ -39,6 +40,7 @@ export function useWorkspaceJobs(workspaceId: string) {
             }
             lastNumJobs.current = jobData.length;
         },
+        refetchInterval: (data) => (data?.length ?? 0) === 0 ? 5000 : 1000,
     });
 }
 
@@ -66,13 +68,15 @@ export function useCreateUploadJob(workspaceId: string) {
             return { optimisticJob };
         },
         onSuccess: (res, _, ctx) => {
-            queryClient.setQueryData(jobsQueryKey, (data?: Job[]) =>
-                data?.map((job) => (job.id === ctx?.optimisticJob.id ? res : job)),
+            queryClient.setQueryData(
+                jobsQueryKey,
+                (data?: Job[]) => data?.map((job) => (job.id === ctx?.optimisticJob.id ? res : job)),
             );
         },
         onError: (_, __, ctx) => {
-            queryClient.setQueryData(jobsQueryKey, (data?: Job[]) =>
-                data?.filter((job) => job.id !== ctx?.optimisticJob.id),
+            queryClient.setQueryData(
+                jobsQueryKey,
+                (data?: Job[]) => data?.filter((job) => job.id !== ctx?.optimisticJob.id),
             );
         },
         onSettled: () => {
@@ -107,13 +111,15 @@ export function useCreateImportJob(workspaceId: string) {
             return { optimisticJob };
         },
         onSuccess: (res, _, ctx) => {
-            queryClient.setQueryData(jobsQueryKey, (data?: Job[]) =>
-                data?.map((job) => (job.id === ctx?.optimisticJob.id ? res : job)),
+            queryClient.setQueryData(
+                jobsQueryKey,
+                (data?: Job[]) => data?.map((job) => (job.id === ctx?.optimisticJob.id ? res : job)),
             );
         },
         onError: (_, __, ctx) => {
-            queryClient.setQueryData(jobsQueryKey, (data?: Job[]) =>
-                data?.filter((job) => job.id !== ctx?.optimisticJob.id),
+            queryClient.setQueryData(
+                jobsQueryKey,
+                (data?: Job[]) => data?.filter((job) => job.id !== ctx?.optimisticJob.id),
             );
         },
         onSettled: () => {
@@ -159,10 +165,13 @@ export function useWorkspaceDecks(workspaceId: string): {
     sfx: Deck[];
 } {
     const api = useContext(AudioHQApiContext);
+    const entries = useWorkspaceEntries(workspaceId);
+
     const { data } = useQuery({
         queryKey: ['workspace', workspaceId, 'decks'],
-        queryFn: () => api.workspace(workspaceId).decks.listAll(),
-        refetchInterval: 1000,
+        queryFn: () =>
+            api.workspace(workspaceId).decks.listAll(entries.data?.filter((x): x is Single => x.type === 'single')),
+        refetchInterval: 500,
     });
 
     const main = data?.filter((x) => x.type === 'main')[0] ?? null;
@@ -177,6 +186,7 @@ export function useWorkspaceDetail(workspaceId: string) {
     return useQuery({
         queryKey: ['workspace', workspaceId],
         queryFn: () => api.workspace(workspaceId).get(),
+        refetchInterval: false,
     });
 }
 export function useWorkspaceDetailByName(name: string) {
@@ -217,29 +227,33 @@ export function useUpdateDeckMutation(workspaceId: string) {
         onMutate: async ({ deckId, update }) => {
             await queryClient.cancelQueries(decksQueryKey);
             const originalData = queryClient.getQueryData<Deck[]>(decksQueryKey)?.find((dk) => dk.id === deckId);
-            queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
-                decks?.map((dk) =>
-                    dk.id === deckId
-                        ? {
-                              ...dk,
-                              ...update,
-                          }
-                        : dk,
-                ),
+            queryClient.setQueryData(
+                decksQueryKey,
+                (decks?: Deck[]) =>
+                    decks?.map((dk) =>
+                        dk.id === deckId
+                            ? {
+                                  ...dk,
+                                  ...update,
+                              }
+                            : dk,
+                    ),
             );
 
             return { originalData };
         },
         onSuccess: (result, { deckId }) => {
-            queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
-                decks?.map((dk) => (dk.id === deckId ? result : dk)),
+            queryClient.setQueryData(
+                decksQueryKey,
+                (decks?: Deck[]) => decks?.map((dk) => (dk.id === deckId ? result : dk)),
             );
         },
         onError: (_, { deckId }, ctx) => {
             if (ctx?.originalData) {
                 const original = ctx.originalData;
-                queryClient.setQueryData(decksQueryKey, (decks?: Deck[]) =>
-                    decks?.map((dk) => (dk.id === deckId ? original : dk)),
+                queryClient.setQueryData(
+                    decksQueryKey,
+                    (decks?: Deck[]) => decks?.map((dk) => (dk.id === deckId ? original : dk)),
                 );
             }
         },
@@ -324,8 +338,9 @@ export function usePlayDeckMutation(workspaceId: string) {
         onError: (_, __, ctx) => {
             if (ctx?.optimisticDeck) {
                 const optimistic = ctx.optimisticDeck;
-                queryClient.setQueryData<Deck[]>(decksQueryKey, (decks) =>
-                    decks?.filter((other) => other.id !== optimistic.id),
+                queryClient.setQueryData<Deck[]>(
+                    decksQueryKey,
+                    (decks) => decks?.filter((other) => other.id !== optimistic.id),
                 );
             }
         },
@@ -356,22 +371,25 @@ export function useUpdateEntryMutation(workspaceId: string) {
                 ordering: (update.ordering === null ? Number.POSITIVE_INFINITY : update.ordering) ?? original.ordering,
             };
 
-            queryClient.setQueryData<Entry[]>(entryQueryKey, (entries) =>
-                entries?.map((tr) => (tr.id === entry.id ? optimistic : tr)),
+            queryClient.setQueryData<Entry[]>(
+                entryQueryKey,
+                (entries) => entries?.map((tr) => (tr.id === entry.id ? optimistic : tr)),
             );
             return { original, optimistic };
         },
         onSuccess: (track) => {
-            queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
-                tracks?.map((tr) => (tr.id === track.id ? track : tr)),
+            queryClient.setQueryData<Entry[]>(
+                entryQueryKey,
+                (tracks) => tracks?.map((tr) => (tr.id === track.id ? track : tr)),
             );
         },
         onError: (_, { entry }, ctx) => {
             if (ctx?.original) {
                 const original = ctx.original;
 
-                queryClient.setQueryData<Entry[]>(entryQueryKey, (tracks) =>
-                    tracks?.map((tr) => (tr.id === entry.id ? original : tr)),
+                queryClient.setQueryData<Entry[]>(
+                    entryQueryKey,
+                    (tracks) => tracks?.map((tr) => (tr.id === entry.id ? original : tr)),
                 );
             }
         },
@@ -437,8 +455,9 @@ export function useCreateFolderMutation(workspaceId: string) {
         onError: (_, __, ctx) => {
             if (ctx?.optimisticId) {
                 const optimisticId = ctx.optimisticId;
-                queryClient.setQueryData(entriesQueryKey, (data?: Entry[]) =>
-                    data?.filter((ent) => ent.id === optimisticId),
+                queryClient.setQueryData(
+                    entriesQueryKey,
+                    (data?: Entry[]) => data?.filter((ent) => ent.id === optimisticId),
                 );
             }
         },
