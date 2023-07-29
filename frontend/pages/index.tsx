@@ -113,8 +113,8 @@ export default function Home(): React.ReactElement {
         2000,
         () => {
             // estimate type is incorrect for newer browsers
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (navigator.storage && navigator.storage.estimate) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 navigator.storage.estimate().then((estimate: any) => {
                     if (estimate.usageDetails) {
                         setCurrentlyUsedData(estimate.usageDetails?.caches ?? 0);

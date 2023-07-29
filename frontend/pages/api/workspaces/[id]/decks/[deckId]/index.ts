@@ -3,7 +3,6 @@ import { mongo } from 'common/db/mongodb';
 import { audiohq } from 'common/generated/proto';
 import { asString, asObjectId } from 'common/db/oid_helpers';
 import { readStream } from '../../..';
-import { ObjectId } from 'mongodb';
 
 export const config = {
     runtime: 'nodejs',
@@ -18,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!wsIdString) return void res.status(400).end();
     const wsId = asObjectId(wsIdString);
 
-    const deckIdString = (req.query.deckId as string);
+    const deckIdString = req.query.deckId as string;
     if (!deckIdString) return void res.status(400).end();
     const deckId =
         deckIdString.toLowerCase() === 'main'

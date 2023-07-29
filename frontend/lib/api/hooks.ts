@@ -40,7 +40,7 @@ export function useWorkspaceJobs(workspaceId: string) {
             }
             lastNumJobs.current = jobData.length;
         },
-        refetchInterval: (data) => (data?.length ?? 0) === 0 ? 5000 : 1000,
+        refetchInterval: (data) => ((data?.length ?? 0) === 0 ? 5000 : 1000),
     });
 }
 

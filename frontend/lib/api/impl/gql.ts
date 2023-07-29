@@ -48,7 +48,6 @@ import {
     EntryUpdate,
     Workspace,
     WorkspaceCreate,
-    WorkspaceUpdate,
     SingleUpdate,
     Single,
     Folder,
@@ -98,7 +97,7 @@ function toDeck(hdeck: Omit<HDeck, 'workspace' | 'workspace_id'>): Deck {
                     url: htrack.single.download_url,
                     ordering: htrack.ordering,
                     __internal_id_single: htrack.single.id,
-                } as Single),
+                }) as Single,
         ),
         type: toDeckType(hdeck.type),
     };
@@ -170,7 +169,7 @@ class SpecificWorkspaceApiImpl implements SpecificWorkspaceApi {
         };
     }
 
-    async update(workspace: WorkspaceUpdate): Promise<Workspace> {
+    async update(): Promise<Workspace> {
         throw new Error('Method not implemented.');
     }
 
@@ -262,7 +261,10 @@ class WorkspaceEntriesApiImpl implements WorkspaceEntriesApi {
 }
 
 class SpecificEntryApiImpl<T extends Entry> implements SpecificEntryApi<T> {
-    constructor(private _workspaceId: string, private _entry: T) {}
+    constructor(
+        private _workspaceId: string,
+        private _entry: T,
+    ) {}
 
     async get(): Promise<T> {
         throw new Error('Method not implemented.');
@@ -356,6 +358,7 @@ class WorkspaceDecksApiImpl implements WorkspaceDecksApi {
     async listAll(): Promise<Deck[]> {
         const res = await request(kUrl, DecksDocument, { workspaceId: this._workspaceId });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return res.workspace_by_pk?.decks.map(toDeck as any) ?? [];
     }
     async getMain(): Promise<Deck | null> {
@@ -365,6 +368,7 @@ class WorkspaceDecksApiImpl implements WorkspaceDecksApi {
 
         if (!hdeck) return null;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return toDeck(hdeck as any);
     }
     async listAmbient(): Promise<Deck[]> {
@@ -396,12 +400,16 @@ class WorkspaceDecksApiImpl implements WorkspaceDecksApi {
             throw new Error('Failed to create deck');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return toDeck(dk as any);
     }
 }
 
 class SpecificDeckApiImpl implements SpecificDeckApi {
-    constructor(private _workspaceId: string, private _deckId: string) {}
+    constructor(
+        private _workspaceId: string,
+        private _deckId: string,
+    ) {}
 
     async get(): Promise<Deck> {
         throw new Error('Method not implemented.');
@@ -427,6 +435,7 @@ class SpecificDeckApiImpl implements SpecificDeckApi {
 
             if (!dk) throw new Error("Couldn't update deck");
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return toDeck(dk as any);
         } else {
             const dk = (
@@ -443,6 +452,7 @@ class SpecificDeckApiImpl implements SpecificDeckApi {
 
             if (!dk) throw new Error('Could not update deck');
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return toDeck(dk as any);
         }
     }
@@ -465,7 +475,7 @@ class MainDeckApiImpl implements SpecificDeckApi {
     async update(update: DeckUpdate): Promise<Deck> {
         if (update.queue) {
             const wsapi = new SpecificWorkspaceApiImpl(this._workspaceId);
-            const maindeck = (await wsapi.decks.listAll()).find(deck => deck.type === 'main');
+            const maindeck = (await wsapi.decks.listAll()).find((deck) => deck.type === 'main');
             if (!maindeck) {
                 throw new Error('No main deck to update!');
             }
@@ -486,6 +496,7 @@ class MainDeckApiImpl implements SpecificDeckApi {
 
             if (!dk) throw new Error("Couldn't update main deck");
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return toDeck(dk as any);
         }
     }
@@ -602,7 +613,10 @@ class WorkspaceJobsApiImpl implements WorkspaceJobsApi {
 }
 
 class SpecificJobApiImpl implements SpecificJobApi {
-    constructor(private _workspaceId: string, private _jobId: string) {}
+    constructor(
+        private _workspaceId: string,
+        private _jobId: string,
+    ) {}
 
     async cancel(): Promise<void> {
         await request(kUrl, DeleteErrorJobDocument, { jobId: this._jobId });

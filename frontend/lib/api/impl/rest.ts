@@ -361,7 +361,7 @@ class WorkspaceDecksApiImplRest implements WorkspaceDecksApi {
     ) {}
 
     async listAll(): Promise<Deck[]>;
-    async listAll(cachedSingles?: Single[]): Promise<Deck[]>
+    async listAll(cachedSingles?: Single[]): Promise<Deck[]>;
     async listAll(cachedSingles?: Single[]): Promise<Deck[]> {
         const proto = audiohq.ListDecksResponse.decode(
             (await axios.get(`${this.baseUrl}/workspaces/${this._workspaceId}/decks`)).data,

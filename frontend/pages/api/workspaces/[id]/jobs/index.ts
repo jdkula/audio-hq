@@ -46,11 +46,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 _workspace: wsId,
                 assignedWorker: null,
                 details: {
-                    description: jobInput.details.description ?? "",
+                    description: jobInput.details.description ?? '',
                     last: true,
                     ordering: 0,
-                    name: jobInput.details.name ?? "",
-                    path: jobInput.details.path ?? []
+                    name: jobInput.details.name ?? '',
+                    path: jobInput.details.path ?? [],
                 },
                 errorDetails: null,
                 modifications: jobInput.modifications ?? [],

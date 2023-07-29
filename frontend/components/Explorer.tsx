@@ -69,7 +69,9 @@ const GoUpContainer = styled.div<{ enabled?: boolean; over?: boolean }>`
     opacity: ${({ enabled }) => (enabled ? 1 : 0)};
     background-color: ${({ theme, over }) => (over ? theme.palette.primary.main : theme.palette.grey.A700)};
 
-    transition: opacity 0.25s, background-color 0.25s;
+    transition:
+        opacity 0.25s,
+        background-color 0.25s;
 
     position: absolute;
     top: 0;
@@ -150,6 +152,7 @@ export const Explorer: FC = () => {
     const [searchText, setSearchText] = useState('');
 
     const [displaySettingsOpen, setDisplaySettingsOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filterButtonRef = useRef<any>();
 
     const [alwaysCombine, setAlwaysCombine] = useLocalReactiveValue(alwaysCombineLRV);
