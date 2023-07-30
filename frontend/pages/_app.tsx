@@ -20,9 +20,10 @@ import { createEmotionCache } from '~/lib/ssr';
 import { useColorMode } from '~/lib/utility/usePersistentData';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
-import { AudioHQApiImplRest } from '~/lib/api/impl/rest';
 import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { AudioHQApiImplProto } from '~/lib/api/impl/protobase';
+import SocketTransport from '~/lib/api/impl/socketio.transport';
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {
@@ -35,7 +36,7 @@ export default function App({
     pageProps,
     emotionCache = clientSideEmotionCache,
 }: SSRServerProps): ReactElement {
-    const apiClient = useRef(new AudioHQApiImplRest(process.env.NEXT_PUBLIC_API_BASE as string));
+    const apiClient = useRef(new AudioHQApiImplProto(new SocketTransport(process.env.NEXT_PUBLIC_WS_BASE as string)));
 
     // Set up theming
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');

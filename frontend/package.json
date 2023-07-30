@@ -22,12 +22,13 @@
         "@mui/icons-material": "^5.14.1",
         "@mui/material": "^5.14.2",
         "@mui/styles": "^5.14.1",
+        "@mui/utils": "^5.14.1",
         "@tanstack/query-sync-storage-persister": "^4.32.0",
         "@tanstack/react-query": "^4.32.0",
         "@tanstack/react-query-devtools": "^4.32.0",
         "@tanstack/react-query-persist-client": "^4.32.0",
         "axios": "^1.4.0",
-        "common": "file:../common",
+        "common": "workspace:^",
         "date-fns": "^2.30.0",
         "events": "^3.3.0",
         "graphql": "^16.7.1",
@@ -45,6 +46,9 @@
         "react-dropzone": "^14.2.3",
         "react-is": "^18.2.0",
         "react-window": "^1.8.9",
+        "service": "workspace:^",
+        "socket.io-client": "^4.7.1",
+        "socket.io-msgpack-parser": "^3.0.2",
         "uuid": "^9.0.0"
     },
     "devDependencies": {
@@ -76,9 +80,6 @@
         "prettier": "^3.0.0",
         "typescript": "^5.1.6",
         "workbox-webpack-plugin": "^7.0.0"
-    },
-    "resolutions": {
-        "@types/react": "17.0.53"
     },
     "cacheDirectories": [
         "node_modules/",

@@ -1,0 +1,102 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import { IService, Status } from 'service/lib/IService';
+import { Axios } from 'axios';
+
+const axios = new Axios({
+    responseType: 'arraybuffer',
+    headers: {
+        'Content-Type': 'application/octet-stream',
+    },
+    validateStatus: () => true,
+});
+
+function asStatus<T>(data: T, status: number): Status<T> {
+    return { data, error: status === 400 ? 'Invalid Input' : status === 404 ? 'Not Found' : undefined };
+}
+
+export default class RestTransport implements IService<ArrayBuffer> {
+    constructor(public readonly baseUrl: string) {}
+    async searchWorkspace(query: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces`, { params: { q: query } });
+        return asStatus(data, status);
+    }
+    async createWorkspace(input: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.post(`${this.baseUrl}/workspaces`, input);
+        return asStatus(data, status);
+    }
+    async getWorkspace(id: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${id}`);
+        return asStatus(data, status);
+    }
+    async updateWorkspace(id: string, mutate: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.patch(`${this.baseUrl}/workspaces/${id}`, mutate);
+        return asStatus(data, status);
+    }
+    async deleteWorkspace(id: string): Promise<Status<void>> {
+        const { data, status } = await axios.delete(`${this.baseUrl}/workspaces/${id}`);
+        return asStatus(data, status);
+    }
+    async listEntries(workspaceId: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/entries`);
+        return asStatus(data, status);
+    }
+    async createEntry(workspaceId: string, input: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.post(`${this.baseUrl}/workspaces/${workspaceId}/entries`, input);
+        return asStatus(data, status);
+    }
+    async getEntry(workspaceId: string, id: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/entries/${id}`);
+        return asStatus(data, status);
+    }
+    async updateEntry(workspaceId: string, id: string, input: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.patch(`${this.baseUrl}/workspaces/${workspaceId}/entries/${id}`, input);
+        return asStatus(data, status);
+    }
+    async deleteEntry(workspaceId: string, id: string): Promise<Status<void>> {
+        const { data, status } = await axios.delete(`${this.baseUrl}/workspaces/${workspaceId}/entries/${id}`);
+        return asStatus(data, status);
+    }
+    async listDecks(workspaceId: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/decks`);
+        return asStatus(data, status);
+    }
+    async createDeck(workspaceId: string, input: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.post(`${this.baseUrl}/workspaces/${workspaceId}/decks`, input);
+        return asStatus(data, status);
+    }
+    async getDeck(workspaceId: string, id: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/decks/${id}`);
+        return asStatus(data, status);
+    }
+    async updateDeck(workspaceId: string, id: string, input: ArrayBuffer): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.patch(`${this.baseUrl}/workspaces/${workspaceId}/decks/${id}`, input);
+        return asStatus(data, status);
+    }
+    async deleteDeck(workspaceId: string, id: string): Promise<Status<void>> {
+        const { data, status } = await axios.delete(`${this.baseUrl}/workspaces/${workspaceId}/decks/${id}`);
+        return asStatus(data, status);
+    }
+    async listJobs(workspaceId: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/jobs`);
+        return asStatus(data, status);
+    }
+    async uploadFile(workspaceId: string, input: ArrayBuffer, file: Blob): Promise<Status<ArrayBuffer>> {
+        // TODO
+        throw new Error('not implemented');
+    }
+    async submitUrl(workspaceId: string, input: ArrayBuffer, url: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.post(`${this.baseUrl}/workspaces/${workspaceId}/jobs`, input, {
+            headers: { 'X-URL': url },
+        });
+        return asStatus(data, status);
+    }
+    async getJob(workspaceId: string, id: string): Promise<Status<ArrayBuffer>> {
+        const { data, status } = await axios.get(`${this.baseUrl}/workspaces/${workspaceId}/jobs/${id}`);
+        return asStatus(data, status);
+    }
+    async cancelJob(workspaceId: string, id: string): Promise<Status<void>> {
+        const { data, status } = await axios.delete(`${this.baseUrl}/workspaces/${workspaceId}/jobs/${id}`);
+        return asStatus(data, status);
+    }
+}

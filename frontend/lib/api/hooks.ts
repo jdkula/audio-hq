@@ -6,11 +6,11 @@ import {
     Job,
     JobCreate,
     Entry,
-    WorkspaceCreate,
+    WorkspaceMutate,
     DeckUpdate,
     DeckCreate,
-    EntryUpdate,
-    SingleUpdate,
+    EntryMutate,
+    SingleMutate,
     Single,
 } from './models';
 import { v4 as uuid, v4 } from 'uuid';
@@ -201,7 +201,7 @@ export function useCreateWorkspaceMutation() {
     const api = useContext(AudioHQApiContext);
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ workspace }: { workspace: WorkspaceCreate }) => api.workspaces.create(workspace),
+        mutationFn: ({ workspace }: { workspace: WorkspaceMutate }) => api.workspaces.create(workspace),
         onMutate: async ({ workspace }) => {
             await queryClient.cancelQueries(['workspaceByName', workspace.name]);
         },
@@ -356,7 +356,7 @@ export function useUpdateEntryMutation(workspaceId: string) {
     const entryQueryKey = ['workspace', workspaceId, 'entries'];
 
     return useMutation({
-        mutationFn: ({ entry, update }: { entry: Entry; update: EntryUpdate | SingleUpdate }) => {
+        mutationFn: ({ entry, update }: { entry: Entry; update: EntryMutate | SingleMutate }) => {
             return api.workspace(workspaceId).entry(entry).update(update);
         },
         onMutate: async ({ entry, update }) => {

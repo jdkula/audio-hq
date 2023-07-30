@@ -135,6 +135,7 @@ const FolderEntry: FC<{ folder: Folder; path: string[]; onClick: () => void; dra
         updateEntry.mutateAsync({
             entry: folder,
             update: {
+                ...folder,
                 name: newName,
             },
         });

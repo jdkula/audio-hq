@@ -1,0 +1,19 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "update-proto": "mkdir -p ./lib/generated && pbjs -t static-module --force-number -w es6 -o ./lib/generated/proto.js ./src/protobuf/*.proto && pbts -o ./lib/generated/proto.d.ts ./lib/generated/proto.js",
+    "build": "npm run update-proto && tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "protobufjs-cli": "^1.1.1",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "protobufjs": "^7.2.4"
+  },
+  "exports": "./lib"
+}

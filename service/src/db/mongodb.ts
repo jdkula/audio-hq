@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
-import type { audiohq } from '../generated/proto';
-import type { SelectNonNullable, NonNullableRecursive } from '../helpers';
+import type { audiohq } from 'common/lib/generated/proto';
+import type { SelectNonNullable, NonNullableRecursive } from 'common/lib/helpers';
 const uri = process.env.DB_URI as string;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -21,12 +21,12 @@ export type JobsCollectionType = WithMongoIdWorkspace<
     SelectNonNullable<Omit<audiohq.IJob, 'unassigned' | 'ok'>, 'details' | 'status' | 'url', ObjectId>
 >;
 export type EntriesCollectionType = WithMongoIdWorkspace<{
-    folder?: SelectNonNullable<OmitId<audiohq.IFolder>, Exclude<keyof OmitId<audiohq.IFolder>, 'ordering'>, ObjectId>;
-    single?: SelectNonNullable<
-        OmitId<audiohq.ISingle> & { provider_id: string; source: string },
-        Exclude<keyof OmitId<audiohq.IFolder>, 'ordering'>,
-        ObjectId
-    >;
+    name: string;
+    path: string[];
+    ordering?: number | null;
+
+    folder?: NonNullableRecursive<OmitId<audiohq.IFolder>, ObjectId>;
+    single?: NonNullableRecursive<OmitId<audiohq.ISingle> & { provider_id: string; source: string }, ObjectId>;
 }>;
 export type DecksCollectionType = WithMongoIdWorkspace<NonNullableRecursive<Omit<audiohq.IDeck, 'queue'>, ObjectId>> & {
     queue: ObjectId[];

@@ -51,6 +51,7 @@ const useMediaSession = (workspaceId: string): void => {
                     updateDeck.mutate({
                         deckId: main.id,
                         update: {
+                            ...main,
                             startTimestamp: sub(new Date(), {
                                 seconds: currentlyPlaying.trackInfo.startTime,
                             }),
@@ -63,6 +64,7 @@ const useMediaSession = (workspaceId: string): void => {
                     updateDeck.mutate({
                         deckId: main.id,
                         update: {
+                            ...main,
                             startTimestamp: sub(new Date(), {
                                 seconds: currentlyPlaying.trackInfo.endTime,
                             }),

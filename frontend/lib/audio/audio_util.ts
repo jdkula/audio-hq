@@ -4,7 +4,7 @@
  * Provides a small set of utility functions used for managing tracks and decks
  */
 import { add, differenceInMilliseconds, sub } from 'date-fns';
-import { Deck, Single } from '../api/models';
+import { Deck, DeckUpdate, Single } from '../api/models';
 
 export interface DeckInfo {
     secondsToCurrentPlayhead: number;
@@ -71,9 +71,10 @@ export function getDeckInfo(status: Deck, track?: Single): DeckInfo | null {
     };
 }
 
-export function getUnpauseData(state: Deck): Partial<Deck> {
+export function getUnpauseData(state: Deck): DeckUpdate {
     if (!state.pauseTimestamp) throw new Error('We must be paused!');
     return {
+        ...state,
         pauseTimestamp: null,
         startTimestamp: add(new Date(state.startTimestamp), {
             seconds: differenceInMilliseconds(new Date(), new Date(state.pauseTimestamp)) / state.speed / 1000,
@@ -81,10 +82,11 @@ export function getUnpauseData(state: Deck): Partial<Deck> {
     };
 }
 
-export function getSpeedChangeData(state: Deck, newSpeed: number): Partial<Deck> {
+export function getSpeedChangeData(state: Deck, newSpeed: number): DeckUpdate {
     const effective_now = state.pauseTimestamp ?? new Date();
 
     return {
+        ...state,
         speed: newSpeed,
         startTimestamp: sub(new Date(), {
             seconds:

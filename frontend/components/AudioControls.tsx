@@ -100,6 +100,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
         }
         const destinationSeek = (currentTrackInfo.trackInfo.startTime + to) / state.speed;
         updateDeck({
+            ...state,
             startTimestamp: sub(new Date(), { seconds: destinationSeek }),
         });
         setTempSeek(null);
@@ -111,12 +112,13 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
     const onPlayPause = () => {
         if (state.type === 'sfx' && paused && !state.pauseTimestamp) {
             updateDeck({
+                ...state,
                 startTimestamp: new Date(),
             });
         } else if (state.pauseTimestamp) {
             updateDeck(getUnpauseData(state));
         } else {
-            updateDeck({ pauseTimestamp: new Date() });
+            updateDeck({ ...state, pauseTimestamp: new Date() });
         }
     };
 
@@ -165,7 +167,7 @@ export const AudioControls: FunctionComponent<AudioControlsProps> = ({ state }) 
                         max={1}
                         step={0.01}
                         onChangeCommitted={(_, v) => {
-                            updateDeck({ volume: v as number });
+                            updateDeck({ ...state, volume: v as number });
                             setTempVolume(null);
                         }}
                         onChange={(_, v) => setTempVolume(v as number)}

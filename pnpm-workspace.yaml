@@ -1,0 +1,6 @@
+packages:
+  - ./common
+  - ./service
+  - ./frontend
+  - ./worker
+  - ./empty

@@ -51,6 +51,7 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
         updateTrack.mutate({
             entry: file,
             update: {
+                ...file,
                 name: editName,
                 description: editDescription,
             },

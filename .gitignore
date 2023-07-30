@@ -43,4 +43,4 @@ schema.graphql
 graphql.schema.json
 tsconfig.tsbuildinfo
 
-*secret
+*secret*

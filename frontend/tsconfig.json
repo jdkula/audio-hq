@@ -20,6 +20,6 @@
             "~/*": ["./*"]
         }
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/service.worker.js"],
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/service.worker.js", "../common/helpers.ts"],
     "exclude": ["node_modules"]
 }

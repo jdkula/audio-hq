@@ -80,6 +80,7 @@ export const MainPlayer: FunctionComponent<{
         updateDeck.mutate({
             deckId: state.id,
             update: {
+                ...state,
                 queue: newQueue,
                 startTimestamp: new Date(),
                 pauseTimestamp: null,
@@ -100,6 +101,7 @@ export const MainPlayer: FunctionComponent<{
         updateDeck.mutate({
             deckId: state.id,
             update: {
+                ...state,
                 queue: newQueue,
                 startTimestamp: subSeconds(startDate, timeElapsed),
             },

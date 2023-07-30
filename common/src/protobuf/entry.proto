@@ -4,19 +4,19 @@ package audiohq;
 
 message Entry {
     string id = 1;
+    repeated string path = 2;
+    string name = 3;
+    sint32 ordering = 4;
     
     oneof value {
-        Single single = 2;
-        Folder folder = 3;
+        Single single = 5;
+        Folder folder = 6;
     }
 }
 
 message Single {
     reserved 1, 5;
 
-    repeated string path = 2;
-    string name = 3;
-    sint32 ordering = 4;
     
     string description = 6;
     uint64 length = 7;
@@ -26,7 +26,7 @@ message Single {
 message SingleMutate {
     repeated string path = 2;
     string name = 3;
-    oneof mod_ordering {
+    oneof orderingModification {
         sint32 ordering = 4;
         bool last = 5;
     }
@@ -34,11 +34,9 @@ message SingleMutate {
 }
 
 message Folder {
-    reserved 1;
+    reserved 1 to 4;
 
-    repeated string path = 2;
-    string name = 3;
-    sint32 ordering = 4;
+    bool isFolder = 5;
 }
 
 message FolderMutate {
@@ -55,8 +53,12 @@ message ListEntriesResponse {
 }
 
 message EntryMutate {
+    repeated string path = 1;
+    string name = 2;
+    sint32 ordering = 3;
+
     oneof mutation {
-        EntryMutate entry = 1;
-        FolderMutate folder = 2;
+        SingleMutate single = 4;
+        FolderMutate folder = 5;
     }
 }

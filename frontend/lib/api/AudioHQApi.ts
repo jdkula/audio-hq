@@ -7,11 +7,10 @@ import {
     Job,
     JobCreate,
     Entry,
-    EntryUpdate,
+    EntryMutate,
     Workspace,
-    WorkspaceCreate,
-    WorkspaceUpdate,
-    SingleUpdate,
+    WorkspaceMutate,
+    SingleMutate,
     Single,
     Folder,
 } from './models';
@@ -26,12 +25,12 @@ export default interface AudioHQApi {
 ////////// Workspaces
 
 export interface GlobalWorkspaceApi {
-    create(workspace: WorkspaceCreate): Promise<Workspace>;
+    create(workspace: WorkspaceMutate): Promise<Workspace>;
 }
 
 export interface SpecificWorkspaceApi {
     get(): Promise<Workspace>;
-    update(workspace: WorkspaceUpdate): Promise<Workspace>;
+    update(workspace: WorkspaceMutate): Promise<Workspace>;
     delete(): Promise<void>;
 
     entries: WorkspaceEntriesApi;
@@ -54,7 +53,7 @@ export interface WorkspaceEntriesApi {
 
 export interface SpecificEntryApi<T extends Entry> {
     get(): Promise<T>;
-    update(update: T extends Single ? SingleUpdate : EntryUpdate): Promise<T>;
+    update(update: T extends Single ? SingleMutate : EntryMutate): Promise<T>;
     delete(): Promise<void>;
 }
 

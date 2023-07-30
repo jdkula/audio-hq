@@ -7,8 +7,7 @@ export interface Workspace {
     updatedAt: Date;
 }
 
-export type WorkspaceCreate = Pick<Workspace, 'name'>;
-export type WorkspaceUpdate = Partial<WorkspaceCreate>;
+export type WorkspaceMutate = Pick<Workspace, 'name'>;
 
 ////////// Entries
 
@@ -36,10 +35,8 @@ export interface Folder extends EntryBase {
     type: 'folder';
 }
 
-export type EntryCreate = Pick<Entry, 'path' | 'name'> & { ordering: number | null };
-export type SingleCreate = EntryCreate & { description: string };
-export type EntryUpdate = Partial<EntryCreate>;
-export type SingleUpdate = Partial<SingleCreate>;
+export type EntryMutate = Pick<Entry, 'path' | 'name'> & { ordering: number | null };
+export type SingleMutate = EntryMutate & { description: string };
 
 ////////// Decks
 
@@ -60,11 +57,11 @@ export interface Deck {
 }
 
 export type DeckCreate = Pick<Deck, 'type' | 'volume' | 'speed' | 'startTimestamp' | 'pauseTimestamp' | 'queue'>;
-export type DeckUpdate = Partial<Omit<DeckCreate, 'type'>>;
+export type DeckUpdate = Omit<DeckCreate, 'type'>;
 
 ////////// Jobs
 
-export interface Job extends SingleCreate {
+export interface Job extends SingleMutate {
     id: string;
     modifications: Array<JobModification>;
 

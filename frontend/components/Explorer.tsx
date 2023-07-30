@@ -345,12 +345,13 @@ export const Explorer: FC = () => {
             if (!entryIsFolder(dstFolder)) throw new Error('Somehow, a non-folder had a folder tag.');
             const destPath = [...dstFolder.path, dstFolder.name];
 
-            updateEntry.mutate({ entry: srcFile, update: { path: destPath } });
+            updateEntry.mutate({ entry: srcFile, update: { ...srcFile, path: destPath } });
         } else if (result.destination?.droppableId === '___up___') {
             // === Move one file or folder up a level ===
             updateEntry.mutate({
                 entry: srcFile,
                 update: {
+                    ...srcFile,
                     path: path.slice(0, -1),
                 },
             });
@@ -372,6 +373,7 @@ export const Explorer: FC = () => {
             updateEntry.mutate({
                 entry: srcFile,
                 update: {
+                    ...srcFile,
                     ordering: target?.ordering
                         ? target.ordering - result.source.index + result.destination.index
                         : null,
