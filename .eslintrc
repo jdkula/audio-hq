@@ -1,0 +1,16 @@
+{
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+    "plugins": ["prettier"],
+    "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "prettier/prettier": "warn",
+        "eqeqeq": "error",
+        "no-constant-condition": [
+            "error",
+            {
+                "checkLoops": false
+            }
+        ]
+    }
+}

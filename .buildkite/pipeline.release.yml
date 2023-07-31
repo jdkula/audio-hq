@@ -1,6 +1,0 @@
-steps:
-  - block: ":rocket: Ready to release?"
-  - command: "docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq:latest -t jdkula/audio-hq:stable -t jdkula/audio-hq:latest -t jdkula/audio-hq:$$(echo -n $$BUILDKITE_TAG | cut -c 9-) -t jdkula/audio-hq:dev -t jdkula/audio-hq:$$BUILDKITE_COMMIT -t jdkula/audio-hq:main --push ./frontend"
-    label: ":rocket: :nextjs: Frontend Release"
-  - command: "docker buildx build --platform linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6 -t jdkula/audio-hq-worker:latest -t jdkula/audio-hq-worker:stable -t jdkula/audio-hq-worker:latest -t jdkula/audio-hq-worker:$$(echo -n $$BUILDKITE_TAG | cut -c 9-) -t jdkula/audio-hq-worker:dev -t jdkula/audio-hq-worker:$$BUILDKITE_COMMIT -t jdkula/audio-hq-worker:main --push ./worker"
-    label: ":rocket: :construction: Worker Release"

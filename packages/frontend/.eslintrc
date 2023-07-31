@@ -1,0 +1,16 @@
+{
+    "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier", "../../.eslintrc"],
+    "plugins": ["prettier", "testing-library"],
+    "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "prettier/prettier": "warn",
+        "eqeqeq": "error"
+    },
+    "overrides": [
+        // Only uses Testing Library lint rules in test files
+        {
+            "files": ["**/__tests2__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
+            "extends": ["plugin:testing-library/react"]
+        }
+    ]
+}

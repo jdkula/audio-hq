@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package audiohq;
+
+import "./entry.proto";
+
+enum JobStatus {
+    GETTING_READY = 1;
+    WAITING = 2;
+    ASSIGNED = 3;
+    DOWNLOADING = 4;
+    CONVERTING = 5;
+    UPLOADING = 6;
+    SAVING = 7;
+    DONE = 8;
+    ERROR = 9;
+}
+
+message Job {
+    string id = 1;
+    string workspace = 2;
+    EntryMutate details = 3;
+    repeated Modification modifications = 4;
+
+    float progress = 5;
+    JobStatus status = 6;
+    oneof assignment {
+        bool unassigned = 7;
+        string assignedWorker = 8;
+    }
+    oneof error {
+        bool ok = 9;
+        string errorDetails = 10;
+    }
+
+    string source = 11;
+}
+
+message Modification {
+    oneof modification {
+        CutModification cut = 1;
+        FadeModification fade = 2;
+    }
+}
+
+message CutModification {
+    double startSeconds = 1;
+    double endSeconds = 2;
+}
+
+message FadeModification {
+    double inSeconds = 1;
+    double outSeconds = 2;
+}
+
+message JobCreate {
+    EntryMutate details = 1;
+    repeated Modification modifications = 3;
+    oneof source {
+        string url = 4;
+        bytes upload = 5;
+    }
+}
+
+message ListJobsResponse {
+    repeated Job results = 1;
+}
+
+message WorkerJobUpdate {
+    float progress = 4;
+    JobStatus status = 5;
+    oneof assignment {
+        bool unassigned = 6;
+        string assignedWorker = 7;
+    }
+    oneof error {
+        bool ok = 8;
+        string errorDetails = 9;
+    }
+}
+
+message ClaimJob {
+    oneof job {
+        Job downloadJob = 1;
+        bool noJobs = 3;
+    }
+}
+
+message CompleteJob {
+    string jobId = 1;
+    string mime = 2;
+    float length = 3;
+    bytes content = 4;
+}

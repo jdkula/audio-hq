@@ -1,6 +1,8 @@
 packages:
-  - ./common
-  - ./service
-  - ./frontend
-  - ./worker
-  - ./empty
+    - ./packages/empty
+    - ./packages/common
+    - ./packages/service
+    - ./packages/clients
+    - ./packages/server
+    - ./packages/worker
+    - ./packages/frontend

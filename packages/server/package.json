@@ -1,0 +1,22 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./dist/index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^20.4.4",
+        "prettier": "^3.0.0",
+        "typescript": "^5.1.6"
+    },
+    "dependencies": {
+        "common": "workspace:^",
+        "service": "workspace:^",
+        "socket.io": "^4.7.1",
+        "socket.io-msgpack-parser": "^3.0.2"
+    }
+}
