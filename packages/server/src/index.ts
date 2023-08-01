@@ -6,6 +6,7 @@ import { Last } from 'socket.io/dist/typed-events';
 import { audiohq } from 'common/lib/generated/proto';
 import MsgParser from 'socket.io-msgpack-parser';
 import { asString } from 'service/lib/db/oid_helpers';
+import { mongo } from 'service/lib/db/mongodb';
 
 const io = new Server();
 
@@ -42,8 +43,6 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
 
 const workspaceListeners: Map<string, Set<ServerServiceSocket<Buffer>>> = new Map();
 const connectedWorkers: Array<{ socket: ServerServiceSocket<Buffer>; workerId: string }> = [];
-
-const cachedSources = new Map<string, Buffer | string>();
 
 async function notifyJobs(workspace: string) {
     const listeners = workspaceListeners.get(workspace);
@@ -86,10 +85,8 @@ async function distributeJob(workerId?: string) {
 
     const job = await AudioHQServiceBase.getNextAvailableJob();
     if (!job) return;
-    const source = cachedSources.get(asString(job._id!));
-    if (!source) return;
 
-    worker.emit(
+    const accepted = worker.emitWithAck(
         'jobOffer',
         Buffer.from(
             audiohq.ClaimJob.encode({
@@ -101,17 +98,18 @@ async function distributeJob(workerId?: string) {
                 },
             }).finish(),
         ),
-        source,
     );
-    cachedSources.delete(asString(job._id!));
+    if (!accepted) {
+        await (
+            await mongo
+        ).jobs.updateOne(
+            { _id: job._id },
+            { $set: { assignedAt: 0, status: audiohq.JobStatus.GETTING_READY, assignedWorker: null } },
+        );
+    }
 }
 
-const AudioHQServiceBase = new AHQBase({
-    async handleUpload(job, upload) {
-        cachedSources.set(asString(job._id!), upload);
-    },
-    async handleUrlSubmit(job, submission) {},
-});
+const AudioHQServiceBase = new AHQBase();
 
 io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
     const savedSet = { current: null as null | Set<ServerServiceSocket<Buffer>> };
@@ -239,10 +237,11 @@ io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
         const status = await wrap(AudioHQServiceBase.searchWorkspace, ...rest);
         resolve(status);
     });
-    socket.on('submitUrl', async (workspaceId, input, url, resolve) => {
-        const status = await wrap(AudioHQServiceBase.submitUrl, workspaceId, input, url);
+    socket.on('submitJob', async (workspaceId, input, resolve) => {
+        const status = await wrap(AudioHQServiceBase.submitJob, workspaceId, input);
         resolve(status);
         notifyJobs(workspaceId);
+        distributeJob();
     });
     socket.on('updateDeck', async (...args) => {
         const resolve = args[args.length - 1] as Last<typeof args>;
@@ -269,7 +268,6 @@ io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
         const rest = args.slice(0, -1) as Parameters<(typeof AudioHQServiceBase)['uploadFile']>;
         const status = await wrap(AudioHQServiceBase.uploadFile, ...rest);
         resolve(status);
-        notifyJobs(args[0]);
     });
 
     socket.on('registerWorker', async (psk, checkinTime, resolve) => {
@@ -287,8 +285,9 @@ io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
         notifyJobs(wsid);
     });
     socket.on('adminRequestJob', async (psk, workerId, resolve) => {
+        if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });
+        await distributeJob(workerId);
         resolve({});
-        // TODO;
     });
 });
 

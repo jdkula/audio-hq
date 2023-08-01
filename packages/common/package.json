@@ -4,7 +4,8 @@
     "description": "",
     "scripts": {
         "update-proto": "mkdir -p ./lib/generated && pbjs -t static-module --force-number -w es6 -o ./lib/generated/proto.js ./src/protobuf/*.proto && pbts -o ./lib/generated/proto.d.ts ./lib/generated/proto.js",
-        "build": "npm run update-proto && tsc"
+        "build": "npm run update-proto && tsc",
+        "format": "prettier -w ./src"
     },
     "author": "",
     "license": "ISC",

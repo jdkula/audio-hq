@@ -35,7 +35,7 @@ async function reportError(job: audiohq.IJob, e: any) {
 }
 
 async function doDownload(processor: Processor, job: audiohq.IJob) {
-    if (working) return;
+    if (working) return false;
     working = true;
     try {
         // log.debug('Job found', job.value);
@@ -69,6 +69,7 @@ async function doDownload(processor: Processor, job: audiohq.IJob) {
     } finally {
         working = false;
     }
+    return true;
 }
 
 function getWrappedDistance(x: number, y: number, wrapAt: number): number {
@@ -130,8 +131,6 @@ async function setup() {
     const checkinFrequency = parseInt(process.env['CHECKIN_FREQUENCY'] ?? '10');
     log.silly('STARTUP: Got checkin frequency', checkinFrequency, 'sec');
 
-    const db = await mongo;
-
     const idealOffset =
         'CHECKIN_OFFSET' in process.env
             ? parseInt(process.env['CHECKIN_OFFSET']!)
@@ -162,21 +161,17 @@ async function setup() {
 
     const processor = new Processor(myid, io, kPsk);
 
-    io.addWorkerListener((proto: Buffer) => {
+    io.addWorkerListener(async (proto: Buffer, ack) => {
         const job = audiohq.ClaimJob.decode(new Uint8Array(proto));
 
-        if (!job.downloadJob) return;
+        if (!job.downloadJob) return void ack(false);
 
-        doDownload(processor, job.downloadJob);
+        ack(await doDownload(processor, job.downloadJob));
     });
 
     async function checkIn() {
         log.debug('Checking in...');
-        await db.workers.findOneAndUpdate(
-            { _id: myid },
-            { $set: { checkinFrequency, startTime, lastCheckinTime: Date.now() } },
-            { upsert: true },
-        );
+        await io.workerCheckIn(kPsk, myid);
 
         await io.adminRequestJob(kPsk, myid);
 

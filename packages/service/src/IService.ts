@@ -8,7 +8,7 @@ export type ServerToClientEvents<BufferType = ArrayBuffer> = {
     jobsUpdate: (jobs: BufferType) => void;
 
     /* for workers */
-    jobOffer: (job: BufferType, file: BufferType | string) => void;
+    jobOffer: (job: BufferType, ack: (accepted: boolean) => void) => void;
 };
 
 export type Status<T> = {
@@ -33,8 +33,8 @@ export type ClientToServerEvents<BufferType = ArrayBuffer> = {
     updateDeck: (workspaceId: string, id: string, input: BufferType) => Promise<Status<BufferType>>;
     deleteDeck: (workspaceId: string, id: string) => Promise<Status<void>>;
     listJobs: (workspaceId: string) => Promise<Status<BufferType>>;
-    uploadFile: (workspaceId: string, input: BufferType, file: BufferType) => Promise<Status<BufferType>>;
-    submitUrl: (workspaceId: string, input: BufferType, url: string) => Promise<Status<BufferType>>;
+    uploadFile: (fileSizeBytes: number, type: string) => Promise<Status<string>>;
+    submitJob: (workspaceId: string, input: BufferType) => Promise<Status<BufferType>>;
     getJob: (workspaceId: string, id: string) => Promise<Status<BufferType>>;
     cancelJob: (workspaceId: string, id: string) => Promise<Status<void>>;
 

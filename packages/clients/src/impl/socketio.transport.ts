@@ -25,7 +25,7 @@ export default class SocketTransport<BufferType> implements IService<BufferType>
         this.join(workspaceId);
         this.socket.on('decksUpdate', fn);
     }
-    addWorkerListener(workspaceId: string, fn: (proto: BufferType, file: BufferType | string) => void) {
+    addWorkerListener(fn: (proto: BufferType, ack: (accepted: boolean) => void) => void) {
         this.socket.on('jobOffer', fn);
     }
 
@@ -107,11 +107,11 @@ export default class SocketTransport<BufferType> implements IService<BufferType>
     async listJobs(workspaceId: string): Promise<Status<BufferType>> {
         return await this.socket.emitWithAck('listJobs', workspaceId);
     }
-    async uploadFile(workspaceId: string, input: BufferType, file: Blob): Promise<Status<BufferType>> {
-        return await this.socket.emitWithAck('uploadFile', workspaceId, input, file);
+    async uploadFile(fileSizeBytes: number, type: string): Promise<Status<string>> {
+        return await this.socket.emitWithAck('uploadFile', fileSizeBytes, type);
     }
-    async submitUrl(workspaceId: string, input: BufferType, url: string): Promise<Status<BufferType>> {
-        return await this.socket.emitWithAck('submitUrl', workspaceId, input, url);
+    async submitJob(workspaceId: string, input: BufferType): Promise<Status<BufferType>> {
+        return await this.socket.emitWithAck('submitJob', workspaceId, input);
     }
     async getJob(workspaceId: string, id: string): Promise<Status<BufferType>> {
         return await this.socket.emitWithAck('getJob', workspaceId, id);

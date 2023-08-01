@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 import which from 'which';
 import { Logger } from 'tslog';
 import { audiohq } from 'common/lib/generated/proto';
-import { IService } from 'service/lib/IService';
+import SocketTransport from 'clients/lib/impl/socketio.transport';
 
 interface ConvertOptions {
     cut?:
@@ -60,7 +60,7 @@ interface FileOptions {
 export class Processor {
     constructor(
         private readonly _id: string,
-        private readonly _io: IService<Buffer>,
+        private readonly _io: SocketTransport<Buffer>,
         private readonly _psk: string,
     ) {}
     private async updateProgress(

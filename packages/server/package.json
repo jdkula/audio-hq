@@ -4,7 +4,8 @@
     "description": "",
     "main": "./dist/index.js",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "format": "prettier -w ./src"
     },
     "author": "",
     "license": "ISC",

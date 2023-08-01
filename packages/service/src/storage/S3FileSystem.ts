@@ -1,5 +1,3 @@
-import FileSystem from './FileSystem';
-
 import fsProm from 'fs/promises';
 import fs from 'fs';
 
@@ -16,10 +14,6 @@ if (process.env.AWS_SECRET_ACCESS_KEY === undefined) {
     throw new Error('AWS_SECRET_ACCESS_KEY environment variable must be defined!');
 }
 
-const defaultParams = {
-    Bucket: process.env.S3_BUCKET_NAME,
-};
-
 const S3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -31,12 +25,35 @@ const S3 = new AWS.S3({
         : {}),
 });
 
-export default class S3FileSystem implements FileSystem {
+export default class S3FileSystem {
+    constructor(private readonly _bucket: string = process.env.S3_BUCKET_NAME as string) {}
+
+    get defaultParams() {
+        return {
+            Bucket: this._bucket,
+        };
+    }
+
+    async createPresignedUpload(fileSize: number, mimeType: string): Promise<string> {
+        // TODO
+        return S3.createPresignedPost({
+            ...this.defaultParams,
+            Conditions: [
+                {
+                    'Content-Length': fileSize,
+                },
+                {
+                    'Content-Type': mimeType,
+                },
+            ],
+        }).url;
+    }
+
     async delete(id: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             S3.deleteObject(
                 {
-                    ...defaultParams,
+                    ...this.defaultParams,
                     Key: id,
                 },
                 (err) => {
@@ -67,7 +84,7 @@ export default class S3FileSystem implements FileSystem {
         const upload = new AWS.S3.ManagedUpload({
             service: S3,
             params: {
-                ...defaultParams,
+                ...this.defaultParams,
                 Key: id,
                 ContentType: contentType,
                 ContentLength: size,

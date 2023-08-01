@@ -5,18 +5,11 @@ import { audiohq } from 'common/lib/generated/proto';
 import { ObjectId } from 'mongodb';
 import { InvalidInput, NotFound, OtherError, NotAuthorized } from './errors';
 
-import { AppFS } from './storage/FileSystem';
+import S3FileSystem from './storage/S3FileSystem';
 
 const kAudioExtension = '.v1.mp3';
 
-export interface WorkerHandler {
-    handleUpload: (job: JobsCollectionType, upload: Buffer) => Promise<void>;
-    handleUrlSubmit: (job: JobsCollectionType, submission: string) => Promise<void>;
-}
-
 export class AudioHQServiceBase implements IServiceBase<Buffer> {
-    constructor(private readonly _handler: WorkerHandler) {}
-
     async searchWorkspace(query: string): Promise<Buffer> {
         if (!query) {
             return Buffer.from(audiohq.WorkspaceSearchResponse.encode({ results: [] }).finish());
@@ -177,7 +170,7 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             }
         } else if (result.single) {
             await db.client.withSession(async (session) => {
-                await AppFS.delete(result.single!.provider_id);
+                await new S3FileSystem().delete(result.single!.provider_id);
                 await db.entries.deleteOne({ _id: oid }, { session });
             });
         }
@@ -363,22 +356,15 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             }).finish(),
         );
     }
-    async uploadFile(workspaceId: string, input: Buffer, file: Buffer): Promise<Buffer> {
-        const [out, job] = await this._createJob(workspaceId, input, 'upload://');
-        await this._handler.handleUpload(job, file);
+    async uploadFile(fileSizeBytes: number, type: string): Promise<string> {
+        return await new S3FileSystem(process.env.TEMP_BUCKET as string).createPresignedUpload(fileSizeBytes, type);
+    }
+    async submitJob(workspaceId: string, input: Buffer): Promise<Buffer> {
+        const [out] = await this._createJob(workspaceId, input);
         return out;
     }
-    async submitUrl(workspaceId: string, input: Buffer, url: string): Promise<Buffer> {
-        const [out, job] = await this._createJob(workspaceId, input, url);
-        await this._handler.handleUrlSubmit(job, url);
-        return out;
-    }
-    private async _createJob(
-        workspaceId: string,
-        input: Buffer,
-        url: string,
-    ): Promise<[out: Buffer, job: JobsCollectionType]> {
-        if (!input || !url || !workspaceId) throw new InvalidInput();
+    private async _createJob(workspaceId: string, input: Buffer): Promise<[out: Buffer, job: JobsCollectionType]> {
+        if (!input || !workspaceId) throw new InvalidInput();
         const db = await mongo;
         const jobInput = audiohq.JobCreate.decode(input);
         if (
@@ -408,7 +394,7 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             modifications: jobInput.modifications ?? [],
             progress: null,
             status: audiohq.JobStatus.GETTING_READY,
-            source: url,
+            source: jobInput.url!,
         };
         const result = await db.jobs.insertOne(job);
         return [
@@ -546,7 +532,7 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
         const id = new ObjectId();
         const providerId = asString(id) + kAudioExtension;
 
-        const location = await AppFS.writeFromMemory(
+        const location = await new S3FileSystem().writeFromMemory(
             info.content,
             info.content.length,
             providerId,

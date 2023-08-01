@@ -10,7 +10,8 @@
         "gql:update": "graphql-codegen --config codegen.yml -r dotenv/config",
         "lint": "next lint",
         "start": "next start",
-        "proto:update": "pbjs -t static-module --force-number -w es6 -o ./common/generated/proto.js ./common/protobuf/*.proto && pbts -o ./common/generated/proto.d.ts ./common/generated/proto.js"
+        "proto:update": "pbjs -t static-module --force-number -w es6 -o ./common/generated/proto.js ./common/protobuf/*.proto && pbts -o ./common/generated/proto.d.ts ./common/generated/proto.js",
+        "format": "prettier -w ./src"
     },
     "dependencies": {
         "@babel/core": "^7.22.9",

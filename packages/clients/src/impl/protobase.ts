@@ -30,6 +30,7 @@ import {
 } from 'common/src/api/models';
 import { audiohq } from 'common/lib/generated/proto';
 import SocketTransport from './socketio.transport';
+import axios from 'axios';
 
 function toDeckType(type: audiohq.DeckType): DeckType {
     switch (type) {
@@ -509,7 +510,7 @@ function protoJobToJob(protoJob: audiohq.IJob): Job {
         id: protoJob.id!,
         description: protoJob.details!.single!.description!,
         name: protoJob.details!.name!,
-        ordering:  protoJob.details!.ordering!,
+        ordering: protoJob.details!.ordering!,
         path: protoJob.details!.path!,
         assignedWorker: protoJob.assignedWorker ?? null,
         modifications: protoJob.modifications!.map((mod) =>
@@ -546,6 +547,16 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
         return proto.results.map(protoJobToJob);
     }
     async upload(file: Blob, info: JobCreate): Promise<Job> {
+        const { data: uploadUrl, error } = await this._transport.uploadFile(file.size, file.type);
+        if (!!error || !uploadUrl) {
+            throw new Error('Failed: ' + error);
+        }
+        // TODO
+        const upload = await axios.put(uploadUrl, file);
+        if (upload.status !== 201) {
+            throw new Error('Failed to upload');
+        }
+
         const inp = audiohq.JobCreate.encode({
             modifications: info.modifications.map((mod) =>
                 mod.type === 'cut'
@@ -555,13 +566,13 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             details: {
                 ...info,
             },
-            url: 'upload://',
+            url: uploadUrl,
         }).finish();
-        const { data: out, error } = await this._transport.uploadFile(this._workspaceId, inp, file);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+        const { data, error: submitError } = await this._transport.submitJob(this._workspaceId, inp);
+        if (!!submitError || !data) {
+            throw new Error('Failed: ' + submitError);
         }
-        const proto = audiohq.Job.decode(new Uint8Array(out));
+        const proto = audiohq.Job.decode(new Uint8Array(data));
 
         return protoJobToJob(proto);
     }
@@ -577,7 +588,7 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             },
             url: url,
         }).finish();
-        const { data: out, error } = await this._transport.submitUrl(this._workspaceId, inp, url);
+        const { data: out, error } = await this._transport.submitJob(this._workspaceId, inp);
         if (!!error || !out) {
             throw new Error('Failed: ' + error);
         }

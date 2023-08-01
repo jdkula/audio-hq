@@ -34,6 +34,7 @@
     "scripts": {
         "build": "tsc",
         "run:watch": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node -r dotenv/config ./dist/index.js\"",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "format": "prettier -w ./src"
     }
 }

@@ -56,10 +56,7 @@ message FadeModification {
 message JobCreate {
     EntryMutate details = 1;
     repeated Modification modifications = 3;
-    oneof source {
-        string url = 4;
-        bytes upload = 5;
-    }
+    string url = 4;
 }
 
 message ListJobsResponse {
