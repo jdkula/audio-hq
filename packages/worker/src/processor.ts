@@ -8,8 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { spawn } from 'child_process';
 import which from 'which';
 import { Logger } from 'tslog';
-import { audiohq } from 'common/lib/generated/proto';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
+import * as Transport from 'common/lib/api/transport/models';
 
 interface ConvertOptions {
     cut?:
@@ -60,50 +60,36 @@ interface FileOptions {
 export class Processor {
     constructor(
         private readonly _id: string,
-        private readonly _io: SocketTransport<Buffer>,
+        private readonly _io: SocketTransport,
         private readonly _psk: string,
     ) {}
     private async updateProgress(
         jobId: string,
         workspaceId: string,
         progress: number,
-        progressStage: audiohq.JobStatus,
+        progressStage: Transport.JobStatus,
+        source: string,
     ) {
         processorLog.silly(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
 
-        await this._io.adminUpdateJob(
-            this._psk,
-            workspaceId,
-            jobId,
-            Buffer.from(
-                audiohq.WorkerJobUpdate.encode({
-                    assignedWorker: this._id,
-                    errorDetails: null,
-                    ok: true,
-                    progress,
-                    status: progressStage,
-                    unassigned: false,
-                }).finish(),
-            ),
-        );
+        await this._io.adminUpdateJob(this._psk, workspaceId, jobId, {
+            assignedWorker: this._id,
+            error: null,
+            progress,
+            status: progressStage,
+            source,
+        });
     }
 
     async addFile(jobId: string, filepath: string, { workspace }: FileOptions): Promise<void> {
         processorLog.debug(`Completing ${filepath}...`);
         const duration = await getAudioDurationInSeconds(filepath);
         processorLog.silly(`Got ${filepath} as ${duration} seconds long`);
-        await this._io.adminCompleteJob(
-            this._psk,
-            workspace,
-            Buffer.from(
-                audiohq.CompleteJob.encode({
-                    jobId,
-                    length: duration,
-                    mime: 'audio/mp3',
-                    content: new Uint8Array(await fs.readFile(filepath)),
-                }).finish(),
-            ),
-        );
+        await this._io.adminCompleteJob(this._psk, workspace, jobId, {
+            duration: duration,
+            mime: 'audio/mp3',
+            content: new Uint8Array(await fs.readFile(filepath)),
+        });
     }
 
     async download(url: string, workspaceId: string, jobId: string): Promise<string> {
@@ -120,7 +106,7 @@ export class Processor {
         const outPath = path.join(basedir, uuid + '.%(ext)s');
         processorLog.debug(`Downloading ${url} with pattern ${outPath}`);
 
-        this.updateProgress(jobId, workspaceId, 0, audiohq.JobStatus.DOWNLOADING);
+        this.updateProgress(jobId, workspaceId, 0, Transport.JobStatus.DOWNLOADING, url);
 
         return new Promise<string>((resolve, reject) => {
             const ytdl = spawn(ytdlPath, ['--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url], {
@@ -135,7 +121,8 @@ export class Processor {
                         jobId,
                         workspaceId,
                         parseFloat(foundPercent[1]) / 100,
-                        audiohq.JobStatus.DOWNLOADING,
+                        Transport.JobStatus.DOWNLOADING,
+                        url,
                     );
                 }
             });
@@ -160,7 +147,13 @@ export class Processor {
         });
     }
 
-    async convert(input: string, workspaceId: string, jobId: string, options?: ConvertOptions): Promise<string> {
+    async convert(
+        input: string,
+        workspaceId: string,
+        jobId: string,
+        source: string,
+        options?: ConvertOptions,
+    ): Promise<string> {
         const basedir = kBaseDir;
 
         try {
@@ -174,7 +167,7 @@ export class Processor {
         const outPath = path.join(basedir, uuid + '.mp3');
         processorLog.debug(`Converting ${input} to ${outPath}`);
 
-        this.updateProgress(jobId, workspaceId, 0, audiohq.JobStatus.CONVERTING);
+        this.updateProgress(jobId, workspaceId, 0, Transport.JobStatus.CONVERTING, source);
 
         return new Promise<string>((resolve, reject) => {
             let cmd = ffmpeg(input).noVideo().audioQuality(3);
@@ -247,7 +240,8 @@ export class Processor {
                         jobId,
                         workspaceId,
                         (info.percent / 100) * percentBoost,
-                        audiohq.JobStatus.CONVERTING,
+                        Transport.JobStatus.CONVERTING,
+                        source,
                     );
                 })
                 .save(outPath);

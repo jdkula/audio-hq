@@ -11,69 +11,52 @@ import AudioHQApi, {
     WorkspaceEntriesApi,
     WorkspaceJobsApi,
 } from '../AudioHQApi';
-import {
-    CutModification,
-    Deck,
-    DeckCreate,
-    DeckType,
-    Entry,
-    EntryMutate,
-    FadeModification,
-    Folder,
-    Job,
-    JobCreate,
-    JobStatus,
-    Single,
-    SingleMutate,
-    Workspace,
-    WorkspaceMutate,
-} from 'common/src/api/models';
-import { audiohq } from 'common/lib/generated/proto';
+import * as API from 'common/lib/api/models';
+import * as Transport from 'common/lib/api/transport/models';
 import SocketTransport from './socketio.transport';
 import axios from 'axios';
 
-function toDeckType(type: audiohq.DeckType): DeckType {
+function toDeckType(type: Transport.DeckType): API.DeckType {
     switch (type) {
-        case audiohq.DeckType.AMBIENT:
+        case Transport.DeckType.AMBIENT:
             return 'ambient';
-        case audiohq.DeckType.MAIN:
+        case Transport.DeckType.MAIN:
             return 'main';
-        case audiohq.DeckType.SFX:
+        case Transport.DeckType.SFX:
             return 'sfx';
     }
 }
 
-function toProtoDeckType(apitype: DeckType): audiohq.DeckType {
+function toProtoDeckType(apitype: API.DeckType): Transport.DeckType {
     switch (apitype) {
         case 'ambient':
-            return audiohq.DeckType.AMBIENT;
+            return Transport.DeckType.AMBIENT;
         case 'main':
-            return audiohq.DeckType.MAIN;
+            return Transport.DeckType.MAIN;
         case 'sfx':
-            return audiohq.DeckType.SFX;
+            return Transport.DeckType.SFX;
     }
 }
 
-function protoEntryToEntry(protoEntry: audiohq.IEntry): Entry {
-    return protoEntry.isFolder
-        ? ({
+function toApiEntry(tentry: Transport.Entry): API.Entry {
+    return tentry.isFolder
+        ? {
               type: 'folder',
-              id: protoEntry.id!,
-              name: protoEntry.name!,
-              ordering: protoEntry.ordering!,
-              path: protoEntry.path!,
-          } satisfies Folder)
-        : ({
+              id: tentry.id,
+              name: tentry.name,
+              ordering: tentry.ordering,
+              path: tentry.path,
+          }
+        : {
               type: 'single',
-              id: protoEntry.id!,
-              name: protoEntry.name!,
-              ordering: protoEntry.ordering!,
-              path: protoEntry.path!,
-              description: protoEntry.single!.description!,
-              length: protoEntry.single!.length!,
-              url: protoEntry.single!.url!,
-              __internal_id_single: protoEntry.id!,
-          } satisfies Single);
+              description: tentry.single.description,
+              length: tentry.single.duration,
+              id: tentry.id,
+              name: tentry.name,
+              ordering: tentry.ordering,
+              path: tentry.path,
+              url: tentry.single.url,
+          };
 }
 
 ////////// Global
@@ -81,21 +64,21 @@ function protoEntryToEntry(protoEntry: audiohq.IEntry): Entry {
 export class AudioHQApiImplProto implements AudioHQApi {
     private readonly instance: GlobalWorkspaceApiImplProto;
 
-    constructor(public readonly transport: IService<ArrayBuffer>) {
+    constructor(public readonly transport: IService) {
         this.instance = new GlobalWorkspaceApiImplProto(transport);
     }
 
-    async searchWorkspaces(query: string): Promise<Workspace[]> {
-        const { data: out, error } = await this.transport.searchWorkspace(query);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async searchWorkspaces(query: string): Promise<API.Workspace[]> {
+        const data = await this.transport.searchWorkspace(query);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const { results } = audiohq.WorkspaceSearchResponse.decode(new Uint8Array(out));
-        return results.map((protoWorkspace) => ({
-            id: protoWorkspace.id!,
-            name: protoWorkspace.name!,
-            createdAt: new Date(protoWorkspace.createdAt!),
-            updatedAt: new Date(protoWorkspace.updatedAt!),
+        const out = data.data;
+        return out.map((protoWorkspace) => ({
+            id: protoWorkspace.id,
+            name: protoWorkspace.name,
+            createdAt: new Date(protoWorkspace.createdAt),
+            updatedAt: new Date(protoWorkspace.updatedAt),
         }));
     }
 
@@ -111,81 +94,77 @@ export class AudioHQApiImplProto implements AudioHQApi {
 ////////// Workspaces
 
 class GlobalWorkspaceApiImplProto implements GlobalWorkspaceApi {
-    constructor(private readonly _transport: IService<ArrayBuffer>) {}
+    constructor(private readonly _transport: IService) {}
 
-    async create(workspace: WorkspaceMutate): Promise<Workspace> {
-        const inp = audiohq.WorkspaceMutate.encode(workspace).finish();
-        const { data: out, error } = await this._transport.createWorkspace(inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async create(workspace: API.WorkspaceMutate): Promise<API.Workspace> {
+        const data = await this._transport.createWorkspace(workspace);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.Workspace.decode(new Uint8Array(out));
+        const out = data.data;
         return {
-            id: proto.id,
-            name: proto.name,
-            createdAt: new Date(proto.createdAt),
-            updatedAt: new Date(proto.updatedAt),
+            id: out.id,
+            name: out.name,
+            createdAt: new Date(out.createdAt),
+            updatedAt: new Date(out.updatedAt),
         };
     }
 }
 
 class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _id: string,
     ) {}
 
-    addJobsListener(fn: (jobs: Job[]) => void) {
+    addJobsListener(fn: (jobs: API.Job[]) => void) {
         if (this._transport instanceof SocketTransport) {
-            this._transport.addJobsListener(this._id, (proto) => {
-                fn(audiohq.ListJobsResponse.decode(new Uint8Array(proto)).results.map(protoJobToJob));
+            this._transport.addJobsListener(this._id, (jobs) => {
+                fn(jobs.map(protoJobToJob));
             });
         }
     }
-    addEntriesListiner(fn: (entries: Entry[]) => void) {
+    addEntriesListiner(fn: (entries: API.Entry[]) => void) {
         if (this._transport instanceof SocketTransport) {
-            this._transport.addJobsListener(this._id, (proto) => {
-                fn(audiohq.ListEntriesResponse.decode(new Uint8Array(proto)).entries.map(protoEntryToEntry));
+            this._transport.addEntriesListiner(this._id, (entries) => {
+                fn(entries.map(toApiEntry));
             });
         }
     }
-    addDecksListener(fn: (decks: Deck[]) => void, getCachedSingles?: () => Single[] | null | undefined) {
+    addDecksListener(fn: (decks: API.Deck[]) => void, getCachedSingles?: () => API.Single[] | null | undefined) {
         if (this._transport instanceof SocketTransport) {
-            this._transport.addJobsListener(this._id, async (proto) => {
-                const out = audiohq.ListDecksResponse.decode(new Uint8Array(proto));
-
+            this._transport.addDecksListener(this._id, async (decks) => {
                 const singles =
                     getCachedSingles?.() ??
-                    (await new WorkspaceEntriesApiImplProto(this._transport, this._id).list()).filter<Single>(
-                        (x): x is Single => x.type === 'single',
+                    (await new WorkspaceEntriesApiImplProto(this._transport, this._id).list()).filter<API.Single>(
+                        (x): x is API.Single => x.type === 'single',
                     );
 
-                fn(out.results.map((res) => protoDeckToDeck(res, singles)));
+                fn(decks.map((res) => protoDeckToDeck(res, singles)));
             });
         }
     }
 
-    async get(): Promise<Workspace> {
-        const { data: out, error } = await this._transport.getWorkspace(this._id);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async get(): Promise<API.Workspace> {
+        const data = await this._transport.getWorkspace(this._id);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.Workspace.decode(new Uint8Array(out));
+        const out = data.data;
         return {
-            id: proto.id,
-            name: proto.name,
-            createdAt: new Date(proto.createdAt),
-            updatedAt: new Date(proto.updatedAt),
+            id: out.id,
+            name: out.name,
+            createdAt: new Date(out.createdAt),
+            updatedAt: new Date(out.updatedAt),
         };
     }
 
-    async update(workspace: WorkspaceMutate): Promise<Workspace> {
-        const inp = audiohq.WorkspaceMutate.encode(workspace).finish();
-        const { data: out, error } = await this._transport.updateWorkspace(this._id, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async update(workspace: API.WorkspaceMutate): Promise<API.Workspace> {
+        const data = await this._transport.updateWorkspace(this._id, workspace);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.Workspace.decode(new Uint8Array(out));
+        const proto = data.data;
         return {
             id: proto.id,
             name: proto.name,
@@ -202,10 +181,10 @@ class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
         return new WorkspaceEntriesApiImplProto(this._transport, this._id);
     }
 
-    entry(entry: Single): SpecificSingleApiImplProto;
-    entry(entry: Folder): SpecificFolderApiImplProto;
-    entry(entry: Entry): SpecificFolderApiImplProto;
-    entry(entry: Entry): SpecificEntryApi<Entry> {
+    entry(entry: API.Single): SpecificSingleApiImplProto;
+    entry(entry: API.Folder): SpecificFolderApiImplProto;
+    entry(entry: API.Entry): SpecificFolderApiImplProto;
+    entry(entry: API.Entry): SpecificEntryApi<API.Entry> {
         if (entry.type === 'single') {
             return new SpecificSingleApiImplProto(this._transport, this._id, entry);
         } else {
@@ -234,119 +213,99 @@ class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
 
 class WorkspaceEntriesApiImplProto implements WorkspaceEntriesApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
     ) {}
 
-    async createFolder(name: string, basePath: string[], ordering?: number): Promise<Folder> {
-        const inp = audiohq.EntryMutate.encode({ name, path: basePath, ordering, isFolder: true }).finish();
-        const { data: out, error } = await this._transport.createEntry(this._workspaceId, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async createFolder(name: string, basePath: string[], ordering?: number): Promise<API.Folder> {
+        const inp = { name, path: basePath, ordering: ordering ?? 0, isFolder: true as const };
+        const data = await this._transport.createEntry(this._workspaceId, inp);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.Entry.decode(new Uint8Array(out));
+        const proto = data.data;
 
         return {
-            name: proto.name!,
-            ordering: proto.ordering!,
-            path: proto.path!,
+            name: proto.name,
+            ordering: proto.ordering,
+            path: proto.path,
             id: proto.id,
             type: 'folder',
         };
     }
 
-    async list(): Promise<Entry[]> {
-        const { data: out, error } = await this._transport.listEntries(this._workspaceId);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async list(): Promise<API.Entry[]> {
+        const data = await this._transport.listEntries(this._workspaceId);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.ListEntriesResponse.decode(new Uint8Array(out));
+        const proto = data.data;
 
-        return proto.entries.map(protoEntryToEntry);
+        return proto.map(toApiEntry);
     }
 }
 
-class SpecificFolderApiImplProto implements SpecificEntryApi<Folder> {
+class SpecificFolderApiImplProto implements SpecificEntryApi<API.Folder> {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
-        private _entry: Folder,
+        private _entry: API.Folder,
     ) {}
 
-    async get(): Promise<Folder> {
-        const { data: out, error } = await this._transport.getEntry(this._workspaceId, this._entry.id);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async get(): Promise<API.Folder> {
+        const data = await this._transport.getEntry(this._workspaceId, this._entry.id);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const protoEntry = audiohq.Entry.decode(new Uint8Array(out));
+        const protoEntry = data.data;
         return {
             type: 'folder',
-            id: protoEntry.id!,
-            name: protoEntry.name!,
-            ordering: protoEntry.ordering!,
-            path: protoEntry.path!,
-        } satisfies Folder;
+            id: protoEntry.id,
+            name: protoEntry.name,
+            ordering: protoEntry.ordering,
+            path: protoEntry.path,
+        } satisfies API.Folder;
     }
 
-    async update(updateDef: EntryMutate): Promise<Folder> {
-        const inp = audiohq.EntryMutate.encode(updateDef).finish();
-        const { data: out, error } = await this._transport.updateEntry(this._workspaceId, this._entry.id, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
-        }
-
-        const protoEntry = audiohq.Entry.decode(new Uint8Array(out));
-        return {
-            type: 'folder',
-            id: protoEntry.id!,
-            name: protoEntry.name!,
-            ordering: protoEntry.ordering!,
-            path: protoEntry.path!,
-        } satisfies Folder;
-    }
-    async delete(): Promise<void> {
-        await this._transport.deleteEntry(this._workspaceId, this._entry.id);
-    }
-}
-
-class SpecificSingleApiImplProto implements SpecificEntryApi<Single> {
-    constructor(
-        private readonly _transport: IService<ArrayBuffer>,
-        private _workspaceId: string,
-        private _entry: Single,
-    ) {}
-
-    async get(): Promise<Single> {
-        const { data: out, error } = await this._transport.getEntry(this._workspaceId, this._entry.id);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
-        }
-        const protoEntry = audiohq.Entry.decode(new Uint8Array(out));
-
-        return {
-            type: 'single',
-            id: protoEntry.id!,
-            name: protoEntry.name!,
-            ordering: protoEntry.ordering!,
-            path: protoEntry.path!,
-            description: protoEntry.single!.description!,
-            length: protoEntry.single!.length!,
-            url: protoEntry.single!.url!,
-            __internal_id_single: protoEntry.id!,
-        } satisfies Single;
-    }
-
-    async update(updateDef: SingleMutate): Promise<Single> {
-        const inp = audiohq.EntryMutate.encode({
+    async update(updateDef: API.EntryMutate): Promise<API.Folder> {
+        const data = await this._transport.updateEntry(this._workspaceId, this._entry.id, {
             ...updateDef,
-            single: { description: updateDef.description },
-        }).finish();
-        const { data: out, error } = await this._transport.updateEntry(this._workspaceId, this._entry.id, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+            isFolder: true,
+            ordering: updateDef.ordering ?? 0,
+        });
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
 
-        const protoEntry = audiohq.Entry.decode(new Uint8Array(out));
+        const protoEntry = data.data;
+        return {
+            type: 'folder',
+            id: protoEntry.id,
+            name: protoEntry.name,
+            ordering: protoEntry.ordering,
+            path: protoEntry.path,
+        } satisfies API.Folder;
+    }
+    async delete(): Promise<void> {
+        await this._transport.deleteEntry(this._workspaceId, this._entry.id);
+    }
+}
+
+class SpecificSingleApiImplProto implements SpecificEntryApi<API.Single> {
+    constructor(
+        private readonly _transport: IService,
+        private _workspaceId: string,
+        private _entry: API.Single,
+    ) {}
+
+    async get(): Promise<API.Single> {
+        const data = await this._transport.getEntry(this._workspaceId, this._entry.id);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
+        }
+        const protoEntry = data.data;
+        if (protoEntry.isFolder) throw new Error('Got folder for single');
+
         return {
             type: 'single',
             id: protoEntry.id!,
@@ -354,38 +313,62 @@ class SpecificSingleApiImplProto implements SpecificEntryApi<Single> {
             ordering: protoEntry.ordering!,
             path: protoEntry.path!,
             description: protoEntry.single!.description!,
-            length: protoEntry.single!.length!,
+            length: protoEntry.single!.duration!,
             url: protoEntry.single!.url!,
-            __internal_id_single: protoEntry.id!,
-        } satisfies Single;
+        } satisfies API.Single;
+    }
+
+    async update(updateDef: API.SingleMutate): Promise<API.Single> {
+        const inp = {
+            ...updateDef,
+            ordering: updateDef.ordering ?? 0,
+            single: { description: updateDef.description },
+            isFolder: false as const,
+        };
+        const data = await this._transport.updateEntry(this._workspaceId, this._entry.id, inp);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
+        }
+
+        const protoEntry = data.data;
+        if (protoEntry.isFolder) throw new Error('Got folder for single');
+        return {
+            type: 'single',
+            id: protoEntry.id!,
+            name: protoEntry.name!,
+            ordering: protoEntry.ordering!,
+            path: protoEntry.path!,
+            description: protoEntry.single!.description!,
+            length: protoEntry.single!.duration!,
+            url: protoEntry.single!.url!,
+        } satisfies API.Single;
     }
     async delete(): Promise<void> {
         await this._transport.deleteEntry(this._workspaceId, this._entry.id);
     }
 }
 
-function protoDeckToDeck(deck: audiohq.IDeck, singles: Single[]): Deck {
+function protoDeckToDeck(deck: Transport.Deck, singles: API.Single[]): API.Deck {
     return {
         id: deck.id!,
         type: toDeckType(deck.type!),
         createdAt: new Date(deck.createdAt!),
         startTimestamp: new Date(deck.startTimestamp!),
-        pauseTimestamp: deck.playing ? null : new Date(deck.pausedTimestamp!),
+        pauseTimestamp: deck.pausedTimestamp === null ? null : new Date(deck.pausedTimestamp!),
         speed: deck.speed!,
         volume: deck.volume!,
-        queue: deck.queue!.map((sid) => singles.find((s) => s.id === sid)).filter((x): x is Single => !!x),
-    } satisfies Deck;
+        queue: deck.queue!.map((sid) => singles.find((s) => s.id === sid)).filter((x): x is API.Single => !!x),
+    } satisfies API.Deck;
 }
 
-function deckToProtoDeck(deck: Partial<DeckCreate>): audiohq.IDeckCreate {
+function deckToProtoDeck(deck: API.DeckCreate): Transport.DeckCreate {
     return {
-        queue: deck.queue?.map((s) => s.id),
-        speed: deck.speed,
-        volume: deck.volume,
-        type: deck.type ? toProtoDeckType(deck.type) : undefined,
+        queue: deck.queue?.map((s) => s.id) ?? [],
+        speed: deck.speed ?? 1,
+        volume: deck.volume ?? 1,
+        type: toProtoDeckType(deck.type),
         startTimestamp: deck.startTimestamp?.getTime(),
         pausedTimestamp: deck.pauseTimestamp?.getTime() ?? null,
-        playing: !deck.pauseTimestamp,
     };
 }
 
@@ -393,41 +376,41 @@ function deckToProtoDeck(deck: Partial<DeckCreate>): audiohq.IDeckCreate {
 
 class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
     ) {}
 
-    async listAll(): Promise<Deck[]>;
-    async listAll(cachedSingles?: Single[]): Promise<Deck[]>;
-    async listAll(cachedSingles?: Single[]): Promise<Deck[]> {
-        const { data: out, error } = await this._transport.listDecks(this._workspaceId);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async listAll(): Promise<API.Deck[]>;
+    async listAll(cachedSingles?: API.Single[]): Promise<API.Deck[]>;
+    async listAll(cachedSingles?: API.Single[]): Promise<API.Deck[]> {
+        const data = await this._transport.listDecks(this._workspaceId);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.ListDecksResponse.decode(new Uint8Array(out));
+        const proto = data.data;
 
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<Single>(
-                (x): x is Single => x.type === 'single',
+            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+                (x): x is API.Single => x.type === 'single',
             );
 
-        return proto.results.map((res) => protoDeckToDeck(res, singles));
+        return proto.map((res) => protoDeckToDeck(res, singles));
     }
 
-    async create(deck: DeckCreate): Promise<Deck>;
-    async create(deck: DeckCreate, cachedSingles?: Single[]): Promise<Deck> {
-        const inp = audiohq.DeckCreate.encode(deckToProtoDeck(deck)).finish();
-        const { data: out, error } = await this._transport.createDeck(this._workspaceId, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async create(deck: API.DeckCreate): Promise<API.Deck>;
+    async create(deck: API.DeckCreate, cachedSingles?: API.Single[]): Promise<API.Deck> {
+        const inp = deckToProtoDeck(deck);
+        const data = await this._transport.createDeck(this._workspaceId, inp);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
 
-        const proto = audiohq.Deck.decode(new Uint8Array(out));
+        const proto = data.data;
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<Single>(
-                (x): x is Single => x.type === 'single',
+            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+                (x): x is API.Single => x.type === 'single',
             );
 
         return protoDeckToDeck(proto, singles);
@@ -436,44 +419,44 @@ class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
 
 class SpecificDeckApiImplProto implements SpecificDeckApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
         private _deckId: string,
     ) {}
 
-    async get(): Promise<Deck>;
-    async get(cachedSingles?: Single[]): Promise<Deck>;
-    async get(cachedSingles?: Single[]): Promise<Deck> {
+    async get(): Promise<API.Deck>;
+    async get(cachedSingles?: API.Single[]): Promise<API.Deck>;
+    async get(cachedSingles?: API.Single[]): Promise<API.Deck> {
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<Single>(
-                (x): x is Single => x.type === 'single',
+            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+                (x): x is API.Single => x.type === 'single',
             );
 
-        const { data: out, error } = await this._transport.getDeck(this._workspaceId, this._deckId);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+        const data = await this._transport.getDeck(this._workspaceId, this._deckId);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
 
-        return protoDeckToDeck(audiohq.Deck.decode(new Uint8Array(out)), singles);
+        return protoDeckToDeck(data.data, singles);
     }
 
-    async update(update: Partial<Omit<DeckCreate, 'type'>>): Promise<Deck>;
-    async update(update: Partial<Omit<DeckCreate, 'type'>>, cachedSingles?: Single[]): Promise<Deck>;
-    async update(update: Partial<Omit<DeckCreate, 'type'>>, cachedSingles?: Single[]): Promise<Deck> {
+    async update(update: Omit<API.DeckCreate, 'type'>): Promise<API.Deck>;
+    async update(update: Omit<API.DeckCreate, 'type'>, cachedSingles?: API.Single[]): Promise<API.Deck>;
+    async update(update: Omit<API.DeckCreate, 'type'>, cachedSingles?: API.Single[]): Promise<API.Deck> {
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<Single>(
-                (x): x is Single => x.type === 'single',
+            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+                (x): x is API.Single => x.type === 'single',
             );
 
-        const inp = audiohq.DeckMutate.encode(deckToProtoDeck(update)).finish();
-        const { data: out, error } = await this._transport.updateDeck(this._workspaceId, this._deckId, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+        const inp = deckToProtoDeck({ ...update, type: 'main' });
+        const data = await this._transport.updateDeck(this._workspaceId, this._deckId, inp);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
 
-        return protoDeckToDeck(audiohq.Deck.decode(new Uint8Array(out)), singles);
+        return protoDeckToDeck(data.data, singles);
     }
     async delete(): Promise<void> {
         await this._transport.deleteDeck(this._workspaceId, this._deckId);
@@ -482,30 +465,30 @@ class SpecificDeckApiImplProto implements SpecificDeckApi {
 
 ////////// Jobs
 
-function protoJobStatusToJobStatus(jobType: audiohq.JobStatus): JobStatus {
+function protoJobStatusToJobStatus(jobType: Transport.JobStatus): API.JobStatus {
     switch (jobType) {
-        case audiohq.JobStatus.GETTING_READY:
+        case Transport.JobStatus.GETTING_READY:
             return 'getting ready';
-        case audiohq.JobStatus.WAITING:
+        case Transport.JobStatus.WAITING:
             return 'waiting';
-        case audiohq.JobStatus.ASSIGNED:
+        case Transport.JobStatus.ASSIGNED:
             return 'assigned';
-        case audiohq.JobStatus.DOWNLOADING:
+        case Transport.JobStatus.DOWNLOADING:
             return 'downloading';
-        case audiohq.JobStatus.CONVERTING:
+        case Transport.JobStatus.CONVERTING:
             return 'converting';
-        case audiohq.JobStatus.UPLOADING:
+        case Transport.JobStatus.UPLOADING:
             return 'uploading';
-        case audiohq.JobStatus.SAVING:
+        case Transport.JobStatus.SAVING:
             return 'saving';
-        case audiohq.JobStatus.DONE:
+        case Transport.JobStatus.DONE:
             return 'done';
-        case audiohq.JobStatus.ERROR:
+        case Transport.JobStatus.ERROR:
             return 'error';
     }
 }
 
-function protoJobToJob(protoJob: audiohq.IJob): Job {
+function protoJobToJob(protoJob: Transport.Job): API.Job {
     return {
         id: protoJob.id!,
         description: protoJob.details!.single!.description!,
@@ -514,17 +497,17 @@ function protoJobToJob(protoJob: audiohq.IJob): Job {
         path: protoJob.details!.path!,
         assignedWorker: protoJob.assignedWorker ?? null,
         modifications: protoJob.modifications!.map((mod) =>
-            mod.cut
+            mod.type === Transport.ModificationType.CUT
                 ? ({
                       type: 'cut',
-                      startSeconds: mod.cut!.startSeconds!,
-                      endSeconds: mod.cut!.endSeconds!,
-                  } satisfies CutModification)
+                      startSeconds: mod.startSeconds!,
+                      endSeconds: mod.endSeconds!,
+                  } satisfies API.CutModification)
                 : ({
                       type: 'fade',
-                      inSeconds: mod.fade!.inSeconds!,
-                      outSeconds: mod.fade!.outSeconds!,
-                  } satisfies FadeModification),
+                      inSeconds: mod.inSeconds!,
+                      outSeconds: mod.outSeconds!,
+                  } satisfies API.FadeModification),
         ),
         status: protoJobStatusToJobStatus(protoJob.status!),
         progress: protoJob.progress ?? 0,
@@ -533,74 +516,61 @@ function protoJobToJob(protoJob: audiohq.IJob): Job {
 
 class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
     ) {}
 
-    async list(): Promise<Job[]> {
-        const { data: out, error } = await this._transport.listJobs(this._workspaceId);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async list(): Promise<API.Job[]> {
+        const data = await this._transport.listJobs(this._workspaceId);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.ListJobsResponse.decode(new Uint8Array(out));
+        const proto = data.data;
 
-        return proto.results.map(protoJobToJob);
+        return proto.map(protoJobToJob);
     }
-    async upload(file: Blob, info: JobCreate): Promise<Job> {
-        const { data: uploadUrl, error } = await this._transport.uploadFile(file.size, file.type);
-        if (!!error || !uploadUrl) {
-            throw new Error('Failed: ' + error);
+    async upload(file: Blob, info: API.JobCreate): Promise<API.Job> {
+        const data = await this._transport.uploadFile(file.size, file.type);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
         // TODO
-        const upload = await axios.put(uploadUrl, file);
+        const upload = await axios.put(data.data, file);
         if (upload.status !== 201) {
             throw new Error('Failed to upload');
         }
 
-        const inp = audiohq.JobCreate.encode({
-            modifications: info.modifications.map((mod) =>
-                mod.type === 'cut'
-                    ? ({ cut: mod } satisfies audiohq.IModification)
-                    : ({ fade: mod } satisfies audiohq.IModification),
-            ),
-            details: {
-                ...info,
-            },
-            url: uploadUrl,
-        }).finish();
-        const { data, error: submitError } = await this._transport.submitJob(this._workspaceId, inp);
-        if (!!submitError || !data) {
-            throw new Error('Failed: ' + submitError);
-        }
-        const proto = audiohq.Job.decode(new Uint8Array(data));
-
-        return protoJobToJob(proto);
+        return await this.submit(data.data, info);
     }
-    async submit(url: string, info: JobCreate): Promise<Job> {
-        const inp = audiohq.JobCreate.encode({
+    async submit(url: string, info: API.JobCreate): Promise<API.Job> {
+        const submission = await this._transport.submitJob(this._workspaceId, {
             modifications: info.modifications.map((mod) =>
                 mod.type === 'cut'
-                    ? ({ cut: mod } satisfies audiohq.IModification)
-                    : ({ fade: mod } satisfies audiohq.IModification),
+                    ? ({ ...mod, type: Transport.ModificationType.CUT } satisfies Transport.Modification)
+                    : ({ ...mod, type: Transport.ModificationType.FADE } satisfies Transport.Modification),
             ),
             details: {
                 ...info,
+                ordering: info.ordering ?? 0,
+                isFolder: false as const,
+                single: {
+                    description: info.description,
+                },
             },
-            url: url,
-        }).finish();
-        const { data: out, error } = await this._transport.submitJob(this._workspaceId, inp);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+            source: url,
+            workspace: this._workspaceId,
+        });
+        if (submission.error !== null) {
+            throw new Error('Failed: ' + submission.error);
         }
-        const proto = audiohq.Job.decode(new Uint8Array(out));
 
-        return protoJobToJob(proto);
+        return protoJobToJob(submission.data);
     }
 }
 
 class SpecificJobApiImplProto implements SpecificJobApi {
     constructor(
-        private readonly _transport: IService<ArrayBuffer>,
+        private readonly _transport: IService,
         private _workspaceId: string,
         private _jobId: string,
     ) {}
@@ -608,12 +578,12 @@ class SpecificJobApiImplProto implements SpecificJobApi {
     async cancel(): Promise<void> {
         await this._transport.cancelJob(this._workspaceId, this._jobId);
     }
-    async get(): Promise<Job> {
-        const { data: out, error } = await this._transport.getJob(this._workspaceId, this._jobId);
-        if (!!error || !out) {
-            throw new Error('Failed: ' + error);
+    async get(): Promise<API.Job> {
+        const data = await this._transport.getJob(this._workspaceId, this._jobId);
+        if (data.error !== null) {
+            throw new Error('Failed: ' + data.error);
         }
-        const proto = audiohq.Job.decode(new Uint8Array(out));
+        const proto = data.data;
         return protoJobToJob(proto);
     }
 }

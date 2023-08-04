@@ -27,8 +27,6 @@ export interface Single extends EntryBase {
     description: string;
     length: number;
     url: string;
-
-    __internal_id_single: string;
 }
 
 export interface Folder extends EntryBase {

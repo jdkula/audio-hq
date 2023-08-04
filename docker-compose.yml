@@ -1,0 +1,22 @@
+# version: "3"
+# volumes:
+#   data:
+# services:
+#   minio:
+#    image: 'quay.io/minio/minio'
+#    command: 'server /data --console-address ":9090"'
+#    volumes:
+#      - './temp/test_data:/data'
+#    ports:
+#      - '9090:9090'
+#      - '9000:9000'
+#   mongodb:
+#    image: 'mongo'
+#    environment:
+#      MONGODB_INITDB_ROOT_USERNAME: root
+#      MONGODB_INITDB_ROOT_PASSWORD: kula
+#    volumes:
+#     - 'data:/data/db'
+#    ports:
+#      - '27018:27107'
+    

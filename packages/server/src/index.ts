@@ -3,46 +3,69 @@ import { ServerServiceSocket, Status } from 'service/lib/IService';
 import { AudioHQServiceBase as AHQBase } from 'service/lib/ServiceBase';
 import { NotFound, InvalidInput, OtherError } from 'service/lib/errors';
 import { Last } from 'socket.io/dist/typed-events';
-import { audiohq } from 'common/lib/generated/proto';
 import MsgParser from 'socket.io-msgpack-parser';
 import { asString } from 'service/lib/db/oid_helpers';
 import { mongo } from 'service/lib/db/mongodb';
+import { Logger } from 'tslog';
+import * as Transport from 'common/lib/api/transport/models';
 
-const io = new Server();
+const log = new Logger({});
+const reqlog = new Logger({ name: 'request' });
 
+const io = new Server({
+    parser: MsgParser,
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 1000 * 60 * 60,
+        skipMiddlewares: false,
+    },
+    cors: {
+        origin: '*',
+        allowedHeaders: '*',
+        exposedHeaders: '*',
+    },
+});
+
+let id = 0;
 async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ...args: Args): Promise<Status<T>> {
-    try {
-        return {
-            data: await fn(...args),
-        };
-    } catch (e) {
-        if (e instanceof NotFound) {
+    const myId = id++;
+    const data = await (async () => {
+        try {
+            reqlog.silly(`RPC ${myId} ${fn.name}`, args);
             return {
-                error: 'Not Found: ' + e.message,
+                data: await fn(...args),
+                error: null,
             };
-        } else if (e instanceof InvalidInput) {
-            return {
-                error: 'Invalid Input: ' + e.message,
-            };
-        } else if (e instanceof OtherError) {
-            return {
-                error: 'Other Error: ' + e.message,
-            };
-        } else if (e instanceof Error) {
-            return {
-                error: 'Fatal: ' + e.message,
-            };
-        } else {
-            console.warn(e);
-            return {
-                error: 'Undiagnosed error, see server.',
-            };
+        } catch (e) {
+            console.warn(`RPC ${myId} error`, e);
+            if (e instanceof NotFound) {
+                return {
+                    error: 'Not Found: ' + e.message,
+                };
+            } else if (e instanceof InvalidInput) {
+                return {
+                    error: 'Invalid Input: ' + e.message,
+                };
+            } else if (e instanceof OtherError) {
+                return {
+                    error: 'Other Error: ' + e.message,
+                };
+            } else if (e instanceof Error) {
+                return {
+                    error: 'Fatal: ' + e.message,
+                };
+            } else {
+                return {
+                    error: 'Undiagnosed error, see server.',
+                };
+            }
         }
-    }
+    })();
+    reqlog.silly(`RPC ${myId}:`, data);
+    return data;
 }
 
-const workspaceListeners: Map<string, Set<ServerServiceSocket<Buffer>>> = new Map();
-const connectedWorkers: Array<{ socket: ServerServiceSocket<Buffer>; workerId: string }> = [];
+const workspaceListeners: Map<string, Set<ServerServiceSocket>> = new Map();
+const connectedWorkers: Array<{ socket: ServerServiceSocket; workerId: string }> = [];
 
 async function notifyJobs(workspace: string) {
     const listeners = workspaceListeners.get(workspace);
@@ -73,7 +96,7 @@ async function notifyDecks(workspace: string) {
 }
 
 async function distributeJob(workerId?: string) {
-    let worker: ServerServiceSocket<Buffer> | undefined;
+    let worker: ServerServiceSocket | undefined;
     if (workerId) {
         worker = connectedWorkers.find((info) => workerId === info.workerId)?.socket;
     } else {
@@ -86,35 +109,30 @@ async function distributeJob(workerId?: string) {
     const job = await AudioHQServiceBase.getNextAvailableJob();
     if (!job) return;
 
-    const accepted = worker.emitWithAck(
-        'jobOffer',
-        Buffer.from(
-            audiohq.ClaimJob.encode({
-                downloadJob: {
-                    ...job,
-                    id: asString(job._id!),
-                    workspace: asString(job._workspace),
-                    assignedWorker: null,
-                },
-            }).finish(),
-        ),
-    );
+    const accepted = worker.emitWithAck('jobOffer', {
+        ...job,
+        id: asString(job._id!),
+        workspace: asString(job._workspace),
+        assignedWorker: null,
+    });
     if (!accepted) {
         await (
             await mongo
         ).jobs.updateOne(
             { _id: job._id },
-            { $set: { assignedAt: 0, status: audiohq.JobStatus.GETTING_READY, assignedWorker: null } },
+            { $set: { assignedAt: 0, status: Transport.JobStatus.GETTING_READY, assignedWorker: null } },
         );
     }
 }
 
 const AudioHQServiceBase = new AHQBase();
 
-io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
-    const savedSet = { current: null as null | Set<ServerServiceSocket<Buffer>> };
+io.on('connection', (socket: ServerServiceSocket) => {
+    log.debug('Client connected', socket.id);
+    const savedSet = { current: null as null | Set<ServerServiceSocket> };
 
     socket.on('disconnect', () => {
+        log.debug('Client disconnected', socket.id);
         if (savedSet.current) {
             savedSet.current.delete(socket);
             savedSet.current = null;
@@ -133,13 +151,13 @@ io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
         }
         set.add(socket);
         savedSet.current = set;
-        resolve({});
+        resolve({ error: null, data: undefined });
     });
     socket.on('leave', (_, resolve) => {
         if (!savedSet.current) return;
         savedSet.current.delete(socket);
         savedSet.current = null;
-        resolve({});
+        resolve({ error: null, data: undefined });
     });
 
     socket.on('cancelJob', async (...args) => {
@@ -279,16 +297,16 @@ io.on('connection', (socket: ServerServiceSocket<Buffer>) => {
         resolve(status);
     });
 
-    socket.on('adminCompleteJob', async (psk, wsid, completion, resolve) => {
-        const status = await wrap(AudioHQServiceBase.adminCompleteJob, psk, wsid, completion);
+    socket.on('adminCompleteJob', async (psk, wsid, id, completion, resolve) => {
+        const status = await wrap(AudioHQServiceBase.adminCompleteJob, psk, wsid, id, completion);
         resolve(status);
         notifyJobs(wsid);
     });
     socket.on('adminRequestJob', async (psk, workerId, resolve) => {
         if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });
         await distributeJob(workerId);
-        resolve({});
+        resolve({ error: null, data: undefined });
     });
 });
 
-io.listen(9090, { parser: MsgParser });
+io.listen(3050);

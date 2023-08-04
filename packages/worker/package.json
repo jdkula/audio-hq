@@ -8,6 +8,7 @@
         "@types/ws": "^8.5.5",
         "@typescript-eslint/eslint-plugin": "^6.2.0",
         "@typescript-eslint/parser": "^6.2.0",
+        "dotenv": "^16.3.1",
         "eslint": "^8.45.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^5.0.0",
@@ -22,7 +23,6 @@
         "clients": "workspace:^",
         "common": "workspace:^",
         "fluent-ffmpeg": "^2.1.2",
-        "protobufjs": "^7.2.4",
         "service": "workspace:^",
         "socket.io-client": "^4.7.1",
         "socket.io-msgpack-parser": "^3.0.2",
@@ -34,6 +34,7 @@
     "scripts": {
         "build": "tsc",
         "run:watch": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node -r dotenv/config ./dist/index.js\"",
+        "start": "node -r dotenv/config ./dist/index.js",
         "lint": "eslint .",
         "format": "prettier -w ./src"
     }

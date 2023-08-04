@@ -1,6 +1,6 @@
 import { Logger } from 'tslog';
 
-import { audiohq } from 'common/lib/generated/proto';
+import * as Transport from 'common/lib/api/transport/models';
 import { mongo } from 'service/lib/db/mongodb';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
 
@@ -8,46 +8,43 @@ import { Processor } from './processor';
 
 const kPsk = process.env.WORKER_PSK as string;
 
-const io = new SocketTransport<Buffer>(process.env.NEXT_PUBLIC_WS_URL as string);
+const io = new SocketTransport(process.env.NEXT_PUBLIC_WS_URL as string);
 const log = new Logger({ name: 'worker' });
 
 let working = false;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function reportError(job: audiohq.IJob, e: any) {
-    await io.adminUpdateJob(
-        kPsk,
-        job.workspace!,
-        job.id!,
-        Buffer.from(
-            audiohq.WorkerJobUpdate.encode({
-                ...job,
-                status: audiohq.JobStatus.ERROR,
-                errorDetails:
-                    e instanceof Error
-                        ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
-                        : e.toString instanceof Function
-                        ? e.toString()
-                        : 'Unknown error',
-            }).finish(),
-        ),
-    );
+async function reportError(job: Transport.Job, e: any) {
+    await io.adminUpdateJob(kPsk, job.workspace!, job.id!, {
+        ...job,
+        status: Transport.JobStatus.ERROR,
+        error:
+            e instanceof Error
+                ? e.name + '\ncause: ' + e.cause + '\nstack trace: ' + e.stack
+                : e.toString instanceof Function
+                ? e.toString()
+                : 'Unknown error',
+    });
 }
 
-async function doDownload(processor: Processor, job: audiohq.IJob) {
+async function doDownload(processor: Processor, job: Transport.Job) {
     if (working) return false;
     working = true;
     try {
         // log.debug('Job found', job.value);
         log.silly('Import found. Downloading...');
-        const cut = job.modifications?.find((x) => x.cut)?.cut;
-        const fade = job.modifications?.find((x) => x.fade)?.fade;
+        const cut = job.modifications?.find(
+            (x): x is Transport.CutModification => x.type === Transport.ModificationType.CUT,
+        );
+        const fade = job.modifications?.find(
+            (x): x is Transport.FadeModification => x.type === Transport.ModificationType.FADE,
+        );
 
         const inPath = await processor.download(job.source!, job.workspace!, job.id!);
 
         log.silly('Converting...');
 
-        const outPath = await processor.convert(inPath, job.workspace!, job.id!, {
+        const outPath = await processor.convert(inPath, job.workspace!, job.id!, job.source, {
             cut: cut ? { start: cut.startSeconds!, end: cut.endSeconds! } : null,
             fadeIn: fade?.inSeconds ?? undefined,
             fadeOut: fade?.outSeconds ?? undefined,
@@ -141,7 +138,7 @@ async function setup() {
     const startTime = new Date(Date.now() + getMsToNextCheckin(idealOffset, checkinFrequency)).getTime();
 
     const info = await io.registerWorker(kPsk, checkinFrequency);
-    if (info.error || !info.data) {
+    if (info.error !== null || !info.data) {
         console.warn(info.error);
         return;
     }
@@ -161,12 +158,8 @@ async function setup() {
 
     const processor = new Processor(myid, io, kPsk);
 
-    io.addWorkerListener(async (proto: Buffer, ack) => {
-        const job = audiohq.ClaimJob.decode(new Uint8Array(proto));
-
-        if (!job.downloadJob) return void ack(false);
-
-        ack(await doDownload(processor, job.downloadJob));
+    io.addWorkerListener(async (job: Transport.Job, ack) => {
+        ack(await doDownload(processor, job));
     });
 
     async function checkIn() {

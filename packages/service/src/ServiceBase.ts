@@ -1,44 +1,96 @@
 import { IServiceBase } from './IService';
 import { DecksCollectionType, EntriesCollectionType, JobsCollectionType, mongo } from './db/mongodb';
 import { asString, asObjectId } from './db/oid_helpers';
-import { audiohq } from 'common/lib/generated/proto';
 import { ObjectId } from 'mongodb';
 import { InvalidInput, NotFound, OtherError, NotAuthorized } from './errors';
 
 import S3FileSystem from './storage/S3FileSystem';
+import {
+    WorkspaceSearchResponse,
+    WorkspaceMutate,
+    Workspace,
+    ListEntriesResponse,
+    EntryMutate,
+    Entry,
+    ListDecksResponse,
+    DeckMutate,
+    Deck,
+    ListJobsResponse,
+    NewJob,
+    Job,
+    AdminJobMutate,
+    JobComplete,
+    DeckCreate,
+    DeckType,
+    JobStatus,
+} from 'common/lib/api/transport/models';
 
 const kAudioExtension = '.v1.mp3';
 
-export class AudioHQServiceBase implements IServiceBase<Buffer> {
-    async searchWorkspace(query: string): Promise<Buffer> {
+const asEntry = (res: EntriesCollectionType): Entry =>
+    res.isFolder
+        ? {
+              ...pick(res, 'name', 'path'),
+              ordering: res.ordering ?? 0,
+              id: asString(res._id!),
+              isFolder: true,
+          }
+        : {
+              ...pick(res, 'name', 'path'),
+              ordering: res.ordering ?? 0,
+              id: asString(res._id!),
+              isFolder: false,
+              single: res.single!,
+          };
+
+const asDeck = (deck: DecksCollectionType): Deck => ({
+    ...deck,
+    id: asString(deck._id!),
+    queue: deck.queue.map((oid) => asString(oid)),
+});
+
+const asJob = (job: JobsCollectionType): Job => ({
+    ...job,
+    id: asString(job._id!),
+    assignedWorker: job.assignedWorker ? asString(job.assignedWorker) : null,
+    workspace: asString(job._workspace),
+});
+
+function pick<T, K extends Array<keyof T>>(input: T, ...keys: K): Pick<T, K[number]> {
+    const out: any = {};
+    for (const key of keys) {
+        out[key] = input[key];
+    }
+    return out;
+}
+
+export class AudioHQServiceBase implements IServiceBase {
+    async searchWorkspace(query: string): Promise<WorkspaceSearchResponse> {
         if (!query) {
-            return Buffer.from(audiohq.WorkspaceSearchResponse.encode({ results: [] }).finish());
+            return [];
         }
 
         const db = await mongo;
 
         const results = (
             await db.workspaces.find({ name: { $regex: new RegExp('^' + query + '$', 'i') } }, { limit: 5 }).toArray()
-        ).map((ws) => ({ ...ws, id: asString(ws._id) }) satisfies audiohq.IWorkspace);
+        ).map((ws) => ({ ...ws, id: asString(ws._id) }) satisfies Workspace);
 
-        return Buffer.from(audiohq.WorkspaceSearchResponse.encode({ results }).finish());
+        return results;
     }
-    async createWorkspace(input: Buffer): Promise<Buffer> {
+    async createWorkspace(workspace: WorkspaceMutate): Promise<Workspace> {
         const db = await mongo;
-        const wsInput = audiohq.WorkspaceMutate.decode(input).toJSON();
-        const ws = { ...wsInput, createdAt: Date.now(), updatedAt: Date.now(), name: wsInput.name };
+        const ws = { createdAt: Date.now(), updatedAt: Date.now(), name: workspace.name };
         if (!ws.name) {
             throw new InvalidInput();
         }
         const result = await db.workspaces.insertOne(ws);
-        return Buffer.from(
-            audiohq.Workspace.encode({
-                ...ws,
-                id: asString(result.insertedId),
-            }).finish(),
-        );
+        return {
+            ...ws,
+            id: asString(result.insertedId),
+        };
     }
-    async getWorkspace(id: string): Promise<Buffer> {
+    async getWorkspace(id: string): Promise<Workspace> {
         const db = await mongo;
         if (!id) {
             throw new InvalidInput();
@@ -49,9 +101,9 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
 
-        return Buffer.from(audiohq.Workspace.encode({ ...result, id: asString(result._id) }).finish());
+        return { ...result, id: asString(result._id) };
     }
-    async updateWorkspace(id: string, mutate: Buffer): Promise<Buffer> {
+    async updateWorkspace(id: string, mutate: WorkspaceMutate): Promise<Workspace> {
         const db = await mongo;
         if (!id) {
             throw new InvalidInput();
@@ -60,63 +112,58 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
         if (!mutate) {
             throw new InvalidInput();
         }
-        const wsInput = audiohq.WorkspaceMutate.decode(mutate).toJSON();
 
         const result = await db.workspaces.findOneAndUpdate(
             { _id: asObjectId(id) },
-            { $set: wsInput },
+            { $set: { name: mutate.name } },
             { returnDocument: 'after' },
         );
         if (!result.ok || !result.value) {
             throw new NotFound();
         }
 
-        return Buffer.from(audiohq.Workspace.encode({ ...result.value, id: asString(result.value._id) }).finish());
+        return {
+            id,
+            ...pick(result.value, 'name', 'createdAt', 'updatedAt'),
+        };
     }
-    async deleteWorkspace(): Promise<void> {
+    async deleteWorkspace(id: string): Promise<void> {
         // TODO
-        throw new OtherError();
+        throw new OtherError('Not implemented // ' + id);
     }
-    async listEntries(workspaceId: string): Promise<Buffer> {
+    async listEntries(workspaceId: string): Promise<ListEntriesResponse> {
         if (!workspaceId) throw new InvalidInput();
         const db = await mongo;
         const results = await db.entries.find({ _workspace: asObjectId(workspaceId) }).toArray();
 
-        return Buffer.from(
-            audiohq.ListEntriesResponse.encode({
-                entries: results.map((res) => ({ ...res, id: asString(res._id) })),
-            }).finish(),
-        );
+        return results.map(asEntry);
     }
-    async createEntry(workspaceId: string, input: Buffer): Promise<Buffer> {
+    async createEntry(workspaceId: string, input: EntryMutate): Promise<Entry> {
         const db = await mongo;
         if (!input || !workspaceId) {
             throw new InvalidInput();
         }
-        const entryInput = audiohq.EntryMutate.decode(input);
-        if (!entryInput.isFolder || !entryInput.name) {
+        if (!input.isFolder || !input.name) {
             throw new InvalidInput();
         }
 
         const entry: EntriesCollectionType = {
             _workspace: asObjectId(workspaceId),
-            name: entryInput.name,
-            path: entryInput.path ?? [],
-            ordering: entryInput.ordering,
+            name: input.name,
+            path: input.path ?? [],
+            ordering: input.ordering,
             isFolder: true,
         };
         const result = await db.entries.insertOne(entry);
-        return Buffer.from(
-            audiohq.Entry.encode({
-                id: asString(result.insertedId),
-                isFolder: entry.isFolder,
-                name: entry.name,
-                ordering: entry.ordering,
-                path: entry.path,
-            }).finish(),
-        );
+        return {
+            id: asString(result.insertedId),
+            isFolder: true,
+            name: entry.name,
+            ordering: entry.ordering ?? 0,
+            path: entry.path,
+        };
     }
-    async getEntry(workspaceId: string, id: string): Promise<Buffer> {
+    async getEntry(workspaceId: string, id: string): Promise<Entry> {
         if (!workspaceId || !id) {
             throw new InvalidInput();
         }
@@ -127,23 +174,22 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
 
-        return Buffer.from(audiohq.Entry.encode({ ...result, id: asString(result._id) }).finish());
+        return asEntry(result);
     }
-    async updateEntry(workspaceId: string, id: string, input: Buffer): Promise<Buffer> {
+    async updateEntry(workspaceId: string, id: string, input: EntryMutate): Promise<Entry> {
         const db = await mongo;
         if (!input || !workspaceId || !id) {
             throw new InvalidInput();
         }
-        const entryInput = audiohq.EntryMutate.decode(input).toJSON();
         const result = await db.entries.findOneAndUpdate(
             { _id: asObjectId(id), _workspace: asObjectId(workspaceId) },
-            { $set: entryInput },
+            { $set: pick(input, 'name', 'ordering', 'path') },
             { returnDocument: 'after' },
         );
         if (!result.ok || !result.value) {
             throw new OtherError();
         }
-        return Buffer.from(audiohq.Entry.encode({ ...result.value, id: asString(result.value._id) }).finish());
+        return asEntry(result.value);
     }
     async deleteEntry(workspaceId: string, id: string): Promise<void> {
         const db = await mongo;
@@ -175,44 +221,34 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             });
         }
     }
-    async listDecks(workspaceId: string): Promise<Buffer> {
+    async listDecks(workspaceId: string): Promise<ListDecksResponse> {
         if (!workspaceId) throw new InvalidInput();
 
         const db = await mongo;
         const results = await db.decks.find({ _workspace: asObjectId(workspaceId) }).toArray();
 
-        return Buffer.from(
-            audiohq.ListDecksResponse.encode({
-                results: results.map((deck) => ({
-                    ...deck,
-                    id: asString(deck._id),
-                    queue: deck.queue.map((oid) => asString(oid)),
-                })),
-            }).finish(),
-        );
+        return results.map(asDeck);
     }
-    async createDeck(workspaceId: string, input: Buffer): Promise<Buffer> {
+    async createDeck(workspaceId: string, input: DeckCreate): Promise<Deck> {
         if (!input || !workspaceId) throw new InvalidInput();
         const db = await mongo;
-        const entryInput = audiohq.DeckCreate.decode(input);
 
         const oWsId = asObjectId(workspaceId);
 
         const deck: DecksCollectionType = {
             _workspace: oWsId,
             createdAt: Date.now(),
-            pausedTimestamp: entryInput.pausedTimestamp ?? 0,
-            playing: entryInput.playing ?? false,
-            speed: entryInput.speed,
-            startTimestamp: entryInput.startTimestamp,
-            type: entryInput.type,
-            volume: entryInput.volume,
-            queue: entryInput.queue.map((oid) => asObjectId(oid)),
+            pausedTimestamp: input.pausedTimestamp ?? 0,
+            speed: input.speed,
+            startTimestamp: input.startTimestamp,
+            type: input.type,
+            volume: input.volume,
+            queue: input.queue.map((oid) => asObjectId(oid)),
         };
         let oid: ObjectId;
-        if (deck.type === audiohq.DeckType.MAIN) {
+        if (deck.type === DeckType.MAIN) {
             const result = await db.decks.findOneAndUpdate(
-                { _workspace: oWsId, type: audiohq.DeckType.MAIN },
+                { _workspace: oWsId, type: DeckType.MAIN },
                 { $set: deck },
                 { upsert: true, returnDocument: 'after' },
             );
@@ -224,22 +260,20 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             const result = await db.decks.insertOne(deck);
             oid = result.insertedId;
         }
-        return Buffer.from(
-            audiohq.Deck.encode({
-                ...deck,
-                id: oid.toHexString(),
-                queue: deck.queue.map((oid) => asString(oid)),
-            }).finish(),
-        );
+        return {
+            ...deck,
+            id: oid.toHexString(),
+            queue: deck.queue.map((oid) => asString(oid)),
+        };
     }
-    async getDeck(workspaceId: string, id: string): Promise<Buffer> {
+    async getDeck(workspaceId: string, id: string): Promise<Deck> {
         if (!workspaceId || !id) throw new InvalidInput();
         const db = await mongo;
 
         const oWsId = asObjectId(workspaceId);
         const deckId =
             id.toLowerCase() === 'main'
-                ? (await db.decks.findOne({ type: audiohq.DeckType.MAIN, _workspace: oWsId }))?._id
+                ? (await db.decks.findOne({ type: DeckType.MAIN, _workspace: oWsId }))?._id
                 : asObjectId(id);
 
         if (!deckId) {
@@ -251,29 +285,29 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
 
-        return Buffer.from(
-            audiohq.Deck.encode({
-                ...result,
-                id: asString(result._id),
-                queue: result.queue.map((oid) => asString(oid)),
-            }).finish(),
-        );
+        return {
+            ...result,
+            id: asString(result._id),
+            queue: result.queue.map((oid) => asString(oid)),
+        };
     }
-    async updateDeck(workspaceId: string, id: string, input: Buffer): Promise<Buffer> {
+    async updateDeck(workspaceId: string, id: string, input: DeckMutate): Promise<Deck> {
         if (!input || !workspaceId || !id) throw new InvalidInput();
         const db = await mongo;
         const oWsId = asObjectId(workspaceId);
         const deckId =
             id.toLowerCase() === 'main'
-                ? (await db.decks.findOne({ type: audiohq.DeckType.MAIN, _workspace: oWsId }))?._id
+                ? (await db.decks.findOne({ type: DeckType.MAIN, _workspace: oWsId }))?._id
                 : asObjectId(id);
 
-        const deckInput = audiohq.DeckMutate.decode(input);
         if (id.toLowerCase() === 'main' && !deckId) {
             const result = await db.decks.findOneAndUpdate(
                 deckId ? { _id: deckId, _workspace: oWsId } : { _workspace: oWsId },
                 {
-                    $set: deckInput.toJSON(),
+                    $set: {
+                        ...pick(input, 'pausedTimestamp', 'speed', 'startTimestamp', 'volume'),
+                        queue: input.queue.map(asObjectId),
+                    },
                     $setOnInsert: {
                         createdAt: Date.now(),
                         pausedTimestamp: 0,
@@ -281,7 +315,7 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
                         queue: [],
                         speed: 1,
                         startTimestamp: Date.now(),
-                        type: audiohq.DeckType.MAIN,
+                        type: DeckType.MAIN,
                         volume: 1,
                     },
                 },
@@ -290,18 +324,19 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             if (!result.ok || !result.value) {
                 throw new OtherError();
             }
-            return Buffer.from(
-                audiohq.Deck.encode({
-                    ...result.value,
-                    id: asString(result.value._id),
-                    queue: result.value.queue.map((oid) => asString(oid)),
-                }).finish(),
-            );
+            return {
+                ...result.value,
+                id: asString(result.value._id),
+                queue: result.value.queue.map((oid) => asString(oid)),
+            };
         } else {
             const result = await db.decks.findOneAndUpdate(
                 { _id: deckId, _workspace: oWsId },
                 {
-                    $set: deckInput.toJSON(),
+                    $set: {
+                        ...pick(input, 'pausedTimestamp', 'speed', 'startTimestamp', 'volume'),
+                        queue: input.queue.map(asObjectId),
+                    },
                 },
                 { returnDocument: 'after' },
             );
@@ -309,13 +344,11 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
                 console.log(result);
                 throw new OtherError();
             }
-            return Buffer.from(
-                audiohq.Deck.encode({
-                    ...result.value,
-                    id: asString(result.value._id),
-                    queue: result.value.queue.map((oid) => asString(oid)),
-                }).finish(),
-            );
+            return {
+                ...result.value,
+                id: asString(result.value._id),
+                queue: result.value.queue.map((oid) => asString(oid)),
+            };
         }
     }
     async deleteDeck(workspaceId: string, id: string): Promise<void> {
@@ -324,7 +357,7 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
         const oWsId = asObjectId(workspaceId);
         const deckId =
             id.toLowerCase() === 'main'
-                ? (await db.decks.findOne({ type: audiohq.DeckType.MAIN, _workspace: oWsId }))?._id
+                ? (await db.decks.findOne({ type: DeckType.MAIN, _workspace: oWsId }))?._id
                 : asObjectId(id);
 
         if (!deckId) {
@@ -340,40 +373,26 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
     }
-    async listJobs(workspaceId: string): Promise<Buffer> {
+    async listJobs(workspaceId: string): Promise<ListJobsResponse> {
         if (!workspaceId) throw new InvalidInput();
         const db = await mongo;
         const results = await db.jobs.find({ _workspace: asObjectId(workspaceId) }).toArray();
 
-        return Buffer.from(
-            audiohq.ListJobsResponse.encode({
-                results: results.map((res) => ({
-                    ...res,
-                    id: asString(res._id),
-                    assignedWorker: res.assignedWorker ? asString(res.assignedWorker) : null,
-                    workspace: asString(res._workspace),
-                })),
-            }).finish(),
-        );
+        return results.map(asJob);
     }
     async uploadFile(fileSizeBytes: number, type: string): Promise<string> {
-        return await new S3FileSystem(process.env.TEMP_BUCKET as string).createPresignedUpload(fileSizeBytes, type);
+        return await new S3FileSystem(process.env.S3_TEMP_BUCKET as string).createPresignedUpload(fileSizeBytes, type);
     }
-    async submitJob(workspaceId: string, input: Buffer): Promise<Buffer> {
-        const [out] = await this._createJob(workspaceId, input);
-        return out;
-    }
-    private async _createJob(workspaceId: string, input: Buffer): Promise<[out: Buffer, job: JobsCollectionType]> {
+    async submitJob(workspaceId: string, input: NewJob): Promise<Job> {
         if (!input || !workspaceId) throw new InvalidInput();
         const db = await mongo;
-        const jobInput = audiohq.JobCreate.decode(input);
         if (
-            !jobInput.details ||
-            !jobInput.details.single ||
-            !Array.isArray(jobInput.modifications) ||
-            !jobInput.details.name ||
-            !jobInput.details.ordering ||
-            !Array.isArray(jobInput.details.path)
+            !input.details ||
+            input.details.isFolder ||
+            !Array.isArray(input.modifications) ||
+            !input.details.name ||
+            !input.details.ordering ||
+            !Array.isArray(input.details.path)
         ) {
             throw new InvalidInput();
         }
@@ -383,56 +402,40 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             assignedAt: 0,
             details: {
                 isFolder: false,
-                name: jobInput.details.name,
-                ordering: jobInput.details.ordering,
-                path: jobInput.details.path,
+                name: input.details.name,
+                ordering: input.details.ordering,
+                path: input.details.path,
                 single: {
-                    description: jobInput.details.single.description,
+                    description: input.details.single.description,
                 },
             },
-            errorDetails: null,
-            modifications: jobInput.modifications ?? [],
-            progress: null,
-            status: audiohq.JobStatus.GETTING_READY,
-            source: jobInput.url!,
+            error: null,
+            modifications: input.modifications ?? [],
+            progress: 0,
+            status: JobStatus.GETTING_READY,
+            source: input.source,
         };
         const result = await db.jobs.insertOne(job);
-        return [
-            Buffer.from(
-                audiohq.Job.encode({
-                    ...job,
-                    id: asString(result.insertedId),
-                    assignedWorker: null,
-                    workspace: workspaceId,
-                }).finish(),
-            ),
-            job,
-        ];
+        job._id = result.insertedId;
+        return asJob(job);
     }
-    async getJob(workspaceId: string, id: string): Promise<Buffer> {
+    async getJob(workspaceId: string, id: string): Promise<Job> {
         if (!workspaceId || !id) throw new InvalidInput();
         const db = await mongo;
-        const results = await db.jobs.find({ _workspace: asObjectId(workspaceId) }).toArray();
+        const result = await db.jobs.findOne({ _workspace: asObjectId(workspaceId), _id: asObjectId(id) });
+        if (!result) throw new NotFound();
 
-        return Buffer.from(
-            audiohq.ListJobsResponse.encode({
-                results: results.map((res) => ({
-                    ...res,
-                    id: asString(res._id),
-                    assignedWorker: res.assignedWorker ? asString(res.assignedWorker) : null,
-                })),
-            }).finish(),
-        );
+        return asJob(result);
     }
     async cancelJob(workspaceId: string, id: string): Promise<void> {
         if (!workspaceId || !id) throw new InvalidInput();
         // TODO;
-        throw new OtherError();
+        throw new OtherError('Not Implemented');
     }
-    join(): Promise<void> {
+    async join(): Promise<void> {
         throw new Error('This function should be handled at the transport layer.');
     }
-    leave(): Promise<void> {
+    async leave(): Promise<void> {
         throw new Error('This function should be handled at the transport layer.');
     }
     async registerWorker(sharedKey: string, checkinFrequency: number): Promise<string> {
@@ -456,19 +459,21 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
     }
-    async adminUpdateJob(sharedKey: string, _: string, id: string, update: Buffer): Promise<Buffer> {
+    async adminRequestJob(): Promise<void> {
+        throw new Error('This should be handled at the transport layer.');
+    }
+    async adminUpdateJob(sharedKey: string, workspaceId: string, id: string, update: AdminJobMutate): Promise<Job> {
         if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
         const db = await mongo;
-        const inp = audiohq.WorkerJobUpdate.decode(update);
 
         const res = await db.jobs.findOneAndUpdate(
             { _id: asObjectId(id) },
             {
                 $set: {
-                    assignedWorker: inp.assignment === 'unassigned' ? null : asObjectId(inp.assignedWorker!),
-                    errorDetails: inp.ok ? null : inp.errorDetails!,
-                    progress: inp.progress,
-                    status: inp.status,
+                    assignedWorker: update.assignedWorker === null ? null : asObjectId(update.assignedWorker),
+                    error: update.error,
+                    progress: update.progress,
+                    status: update.status,
                 },
             },
             { returnDocument: 'after' },
@@ -477,12 +482,46 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             throw new NotFound();
         }
 
-        return Buffer.from(
-            audiohq.Job.encode({
-                ...res.value,
-                assignedWorker: res.value.assignedWorker ? asString(res.value.assignedWorker) : null,
-            }).finish(),
+        return asJob(res.value);
+    }
+    async adminCompleteJob(sharedKey: string, workspaceId: string, id: string, completion: JobComplete): Promise<void> {
+        if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
+        const db = await mongo;
+        const job = await db.jobs.findOne({ _id: asObjectId(id) });
+        if (!job) throw new NotFound();
+
+        const newId = new ObjectId();
+        const providerId = asString(newId) + kAudioExtension;
+
+        const content = completion.content as Buffer;
+        const location = await new S3FileSystem().writeFromMemory(
+            content,
+            content.length,
+            providerId,
+            completion.mime,
+            async (progress) => {
+                if (!progress) return;
+                await db.jobs.updateOne({ _id: job._id }, { $set: { status: JobStatus.SAVING, progress } });
+            },
         );
+
+        await db.client.withSession(async (session) => {
+            const entry: EntriesCollectionType = {
+                _workspace: job._workspace,
+                name: job.details.name,
+                path: job.details.path,
+                ordering: job.details.ordering,
+                isFolder: false,
+                single: {
+                    description: job.details.single.description as string,
+                    duration: completion.duration,
+                    provider_id: providerId,
+                    source: job.source,
+                    url: location,
+                },
+            };
+            await db.entries.insertOne(entry, { session });
+        });
     }
     async pruneWorkers(sharedKey: string): Promise<void> {
         if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
@@ -522,54 +561,12 @@ export class AudioHQServiceBase implements IServiceBase<Buffer> {
             await session.endSession();
         }
     }
-    async adminCompleteJob(sharedKey: string, _: string, completion: Buffer): Promise<void> {
-        if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
-        const db = await mongo;
-        const info = audiohq.CompleteJob.decode(completion);
-        const job = await db.jobs.findOne({ _id: asObjectId(info.jobId) });
-        if (!job) throw new NotFound();
-
-        const id = new ObjectId();
-        const providerId = asString(id) + kAudioExtension;
-
-        const location = await new S3FileSystem().writeFromMemory(
-            info.content,
-            info.content.length,
-            providerId,
-            info.mime,
-            async (progress) => {
-                if (!progress) return;
-                await db.jobs.updateOne({ _id: job._id }, { $set: { status: audiohq.JobStatus.SAVING, progress } });
-            },
-        );
-
-        await db.client.withSession(async (session) => {
-            const entry: EntriesCollectionType = {
-                _workspace: job._workspace,
-                name: job.details.name,
-                path: job.details.path,
-                ordering: job.details.ordering,
-                isFolder: false,
-                single: {
-                    description: job.details.single.description as string,
-                    length: info.length,
-                    provider_id: providerId,
-                    source: job.source,
-                    url: location,
-                },
-            };
-            await db.entries.insertOne(entry, { session });
-        });
-    }
-    async adminRequestJob(): Promise<void> {
-        throw new Error('This should be handled at the transport layer.');
-    }
     async getNextAvailableJob(): Promise<JobsCollectionType | null> {
         const db = await mongo;
 
         const result = await db.jobs.findOneAndUpdate(
-            { assignedWorker: null, status: audiohq.JobStatus.GETTING_READY },
-            { $set: { status: audiohq.JobStatus.WAITING, assignedAt: Date.now() } },
+            { assignedWorker: null, status: JobStatus.GETTING_READY },
+            { $set: { status: JobStatus.WAITING, assignedAt: Date.now() } },
         );
         if (result.ok && result.value) {
             return result.value;

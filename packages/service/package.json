@@ -20,8 +20,5 @@
         "aws-sdk": "^2.1422.0",
         "common": "workspace:^",
         "mongodb": "^5.7.0"
-    },
-    "exports": {
-        "./*.js": "./lib/*.js"
     }
 }
