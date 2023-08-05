@@ -139,8 +139,9 @@ export default class SocketTransport implements IService {
         workspaceId: string,
         id: string,
         completion: JobComplete,
+        buffer: Buffer | ArrayBuffer,
     ): Promise<Status<void>> {
-        return await this.socket.emitWithAck('adminCompleteJob', sharedKey, workspaceId, id, completion);
+        return await this.socket.emitWithAck('adminCompleteJob', sharedKey, workspaceId, id, completion, buffer);
     }
     async pruneWorkers(sharedKey: string): Promise<Status<void>> {
         return await this.socket.emitWithAck('pruneWorkers', sharedKey);

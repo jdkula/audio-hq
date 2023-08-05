@@ -424,6 +424,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.0.0
         version: 5.0.0(eslint-config-prettier@8.8.0)(eslint@8.45.0)(prettier@3.0.0)
+      nodemon:
+        specifier: ^3.0.1
+        version: 3.0.1
       pino-pretty:
         specifier: ^10.2.0
         version: 10.2.0

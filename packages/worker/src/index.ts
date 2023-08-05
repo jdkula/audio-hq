@@ -12,16 +12,23 @@ import { Processor } from './processor';
 const kPsk = process.env.WORKER_PSK as string;
 
 const log = pino({ name: 'worker', transport: { target: 'pino-pretty' }, level: 'trace' });
+let didStart = false;
 
 const socket: any = socketio('ws://localhost:3050', {
     parser: MsgParser,
-});
+    transports: ['websocket'],
+} as any);
 socket.on('error', (err: any) => {
     log.error(err);
 });
+
 socket.on('connect', () => {
-    log.info('Connected, starting setup');
-    setup();
+    log.info('Connected');
+    if (!didStart) {
+        log.info('Starting');
+        didStart = true;
+        setup();
+    }
 });
 socket.on('disconnect', () => {
     log.info('Disconnected');
@@ -182,6 +189,7 @@ async function setup() {
     const processor = new Processor(myid, io, kPsk);
 
     io.addWorkerListener(async (job: Transport.Job, ack) => {
+        log.info('Got job offer! %j', job);
         ack(await doDownload(processor, job));
     });
 

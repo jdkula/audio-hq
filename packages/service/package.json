@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
-        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope service'",
+        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build' --watch src",
+        "lint": "eslint .",
         "format": "prettier -w ./src"
     },
     "author": "",

@@ -86,12 +86,17 @@ export class Processor {
     async addFile(jobId: string, filepath: string, { workspace }: FileOptions): Promise<void> {
         processorLog.debug(`Completing ${filepath}...`);
         const duration = await getAudioDurationInSeconds(filepath);
-        processorLog.trace(`Got ${filepath} as ${duration} seconds long`);
-        await this._io.adminCompleteJob(this._psk, workspace, jobId, {
-            duration: duration,
-            mime: 'audio/mp3',
-            content: new Uint8Array(await fs.readFile(filepath)),
-        });
+        processorLog.trace(`Got ${filepath} as ${duration} seconds long, submitting`);
+        await this._io.adminCompleteJob(
+            this._psk,
+            workspace,
+            jobId,
+            {
+                duration: duration,
+                mime: 'audio/mp3',
+            },
+            await fs.readFile(filepath),
+        );
     }
 
     async download(url: string, workspaceId: string, jobId: string): Promise<string> {

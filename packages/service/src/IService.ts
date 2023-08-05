@@ -63,6 +63,7 @@ export type AdminClientToServerEvents = {
         workspaceId: string,
         id: string,
         completion: API.JobComplete,
+        content: Buffer | ArrayBuffer,
     ) => Promise<Status<void>>;
 
     pruneWorkers: (sharedKey: string) => Promise<Status<void>>;

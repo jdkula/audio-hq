@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsc",
         "format": "prettier -w ./src",
-        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope server && pnpm start'",
+        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build && pnpm start' --watch src",
         "start": "node -r dotenv/config ./dist/index.js"
     },
     "author": "",

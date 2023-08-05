@@ -5,7 +5,7 @@
     "scripts": {
         "build": "tsc",
         "format": "prettier -w ./src",
-        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope common'"
+        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build' --watch src"
     },
     "author": "",
     "license": "ISC",

@@ -44,7 +44,8 @@ services:
   minio:
    image: 'quay.io/minio/minio'
    command: 'server /data --console-address ":9090"'
-   network_mode: host
+   environment:
+     MINIO_DOMAIN: localhost
    volumes:
      - './temp/test_data:/data'
    ports:

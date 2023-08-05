@@ -12,6 +12,7 @@
         "eslint": "^8.45.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^5.0.0",
+        "nodemon": "^3.0.1",
         "pino-pretty": "^10.2.0",
         "prettier": "^3.0.0",
         "tsc-watch": "^6.0.4",
@@ -38,7 +39,7 @@
     },
     "scripts": {
         "build": "tsc",
-        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope worker && pnpm start'",
+        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build && pnpm start' --watch src",
         "start": "node -r dotenv/config ./dist/index.js",
         "lint": "eslint .",
         "format": "prettier -w ./src"

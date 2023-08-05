@@ -23,6 +23,7 @@ const io = new Server({
         allowedHeaders: '*',
         exposedHeaders: '*',
     },
+    maxHttpBufferSize: 1e9,
 });
 
 let id = 0;
@@ -96,6 +97,7 @@ async function notifyDecks(workspace: string) {
 }
 
 async function distributeJob(workerId?: string) {
+    log.debug('Distributing jobs to wid %s', workerId);
     if (connectedWorkers.length === 0) return;
 
     let worker: ServerServiceSocket | undefined;
@@ -108,9 +110,12 @@ async function distributeJob(workerId?: string) {
     }
     if (!worker) return;
 
+    log.debug('Worker found, getting next job');
     const job = await AudioHQServiceBase.getNextAvailableJob();
+    log.debug('Found job %j', job);
     if (!job) return;
 
+    log.debug('Offering job...');
     const accepted = worker.emitWithAck('jobOffer', {
         ...job,
         id: asString(job._id!),
@@ -118,6 +123,7 @@ async function distributeJob(workerId?: string) {
         assignedWorker: null,
     });
     if (!accepted) {
+        log.debug('Job not accepted, returning it...');
         await (
             await mongo
         ).jobs.updateOne(
@@ -304,8 +310,13 @@ io.on('connection', (socket: ServerServiceSocket) => {
         resolve(status);
     });
 
-    socket.on('adminCompleteJob', async (psk, wsid, id, completion, resolve) => {
-        const status = await wrap(AudioHQServiceBase.adminCompleteJob, psk, wsid, id, completion);
+    socket.on('adminUpdateJob', async (psk, wsid, id, update, resolve) => {
+        const status = await wrap(AudioHQServiceBase.adminUpdateJob, psk, wsid, id, update);
+        resolve(status);
+        notifyJobs(wsid);
+    });
+    socket.on('adminCompleteJob', async (psk, wsid, id, completion, buffer, resolve) => {
+        const status = await wrap(AudioHQServiceBase.adminCompleteJob, psk, wsid, id, completion, buffer);
         resolve(status);
         notifyJobs(wsid);
     });

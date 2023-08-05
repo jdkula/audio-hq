@@ -131,7 +131,6 @@ export interface AdminJobMutate {
     source: string;
 }
 export interface JobComplete {
-    content: Buffer | ArrayBuffer;
     duration: number;
     mime: string;
 }

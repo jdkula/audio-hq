@@ -489,7 +489,13 @@ export class AudioHQServiceBase implements IServiceBase {
 
         return asJob(res.value);
     }
-    async adminCompleteJob(sharedKey: string, workspaceId: string, id: string, completion: JobComplete): Promise<void> {
+    async adminCompleteJob(
+        sharedKey: string,
+        workspaceId: string,
+        id: string,
+        completion: JobComplete,
+        contentIn: Buffer | ArrayBuffer,
+    ): Promise<void> {
         if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
         const db = await mongo;
         const job = await db.jobs.findOne({ _id: asObjectId(id) });
@@ -498,7 +504,7 @@ export class AudioHQServiceBase implements IServiceBase {
         const newId = new ObjectId();
         const providerId = asString(newId) + kAudioExtension;
 
-        const content = completion.content as Buffer;
+        const content = contentIn as Buffer;
         const location = await new S3FileSystem().writeFromMemory(
             content,
             content.length,
@@ -526,6 +532,7 @@ export class AudioHQServiceBase implements IServiceBase {
                 },
             };
             await db.entries.insertOne(entry, { session });
+            await db.jobs.deleteOne({ _id: job._id });
         });
     }
     async pruneWorkers(sharedKey: string): Promise<void> {
