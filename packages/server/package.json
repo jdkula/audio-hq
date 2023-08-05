@@ -12,15 +12,16 @@
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^20.4.4",
+        "pino-pretty": "^10.2.0",
         "prettier": "^3.0.0",
         "typescript": "^5.1.6"
     },
     "dependencies": {
         "common": "workspace:^",
         "dotenv": "^16.3.1",
+        "pino": "^8.15.0",
         "service": "workspace:^",
         "socket.io": "^4.7.1",
-        "socket.io-msgpack-parser": "^3.0.2",
-        "tslog": "^4.8.2"
+        "socket.io-msgpack-parser": "^3.0.2"
     }
 }

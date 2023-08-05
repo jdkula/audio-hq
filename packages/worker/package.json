@@ -12,6 +12,7 @@
         "eslint": "^8.45.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^5.0.0",
+        "pino-pretty": "^10.2.0",
         "prettier": "^3.0.0",
         "tsc-watch": "^6.0.4",
         "typescript": "^5.1.6"
@@ -23,10 +24,10 @@
         "clients": "workspace:^",
         "common": "workspace:^",
         "fluent-ffmpeg": "^2.1.2",
+        "pino": "^8.15.0",
         "service": "workspace:^",
         "socket.io-client": "^4.7.1",
         "socket.io-msgpack-parser": "^3.0.2",
-        "tslog": "^4.8.2",
         "uuid": "^9.0.0",
         "which": "^3.0.1",
         "ws": "^8.13.0"

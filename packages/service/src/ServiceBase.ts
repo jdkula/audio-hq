@@ -85,6 +85,7 @@ export class AudioHQServiceBase implements IServiceBase {
             throw new InvalidInput();
         }
         const result = await db.workspaces.insertOne(ws);
+        console.log(result);
         return {
             ...ws,
             id: asString(result.insertedId),

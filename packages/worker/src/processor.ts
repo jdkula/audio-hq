@@ -7,7 +7,8 @@ import ffmpeg, { FilterSpecification } from 'fluent-ffmpeg';
 import { v4 as uuidv4 } from 'uuid';
 import { spawn } from 'child_process';
 import which from 'which';
-import { Logger } from 'tslog';
+import pino from 'pino';
+
 import SocketTransport from 'clients/lib/impl/socketio.transport';
 import * as Transport from 'common/lib/api/transport/models';
 
@@ -23,9 +24,10 @@ interface ConvertOptions {
     fadeOut?: number | null | undefined;
 }
 
-const processorLog = new Logger({ name: 'processor' });
-const ytdlLog = processorLog.getSubLogger({ name: 'youtube-dl' });
-const ffmpegLog = processorLog.getSubLogger({ name: 'ffmpeg' });
+const processorLog = pino({ name: 'processor', transport: { target: 'pino-pretty' }, level: 'trace' });
+
+const ytdlLog = processorLog.child({ name: 'youtube-dl' });
+const ffmpegLog = processorLog.child({ name: 'ffmpeg' });
 
 if (!process.env.TEMP_DIR) {
     process.env.TEMP_DIR = '/tmp/audio-hq/storage';
@@ -34,20 +36,20 @@ if (!process.env.TEMP_DIR) {
 const kBaseDir = process.env.TEMP_DIR;
 
 try {
-    processorLog.silly('Creating temporary directory');
+    processorLog.trace('Creating temporary directory');
     fsSync.mkdirSync(kBaseDir, { recursive: true });
 } catch (e) {
     // do nothing; already exists.
 }
 
-processorLog.silly('Searching for youtube-dl');
+processorLog.trace('Searching for youtube-dl');
 const _found_path = which.sync('yt-dlp', { nothrow: true }) ?? which.sync('youtube-dl', { nothrow: true });
 if (!_found_path) {
     throw new Error('Youtube-DL not found!');
 }
 
 const ytdlPath: string = _found_path;
-processorLog.silly('youtube-dl found');
+processorLog.trace('youtube-dl found');
 
 interface FileOptions {
     name: string;
@@ -70,7 +72,7 @@ export class Processor {
         progressStage: Transport.JobStatus,
         source: string,
     ) {
-        processorLog.silly(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
+        processorLog.trace(`Updating job progress for ${jobId} to ${progressStage}:${progress}`);
 
         await this._io.adminUpdateJob(this._psk, workspaceId, jobId, {
             assignedWorker: this._id,
@@ -84,7 +86,7 @@ export class Processor {
     async addFile(jobId: string, filepath: string, { workspace }: FileOptions): Promise<void> {
         processorLog.debug(`Completing ${filepath}...`);
         const duration = await getAudioDurationInSeconds(filepath);
-        processorLog.silly(`Got ${filepath} as ${duration} seconds long`);
+        processorLog.trace(`Got ${filepath} as ${duration} seconds long`);
         await this._io.adminCompleteJob(this._psk, workspace, jobId, {
             duration: duration,
             mime: 'audio/mp3',
@@ -114,7 +116,7 @@ export class Processor {
             });
 
             ytdl.stdout.on('data', (data: string) => {
-                ytdlLog.silly(data.toString());
+                ytdlLog.trace(data.toString());
                 const foundPercent = data.toString().match(/\[download\]\s*(\d+\.\d+)%/);
                 if (jobId && foundPercent?.[1]) {
                     this.updateProgress(
@@ -230,11 +232,11 @@ export class Processor {
                     resolve(outPath);
                 })
                 .on('codecData', (info) => {
-                    ffmpegLog.silly('Got codec info', info);
+                    ffmpegLog.trace('Got codec info %j', info);
                     length = fromTimestamp(info.duration);
                 })
                 .on('progress', (info) => {
-                    ffmpegLog.silly('Got progress', info.percent);
+                    ffmpegLog.trace('Got progress %d', info.percent);
                     const percentBoost = options?.cut && ofDuration < length ? length / ofDuration : 1;
                     this.updateProgress(
                         jobId,
@@ -271,7 +273,7 @@ async function getAudioDurationInSeconds(filepath: string): Promise<number> {
             result += data.toString();
         });
         child.on('close', () => {
-            processorLog.silly(`ffprobe done`);
+            processorLog.trace(`ffprobe done`);
             const search = 'duration=';
             let idx = result.indexOf(search);
             if (idx === -1) {

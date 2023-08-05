@@ -24,11 +24,15 @@ import {
 export default class SocketTransport implements IService {
     public readonly socket: ClientServiceSocket;
 
-    constructor(baseUrl: string) {
-        this.socket = io(baseUrl, {
-            parser: MsgParser,
-            rejectUnauthorized: false,
-        });
+    constructor(init: string | ClientServiceSocket) {
+        if (typeof init === 'string') {
+            this.socket = io(init, {
+                parser: MsgParser,
+                rejectUnauthorized: false,
+            });
+        } else {
+            this.socket = init;
+        }
     }
 
     addJobsListener(workspaceId: string, fn: (jobs: Job[]) => void) {

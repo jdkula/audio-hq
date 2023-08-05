@@ -6,11 +6,11 @@ import { Last } from 'socket.io/dist/typed-events';
 import MsgParser from 'socket.io-msgpack-parser';
 import { asString } from 'service/lib/db/oid_helpers';
 import { mongo } from 'service/lib/db/mongodb';
-import { Logger } from 'tslog';
+import pino from 'pino';
 import * as Transport from 'common/lib/api/transport/models';
 
-const log = new Logger({});
-const reqlog = new Logger({ name: 'request' });
+const log = pino({ transport: { target: 'pino-pretty' }, level: 'trace' });
+const reqlog = pino({ name: 'request', transport: { target: 'pino-pretty' }, level: 'trace' });
 
 const io = new Server({
     parser: MsgParser,
@@ -30,7 +30,7 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
     const myId = id++;
     const data = await (async () => {
         try {
-            reqlog.silly(`RPC ${myId} ${fn.name}`, args);
+            reqlog.trace(`RPC ${myId} ${fn.name} %j`, args);
             return {
                 data: await fn(...args),
                 error: null,
@@ -60,7 +60,7 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
             }
         }
     })();
-    reqlog.silly(`RPC ${myId}:`, data);
+    reqlog.trace(`RPC ${myId} RET: %j`, data);
     return data;
 }
 
@@ -306,6 +306,11 @@ io.on('connection', (socket: ServerServiceSocket) => {
         if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });
         await distributeJob(workerId);
         resolve({ error: null, data: undefined });
+    });
+    socket.on('pruneWorkers', async (psk, resolve) => {
+        if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });
+        const res = await wrap(AudioHQServiceBase.pruneWorkers, psk);
+        resolve(res);
     });
 });
 

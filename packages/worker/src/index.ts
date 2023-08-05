@@ -1,15 +1,36 @@
-import { Logger } from 'tslog';
+import pino from 'pino';
 
 import * as Transport from 'common/lib/api/transport/models';
 import { mongo } from 'service/lib/db/mongodb';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
+import { io as socketio } from 'socket.io-client';
+import MsgParser from 'socket.io-msgpack-parser';
+import { ClientServiceSocket } from 'service/lib/IService';
 
 import { Processor } from './processor';
 
 const kPsk = process.env.WORKER_PSK as string;
 
-const io = new SocketTransport(process.env.NEXT_PUBLIC_WS_URL as string);
-const log = new Logger({ name: 'worker' });
+const log = pino({ name: 'worker', transport: { target: 'pino-pretty' }, level: 'trace' });
+
+const socket: any = socketio('ws://localhost:3050', {
+    parser: MsgParser,
+});
+socket.on('error', (err: any) => {
+    log.error(err);
+});
+socket.on('connect', () => {
+    log.info('Connected, starting setup');
+    setup();
+});
+socket.on('disconnect', () => {
+    log.info('Disconnected');
+});
+socket.on('connect_error', (err: any) => {
+    log.error(err);
+});
+
+const io = new SocketTransport(socket);
 
 let working = false;
 
@@ -32,7 +53,7 @@ async function doDownload(processor: Processor, job: Transport.Job) {
     working = true;
     try {
         // log.debug('Job found', job.value);
-        log.silly('Import found. Downloading...');
+        log.trace('Import found. Downloading...');
         const cut = job.modifications?.find(
             (x): x is Transport.CutModification => x.type === Transport.ModificationType.CUT,
         );
@@ -42,7 +63,7 @@ async function doDownload(processor: Processor, job: Transport.Job) {
 
         const inPath = await processor.download(job.source!, job.workspace!, job.id!);
 
-        log.silly('Converting...');
+        log.trace('Converting...');
 
         const outPath = await processor.convert(inPath, job.workspace!, job.id!, job.source, {
             cut: cut ? { start: cut.startSeconds!, end: cut.endSeconds! } : null,
@@ -50,7 +71,7 @@ async function doDownload(processor: Processor, job: Transport.Job) {
             fadeOut: fade?.outSeconds ?? undefined,
         });
 
-        log.silly('Adding to AHQ...');
+        log.trace('Adding to AHQ...');
         await processor.addFile(job.id!, outPath, {
             name: job.details!.name!,
             path: job.details!.path!,
@@ -90,6 +111,7 @@ function getMsToNextCheckin(offset: number, frequency_s: number): number {
 }
 
 async function getIdealOffset(checkinFrequency: number): Promise<number> {
+    log.trace('Getting ideal offset w/ checkin frequency %d...', checkinFrequency);
     const workerStartHistogram: number[] = new Array(checkinFrequency);
     const workerStartOptimizationHistogram: number[] = new Array(checkinFrequency);
     workerStartHistogram.fill(0);
@@ -97,8 +119,9 @@ async function getIdealOffset(checkinFrequency: number): Promise<number> {
 
     const db = await mongo;
 
+    log.trace('Attempting to prune workers...');
     await io.pruneWorkers(kPsk);
-    log.silly('STARTUP: Got worker timestamps');
+    log.trace('STARTUP: Got worker timestamps');
     const workers = await db.workers.find().toArray();
 
     for (const worker of workers) {
@@ -126,14 +149,14 @@ async function getIdealOffset(checkinFrequency: number): Promise<number> {
 
 async function setup() {
     const checkinFrequency = parseInt(process.env['CHECKIN_FREQUENCY'] ?? '10');
-    log.silly('STARTUP: Got checkin frequency', checkinFrequency, 'sec');
+    log.trace('STARTUP: Got checkin frequency %d sec', checkinFrequency);
 
     const idealOffset =
         'CHECKIN_OFFSET' in process.env
             ? parseInt(process.env['CHECKIN_OFFSET']!)
             : await getIdealOffset(checkinFrequency);
 
-    log.silly('STARTUP: Pruned workers');
+    log.trace('STARTUP: Pruned workers');
 
     const startTime = new Date(Date.now() + getMsToNextCheckin(idealOffset, checkinFrequency)).getTime();
 
@@ -169,7 +192,7 @@ async function setup() {
         await io.adminRequestJob(kPsk, myid);
 
         const nextCheckin = getMsToNextCheckin(idealOffset, checkinFrequency);
-        log.silly('Will check in again in ' + nextCheckin + 'ms');
+        log.trace('Will check in again in ' + nextCheckin + 'ms');
 
         setTimeout(checkIn, nextCheckin);
     }
@@ -177,5 +200,3 @@ async function setup() {
     log.info('Worker started.');
     setTimeout(checkIn, getMsToNextCheckin(idealOffset, checkinFrequency));
 }
-
-setup();
