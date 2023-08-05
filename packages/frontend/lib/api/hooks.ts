@@ -14,7 +14,6 @@ import {
     Single,
 } from 'common/src/api/models';
 import { v4 as uuid, v4 } from 'uuid';
-import RestTransport from 'clients/lib/impl/rest.transport';
 
 export function useWorkspaceEntries(workspaceId: string) {
     const api = useContext(AudioHQApiContext);
@@ -23,7 +22,7 @@ export function useWorkspaceEntries(workspaceId: string) {
 
     const res = useQuery(key, {
         queryFn: () => api.workspace(workspaceId).entries.list(),
-        refetchInterval: api.transport instanceof RestTransport ? 60_000 : 300_000,
+        refetchInterval: 300_000,
         staleTime: 10000,
     });
 
@@ -53,7 +52,7 @@ export function useWorkspaceJobs(workspaceId: string) {
             }
             lastNumJobs.current = jobData.length;
         },
-        refetchInterval: api.transport instanceof RestTransport ? 2_000 : 300_000,
+        refetchInterval: 300_000,
     });
 
     useEffect(() => {
@@ -195,7 +194,7 @@ export function useWorkspaceDecks(workspaceId: string): {
         queryKey: key,
         queryFn: () =>
             api.workspace(workspaceId).decks.listAll(entries.data?.filter((x): x is Single => x.type === 'single')),
-        refetchInterval: api.transport instanceof RestTransport ? 1_000 : 60_000,
+        refetchInterval: 60_000,
     });
 
     const main = data?.filter((x) => x.type === 'main')[0] ?? null;

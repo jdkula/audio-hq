@@ -9,5 +9,9 @@
     "devDependencies": {
         "lerna": "^7.1.4",
         "nx": "^16.6.0"
+    },
+    "scripts": {
+        "build": "lerna run --load-env-files --stream build",
+        "start": "lerna run --parallel --stream start"
     }
 }

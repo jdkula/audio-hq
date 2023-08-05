@@ -11,12 +11,6 @@
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["{projectRoot}/lib", "{projectRoot}/dist"]
-        },
-        "dev": {
-            "dependsOn": ["^dev"]
-        },
-        "start": {
-            "dependsOn": ["^start"]
         }
     }
 }

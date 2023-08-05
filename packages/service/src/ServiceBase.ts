@@ -382,7 +382,11 @@ export class AudioHQServiceBase implements IServiceBase {
         return results.map(asJob);
     }
     async uploadFile(fileSizeBytes: number, type: string): Promise<string> {
-        return await new S3FileSystem(process.env.S3_TEMP_BUCKET as string).createPresignedUpload(fileSizeBytes, type);
+        return await new S3FileSystem(process.env.S3_TEMP_BUCKET as string).createPresignedUpload(
+            asString(new ObjectId()),
+            fileSizeBytes,
+            type,
+        );
     }
     async submitJob(workspaceId: string, input: NewJob): Promise<Job> {
         if (!input || !workspaceId) throw new InvalidInput();

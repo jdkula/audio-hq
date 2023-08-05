@@ -5,19 +5,25 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
+        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope service'",
         "format": "prettier -w ./src"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^20.4.4",
+        "nodemon": "^3.0.1",
         "prettier": "^3.0.0",
         "socket.io": "^4.7.1",
         "socket.io-client": "^4.7.1",
         "typescript": "^5.1.6"
     },
     "dependencies": {
-        "aws-sdk": "^2.1422.0",
+        "@aws-sdk/client-s3": "^3.385.0",
+        "@aws-sdk/hash-node": "^3.374.0",
+        "@aws-sdk/lib-storage": "^3.385.0",
+        "@aws-sdk/s3-request-presigner": "^3.385.0",
+        "@aws-sdk/util-format-url": "^3.378.0",
         "common": "workspace:^",
         "mongodb": "^5.7.0"
     }

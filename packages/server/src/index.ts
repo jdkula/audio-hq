@@ -96,6 +96,8 @@ async function notifyDecks(workspace: string) {
 }
 
 async function distributeJob(workerId?: string) {
+    if (connectedWorkers.length === 0) return;
+
     let worker: ServerServiceSocket | undefined;
     if (workerId) {
         worker = connectedWorkers.find((info) => workerId === info.workerId)?.socket;
@@ -137,6 +139,8 @@ io.on('connection', (socket: ServerServiceSocket) => {
             savedSet.current.delete(socket);
             savedSet.current = null;
         }
+        const idx = connectedWorkers.findIndex((p) => p.socket === socket);
+        connectedWorkers.splice(idx, 1);
     });
 
     socket.on('join', (joined, resolve) => {
@@ -290,6 +294,9 @@ io.on('connection', (socket: ServerServiceSocket) => {
 
     socket.on('registerWorker', async (psk, checkinTime, resolve) => {
         const status = await wrap(AudioHQServiceBase.registerWorker, psk, checkinTime);
+        if (status.error === null) {
+            connectedWorkers.push({ socket, workerId: status.data });
+        }
         resolve(status);
     });
     socket.on('workerCheckIn', async (psk, id, resolve) => {

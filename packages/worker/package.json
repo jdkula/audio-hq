@@ -18,6 +18,10 @@
         "typescript": "^5.1.6"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.385.0",
+        "@aws-sdk/hash-node": "^3.374.0",
+        "@aws-sdk/s3-request-presigner": "^3.385.0",
+        "@aws-sdk/util-format-url": "^3.378.0",
         "@types/fluent-ffmpeg": "^2.1.21",
         "@types/uuid": "^9.0.2",
         "@types/which": "^3.0.0",
@@ -34,7 +38,7 @@
     },
     "scripts": {
         "build": "tsc",
-        "run:watch": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node -r dotenv/config ./dist/index.js\"",
+        "dev": "nodemon --exec 'lerna run build --include-dependencies --scope worker && pnpm start'",
         "start": "node -r dotenv/config ./dist/index.js",
         "lint": "eslint .",
         "format": "prettier -w ./src"

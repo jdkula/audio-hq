@@ -2,10 +2,49 @@ version: "3"
 volumes:
   data:
 services:
-  
+  frontend:
+    profiles:
+      - service
+    env_file:
+      - .env.dev
+    build:
+      dockerfile: Dockerfile.frontend
+    network_mode: host
+    depends_on:
+      - minio
+      - mongodb
+      - server
+    ports:
+      - '3000:3000'
+  server:
+    profiles:
+      - service
+    env_file:
+      - .env.dev
+    build:
+      dockerfile: Dockerfile.server
+    network_mode: host
+    depends_on:
+      - minio
+      - mongodb
+    ports:
+      - '3050:3050'
+  worker:
+    profiles:
+      - service
+    env_file:
+      - .env.dev
+    build:
+      dockerfile: Dockerfile.worker
+    network_mode: host
+    depends_on:
+      - minio
+      - mongodb
+      - server
   minio:
    image: 'quay.io/minio/minio'
    command: 'server /data --console-address ":9090"'
+   network_mode: host
    volumes:
      - './temp/test_data:/data'
    ports:
@@ -13,7 +52,7 @@ services:
      - '9000:9000'
   mongodb:
    image: 'mongo:latest'
-   command: '--replSet local'
+   command: '--replSet local --bind_ip localhost,mongodb'
    environment:
      MONGODB_INITDB_ROOT_USERNAME: root
      MONGODB_INITDB_ROOT_PASSWORD: kula
