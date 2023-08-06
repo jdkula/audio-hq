@@ -262,8 +262,8 @@ export class AudioHQServiceBase implements IServiceBase {
             oid = result.insertedId;
         }
         return {
-            ...deck,
-            id: oid.toHexString(),
+            ...pick(deck, 'createdAt', 'pausedTimestamp', 'queue', 'speed', 'startTimestamp', 'volume', 'type'),
+            id: asString(oid),
             queue: deck.queue.map((oid) => asString(oid)),
         };
     }
@@ -443,10 +443,23 @@ export class AudioHQServiceBase implements IServiceBase {
     async leave(): Promise<void> {
         throw new Error('This function should be handled at the transport layer.');
     }
-    async registerWorker(sharedKey: string, checkinFrequency: number): Promise<string> {
+    async registerWorker(sharedKey: string, checkinFrequency: number, id?: string): Promise<string> {
         if (sharedKey !== process.env.WORKER_PSK) throw new NotAuthorized();
         const db = await mongo;
 
+        if (id) {
+            await db.workers.findOneAndUpdate(
+                { _id: asObjectId(id) },
+                {
+                    $set: {
+                        checkinFrequency: checkinFrequency,
+                        lastCheckinTime: Date.now(),
+                        startTime: Date.now(),
+                    },
+                },
+            );
+            return id;
+        }
         const result = await db.workers.insertOne({
             checkinFrequency: checkinFrequency,
             lastCheckinTime: Date.now(),

@@ -5,7 +5,6 @@ import { mongo } from 'service/lib/db/mongodb';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
 import { io as socketio } from 'socket.io-client';
 import MsgParser from 'socket.io-msgpack-parser';
-import { ClientServiceSocket } from 'service/lib/IService';
 
 import { Processor } from './processor';
 
@@ -16,8 +15,7 @@ let didStart = false;
 
 const socket: any = socketio('ws://localhost:3050', {
     parser: MsgParser,
-    transports: ['websocket'],
-} as any);
+});
 socket.on('error', (err: any) => {
     log.error(err);
 });

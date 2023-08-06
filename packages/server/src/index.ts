@@ -32,6 +32,7 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
     const data = await (async () => {
         try {
             reqlog.trace(`RPC ${myId} ${fn.name} %j`, args);
+            // reqlog.trace(`RPC ${myId} ${fn.name}`);
             return {
                 data: await fn(...args),
                 error: null,
@@ -62,6 +63,7 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
         }
     })();
     reqlog.trace(`RPC ${myId} RET: %j`, data);
+    // reqlog.trace(`RPC ${myId} RET`);
     return data;
 }
 
@@ -298,8 +300,8 @@ io.on('connection', (socket: ServerServiceSocket) => {
         resolve(status);
     });
 
-    socket.on('registerWorker', async (psk, checkinTime, resolve) => {
-        const status = await wrap(AudioHQServiceBase.registerWorker, psk, checkinTime);
+    socket.on('registerWorker', async (psk, checkinTime, id, resolve) => {
+        const status = await wrap(AudioHQServiceBase.registerWorker, psk, checkinTime, id);
         if (status.error === null) {
             connectedWorkers.push({ socket, workerId: status.data });
         }
@@ -319,6 +321,7 @@ io.on('connection', (socket: ServerServiceSocket) => {
         const status = await wrap(AudioHQServiceBase.adminCompleteJob, psk, wsid, id, completion, buffer);
         resolve(status);
         notifyJobs(wsid);
+        notifyEntries(wsid);
     });
     socket.on('adminRequestJob', async (psk, workerId, resolve) => {
         if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });

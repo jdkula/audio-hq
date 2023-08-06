@@ -48,7 +48,7 @@ export type ClientToServerEvents = {
 };
 export type AdminClientToServerEvents = {
     /* for workers */
-    registerWorker: (sharedKey: string, checkinFrequency: number) => Promise<Status<string>>;
+    registerWorker: (sharedKey: string, checkinFrequency: number, id?: string) => Promise<Status<string>>;
     workerCheckIn: (sharedKey: string, id: string) => Promise<Status<void>>;
 
     adminRequestJob: (sharedKey: string, workerId: string) => Promise<Status<void>>;

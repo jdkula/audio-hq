@@ -94,6 +94,18 @@ export default class S3FileSystem {
             },
         });
 
+        console.warn({
+            client: S3,
+            params: {
+                ...this.defaultParams,
+                Key: id,
+                ContentType: contentType,
+                ContentLength: size,
+                Body: stream,
+                ACL: 'public-read',
+            },
+        });
+
         upload.on(
             'httpUploadProgress',
             (progress) => progress.loaded && progress.total && onProgress?.(progress.loaded / (progress.total ?? size)),

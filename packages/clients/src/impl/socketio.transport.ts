@@ -24,6 +24,9 @@ import {
 export default class SocketTransport implements IService {
     public readonly socket: ClientServiceSocket;
 
+    private _rejoin: (() => Promise<void> | void) | null = null;
+    private _joinedWorkspace: string | null = null;
+
     constructor(init: string | ClientServiceSocket) {
         if (typeof init === 'string') {
             this.socket = io(init, {
@@ -33,6 +36,15 @@ export default class SocketTransport implements IService {
         } else {
             this.socket = init;
         }
+
+        this.socket.on('connect', () => {
+            if (this._joinedWorkspace) {
+                this.join(this._joinedWorkspace);
+            }
+            if (this._rejoin) {
+                this._rejoin();
+            }
+        });
     }
 
     addJobsListener(workspaceId: string, fn: (jobs: Job[]) => void) {
@@ -112,13 +124,28 @@ export default class SocketTransport implements IService {
         return await this.socket.emitWithAck('cancelJob', workspaceId, id);
     }
     async join(workspaceId: string): Promise<Status<void>> {
-        return await this.socket.emitWithAck('join', workspaceId);
+        const status = await this.socket.emitWithAck('join', workspaceId);
+        if (status.error === null) {
+            this._joinedWorkspace = workspaceId;
+        }
+        return status;
     }
     async leave(workspaceId: string): Promise<Status<void>> {
-        return await this.socket.emitWithAck('leave', workspaceId);
+        const status = await this.socket.emitWithAck('leave', workspaceId);
+        if (status.error === null) {
+            this._joinedWorkspace = null;
+        }
+        return status;
     }
-    async registerWorker(sharedKey: string, checkinFrequency: number): Promise<Status<string>> {
-        return await this.socket.emitWithAck('registerWorker', sharedKey, checkinFrequency);
+    async registerWorker(sharedKey: string, checkinFrequency: number, id?: string): Promise<Status<string>> {
+        const status = await this.socket.emitWithAck('registerWorker', sharedKey, checkinFrequency, id);
+        if (status.error === null) {
+            const confirmedId = status.data;
+            this._rejoin = async () => {
+                await this.socket.emitWithAck('registerWorker', sharedKey, checkinFrequency, confirmedId);
+            };
+        }
+        return status;
     }
     async workerCheckIn(sharedKey: string, id: string): Promise<Status<void>> {
         return await this.socket.emitWithAck('workerCheckIn', sharedKey, id);
