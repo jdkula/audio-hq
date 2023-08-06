@@ -6,7 +6,6 @@
  */
 
 import Document, { DocumentContext, DocumentInitialProps, Html, Main, NextScript, Head } from 'next/document';
-import { resetServerContext } from 'react-beautiful-dnd';
 import React, { ReactNode } from 'react';
 import createEmotionServer from '@emotion/server/create-instance';
 import { createEmotionCache } from '~/lib/ssr';
@@ -43,7 +42,6 @@ class MyDocument extends Document<DocumentAdditionalProps> {
     }
 
     static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps & DocumentAdditionalProps> {
-        resetServerContext();
         const cache = createEmotionCache();
         const { extractCriticalToChunks } = createEmotionServer(cache);
         const originalRenderPage = ctx.renderPage;

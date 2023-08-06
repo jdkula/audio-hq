@@ -354,7 +354,7 @@ function protoDeckToDeck(deck: Transport.Deck, singles: API.Single[]): API.Deck 
         type: toDeckType(deck.type!),
         createdAt: new Date(deck.createdAt!),
         startTimestamp: new Date(deck.startTimestamp!),
-        pauseTimestamp: deck.pausedTimestamp === null ? null : new Date(deck.pausedTimestamp!),
+        pauseTimestamp: deck.pausedTimestamp ? new Date(deck.pausedTimestamp) : null,
         speed: deck.speed!,
         volume: deck.volume!,
         queue: deck.queue!.map((sid) => singles.find((s) => s.id === sid)).filter((x): x is API.Single => !!x),

@@ -45,6 +45,7 @@ export class Track extends EventEmitter {
 
         this._globalVolumeListener = () => this.update(this._deck);
         globalVolumeLRV.on('set', this._globalVolumeListener);
+        console.log('track.ts', this._single.url, '===?===', this._audio.src, this._audio, this);
     }
 
     private oncanplay() {
@@ -77,6 +78,7 @@ export class Track extends EventEmitter {
         if (!this._ready) return;
 
         const deckInfo = getDeckInfo(status, this._single);
+        console.log('deckInfo', deckInfo);
 
         if (!deckInfo) {
             this._audio.pause();

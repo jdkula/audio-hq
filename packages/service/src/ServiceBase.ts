@@ -239,7 +239,7 @@ export class AudioHQServiceBase implements IServiceBase {
         const deck: DecksCollectionType = {
             _workspace: oWsId,
             createdAt: Date.now(),
-            pausedTimestamp: input.pausedTimestamp ?? 0,
+            pausedTimestamp: input.pausedTimestamp,
             speed: input.speed,
             startTimestamp: input.startTimestamp,
             type: input.type,
@@ -287,7 +287,7 @@ export class AudioHQServiceBase implements IServiceBase {
         }
 
         return {
-            ...result,
+            ...pick(result, 'createdAt', 'pausedTimestamp', 'queue', 'speed', 'startTimestamp', 'volume', 'type'),
             id: asString(result._id),
             queue: result.queue.map((oid) => asString(oid)),
         };
@@ -311,8 +311,7 @@ export class AudioHQServiceBase implements IServiceBase {
                     },
                     $setOnInsert: {
                         createdAt: Date.now(),
-                        pausedTimestamp: 0,
-                        playing: true,
+                        pausedTimestamp: null,
                         queue: [],
                         speed: 1,
                         startTimestamp: Date.now(),
