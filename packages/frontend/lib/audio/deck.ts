@@ -49,6 +49,7 @@ export class Deck extends EventEmitter {
             this._tracks.push(tr);
             tr.on('blocked', () => this.emit('blocked'));
         }
+        this.rereconcile();
     }
 
     isReferentFor(state: API.Deck): boolean {

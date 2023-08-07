@@ -84,7 +84,7 @@ export default function useAudioManager(workspaceId: string) {
     reconcileMainRef.current = reconcileMain;
 
     const reconcileAmbientSfx = useCallback(
-        (ambient: API.Deck[], sfx: API.Deck[]) => {
+        (ambience: API.Deck[], sfx: API.Deck[]) => {
             const toDestroy: Deck[] = [];
             for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
                 const deck = ambientTracks.current[i];
