@@ -29,5 +29,6 @@ if (typeof window !== 'undefined') {
                 typeof datum === 'object' && datum?.$$date ? new Date(datum.$$date) : datum,
             ),
         retry: removeOldestQuery,
+        key: 'AUDIO_HQ_OFFLINE_CACHE',
     });
 }

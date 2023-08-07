@@ -18,7 +18,8 @@ const staticUrlsToCache = ['/', '/index.html', '/workspace.html', '/404.html', '
 const audioCache = caches.open('ahq-audio-v1');
 
 // Application data storage
-const appCache = caches.open('ahq-app-v1');
+const kCacheKey = 'ahq-app-v2';
+const appCache = caches.open(kCacheKey);
 
 // Broadcast in from the frontend and out to the frontend
 const broadcastIn = new BroadcastChannel('audio-hq-to-sw');
@@ -242,6 +243,18 @@ broadcastIn.onmessage = (ev) => {
         // <-- Caches all static assets for offline mode -->
         case 'cache-on': {
             cacheStatic();
+            break;
+        }
+
+        // <-- Checks query cache key -->
+        case 'cache-buster-in': {
+            if (ev.data.key !== kCacheKey) {
+                broadcastOut.postMessage({
+                    type: 'cache-buster-out',
+                    shouldReload: true,
+                    key: kCacheKey,
+                });
+            }
             break;
         }
     }

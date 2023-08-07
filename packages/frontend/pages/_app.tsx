@@ -24,6 +24,7 @@ import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { AudioHQApiImplProto } from 'clients/lib/impl/protobase';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
+import { BroadcastMessage, broadcastOut } from '~/lib/sw_client';
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {
@@ -74,10 +75,24 @@ export default function App({
     }, [forceModeListener]);
 
     /** Use caching service worker */
+    const tryRegistered = useRef(false);
     useEffect(() => {
-        navigator.serviceWorker.register('/service.worker.dist.js', { type: 'module' }).catch((e) => {
-            console.log('Service worker registration failed', e);
-        });
+        if (tryRegistered.current) return;
+        tryRegistered.current = true;
+
+        navigator.serviceWorker
+            .register('/service.worker.dist.js', { type: 'module' })
+            .then(() => {
+                setTimeout(() => {
+                    broadcastOut?.postMessage({
+                        type: 'cache-buster-in',
+                        key: window.localStorage.getItem('AHQ_CACHE_KEY') ?? '',
+                    } satisfies BroadcastMessage);
+                }, 1500);
+            })
+            .catch((e) => {
+                console.log('Service worker registration failed', e);
+            });
     }, []);
 
     return (

@@ -26,7 +26,9 @@ export type BroadcastMessage =
     | WorkerTargetedMessageOut
     | BulkCacheRequestMessageOut
     | CacheUpdateMessageIn
-    | BulkCacheUpdateIn;
+    | BulkCacheUpdateIn
+    | CacheBusterMessageOut
+    | CacheBusterMessageIn;
 
 interface WorkerTargetedMessageOut {
     type: 'cache' | 'evict' | 'is-cached';
@@ -35,6 +37,16 @@ interface WorkerTargetedMessageOut {
 
 interface BulkCacheRequestMessageOut {
     type: 'is-cached-bulk' | 'cache-off' | 'cache-on' | 'clear-cache';
+}
+
+interface CacheBusterMessageIn {
+    type: 'cache-buster-in';
+    key: string;
+}
+interface CacheBusterMessageOut {
+    type: 'cache-buster-out';
+    shouldReload: boolean;
+    key: string;
 }
 
 interface CacheUpdateData {
@@ -64,6 +76,11 @@ const onUpdate = (ev: MessageEvent) => {
         // Bulk update
     } else if (message.type === 'bulk-cache-update') {
         cacheInfo.value = Map(message.data.map((data) => [data.url, data.cached]));
+    } else if (message.type === 'cache-buster-out') {
+        window.localStorage.setItem('AHQ_CACHE_KEY', message.key);
+        if (message.shouldReload) {
+            window.location.reload();
+        }
     }
 };
 
