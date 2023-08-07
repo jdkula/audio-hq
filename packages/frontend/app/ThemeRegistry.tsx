@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import NextAppDirEmotionCacheProvider from './EmotionCache';
 import { ahqThemeBase } from '~/lib/theme';
 import { useMediaQuery } from '@mui/material';
 import { useColorMode } from '~/lib/utility/usePersistentData';
@@ -42,12 +41,10 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
     }, [forceModeListener]);
 
     return (
-        <NextAppDirEmotionCacheProvider options={{ key: 'mui' }}>
-            <ThemeProvider theme={theme}>
-                {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-                <CssBaseline />
-                {children}
-            </ThemeProvider>
-        </NextAppDirEmotionCacheProvider>
+        <ThemeProvider theme={theme}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            <CssBaseline />
+            {children}
+        </ThemeProvider>
     );
 }

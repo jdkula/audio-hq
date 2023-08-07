@@ -4,12 +4,8 @@ import { FC } from 'react';
 
 import '@emotion/react';
 
-import { createTheme, useMediaQuery } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, ReactNode } from 'react';
+import { useEffect, useRef, ReactNode } from 'react';
 
-import { ahqThemeBase } from '~/lib/theme';
-import { deepmerge } from '@mui/utils';
-import { useColorMode } from '~/lib/utility/usePersistentData';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
 import { localStoragePersister, queryClient } from '~/lib/queryclient';
