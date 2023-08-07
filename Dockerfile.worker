@@ -6,7 +6,7 @@ COPY ./pnpm-lock.yaml ./
 RUN apk add --update --no-cache python3 libc6-compat alpine-sdk && ln -sf python3 /usr/bin/python
 RUN pnpm fetch
 
-RUN apk add --update --no-cache py3-pip
+RUN apk add --update --no-cache py3-pip ffmpeg build-base libc6-compat py3-pycryptodomex py3-websockets py3-mutagen py3-brotli yt-dlp
 RUN python3 -m pip install yt-dlp
 
 COPY . ./

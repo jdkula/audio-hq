@@ -31,8 +31,11 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
     const myId = id++;
     const data = await (async () => {
         try {
-            reqlog.trace(`RPC ${myId} ${fn.name} %j`, args);
-            // reqlog.trace(`RPC ${myId} ${fn.name}`);
+            if (fn !== (AudioHQServiceBase.adminCompleteJob as any)) {
+                reqlog.trace(`RPC ${myId} ${fn.name} %j`, args);
+            } else {
+                reqlog.trace(`RPC ${myId} ${fn.name}`);
+            }
             return {
                 data: await fn(...args),
                 error: null,

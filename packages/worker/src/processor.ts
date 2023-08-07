@@ -135,7 +135,7 @@ export class Processor {
             });
 
             ytdl.stderr.on('data', (data) => {
-                ytdlLog.warn(data);
+                ytdlLog.warn(data.toString());
             });
 
             ytdl.on('close', (code) => {

@@ -59,7 +59,6 @@ export default class S3FileSystem {
             Key: id,
             ContentType: mimeType,
             ContentLength: fileSize,
-            ACL: 'public-read',
         });
         return getSignedUrl(S3, command, { expiresIn: 3600 });
     }

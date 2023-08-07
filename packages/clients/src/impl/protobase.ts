@@ -535,8 +535,8 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             throw new Error('Failed: ' + data.error);
         }
         // TODO
-        const upload = await axios.put(data.data, file);
-        if (upload.status !== 201) {
+        const upload = await axios.put(data.data, file, { headers: {'Content-Type': file.type}});
+        if (upload.status !== 200) {
             throw new Error('Failed to upload');
         }
 
