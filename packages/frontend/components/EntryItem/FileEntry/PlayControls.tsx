@@ -63,6 +63,8 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
 
     const playDeck = usePlayDeckMutation(workspaceId);
 
+    const queued = !!main?.queue.find((x) => x.id === file.id);
+
     const onAmbience = async () => {
         setDebouncingAmbience(true);
         playDeck.mutate({
@@ -135,7 +137,11 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
         <PlayControlsContainer>
             <Tooltip title={alt ? 'Queue Track' : 'Play File (alt/option to queue)'} placement="left" arrow>
                 <span>
-                    <IconButton onClick={alt ? onAddToQueue : onPlay} size="small" disabled={!online && !cached}>
+                    <IconButton
+                        onClick={alt ? onAddToQueue : onPlay}
+                        size="small"
+                        disabled={(!online && !cached) || queued}
+                    >
                         {online !== false || cached ? (
                             alt ? (
                                 <QueueMusic color={playColor} />
