@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * index.tsx
  * ===========
@@ -24,7 +26,6 @@ import {
 import TextField from '@mui/material/TextField';
 import React, { FC, KeyboardEvent, useContext, useState } from 'react';
 
-import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import ListHeader from '~/components/ListHeader';
 import { Global, css } from '@emotion/react';
@@ -35,6 +36,7 @@ import { humanFileSize, isDefined } from '~/lib/utility/util';
 import { useCreateWorkspaceMutation, useWorkspaceDetail, useWorkspaceDetailByName } from '~/lib/api/hooks';
 import { Workspace } from 'common/lib/api/models';
 import AudioHQApiContext from '~/lib/api/context';
+import { useRouter } from 'next/navigation';
 
 const GlobalFull = () => (
     <Global
@@ -150,7 +152,7 @@ export default function Home(): React.ReactElement {
         }
 
         setWorkspaceName(ws.name);
-        router.push('/workspace', `/workspace?w=${encodeURIComponent(ws.id)}`);
+        router.push(`/workspace?w=${encodeURIComponent(ws.id)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
