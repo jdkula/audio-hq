@@ -18,7 +18,7 @@ const staticUrlsToCache = ['/', '/index.html', '/workspace.html', '/404.html', '
 const audioCache = caches.open('ahq-audio-v1');
 
 // Application data storage
-const kCacheKey = 'ahq-app-v2';
+const kCacheKey = 'ahq-app-v3';
 const appCache = caches.open(kCacheKey);
 
 // Broadcast in from the frontend and out to the frontend
@@ -112,6 +112,9 @@ async function ahqCache(request) {
     if (audioCacheResponse) {
         console.log('Successfully retrieved cached data for audio URL', request.url);
         return audioCacheResponse;
+    }
+    if (!(await offlineEnabled())) {
+        return await fetch(request);
     }
 
     try {
