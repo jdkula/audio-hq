@@ -27,6 +27,7 @@ export interface Single extends EntryBase {
     description: string;
     length: number;
     url: string;
+    source: string;
 }
 
 export interface Folder extends EntryBase {

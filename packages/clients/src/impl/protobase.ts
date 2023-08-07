@@ -56,6 +56,7 @@ function toApiEntry(tentry: Transport.Entry): API.Entry {
               ordering: tentry.ordering,
               path: tentry.path,
               url: tentry.single.url,
+              source: tentry.single.source,
           };
 }
 
@@ -315,6 +316,7 @@ class SpecificSingleApiImplProto implements SpecificEntryApi<API.Single> {
             description: protoEntry.single!.description!,
             length: protoEntry.single!.duration!,
             url: protoEntry.single!.url!,
+            source: protoEntry.single.source,
         } satisfies API.Single;
     }
 
@@ -341,6 +343,7 @@ class SpecificSingleApiImplProto implements SpecificEntryApi<API.Single> {
             description: protoEntry.single!.description!,
             length: protoEntry.single!.duration!,
             url: protoEntry.single!.url!,
+            source: protoEntry.single.source,
         } satisfies API.Single;
     }
     async delete(): Promise<void> {
@@ -535,7 +538,7 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             throw new Error('Failed: ' + data.error);
         }
         // TODO
-        const upload = await axios.put(data.data, file, { headers: {'Content-Type': file.type}});
+        const upload = await axios.put(data.data, file, { headers: { 'Content-Type': file.type } });
         if (upload.status !== 200) {
             throw new Error('Failed to upload');
         }

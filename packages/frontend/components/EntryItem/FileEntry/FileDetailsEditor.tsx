@@ -4,7 +4,7 @@
  * Provides an editor for the track details of a given file.
  */
 
-import { ClickAwayListener, TextField } from '@mui/material';
+import { ClickAwayListener, TextField, Typography } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import * as API from 'common/lib/api/models';
@@ -21,6 +21,14 @@ const TextFieldContainer = styled.div`
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+`;
+const SourceDisplayContainer = styled.div`
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: elipsis;
+    white-space: nowrap;
 `;
 
 const Spacer = styled.div<{ space?: string }>`
@@ -93,6 +101,15 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
                         onChange={(e) => setEditDescription(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
+                    {file.source && (
+                        <SourceDisplayContainer>
+                            <a href={file.source} target="_blank" rel="noreferrer noopener">
+                                <Typography variant="body2" color="GrayText">
+                                    Source: {new URL(file.source).hostname}
+                                </Typography>
+                            </a>
+                        </SourceDisplayContainer>
+                    )}
                 </TextFieldContainer>
             </EditorContainer>
         </ClickAwayListener>
