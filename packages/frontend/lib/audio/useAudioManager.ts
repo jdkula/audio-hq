@@ -14,7 +14,11 @@ export default function useAudioManager(workspaceId: string) {
     // <== Local State ==>
     const fileManager = useContext(FileManagerContext);
 
-    const { main, ambience, sfx } = useWorkspaceDecks(workspaceId);
+    const deckInfo = useWorkspaceDecks(workspaceId);
+
+    const [main, setMain] = useState<API.Deck | null>(null);
+    const [ambience, setAmbience] = useState<API.Deck[]>([]);
+    const [sfx, setSfx] = useState<API.Deck[]>([]);
 
     const mainTrack = useRef<Deck | null>(null);
     const ambientTracks = useRef<Deck[]>([]);
@@ -39,15 +43,7 @@ export default function useAudioManager(workspaceId: string) {
 
     // <== Data Effects ==>
 
-    useEffect(() => {
-        return () => {
-            mainTrack.current?.destroy();
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            for (const track of ambientTracks.current) {
-                track.destroy();
-            }
-        };
-    }, []);
+    const isInitialized = useRef(false);
 
     useEffect(() => {
         if (blocked) {
@@ -61,51 +57,99 @@ export default function useAudioManager(workspaceId: string) {
         }
     }, [blocked, main?.pauseTimestamp]);
 
+    const reconcileMain = useCallback(
+        (main: API.Deck | null) => {
+            if (main && main.queue.length > 0) {
+                if (main && mainTrack.current?.reconcile(main)) {
+                    return;
+                }
+
+                const old = mainTrack.current;
+                old?.disownTracks();
+                mainTrack.current = createTrack(main);
+
+                if (old) {
+                    old.destroy();
+                }
+            } else if (!main) {
+                mainTrack.current?.destroy();
+                mainTrack.current = null;
+            }
+            Deck.pruneCache();
+        },
+        [createTrack],
+    );
+    useEffect(() => reconcileMain(main), [reconcileMain, main]);
+    const reconcileMainRef = useRef(reconcileMain);
+    reconcileMainRef.current = reconcileMain;
+
+    const reconcileAmbientSfx = useCallback(
+        (ambient: API.Deck[], sfx: API.Deck[]) => {
+            const toDestroy: Deck[] = [];
+            for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
+                const deck = ambientTracks.current[i];
+                const matchedState = [...ambience, ...sfx].find((deckDef) => deck.isReferentFor(deckDef));
+                if (!matchedState || !deck.reconcile(matchedState)) {
+                    toDestroy.push(deck);
+                    ambientTracks.current.splice(i, 1);
+                }
+            }
+
+            for (const deck of toDestroy) {
+                deck.disownTracks();
+            }
+
+            for (const amb of [...ambience, ...sfx]) {
+                const matchedTrack = ambientTracks.current.find((track) => track.isReferentFor(amb));
+                if (!matchedTrack) {
+                    const tr = createTrack(amb);
+                    ambientTracks.current.push(tr);
+                }
+            }
+
+            Deck.pruneCache();
+        },
+        [createTrack],
+    );
+    useEffect(() => reconcileAmbientSfx(ambience, sfx), [reconcileAmbientSfx, ambience, sfx]);
+    const reconcileAmbientSfxRef = useRef(reconcileAmbientSfx);
+    reconcileAmbientSfxRef.current = reconcileAmbientSfx;
+
+    const destroy = useCallback(() => {
+        isInitialized.current = false;
+        setSfx([]);
+        setAmbience([]);
+        setMain(null);
+        reconcileMainRef.current(null);
+        reconcileAmbientSfxRef.current([], []);
+    }, []);
+    const destroyRef = useRef(destroy);
+    destroyRef.current = destroy;
+
+    const initialize = useCallback(() => {
+        destroy();
+        setMain(deckInfo.main);
+        setAmbience([...deckInfo.ambience]);
+        setSfx([...deckInfo.sfx]);
+        isInitialized.current = true;
+    }, [destroy, deckInfo]);
+    const initRef = useRef(initialize);
+    initRef.current = initialize;
+
     useEffect(() => {
-        if (main && main.queue.length > 0) {
-            if (main && mainTrack.current?.reconcile(main)) {
-                return;
-            }
-
-            const old = mainTrack.current;
-            old?.disownTracks();
-            mainTrack.current = createTrack(main);
-
-            if (old) {
-                old.destroy();
-            }
-        } else if (!main) {
-            mainTrack.current?.destroy();
-            mainTrack.current = null;
-        }
-        Deck.pruneCache();
-    }, [fileManager, main, createTrack]);
+        initRef.current();
+        return () => {
+            destroyRef.current();
+        };
+    }, [destroyRef, initRef]);
 
     useEffect(() => {
-        const toDestroy: Deck[] = [];
-        for (let i = ambientTracks.current.length - 1; i >= 0; i--) {
-            const deck = ambientTracks.current[i];
-            const matchedState = [...ambience, ...sfx].find((deckDef) => deck.isReferentFor(deckDef));
-            if (!matchedState || !deck.reconcile(matchedState)) {
-                toDestroy.push(deck);
-                ambientTracks.current.splice(i, 1);
-            }
-        }
+        if (!isInitialized.current) return;
 
-        for (const deck of toDestroy) {
-            deck.disownTracks();
-        }
-
-        for (const amb of [...ambience, ...sfx]) {
-            const matchedTrack = ambientTracks.current.find((track) => track.isReferentFor(amb));
-            if (!matchedTrack) {
-                const tr = createTrack(amb);
-                ambientTracks.current.push(tr);
-            }
-        }
-
-        Deck.pruneCache();
-    }, [ambience, sfx, fileManager, createTrack]);
+        setMain(deckInfo.main);
+        setAmbience(deckInfo.ambience);
+        setSfx(deckInfo.sfx);
+    }, [deckInfo]);
 
     return {
         blocked,

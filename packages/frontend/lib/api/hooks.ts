@@ -197,9 +197,9 @@ export function useWorkspaceDecks(workspaceId: string): {
         refetchInterval: 60_000,
     });
 
-    const main = data?.filter((x) => x.type === 'main')[0] ?? null;
-    const ambience = data?.filter((x) => x.type === 'ambient') ?? [];
-    const sfx = data?.filter((x) => x.type === 'sfx') ?? [];
+    const main = useMemo(() => data?.filter((x) => x.type === 'main')[0] ?? null, [data]);
+    const ambience = useMemo(() => data?.filter((x) => x.type === 'ambient') ?? [], [data]);
+    const sfx = useMemo(() => data?.filter((x) => x.type === 'sfx') ?? [], [data]);
 
     useEffect(() => {
         api.workspace(workspaceId).addDecksListener(
@@ -210,7 +210,7 @@ export function useWorkspaceDecks(workspaceId: string): {
         );
     }, [workspaceId, queryClient, key, api, entriesKey]);
 
-    return { main, ambience, sfx };
+    return useMemo(() => ({ main, ambience, sfx }), [main, ambience, sfx]);
 }
 
 export function useWorkspaceDetail(workspaceId: string) {

@@ -7,7 +7,7 @@
  */
 
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useEffect } from 'react';
 import useMediaSession from '../lib/audio/useMediaSession';
 import LoadingPage from './LoadingPage';
 import useAudioManager from '../lib/audio/useAudioManager';
@@ -19,10 +19,12 @@ import {
     WorkspaceNameContext,
 } from '~/lib/utility/context';
 import { useWorkspaceDetail } from '~/lib/api/hooks';
+import { useRouter } from 'next/router';
 
 const MediaRoot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
     useMediaSession(workspaceId);
+    const router = useRouter();
     const { blocked } = useAudioManager(workspaceId);
 
     return (
