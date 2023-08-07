@@ -12,6 +12,7 @@
     },
     "scripts": {
         "build": "lerna run --load-env-files --stream build",
-        "start": "lerna run --parallel --stream start"
+        "start": "lerna run --parallel --stream start",
+        "build-image": "source .env.dev && docker buildx bake --push --set *.platform=linux/amd64,linux/arm64"
     }
 }

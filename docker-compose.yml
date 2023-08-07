@@ -3,12 +3,14 @@ volumes:
   data:
 services:
   frontend:
-    profiles:
-      - service
     env_file:
       - .env.dev
     build:
       dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_WS_BASE: "wss://api.audio-hq.quest"
+      tags:
+        - jdkula/audio-hq-frontend:latest
     network_mode: host
     depends_on:
       - minio
@@ -17,12 +19,12 @@ services:
     ports:
       - '3000:3000'
   server:
-    profiles:
-      - service
     env_file:
       - .env.dev
     build:
       dockerfile: Dockerfile.server
+      tags:
+        - jdkula/audio-hq-server:latest
     network_mode: host
     depends_on:
       - minio
@@ -30,18 +32,20 @@ services:
     ports:
       - '3050:3050'
   worker:
-    profiles:
-      - service
     env_file:
       - .env.dev
     build:
       dockerfile: Dockerfile.worker
+      tags:
+        - jdkula/audio-hq-worker:latest
     network_mode: host
     depends_on:
       - minio
       - mongodb
       - server
   minio:
+   profiles:
+     - dev
    image: 'quay.io/minio/minio'
    command: 'server /data --console-address ":9090"'
    environment:
@@ -52,6 +56,8 @@ services:
      - '9090:9090'
      - '9000:9000'
   mongodb:
+   profiles:
+     - dev
    image: 'mongo:latest'
    command: '--replSet local --bind_ip localhost,mongodb'
    environment:

@@ -4,21 +4,19 @@
  * Provides a number of utility hooks for use around the AHQ frontend
  */
 import { useState, useEffect, EffectCallback, DependencyList, useCallback, useMemo } from 'react';
+import { LocalReactiveValue, useLocalReactiveValue } from '../LocalReactive';
+
+const altLrv = new LocalReactiveValue(false, 10_000);
+
+if (typeof window !== 'undefined') {
+    const callback = (ev: KeyboardEvent) => (altLrv.value = ev.altKey);
+    document.addEventListener('keydown', callback);
+    document.addEventListener('keyup', callback);
+}
 
 /** Provides a hook that is true if the alt key is being held down */
 export function useAlt(): boolean {
-    const [altDown, setAlt] = useState(false);
-
-    const callback = useCallback((ev: KeyboardEvent) => setAlt(ev.altKey), []);
-
-    useEffect(() => {
-        document.addEventListener('keydown', callback);
-        document.addEventListener('keyup', callback);
-        return () => {
-            document.removeEventListener('keydown', callback);
-            document.removeEventListener('keyup', callback);
-        };
-    }, [callback]);
+    const [altDown] = useLocalReactiveValue(altLrv);
 
     return altDown;
 }

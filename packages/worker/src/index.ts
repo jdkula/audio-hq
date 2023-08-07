@@ -13,7 +13,7 @@ const kPsk = process.env.WORKER_PSK as string;
 const log = pino({ name: 'worker', transport: { target: 'pino-pretty' }, level: 'trace' });
 let didStart = false;
 
-const socket: any = socketio('ws://localhost:3050', {
+const socket: any = socketio(process.env.NEXT_PUBLIC_WS_BASE as string, {
     parser: MsgParser,
 });
 socket.on('error', (err: any) => {

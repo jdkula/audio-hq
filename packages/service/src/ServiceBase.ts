@@ -405,6 +405,14 @@ export class AudioHQServiceBase implements IServiceBase {
         ) {
             throw new InvalidInput();
         }
+
+        let source = input.source;
+        if (input.fromUpload) {
+            source = await new S3FileSystem(process.env.S3_TEMP_BUCKET as string).createPresignedGet(
+                new URL(source).pathname.substring(1),
+            );
+        }
+
         const job: JobsCollectionType = {
             _workspace: asObjectId(workspaceId),
             assignedWorker: null,
@@ -422,7 +430,7 @@ export class AudioHQServiceBase implements IServiceBase {
             modifications: input.modifications ?? [],
             progress: 0,
             status: JobStatus.GETTING_READY,
-            source: input.source,
+            source: source,
         };
         const result = await db.jobs.insertOne(job);
         job._id = result.insertedId;

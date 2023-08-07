@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import MsgParser from 'socket.io-msgpack-parser';
 import { ClientServiceSocket, IService, Status } from 'service/lib/IService';
 import {
@@ -33,8 +33,10 @@ export default class SocketTransport implements IService {
                 parser: MsgParser,
                 rejectUnauthorized: false,
             });
-        } else {
+        } else if (init instanceof Socket) {
             this.socket = init;
+        } else {
+            throw new Error(`${init} is not string or socket!`);
         }
 
         this.socket.on('connect', () => {

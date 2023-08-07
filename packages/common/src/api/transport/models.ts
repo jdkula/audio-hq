@@ -121,6 +121,7 @@ export interface NewJob {
     modifications: Array<Modification>;
 
     source: string;
+    fromUpload?: boolean;
 }
 
 export interface AdminJobMutate {

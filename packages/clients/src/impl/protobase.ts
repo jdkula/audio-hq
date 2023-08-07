@@ -540,9 +540,9 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             throw new Error('Failed to upload');
         }
 
-        return await this.submit(data.data, info);
+        return await this.submit(data.data, { ...info }, /* isUpload = */ true);
     }
-    async submit(url: string, info: API.JobCreate): Promise<API.Job> {
+    async submit(url: string, info: API.JobCreate, isUpload?: boolean): Promise<API.Job> {
         const submission = await this._transport.submitJob(this._workspaceId, {
             modifications: info.modifications.map((mod) =>
                 mod.type === 'cut'
@@ -559,6 +559,7 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             },
             source: url,
             workspace: this._workspaceId,
+            fromUpload: isUpload,
         });
         if (submission.error !== null) {
             throw new Error('Failed: ' + submission.error);

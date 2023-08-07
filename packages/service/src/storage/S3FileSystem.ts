@@ -1,7 +1,12 @@
 import fsProm from 'fs/promises';
 import fs from 'fs';
 
-import { S3 as S3Client, PutObjectCommand, type CompleteMultipartUploadOutput } from '@aws-sdk/client-s3';
+import {
+    S3 as S3Client,
+    PutObjectCommand,
+    type CompleteMultipartUploadOutput,
+    GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'node:stream';
@@ -37,6 +42,15 @@ export default class S3FileSystem {
         return {
             Bucket: this._bucket,
         };
+    }
+
+    async createPresignedGet(id: string): Promise<string> {
+        const command = new GetObjectCommand({
+            ...this.defaultParams,
+            Key: id,
+        });
+
+        return getSignedUrl(S3, command, { expiresIn: 3600 });
     }
 
     async createPresignedUpload(id: string, fileSize: number, mimeType: string): Promise<string> {
