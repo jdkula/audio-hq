@@ -136,7 +136,7 @@ const Host: FunctionComponent = () => {
     const [workspaceId, setWorkspaceId] = useState('');
 
     useEffect(() => {
-        setWorkspaceId(window.location.hash.substring(1));
+        setWorkspaceId(new URLSearchParams(window.location.search).get('w') ?? '');
     }, []);
 
     return (

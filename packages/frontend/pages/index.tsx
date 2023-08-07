@@ -150,7 +150,7 @@ export default function Home(): React.ReactElement {
         }
 
         setWorkspaceName(ws.name);
-        router.push('/workspace', `/workspace/#${encodeURIComponent(ws.id)}`);
+        router.push('/workspace', `/workspace?w=${encodeURIComponent(ws.id)}`);
     };
 
     const enterListener = (e: KeyboardEvent<HTMLInputElement>) => {
