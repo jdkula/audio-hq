@@ -28,12 +28,12 @@ export const FileContainer = styled.div`
     align-items: center;
 
     ${({ theme }) => theme.breakpoints.down('sm')} {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-        grid-template-areas:
-            'playcontrols filecontrols'
-            'details      details';
-        padding: 1rem 2rem;
+        // grid-template-columns: 1fr 1fr;
+        // grid-template-rows: auto auto;
+        // grid-template-areas:
+        //     'playcontrols filecontrols'
+        //     'details      details';
+        // padding: 1rem 2rem;
     }
 `;
 

@@ -1,0 +1,47 @@
+{
+    "name": "migrate",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^20.4.4",
+        "@types/ws": "^8.5.5",
+        "@typescript-eslint/eslint-plugin": "^6.2.0",
+        "@typescript-eslint/parser": "^6.2.0",
+        "dotenv": "^16.3.1",
+        "eslint": "^8.45.0",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-plugin-prettier": "^5.0.0",
+        "nodemon": "^3.0.1",
+        "pino-pretty": "^10.2.0",
+        "prettier": "^3.0.0",
+        "tsc-watch": "^6.0.4",
+        "typescript": "^5.1.6"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.385.0",
+        "@aws-sdk/hash-node": "^3.374.0",
+        "@aws-sdk/s3-request-presigner": "^3.385.0",
+        "@aws-sdk/util-format-url": "^3.378.0",
+        "@types/fluent-ffmpeg": "^2.1.21",
+        "@types/uuid": "^9.0.2",
+        "@types/which": "^3.0.0",
+        "clients": "workspace:^",
+        "common": "workspace:^",
+        "fluent-ffmpeg": "^2.1.2",
+        "mongodb": "^5.7.0",
+        "pino": "^8.15.0",
+        "service": "workspace:^",
+        "socket.io-client": "^4.7.1",
+        "socket.io-msgpack-parser": "^3.0.2",
+        "uuid": "^9.0.0",
+        "which": "^3.0.1",
+        "ws": "^8.13.0"
+    },
+    "scripts": {
+        "build": "tsc",
+        "start": "node -r dotenv/config ./dist/src/index.js",
+        "lint": "eslint .",
+        "format": "prettier -w ./src"
+    }
+}

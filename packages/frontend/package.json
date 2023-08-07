@@ -47,7 +47,6 @@
         "react-dom": "^18.2.0",
         "react-dropzone": "^14.2.3",
         "react-is": "^18.2.0",
-        "react-window": "^1.8.9",
         "service": "workspace:^",
         "socket.io-client": "^4.7.1",
         "socket.io-msgpack-parser": "^3.0.2",

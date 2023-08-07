@@ -162,9 +162,6 @@ importers:
       react-is:
         specifier: ^18.2.0
         version: 18.2.0
-      react-window:
-        specifier: ^1.8.9
-        version: 1.8.9(react-dom@18.2.0)(react@18.2.0)
       service:
         specifier: workspace:^
         version: link:../service
@@ -262,6 +259,103 @@ importers:
       workbox-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.88.2)
+
+  packages/migrate:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.385.0
+        version: 3.385.0
+      '@aws-sdk/hash-node':
+        specifier: ^3.374.0
+        version: 3.374.0
+      '@aws-sdk/s3-request-presigner':
+        specifier: ^3.385.0
+        version: 3.385.0
+      '@aws-sdk/util-format-url':
+        specifier: ^3.378.0
+        version: 3.378.0
+      '@types/fluent-ffmpeg':
+        specifier: ^2.1.21
+        version: 2.1.21
+      '@types/uuid':
+        specifier: ^9.0.2
+        version: 9.0.2
+      '@types/which':
+        specifier: ^3.0.0
+        version: 3.0.0
+      clients:
+        specifier: workspace:^
+        version: link:../clients
+      common:
+        specifier: workspace:^
+        version: link:../common
+      fluent-ffmpeg:
+        specifier: ^2.1.2
+        version: 2.1.2
+      mongodb:
+        specifier: ^5.7.0
+        version: 5.7.0
+      pino:
+        specifier: ^8.15.0
+        version: 8.15.0
+      service:
+        specifier: workspace:^
+        version: link:../service
+      socket.io-client:
+        specifier: ^4.7.1
+        version: 4.7.1
+      socket.io-msgpack-parser:
+        specifier: ^3.0.2
+        version: 3.0.2
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.0
+      which:
+        specifier: ^3.0.1
+        version: 3.0.1
+      ws:
+        specifier: ^8.13.0
+        version: 8.13.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.4.4
+        version: 20.4.7
+      '@types/ws':
+        specifier: ^8.5.5
+        version: 8.5.5
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.2.0
+        version: 6.2.0(@typescript-eslint/parser@6.2.0)(eslint@8.45.0)(typescript@5.1.6)
+      '@typescript-eslint/parser':
+        specifier: ^6.2.0
+        version: 6.2.0(eslint@8.45.0)(typescript@5.1.6)
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.3.1
+      eslint:
+        specifier: ^8.45.0
+        version: 8.45.0
+      eslint-config-prettier:
+        specifier: ^8.8.0
+        version: 8.8.0(eslint@8.45.0)
+      eslint-plugin-prettier:
+        specifier: ^5.0.0
+        version: 5.0.0(eslint-config-prettier@8.8.0)(eslint@8.45.0)(prettier@3.0.0)
+      nodemon:
+        specifier: ^3.0.1
+        version: 3.0.1
+      pino-pretty:
+        specifier: ^10.2.0
+        version: 10.2.0
+      prettier:
+        specifier: ^3.0.0
+        version: 3.0.0
+      tsc-watch:
+        specifier: ^6.0.4
+        version: 6.0.4(typescript@5.1.6)
+      typescript:
+        specifier: ^5.1.6
+        version: 5.1.6
 
   packages/server:
     dependencies:
@@ -9017,10 +9111,6 @@ packages:
     resolution: {integrity: sha512-CkYQrPYZfWnu/DAmVCpTSX/xHpKZ80eKh2lAkyA6AJTef6bW+6JpbQZN5rofum7da+SyN1bi5ctTm+lTfcCW3g==}
     dev: true
 
-  /memoize-one@5.2.1:
-    resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
-    dev: false
-
   /memoize-one@6.0.0:
     resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
     dev: false
@@ -10407,19 +10497,6 @@ packages:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    dev: false
-
-  /react-window@1.8.9(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-+Eqx/fj1Aa5WnhRfj9dJg4VYATGwIUP2ItwItiJ6zboKWA6EX3lYDAXfGF2hyNqplEprhbtjbipiADEcwQ823Q==}
-    engines: {node: '>8.0.0'}
-    peerDependencies:
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      '@babel/runtime': 7.22.6
-      memoize-one: 5.2.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false

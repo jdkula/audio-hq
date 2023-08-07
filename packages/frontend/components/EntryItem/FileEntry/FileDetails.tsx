@@ -118,7 +118,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                     </TextContainer>
                 )}
             </EditorContainer>
-            <TimestampContainer $editing={editing} variant="body1" color={unavailable ? 'GrayText' : undefined}>
+            <TimestampContainer $editing={editing} variant="body1" color={'GrayText'}>
                 {cacheIcon}
                 {durationOfLength(file.length)}
             </TimestampContainer>

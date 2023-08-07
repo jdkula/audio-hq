@@ -23,10 +23,15 @@ const StatusContainerPlacer = styled.div`
 
 const StatusContainer = styled.div`
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: auto;
     align-items: flex-end;
     justify-items: center;
+
+    ${({ theme }) => theme.breakpoints.up('lg')} {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+    }
 `;
 
 interface StatusControlsProps {
@@ -53,20 +58,20 @@ const StatusControls: FC<StatusControlsProps> = ({ file, editing, setEditing, se
         <StatusContainerPlacer>
             <StatusContainer>
                 <Tooltip placement="top-end" title="Rename" arrow>
-                    <IconButton onClick={() => setEditing(!editing)} size="large" disabled={online === false}>
+                    <IconButton onClick={() => setEditing(!editing)} size="small" disabled={online === false}>
                         <EditIcon color={editing ? 'primary' : undefined} />
                     </IconButton>
                 </Tooltip>
 
                 {altKey ? (
                     <Tooltip placement="top-end" title="Delete" arrow>
-                        <IconButton onClick={() => setDelete(true)} size="large" disabled={online === false}>
+                        <IconButton onClick={() => setDelete(true)} size="small" disabled={online === false}>
                             <DeleteForever />
                         </IconButton>
                     </Tooltip>
                 ) : (
                     <Tooltip placement="top-end" title="Favorite (alt/option to delete)" arrow>
-                        <IconButton onClick={toggleFavorite} size="large">
+                        <IconButton onClick={toggleFavorite} size="small">
                             {favs.favorites.includes(file.id) ? <Favorite /> : <FavoriteBorder />}
                         </IconButton>
                     </Tooltip>

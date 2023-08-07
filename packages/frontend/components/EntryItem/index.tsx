@@ -13,22 +13,18 @@ const EntryContainerInner = styled(Paper)`
     min-height: 3rem;
     width: auto;
 
-    border-radius: 3rem;
+    // border-radius: 3rem;
     overflow: hidden;
-    padding: 0.25rem 0.25rem;
+    padding: 0.1rem 0.25rem;
     transition: background-color 0.25s;
 
     &:hover {
         background-color: ${({ theme }) => (theme.palette.mode === 'dark' ? '#333' : '#eee')};
     }
-
-    ${({ theme }) => theme.breakpoints.down('sm')} {
-        padding: 1rem 2rem;
-    }
 `;
 
 const EntryContainerOuter = styled.div`
-    padding: 0.5rem 1rem;
+    padding: 0.15rem 0rem;
 `;
 
 interface EntryProps {

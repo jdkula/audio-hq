@@ -25,6 +25,22 @@ const PlayControlsContainer = styled.div`
     justify-items: center;
     grid-area: playcontrols;
 `;
+const SecondaryControlsContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+    & * {
+        font-size: 1rem;
+    }
+
+    ${({ theme }) => theme.breakpoints.up('md')} {
+        flex-direction: row;
+        & * {
+            font-size: 1.25rem;
+        }
+    }
+`;
 
 interface PlayControlsProps {
     file: API.Single;
@@ -119,7 +135,7 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
         <PlayControlsContainer>
             <Tooltip title={alt ? 'Queue Track' : 'Play File (alt/option to queue)'} placement="left" arrow>
                 <span>
-                    <IconButton onClick={alt ? onAddToQueue : onPlay} size="large" disabled={!online && !cached}>
+                    <IconButton onClick={alt ? onAddToQueue : onPlay} size="small" disabled={!online && !cached}>
                         {online !== false || cached ? (
                             alt ? (
                                 <QueueMusic color={playColor} />
@@ -132,32 +148,37 @@ const PlayControls: FC<PlayControlsProps> = ({ file }) => {
                     </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Play File As Ambience" placement="top" arrow>
-                <span>
-                    <IconButton
-                        onClick={onAmbience}
-                        size="small"
-                        disabled={
-                            (online === false && !cached) || isPlayingAsAmbience || isPlayingAsSFX || debouncingAmbience
-                        }
-                    >
-                        <AddIcon color={isPlayingAsAmbience ? 'primary' : undefined} />
-                    </IconButton>
-                </span>
-            </Tooltip>
-            <Tooltip title="Play File As SFX" placement="top" arrow>
-                <span>
-                    <IconButton
-                        onClick={onSfx}
-                        size="small"
-                        disabled={
-                            (online === false && !cached) || isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx
-                        }
-                    >
-                        <BlurOn color={isPlayingAsSFX ? 'primary' : undefined} />
-                    </IconButton>
-                </span>
-            </Tooltip>
+            <SecondaryControlsContainer>
+                <Tooltip title="Play File As Ambience" placement="top" arrow>
+                    <span>
+                        <IconButton
+                            onClick={onAmbience}
+                            size="small"
+                            disabled={
+                                (online === false && !cached) ||
+                                isPlayingAsAmbience ||
+                                isPlayingAsSFX ||
+                                debouncingAmbience
+                            }
+                        >
+                            <AddIcon color={isPlayingAsAmbience ? 'primary' : undefined} />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Play File As SFX" placement="top" arrow>
+                    <span>
+                        <IconButton
+                            onClick={onSfx}
+                            size="small"
+                            disabled={
+                                (online === false && !cached) || isPlayingAsSFX || isPlayingAsAmbience || debouncingSfx
+                            }
+                        >
+                            <BlurOn color={isPlayingAsSFX ? 'primary' : undefined} />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </SecondaryControlsContainer>
         </PlayControlsContainer>
     );
 };

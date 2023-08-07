@@ -62,8 +62,8 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
             }
         }
     })();
-    reqlog.trace(`RPC ${myId} RET: %j`, data);
-    // reqlog.trace(`RPC ${myId} RET`);
+    // reqlog.trace(`RPC ${myId} RET: %j`, data);
+    reqlog.trace(`RPC ${myId} RET`);
     return data;
 }
 
