@@ -6,7 +6,6 @@
  * Provides AHQ's home page
  */
 
-import Head from 'next/head';
 import Button from '@mui/material/Button';
 import {
     Box,
@@ -188,10 +187,6 @@ export default function Home(): React.ReactElement {
                 />
             </Box>
 
-            <Head>
-                <title>Audio HQ</title>
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
             <GlobalFull />
 
             <InnerContainer>

@@ -5,9 +5,9 @@
  * gather data.
  */
 import { Box, CircularProgress, Typography } from '@mui/material';
-import Head from 'next/head';
 import React, { FC } from 'react';
 import styled from '@emotion/styled';
+import Title from './Title';
 
 const LoadingBase = styled.div`
     display: grid;
@@ -31,9 +31,7 @@ const Inner = styled.div`
 const LoadingPage: FC<{ workspace: string }> = ({ workspace }) => {
     return (
         <LoadingBase>
-            <Head>
-                <title>{`Audio HQ - ${workspace} - Loading...`}</title>
-            </Head>
+            <Title>{`Audio HQ - ${workspace} - Loading...`}</Title>
             <Inner>
                 <Typography variant="h2">Audio HQ</Typography>
                 <Box mb="5rem" />

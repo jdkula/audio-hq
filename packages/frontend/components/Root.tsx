@@ -19,6 +19,7 @@ import {
     WorkspaceNameContext,
 } from '~/lib/utility/context';
 import { useWorkspaceDetail } from '~/lib/api/hooks';
+import Title from './Title';
 
 const MediaRoot: FC<{ children?: React.ReactNode }> = (props) => {
     const workspaceId = useContext(WorkspaceIdContext);
@@ -57,7 +58,10 @@ const WorkspaceRoot: FC<{
             <WorkspaceNameContext.Provider value={workspaceName}>
                 <WorkspaceLocalReactiveValuesProvider workspaceId={workspaceId}>
                     <FileManagerProvider workspaceId={workspaceId}>
-                        <MediaRoot>{props.children}</MediaRoot>
+                        <MediaRoot>
+                            <Title>{`${workspaceName} | Audio HQ`}</Title>
+                            {props.children}
+                        </MediaRoot>
                     </FileManagerProvider>
                 </WorkspaceLocalReactiveValuesProvider>
             </WorkspaceNameContext.Provider>

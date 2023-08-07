@@ -9,7 +9,6 @@
 import { AppBar, Button, Hidden, Link, Toolbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AddFileDialog from '../AddFileDialog';
 import React, { FC, FunctionComponent, useContext, useState } from 'react';
-import Head from 'next/head';
 import { Add, OfflineBolt } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
@@ -19,6 +18,7 @@ import { useLocalReactiveValue } from '../../lib/LocalReactive';
 import { WorkspaceNameContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useIsOnline } from '~/lib/utility/hooks';
 import { AHQIcon } from '../AHQIcon';
+import HtmlTitle from '../Title';
 
 const ToolbarContent = styled.div`
     display: flex;
@@ -78,9 +78,7 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
     return (
         <AppBar position="static" style={{ gridArea: 'header' }}>
             <AddFileDialog open={adding} onClose={() => setAdding(false)} currentPath={path} />
-            <Head>
-                <title>{`Audio HQ – ${workspaceName || 'Loading...'}${!host ? ' – Minimal View' : ''}`}</title>
-            </Head>
+            <HtmlTitle>{`Audio HQ – ${workspaceName || 'Loading...'}${!host ? ' – Minimal View' : ''}`}</HtmlTitle>
             <Toolbar>
                 <ToolbarContent>
                     <Title>
