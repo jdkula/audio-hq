@@ -5,7 +5,7 @@
  */
 
 import { ClickAwayListener, TextField } from '@mui/material';
-import React, { FC, KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import * as API from 'common/lib/api/models';
 import { useUpdateEntryMutation } from '~/lib/api/hooks';
@@ -57,10 +57,6 @@ const FileDetailsEditor: FC<FileDetailsEditorProps> = ({ finishEditing, autoFocu
             },
         });
     };
-    const saveEditsRef = useRef(saveEdits);
-    saveEditsRef.current = saveEdits;
-
-    useEffect(() => () => saveEditsRef.current(), []);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.nativeEvent.code === 'Enter') {

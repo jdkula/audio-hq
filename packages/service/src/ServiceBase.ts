@@ -25,19 +25,20 @@ import {
     JobStatus,
 } from 'common/lib/api/transport/models';
 
-const kAudioExtension = '.v1.mp3';
+const kAudioExtension = '.mp3';
+const kAudioPrefix = 'v2.';
 
 const asEntry = (res: EntriesCollectionType): Entry =>
     res.isFolder
         ? {
               ...pick(res, 'name', 'path'),
-              ordering: res.ordering ?? 0,
+              ordering: res.ordering ?? Number.POSITIVE_INFINITY,
               id: asString(res._id!),
               isFolder: true,
           }
         : {
               ...pick(res, 'name', 'path'),
-              ordering: res.ordering ?? 0,
+              ordering: res.ordering ?? Number.POSITIVE_INFINITY,
               id: asString(res._id!),
               isFolder: false,
               single: res.single!,
@@ -156,11 +157,13 @@ export class AudioHQServiceBase implements IServiceBase {
             isFolder: true,
         };
         const result = await db.entries.insertOne(entry);
+
+        await rebalanceOrderings();
         return {
             id: asString(result.insertedId),
             isFolder: true,
             name: entry.name,
-            ordering: entry.ordering ?? 0,
+            ordering: entry.ordering ?? Number.POSITIVE_INFINITY,
             path: entry.path,
         };
     }
@@ -182,14 +185,16 @@ export class AudioHQServiceBase implements IServiceBase {
         if (!input || !workspaceId || !id) {
             throw new InvalidInput();
         }
+        const singleUpdate = input.isFolder ? {} : { 'single.description': input.single.description };
         const result = await db.entries.findOneAndUpdate(
             { _id: asObjectId(id), _workspace: asObjectId(workspaceId) },
-            { $set: pick(input, 'name', 'ordering', 'path') },
+            { $set: { ...pick(input, 'name', 'ordering', 'path'), ...singleUpdate } },
             { returnDocument: 'after' },
         );
         if (!result.ok || !result.value) {
             throw new OtherError();
         }
+        await rebalanceOrderings();
         return asEntry(result.value);
     }
     async deleteEntry(workspaceId: string, id: string): Promise<void> {
@@ -514,7 +519,7 @@ export class AudioHQServiceBase implements IServiceBase {
         if (!job) throw new NotFound();
 
         const newId = new ObjectId();
-        const providerId = asString(newId) + kAudioExtension;
+        const providerId = kAudioPrefix + asString(newId) + kAudioExtension;
 
         const content = contentIn as Buffer;
         const location = await new S3FileSystem().writeFromMemory(
@@ -597,4 +602,50 @@ export class AudioHQServiceBase implements IServiceBase {
         }
         return null;
     }
+}
+
+async function rebalanceOrderings() {
+    const db = await mongo;
+    await db.entries
+        .aggregate([
+            {
+                $sort: {
+                    ordering: 1,
+                },
+            },
+            {
+                $group: {
+                    _id: '$_workspace',
+                    entries: {
+                        $push: {
+                            _id: '$_id',
+                        },
+                    },
+                },
+            },
+            {
+                $unwind: {
+                    path: '$entries',
+                    includeArrayIndex: 'ordering',
+                    preserveNullAndEmptyArrays: false,
+                },
+            },
+            {
+                $project: {
+                    _id: '$entries._id',
+                    ordering: {
+                        $multiply: ['$ordering', 100],
+                    },
+                },
+            },
+            {
+                $merge: {
+                    into: 'entries',
+                    on: '_id',
+                    whenMatched: 'merge',
+                    whenNotMatched: 'fail',
+                },
+            },
+        ])
+        .tryNext();
 }

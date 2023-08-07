@@ -23,10 +23,11 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import React, { FC, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { FC, useContext, useMemo, useRef, useState } from 'react';
 
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
+import { DragDropContext, DropResult, Droppable } from '@hello-pangea/dnd';
 import styled from '@emotion/styled';
 import FolderAddDialog from './AddFolderDialog';
 import JobEntry from './JobEntry';
@@ -48,7 +49,6 @@ import * as API from 'common/lib/api/models';
 import { usePlayDeckMutation, useUpdateEntryMutation, useWorkspaceDecks, useWorkspaceEntries } from '~/lib/api/hooks';
 import { entryIsFolder, entryIsSingle } from 'clients/lib/AudioHQApi';
 import EntryItem, { DraggableEntryItem, DroppableEntryItem } from './EntryItem';
-import { useDrag, useDrop } from 'react-dnd';
 
 const ExplorerContainer = styled.div`
     grid-area: explorer;
@@ -187,7 +187,7 @@ export const Explorer: FC = () => {
     );
 
     const playDeck = usePlayDeckMutation(workspaceId);
-    // const updateEntry = useUpdateEntryMutation(workspaceId);
+    const updateEntry = useUpdateEntryMutation(workspaceId);
 
     const currentFiles = React.useMemo(() => {
         let arr: API.Entry[] = [];
@@ -217,7 +217,6 @@ export const Explorer: FC = () => {
                 onNavigate={(folder) => {
                     setPath((path) => [...path, folder.name]);
                 }}
-                dragging={false}
             />
         ));
     }, [currentFiles, shouldCombine, path, setPath, alwaysAlphasortFiles]);
@@ -241,7 +240,6 @@ export const Explorer: FC = () => {
                     onNavigate={(folder) => {
                         setPath((path) => [...path, folder.name]);
                     }}
-                    dragging={false}
                 />
             )),
         [plainSinglesData, path, setPath],
@@ -267,7 +265,6 @@ export const Explorer: FC = () => {
                     onNavigate={(folder) => {
                         setPath((path) => [...path, folder.name]);
                     }}
-                    dragging={false}
                 />
             )),
         [foldersData, path, setPath],
@@ -283,7 +280,6 @@ export const Explorer: FC = () => {
                     onNavigate={(folder) => {
                         setPath((path) => [...path, folder.name]);
                     }}
-                    dragging={false}
                 />
             )),
         [foldersData, path, setPath],
@@ -325,70 +321,64 @@ export const Explorer: FC = () => {
         );
     });
 
-    const onDragUp = useCallback((details: { folder?: string[]; file?: string }) => {
-        console.log(details);
-    }, []);
+    const handleDrag = (result: DropResult) => {
+        setDragging(false);
 
-    // const handleDrag = (result: DropResult) => {
-    //     setDragging(false);
+        // The current list of files has a droppableId of ___current___
+        // The "up" droppable has a droppableId of ___up___
+        // Folder draggables have IDs that start with $FOLDER:
+        // Folder droppables also have IDs that start with $FOLDER:
+        // Single draggables have IDs that start with $SINGLE:
 
-    //     // The current list of files has a droppableId of ___current___
-    //     // The "up" droppable has a droppableId of ___up___
-    //     // Folder draggables have IDs that start with $FOLDER:
-    //     // Folder droppables also have IDs that start with $FOLDER:
-    //     // Single draggables have IDs that start with $SINGLE:
+        const srcFile = entries.find((file) => file.id === result.draggableId.replace(/^\$.*?:/, ''));
+        const dstFolder = entries.find(
+            (file) =>
+                file.id === result.combine?.draggableId.replace(/^\$FOLDER:/, '') ||
+                file.id === result.destination?.droppableId.replace(/^\$FOLDER:/, ''),
+        );
 
-    //     const srcFile = entries.find((file) => file.id === result.draggableId.replace(/^\$.*?:/, ''));
-    //     const dstFolder = entries.find(
-    //         (file) =>
-    //             file.id === result.combine?.draggableId.replace(/^\$FOLDER:/, '') ||
-    //             file.id === result.destination?.droppableId.replace(/^\$FOLDER:/, ''),
-    //     );
+        if (!srcFile) throw new Error("You dragged something that wasn't an entry, somehow??");
 
-    //     if (!srcFile) throw new Error("You dragged something that wasn't an entry, somehow??");
+        // Dragging into a folder.
+        if (dstFolder) {
+            // === Move one file or folder into an existing folder ===
+            if (!entryIsFolder(dstFolder)) throw new Error('Somehow, a non-folder had a folder tag.');
+            const destPath = [...dstFolder.path, dstFolder.name];
 
-    //     // Dragging into a folder.
-    //     if (dstFolder) {
-    //         // === Move one file or folder into an existing folder ===
-    //         if (!entryIsFolder(dstFolder)) throw new Error('Somehow, a non-folder had a folder tag.');
-    //         const destPath = [...dstFolder.path, dstFolder.name];
+            updateEntry.mutate({ entry: srcFile, update: { ...srcFile, path: destPath } });
+        } else if (result.destination?.droppableId === '___up___') {
+            // === Move one file or folder up a level ===
+            updateEntry.mutate({
+                entry: srcFile,
+                update: {
+                    ...srcFile,
+                    path: path.slice(0, -1),
+                },
+            });
+        } else if (result.destination?.index !== undefined) {
+            // === Reorder one entry around the current folder ===
 
-    //         updateEntry.mutate({ entry: srcFile, update: { ...srcFile, path: destPath } });
-    //     } else if (result.destination?.droppableId === '___up___') {
-    //         // === Move one file or folder up a level ===
-    //         updateEntry.mutate({
-    //             entry: srcFile,
-    //             update: {
-    //                 ...srcFile,
-    //                 path: path.slice(0, -1),
-    //             },
-    //         });
-    //     } else if (result.destination?.index !== undefined) {
-    //         // === Reorder one entry around the current folder ===
+            let target: API.Entry | null = null;
+            if (!shouldCombine && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
+                target = foldersData[result.destination.index];
+            } else if (!shouldCombine && result.destination.droppableId === '___main___' && srcFile.type !== 'folder') {
+                target = plainSinglesData[result.destination.index];
+            } else {
+                target = currentFiles[result.destination.index];
+            }
 
-    //         let target: API.Entry | null = null;
-    //         if (!shouldCombine && result.destination.droppableId === '___folders___' && srcFile.type === 'folder') {
-    //             target = foldersData[result.destination.index];
-    //         } else if (!shouldCombine && result.destination.droppableId === '___main___' && srcFile.type !== 'folder') {
-    //             target = plainSinglesData[result.destination.index];
-    //         } else {
-    //             target = currentFiles[result.destination.index];
-    //         }
+            if (srcFile.type === 'folder' && alwaysAlphasortFolders) return;
+            if (srcFile.type !== 'folder' && alwaysAlphasortFiles) return;
 
-    //         if (srcFile.type === 'folder' && alwaysAlphasortFolders) return;
-    //         if (srcFile.type !== 'folder' && alwaysAlphasortFiles) return;
-
-    //         updateEntry.mutate({
-    //             entry: srcFile,
-    //             update: {
-    //                 ...srcFile,
-    //                 ordering: target?.ordering
-    //                     ? target.ordering - result.source.index + result.destination.index
-    //                     : null,
-    //             },
-    //         });
-    //     }
-    // };
+            updateEntry.mutate({
+                entry: srcFile,
+                update: {
+                    ...srcFile,
+                    ordering: target?.ordering ? target.ordering - result.source.index + result.destination.index : -1,
+                },
+            });
+        }
+    };
 
     const toolbarContents = (
         <>
@@ -532,73 +522,90 @@ export const Explorer: FC = () => {
 
     return (
         <ExplorerContainer>
-            <ExplorerToolbar square variant="elevation" color="primary">
-                {toolbarContents}
-                <UpDroppable path={path} onDragUp={onDragUp} />
-            </ExplorerToolbar>
-            <FolderAddDialog showing={addingFolder} cancel={() => setAddingFolder(false)} />
+            <DragDropContext
+                onDragEnd={handleDrag}
+                onBeforeCapture={(init) => {
+                    setDragging(init.draggableId.startsWith('$FOLDER:') ? 'folder' : 'file');
+                }}
+            >
+                <ExplorerToolbar square variant="elevation" color="primary">
+                    {toolbarContents}
+                    <Droppable droppableId="___up___" isDropDisabled={path.length === 0}>
+                        {(provided, snapshot) => (
+                            <GoUpContainer
+                                enabled={path.length > 0 && !!isDragging}
+                                over={snapshot.isDraggingOver}
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                            >
+                                <Typography variant="button">Drag here to place outside of folder</Typography>
+                                <div style={{ display: 'none' }}>{provided.placeholder}</div>
+                            </GoUpContainer>
+                        )}
+                    </Droppable>
+                </ExplorerToolbar>
+                <FolderAddDialog showing={addingFolder} cancel={() => setAddingFolder(false)} />
 
-            <FileListContainer>
-                <FileListScrollContainer>
-                    {items.length === 0 ? (
-                        <NoFilesContainer fontStyle="italic">
-                            {viewingFavorites ? (
-                                'Hmm, looks like you don’t have any favorites! Press the heart icon to add some.'
-                            ) : (
-                                <>
-                                    Hmm, looks like there aren’t any files or folders I can find
-                                    {path.length > 0 && ' in this folder'}.
-                                </>
-                            )}
-                        </NoFilesContainer>
-                    ) : (
-                        <>
-                            {!shouldCombine && !viewingFavorites && (
-                                <>
-                                    {isDragging === 'file' ? droppableFolders : <div>{draggableFolders}</div>}
-                                    {foldersData.length > 0 && <Divider style={{ margin: '0.5rem 0' }} />}
-                                </>
-                            )}
+                <FileListContainer>
+                    <FileListScrollContainer>
+                        {items.length === 0 ? (
+                            <NoFilesContainer fontStyle="italic">
+                                {viewingFavorites ? (
+                                    'Hmm, looks like you don’t have any favorites! Press the heart icon to add some.'
+                                ) : (
+                                    <>
+                                        Hmm, looks like there aren’t any files or folders I can find
+                                        {path.length > 0 && ' in this folder'}.
+                                    </>
+                                )}
+                            </NoFilesContainer>
+                        ) : (
+                            <>
+                                {!shouldCombine && !viewingFavorites && (
+                                    <>
+                                        {isDragging === 'file' ? (
+                                            droppableFolders
+                                        ) : (
+                                            <Droppable isCombineEnabled droppableId="___folders___">
+                                                {(provided) => (
+                                                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                        {draggableFolders}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                )}
+                                            </Droppable>
+                                        )}
+                                        {foldersData.length > 0 && <Divider style={{ margin: '0.5rem 0' }} />}
+                                    </>
+                                )}
 
-                            {!shouldCombine && isDragging === 'folder' ? plainSinglesView : <div>{items}</div>}
-                        </>
-                    )}
-                </FileListScrollContainer>
-            </FileListContainer>
-            {runningJobs.length > 0 && (
-                <JobsContainer>
-                    <Divider />
-                    {runningJobs}
-                </JobsContainer>
-            )}
+                                {!shouldCombine && isDragging === 'folder' ? (
+                                    plainSinglesView
+                                ) : (
+                                    <Droppable
+                                        isDropDisabled={viewingFavorites}
+                                        isCombineEnabled={isDragging !== 'folder'}
+                                        droppableId="___main___"
+                                    >
+                                        {(provided) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                {items}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                )}
+                            </>
+                        )}
+                    </FileListScrollContainer>
+                </FileListContainer>
+                {runningJobs.length > 0 && (
+                    <JobsContainer>
+                        <Divider />
+                        {runningJobs}
+                    </JobsContainer>
+                )}
+            </DragDropContext>
         </ExplorerContainer>
-    );
-};
-
-const UpDroppable = ({
-    path,
-    onDragUp,
-}: {
-    path: string[];
-    onDragUp: (details: { folder?: string[]; file?: string }) => void;
-}) => {
-    const [{ dragging, isOver }, drop] = useDrop({
-        accept: ['file', 'folder'],
-        collect: (monitor) => ({
-            dragging: monitor.canDrop(),
-            isOver: monitor.isOver(),
-        }),
-        drop: (item: any, monitor) => {
-            if (monitor.getItemType() === 'folder') {
-                onDragUp({ folder: item.path });
-            } else if (monitor.getItemType() === 'file') {
-                onDragUp({ file: item.id });
-            }
-        },
-    });
-    return (
-        <GoUpContainer enabled={path.length > 0 && dragging} over={isOver} ref={drop}>
-            <Typography variant="button">Drag here to place outside of folder</Typography>
-        </GoUpContainer>
     );
 };

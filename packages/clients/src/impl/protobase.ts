@@ -271,7 +271,7 @@ class SpecificFolderApiImplProto implements SpecificEntryApi<API.Folder> {
         const data = await this._transport.updateEntry(this._workspaceId, this._entry.id, {
             ...updateDef,
             isFolder: true,
-            ordering: updateDef.ordering ?? 0,
+            ordering: updateDef.ordering ?? Number.POSITIVE_INFINITY,
         });
         if (data.error !== null) {
             throw new Error('Failed: ' + data.error);
@@ -321,7 +321,7 @@ class SpecificSingleApiImplProto implements SpecificEntryApi<API.Single> {
     async update(updateDef: API.SingleMutate): Promise<API.Single> {
         const inp = {
             ...updateDef,
-            ordering: updateDef.ordering ?? 0,
+            ordering: updateDef.ordering ?? Number.POSITIVE_INFINITY,
             single: { description: updateDef.description },
             isFolder: false as const,
         };
@@ -551,7 +551,7 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
             ),
             details: {
                 ...info,
-                ordering: info.ordering ?? 0,
+                ordering: info.ordering ?? Number.POSITIVE_INFINITY,
                 isFolder: false as const,
                 single: {
                     description: info.description,

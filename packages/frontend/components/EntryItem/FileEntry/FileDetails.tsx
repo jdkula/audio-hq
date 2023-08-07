@@ -109,7 +109,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                         {file.description && !hideDescriptions && (
                             <Typography
                                 variant="caption"
-                                onDoubleClick={() => startEditing(false)}
+                                onDoubleClick={() => startEditing(true)}
                                 color={unavailable ? 'GrayText' : undefined}
                             >
                                 {file.description}

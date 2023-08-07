@@ -24,8 +24,6 @@ import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { AudioHQApiImplProto } from 'clients/lib/impl/protobase';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Allows the server to refresh its cache during each render.
 interface SSRServerProps extends AppProps {
@@ -93,11 +91,9 @@ export default function App({
             <CacheProvider value={emotionCache}>
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
-                    <DndProvider backend={HTML5Backend}>
-                        <AudioHQApiContext.Provider value={apiClient.current}>
-                            <Component {...pageProps} />
-                        </AudioHQApiContext.Provider>
-                    </DndProvider>
+                    <AudioHQApiContext.Provider value={apiClient.current}>
+                        <Component {...pageProps} />
+                    </AudioHQApiContext.Provider>
                 </ThemeProvider>
             </CacheProvider>
             <ReactQueryDevtools initialIsOpen={true} />

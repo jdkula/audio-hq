@@ -1,10 +1,10 @@
 import styled from '@emotion/styled';
 import { Paper } from '@mui/material';
+import { Draggable, DraggableStateSnapshot, Droppable, DroppableStateSnapshot } from '@hello-pangea/dnd';
 import { entryIsSingle } from 'clients/lib/AudioHQApi';
 import { Entry, Folder } from 'common/lib/api/models';
 import FileEntry from './FileEntry';
 import FolderEntry from './FolderEntry';
-import { useDrag, useDrop } from 'react-dnd';
 
 const EntryContainerInner = styled(Paper)`
     display: flex;
@@ -34,11 +34,12 @@ const EntryContainerOuter = styled.div`
 interface EntryProps {
     entry: Entry;
     currentPath: string[];
-    dragging: boolean;
     onNavigate: (folder: Folder) => void;
+    dragSnapshot?: DraggableStateSnapshot;
+    dropSnapshot?: DroppableStateSnapshot;
 }
 
-export default function EntryItem({ entry, onNavigate, currentPath, dragging }: EntryProps) {
+export default function EntryItem({ entry, onNavigate, currentPath, dragSnapshot, dropSnapshot }: EntryProps) {
     if (entryIsSingle(entry)) {
         return (
             <EntryContainerOuter>
@@ -55,7 +56,7 @@ export default function EntryItem({ entry, onNavigate, currentPath, dragging }: 
                         folder={entry}
                         onClick={() => onNavigate(entry)}
                         path={currentPath}
-                        dragging={dragging}
+                        dragging={!!(dragSnapshot?.combineTargetFor || dropSnapshot?.isDraggingOver)}
                     />
                 </EntryContainerInner>
             </EntryContainerOuter>
@@ -64,34 +65,33 @@ export default function EntryItem({ entry, onNavigate, currentPath, dragging }: 
 }
 
 export function DraggableEntryItem({ index, ...props }: EntryProps & { index: number }) {
-    const [{ dragging }, drag] = useDrag({
-        type: props.entry.type,
-        item: {
-            entry: props.entry,
-            index,
-        },
-        collect: (monitor) => ({
-            dragging: monitor.isDragging(),
-        }),
-    });
+    const prefix = props.entry.type === 'folder' ? '$FOLDER:' : '$SINGLE:';
     return (
-        <div ref={drag}>
-            <EntryItem {...props} dragging={dragging} />
-        </div>
+        <Draggable draggableId={prefix + props.entry.id} index={index}>
+            {(provided, snapshot) => (
+                <div
+                    {...provided.dragHandleProps}
+                    {...provided.draggableProps}
+                    ref={provided.innerRef}
+                    data-draggableid={prefix + props.entry.id}
+                >
+                    <EntryItem {...props} dragSnapshot={snapshot} />
+                </div>
+            )}
+        </Draggable>
     );
 }
 
 export function DroppableEntryItem({ ...props }: EntryProps) {
-    const [{ dragging }, drop] = useDrop({
-        accept: ['file', 'folder'],
-        collect: (monitor) => ({
-            dragging: monitor.canDrop(),
-            isOver: monitor.isOver(),
-        }),
-    });
+    const prefix = props.entry.type === 'folder' ? '$FOLDER:' : '$SINGLE';
     return (
-        <div ref={drop}>
-            <EntryItem {...props} dragging={dragging} />
-        </div>
+        <Droppable droppableId={prefix + props.entry.id} isCombineEnabled>
+            {(provided, snapshot) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                    <EntryItem {...props} dropSnapshot={snapshot} />
+                    <div style={{ display: 'none' }}>{provided.placeholder}</div>
+                </div>
+            )}
+        </Droppable>
     );
 }
