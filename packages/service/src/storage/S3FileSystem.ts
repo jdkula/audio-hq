@@ -1,13 +1,7 @@
 import fsProm from 'fs/promises';
 import fs from 'fs';
 
-import {
-    S3 as S3Client,
-    PutObjectCommand,
-    type CompleteMultipartUploadOutput,
-    GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
+import { S3 as S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'node:stream';
 
@@ -78,14 +72,9 @@ export default class S3FileSystem {
         });
     }
 
-    async write(
-        filepath: string,
-        id: string,
-        contentType: string,
-        onProgress?: ((progress: number | undefined) => void) | undefined,
-    ): Promise<string> {
+    async write(filepath: string, id: string, contentType: string): Promise<string> {
         const size = (await fsProm.stat(filepath)).size;
-        return await this.writeFromMemory(fs.createReadStream(filepath), size, id, contentType, onProgress);
+        return await this.writeFromMemory(fs.createReadStream(filepath), size, id, contentType);
     }
 
     async writeFromMemory(
@@ -93,42 +82,16 @@ export default class S3FileSystem {
         size: number,
         id: string,
         contentType: string,
-        onProgress?: ((progress: number | undefined) => void) | undefined,
     ): Promise<string> {
-        const upload = new Upload({
-            client: S3,
-            params: {
-                ...this.defaultParams,
-                Key: id,
-                ContentType: contentType,
-                ContentLength: size,
-                Body: stream,
-                ACL: 'public-read',
-            },
+        await S3.putObject({
+            ...this.defaultParams,
+            Key: id,
+            ContentType: contentType,
+            ContentLength: size,
+            Body: stream,
+            ACL: 'public-read',
         });
 
-        console.warn({
-            client: S3,
-            params: {
-                ...this.defaultParams,
-                Key: id,
-                ContentType: contentType,
-                ContentLength: size,
-                Body: stream,
-                ACL: 'public-read',
-            },
-        });
-
-        upload.on(
-            'httpUploadProgress',
-            (progress) => progress.loaded && progress.total && onProgress?.(progress.loaded / (progress.total ?? size)),
-        );
-
-        const data = (await upload.done()) as CompleteMultipartUploadOutput;
-        if (typeof data.Location !== 'string') {
-            throw new Error('Failed upload');
-        }
-
-        return data.Location;
+        return `https://${this.defaultParams.Bucket}.s3.us-west-2.amazonaws.com/${id}`;
     }
 }

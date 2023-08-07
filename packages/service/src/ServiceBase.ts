@@ -528,16 +528,7 @@ export class AudioHQServiceBase implements IServiceBase {
         const providerId = kAudioPrefix + asString(newId) + kAudioExtension;
 
         const content = contentIn as Buffer;
-        const location = await new S3FileSystem().writeFromMemory(
-            content,
-            content.length,
-            providerId,
-            completion.mime,
-            async (progress) => {
-                if (!progress) return;
-                await db.jobs.updateOne({ _id: job._id }, { $set: { status: JobStatus.SAVING, progress } });
-            },
-        );
+        const location = await new S3FileSystem().writeFromMemory(content, content.length, providerId, completion.mime);
 
         await db.client.withSession(async (session) => {
             const entry: EntriesCollectionType = {
