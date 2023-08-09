@@ -195,7 +195,9 @@ async function setup() {
         log.debug('Checking in...');
         await io.workerCheckIn(kPsk, myid);
 
-        await io.adminRequestJob(kPsk, myid);
+        if (!working) {
+            await io.adminRequestJob(kPsk, myid);
+        }
 
         const nextCheckin = getMsToNextCheckin(idealOffset, checkinFrequency);
         log.trace('Will check in again in ' + nextCheckin + 'ms');

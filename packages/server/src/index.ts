@@ -106,35 +106,43 @@ async function distributeJob(workerId?: string) {
     if (connectedWorkers.length === 0) return;
 
     let worker: ServerServiceSocket | undefined;
+    let replacedInfo: (typeof connectedWorkers)[number] | null = null;
     if (workerId) {
         worker = connectedWorkers.find((info) => workerId === info.workerId)?.socket;
     } else {
         const [info] = connectedWorkers.splice(0, 1);
-        connectedWorkers.push(info);
+        replacedInfo = info;
         worker = info.socket;
     }
-    if (!worker) return;
 
-    log.debug('Worker found, getting next job');
-    const job = await AudioHQServiceBase.getNextAvailableJob();
-    log.debug('Found job %j', job);
-    if (!job) return;
+    try {
+        if (!worker) return;
 
-    log.debug('Offering job...');
-    const accepted = worker.emitWithAck('jobOffer', {
-        ...job,
-        id: asString(job._id!),
-        workspace: asString(job._workspace),
-        assignedWorker: null,
-    });
-    if (!accepted) {
-        log.debug('Job not accepted, returning it...');
-        await (
-            await mongo
-        ).jobs.updateOne(
-            { _id: job._id },
-            { $set: { assignedAt: 0, status: Transport.JobStatus.GETTING_READY, assignedWorker: null } },
-        );
+        log.debug('Worker found, getting next job');
+        const job = await AudioHQServiceBase.getNextAvailableJob();
+        log.debug('Found job %j', job);
+        if (!job) return;
+
+        log.debug('Offering job...');
+        const accepted = worker.emitWithAck('jobOffer', {
+            ...job,
+            id: asString(job._id!),
+            workspace: asString(job._workspace),
+            assignedWorker: null,
+        });
+        if (!accepted) {
+            log.debug('Job not accepted, returning it...');
+            await (
+                await mongo
+            ).jobs.updateOne(
+                { _id: job._id },
+                { $set: { assignedAt: 0, status: Transport.JobStatus.GETTING_READY, assignedWorker: null } },
+            );
+        }
+    } finally {
+        if (replacedInfo !== null) {
+            connectedWorkers.push(replacedInfo);
+        }
     }
 }
 
