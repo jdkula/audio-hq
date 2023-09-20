@@ -548,7 +548,7 @@ export const Explorer: FC = () => {
 
                 <FileListContainer>
                     <FileListScrollContainer>
-                        {items.length === 0 ? (
+                        {(currentFiles.length) === 0 ? (
                             <NoFilesContainer fontStyle="italic">
                                 {viewingFavorites ? (
                                     'Hmm, looks like you don’t have any favorites! Press the heart icon to add some.'
