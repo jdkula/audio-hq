@@ -29,7 +29,7 @@ const broadcastOut = new BroadcastChannel('audio-hq-from-sw');
 
 // Returns true if offline mode is enabled
 async function offlineEnabled() {
-    return (await get('should_cache')) ?? false;
+    return (await get('__ahq_should_cache')) ?? false;
 }
 
 // <== Audio Caching ==>
