@@ -71,7 +71,8 @@ async function wrap<T, Args extends any[]>(fn: (...args: Args) => Promise<T>, ..
 }
 
 const workspaceListeners: Map<string, Set<ServerServiceSocket>> = new Map();
-const connectedWorkers: Array<{ socket: ServerServiceSocket; workerId: string }> = [];
+const connectedWorkers: Record<string /* workerId */, ServerServiceSocket> = {};
+let nextWorker = 0;
 
 async function notifyJobs(workspace: string) {
     const listeners = workspaceListeners.get(workspace);
@@ -103,46 +104,38 @@ async function notifyDecks(workspace: string) {
 
 async function distributeJob(workerId?: string) {
     log.debug('Distributing jobs to wid %s', workerId);
-    if (connectedWorkers.length === 0) return;
+    if (Object.keys(connectedWorkers).length === 0) return;
 
     let worker: ServerServiceSocket | undefined;
-    let replacedInfo: (typeof connectedWorkers)[number] | null = null;
     if (workerId) {
-        worker = connectedWorkers.find((info) => workerId === info.workerId)?.socket;
+        worker = connectedWorkers[workerId];
     } else {
-        const [info] = connectedWorkers.splice(0, 1);
-        replacedInfo = info;
-        worker = info.socket;
+        const keys = Object.keys(connectedWorkers);
+        worker = connectedWorkers[keys[nextWorker % keys.length]];
+        nextWorker++;
     }
+    if (!worker) return;
 
-    try {
-        if (!worker) return;
+    log.debug('Worker found, getting next job');
+    const job = await AudioHQServiceBase.getNextAvailableJob();
+    log.debug('Found job %j', job);
+    if (!job) return;
 
-        log.debug('Worker found, getting next job');
-        const job = await AudioHQServiceBase.getNextAvailableJob();
-        log.debug('Found job %j', job);
-        if (!job) return;
-
-        log.debug('Offering job...');
-        const accepted = worker.emitWithAck('jobOffer', {
-            ...job,
-            id: asString(job._id!),
-            workspace: asString(job._workspace),
-            assignedWorker: null,
-        });
-        if (!accepted) {
-            log.debug('Job not accepted, returning it...');
-            await (
-                await mongo
-            ).jobs.updateOne(
-                { _id: job._id },
-                { $set: { assignedAt: 0, status: Transport.JobStatus.GETTING_READY, assignedWorker: null } },
-            );
-        }
-    } finally {
-        if (replacedInfo !== null) {
-            connectedWorkers.push(replacedInfo);
-        }
+    log.debug('Offering job...');
+    const accepted = worker.emitWithAck('jobOffer', {
+        ...job,
+        id: asString(job._id!),
+        workspace: asString(job._workspace),
+        assignedWorker: null,
+    });
+    if (!accepted) {
+        log.debug('Job not accepted, returning it...');
+        await (
+            await mongo
+        ).jobs.updateOne(
+            { _id: job._id },
+            { $set: { assignedAt: 0, status: Transport.JobStatus.GETTING_READY, assignedWorker: null } },
+        );
     }
 }
 
@@ -153,13 +146,16 @@ io.on('connection', (socket: ServerServiceSocket) => {
     const savedSet = { current: null as null | Set<ServerServiceSocket> };
 
     socket.on('disconnect', () => {
-        log.debug('Client disconnected', socket.id);
+        log.debug('Client %s disconnected', socket.id);
         if (savedSet.current) {
             savedSet.current.delete(socket);
             savedSet.current = null;
         }
-        const idx = connectedWorkers.findIndex((p) => p.socket === socket);
-        connectedWorkers.splice(idx, 1);
+        const workerId = Object.entries(connectedWorkers).find(([, sock]) => sock === socket)?.[0];
+        if (workerId) {
+            log.debug('Removing worker %s', workerId);
+            delete connectedWorkers[workerId];
+        }
     });
 
     socket.on('join', (joined, resolve) => {
@@ -314,12 +310,13 @@ io.on('connection', (socket: ServerServiceSocket) => {
     socket.on('registerWorker', async (psk, checkinTime, id, resolve) => {
         const status = await wrap(AudioHQServiceBase.registerWorker, psk, checkinTime, id);
         if (status.error === null) {
-            connectedWorkers.push({ socket, workerId: status.data });
+            connectedWorkers[status.data] = socket;
         }
         resolve(status);
     });
-    socket.on('workerCheckIn', async (psk, id, resolve) => {
-        const status = await wrap(AudioHQServiceBase.workerCheckIn, psk, id);
+    socket.on('workerCheckIn', async (psk, workerId, resolve) => {
+        const status = await wrap(AudioHQServiceBase.workerCheckIn, psk, workerId);
+        connectedWorkers[workerId] = socket;
         resolve(status);
     });
 
@@ -336,6 +333,7 @@ io.on('connection', (socket: ServerServiceSocket) => {
     });
     socket.on('adminRequestJob', async (psk, workerId, resolve) => {
         if (psk !== process.env.WORKER_PSK) return void resolve({ error: 'Not authorized' });
+        connectedWorkers[workerId] = socket;
         await distributeJob(workerId);
         resolve({ error: null, data: undefined });
     });
