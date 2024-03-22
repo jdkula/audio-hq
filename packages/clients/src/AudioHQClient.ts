@@ -10,10 +10,10 @@ import AudioHQApi, {
     WorkspaceDecksApi,
     WorkspaceEntriesApi,
     WorkspaceJobsApi,
-} from '../AudioHQApi';
+} from './AudioHQApi';
 import * as API from 'common/lib/api/models';
 import * as Transport from 'common/lib/api/transport/models';
-import SocketTransport from './socketio.transport';
+import SocketTransport from './impl/socketio.transport';
 import axios from 'axios';
 
 function toDeckType(type: Transport.DeckType): API.DeckType {
@@ -27,7 +27,7 @@ function toDeckType(type: Transport.DeckType): API.DeckType {
     }
 }
 
-function toProtoDeckType(apitype: API.DeckType): Transport.DeckType {
+function toTransportDeckType(apitype: API.DeckType): Transport.DeckType {
     switch (apitype) {
         case 'ambient':
             return Transport.DeckType.AMBIENT;
@@ -62,11 +62,11 @@ function toApiEntry(tentry: Transport.Entry): API.Entry {
 
 ////////// Global
 
-export class AudioHQApiImplProto implements AudioHQApi {
-    private readonly instance: GlobalWorkspaceApiImplProto;
+export class AudioHQClient implements AudioHQApi {
+    private readonly instance: GlobalWorkspaceApiImpl;
 
     constructor(public readonly transport: IService) {
-        this.instance = new GlobalWorkspaceApiImplProto(transport);
+        this.instance = new GlobalWorkspaceApiImpl(transport);
     }
 
     async searchWorkspaces(query: string): Promise<API.Workspace[]> {
@@ -83,18 +83,18 @@ export class AudioHQApiImplProto implements AudioHQApi {
         }));
     }
 
-    get workspaces(): GlobalWorkspaceApiImplProto {
+    get workspaces(): GlobalWorkspaceApiImpl {
         return this.instance;
     }
 
-    workspace(id: string): SpecificWorkspaceApiImplProto {
-        return new SpecificWorkspaceApiImplProto(this.transport, id);
+    workspace(id: string): SpecificWorkspaceApiImpl {
+        return new SpecificWorkspaceApiImpl(this.transport, id);
     }
 }
 
 ////////// Workspaces
 
-class GlobalWorkspaceApiImplProto implements GlobalWorkspaceApi {
+class GlobalWorkspaceApiImpl implements GlobalWorkspaceApi {
     constructor(private readonly _transport: IService) {}
 
     async create(workspace: API.WorkspaceMutate): Promise<API.Workspace> {
@@ -112,7 +112,7 @@ class GlobalWorkspaceApiImplProto implements GlobalWorkspaceApi {
     }
 }
 
-class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
+class SpecificWorkspaceApiImpl implements SpecificWorkspaceApi {
     constructor(
         private readonly _transport: IService,
         private _id: string,
@@ -137,7 +137,7 @@ class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
             this._transport.addDecksListener(this._id, async (decks) => {
                 const singles =
                     getCachedSingles?.() ??
-                    (await new WorkspaceEntriesApiImplProto(this._transport, this._id).list()).filter<API.Single>(
+                    (await new WorkspaceEntriesApiImpl(this._transport, this._id).list()).filter<API.Single>(
                         (x): x is API.Single => x.type === 'single',
                     );
 
@@ -178,41 +178,41 @@ class SpecificWorkspaceApiImplProto implements SpecificWorkspaceApi {
         await this._transport.deleteWorkspace(this._id);
     }
 
-    get entries(): WorkspaceEntriesApiImplProto {
-        return new WorkspaceEntriesApiImplProto(this._transport, this._id);
+    get entries(): WorkspaceEntriesApiImpl {
+        return new WorkspaceEntriesApiImpl(this._transport, this._id);
     }
 
-    entry(entry: API.Single): SpecificSingleApiImplProto;
-    entry(entry: API.Folder): SpecificFolderApiImplProto;
-    entry(entry: API.Entry): SpecificFolderApiImplProto;
+    entry(entry: API.Single): SpecificSingleApiImpl;
+    entry(entry: API.Folder): SpecificFolderApiImpl;
+    entry(entry: API.Entry): SpecificFolderApiImpl;
     entry(entry: API.Entry): SpecificEntryApi<API.Entry> {
         if (entry.type === 'single') {
-            return new SpecificSingleApiImplProto(this._transport, this._id, entry);
+            return new SpecificSingleApiImpl(this._transport, this._id, entry);
         } else {
-            return new SpecificFolderApiImplProto(this._transport, this._id, entry);
+            return new SpecificFolderApiImpl(this._transport, this._id, entry);
         }
     }
 
-    get decks(): WorkspaceDecksApiImplProto {
-        return new WorkspaceDecksApiImplProto(this._transport, this._id);
+    get decks(): WorkspaceDecksApiImpl {
+        return new WorkspaceDecksApiImpl(this._transport, this._id);
     }
-    get mainDeck(): SpecificDeckApiImplProto {
-        return new SpecificDeckApiImplProto(this._transport, this._id, 'main');
+    get mainDeck(): SpecificDeckApiImpl {
+        return new SpecificDeckApiImpl(this._transport, this._id, 'main');
     }
-    deck(id: string): SpecificDeckApiImplProto {
-        return new SpecificDeckApiImplProto(this._transport, this._id, id);
+    deck(id: string): SpecificDeckApiImpl {
+        return new SpecificDeckApiImpl(this._transport, this._id, id);
     }
-    get jobs(): WorkspaceJobsApiImplProto {
-        return new WorkspaceJobsApiImplProto(this._transport, this._id);
+    get jobs(): WorkspaceJobsApiImpl {
+        return new WorkspaceJobsApiImpl(this._transport, this._id);
     }
-    job(id: string): SpecificJobApiImplProto {
-        return new SpecificJobApiImplProto(this._transport, this._id, id);
+    job(id: string): SpecificJobApiImpl {
+        return new SpecificJobApiImpl(this._transport, this._id, id);
     }
 }
 
 ////////// Tracks
 
-class WorkspaceEntriesApiImplProto implements WorkspaceEntriesApi {
+class WorkspaceEntriesApiImpl implements WorkspaceEntriesApi {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -246,7 +246,7 @@ class WorkspaceEntriesApiImplProto implements WorkspaceEntriesApi {
     }
 }
 
-class SpecificFolderApiImplProto implements SpecificEntryApi<API.Folder> {
+class SpecificFolderApiImpl implements SpecificEntryApi<API.Folder> {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -292,7 +292,7 @@ class SpecificFolderApiImplProto implements SpecificEntryApi<API.Folder> {
     }
 }
 
-class SpecificSingleApiImplProto implements SpecificEntryApi<API.Single> {
+class SpecificSingleApiImpl implements SpecificEntryApi<API.Single> {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -364,12 +364,12 @@ function protoDeckToDeck(deck: Transport.Deck, singles: API.Single[]): API.Deck 
     } satisfies API.Deck;
 }
 
-function deckToProtoDeck(deck: API.DeckCreate): Transport.DeckCreate {
+function deckToTransportDeck(deck: API.DeckCreate): Transport.DeckCreate {
     return {
         queue: deck.queue?.map((s) => s.id) ?? [],
         speed: deck.speed ?? 1,
         volume: deck.volume ?? 1,
-        type: toProtoDeckType(deck.type),
+        type: toTransportDeckType(deck.type),
         startTimestamp: deck.startTimestamp?.getTime(),
         pausedTimestamp: deck.pauseTimestamp?.getTime() ?? null,
     };
@@ -377,7 +377,7 @@ function deckToProtoDeck(deck: API.DeckCreate): Transport.DeckCreate {
 
 ////////// Decks
 
-class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
+class WorkspaceDecksApiImpl implements WorkspaceDecksApi {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -394,7 +394,7 @@ class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
 
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+            (await new WorkspaceEntriesApiImpl(this._transport, this._workspaceId).list()).filter<API.Single>(
                 (x): x is API.Single => x.type === 'single',
             );
 
@@ -403,7 +403,7 @@ class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
 
     async create(deck: API.DeckCreate): Promise<API.Deck>;
     async create(deck: API.DeckCreate, cachedSingles?: API.Single[]): Promise<API.Deck> {
-        const inp = deckToProtoDeck(deck);
+        const inp = deckToTransportDeck(deck);
         const data = await this._transport.createDeck(this._workspaceId, inp);
         if (data.error !== null) {
             throw new Error('Failed: ' + data.error);
@@ -412,7 +412,7 @@ class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
         const proto = data.data;
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+            (await new WorkspaceEntriesApiImpl(this._transport, this._workspaceId).list()).filter<API.Single>(
                 (x): x is API.Single => x.type === 'single',
             );
 
@@ -420,7 +420,7 @@ class WorkspaceDecksApiImplProto implements WorkspaceDecksApi {
     }
 }
 
-class SpecificDeckApiImplProto implements SpecificDeckApi {
+class SpecificDeckApiImpl implements SpecificDeckApi {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -432,7 +432,7 @@ class SpecificDeckApiImplProto implements SpecificDeckApi {
     async get(cachedSingles?: API.Single[]): Promise<API.Deck> {
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+            (await new WorkspaceEntriesApiImpl(this._transport, this._workspaceId).list()).filter<API.Single>(
                 (x): x is API.Single => x.type === 'single',
             );
 
@@ -449,11 +449,11 @@ class SpecificDeckApiImplProto implements SpecificDeckApi {
     async update(update: Omit<API.DeckCreate, 'type'>, cachedSingles?: API.Single[]): Promise<API.Deck> {
         const singles =
             cachedSingles ??
-            (await new WorkspaceEntriesApiImplProto(this._transport, this._workspaceId).list()).filter<API.Single>(
+            (await new WorkspaceEntriesApiImpl(this._transport, this._workspaceId).list()).filter<API.Single>(
                 (x): x is API.Single => x.type === 'single',
             );
 
-        const inp = deckToProtoDeck({ ...update, type: 'main' });
+        const inp = deckToTransportDeck({ ...update, type: 'main' });
         const data = await this._transport.updateDeck(this._workspaceId, this._deckId, inp);
         if (data.error !== null) {
             throw new Error('Failed: ' + data.error);
@@ -517,7 +517,7 @@ function protoJobToJob(protoJob: Transport.Job): API.Job {
     };
 }
 
-class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
+class WorkspaceJobsApiImpl implements WorkspaceJobsApi {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,
@@ -572,7 +572,7 @@ class WorkspaceJobsApiImplProto implements WorkspaceJobsApi {
     }
 }
 
-class SpecificJobApiImplProto implements SpecificJobApi {
+class SpecificJobApiImpl implements SpecificJobApi {
     constructor(
         private readonly _transport: IService,
         private _workspaceId: string,

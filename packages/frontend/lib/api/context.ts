@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { AudioHQApiImplProto } from 'clients/lib/impl/protobase';
+import { AudioHQClient } from 'clients/lib/AudioHQClient';
 
-const AudioHQApiContext = createContext<AudioHQApiImplProto>(null as never);
+const AudioHQApiContext = createContext<AudioHQClient>(null as never);
 
 export default AudioHQApiContext;

@@ -10,12 +10,12 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
 import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { AudioHQApiImplProto } from 'clients/lib/impl/protobase';
+import { AudioHQClient } from 'clients/lib/AudioHQClient';
 import SocketTransport from 'clients/lib/impl/socketio.transport';
 import { BroadcastMessage, broadcastOut } from '~/lib/sw_client';
 
 const AppRootClient: FC<{ children: ReactNode }> = ({ children }) => {
-    const apiClient = useRef(new AudioHQApiImplProto(new SocketTransport(process.env.NEXT_PUBLIC_WS_BASE as string)));
+    const apiClient = useRef(new AudioHQClient(new SocketTransport(process.env.NEXT_PUBLIC_WS_BASE as string)));
 
     /** Use caching service worker */
     const tryRegistered = useRef(false);
