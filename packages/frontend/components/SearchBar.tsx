@@ -39,6 +39,12 @@ const SearchBar: FC<SearchBarProps> = ({ searching, searchText, setSearching, se
                 autoFocus
                 variant="filled"
                 value={searchTextInternal}
+                onKeyDown={(e) => {
+                    if (e.code === 'Enter') {
+                        setSearchText(searchTextInternal);
+                        e.preventDefault();
+                    }
+                }}
                 onChange={(e) => setSearchTextInternal(e.target.value)}
                 label="Search..."
                 InputProps={{
