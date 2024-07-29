@@ -81,7 +81,7 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
         );
     } else if (cached) {
         cacheIcon = (
-            <Tooltip placement="top" arrow title="This audio is cached.">
+            <Tooltip placement="top" arrow title="This audio is cached. Click to download.">
                 <DownloadDone
                     fontSize="inherit"
                     color="inherit"
