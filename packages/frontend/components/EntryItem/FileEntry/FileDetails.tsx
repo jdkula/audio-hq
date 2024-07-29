@@ -85,7 +85,8 @@ const FileDetails: FC<FileDetailsProps> = (props) => {
                 <DownloadDone
                     fontSize="inherit"
                     color="inherit"
-                    style={{ fontSize: '1rem', color: '#888', opacity: 0.5 }}
+                    style={{ fontSize: '1rem', color: '#888', opacity: 0.5, cursor: 'pointer' }}
+                    onClick={() => window.open(file.url, '_blank')}
                 />
             </Tooltip>
         );
