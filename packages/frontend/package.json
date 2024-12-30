@@ -1,5 +1,5 @@
 {
-    "name": "frontend",
+    "name": "@audio-hq/frontend",
     "version": "1.1",
     "private": true,
     "scripts": {

@@ -1,12 +1,16 @@
 {
-    "name": "common",
-    "version": "1.0.0",
+    "name": "@audio-hq/common",
+    "version": "1.0.3",
     "description": "",
     "scripts": {
         "build": "tsc",
         "format": "prettier -w ./src",
-        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build' --watch src"
+        "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build' --watch src",
+        "run:publish": "pnpm publish --access public"
     },
+    "files": [
+        "lib"
+    ],
     "author": "",
     "license": "ISC",
     "devDependencies": {

@@ -1,6 +1,6 @@
 {
-    "name": "migrate",
-    "version": "1.0.0",
+    "name": "@audio-hq/migrate",
+    "version": "1.0.2",
     "main": "index.js",
     "license": "MIT",
     "devDependencies": {

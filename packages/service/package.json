@@ -1,14 +1,18 @@
 {
-    "name": "service",
-    "version": "1.0.0",
+    "name": "@audio-hq/service",
+    "version": "1.0.3",
     "description": "",
     "main": "index.js",
     "scripts": {
         "build": "tsc",
         "dev": "nodemon -e ts,tsx,js,jsx,json --exec 'pnpm build' --watch src",
         "lint": "eslint .",
-        "format": "prettier -w ./src"
+        "format": "prettier -w ./src",
+        "run:publish": "pnpm publish --access public"
     },
+    "files": [
+        "lib"
+    ],
     "author": "",
     "license": "ISC",
     "devDependencies": {

@@ -70,11 +70,11 @@ const cacheInfo = new LocalReactiveValue(Map<string, CacheState>());
 const onUpdate = (ev: MessageEvent) => {
     const message: BroadcastMessage = ev.data;
 
-    // Individual update
     if (message.type === 'cache-update') {
+        // Individual update
         cacheInfo.value = cacheInfo.value.set(message.url, message.cached);
-        // Bulk update
     } else if (message.type === 'bulk-cache-update') {
+        // Bulk update
         cacheInfo.value = Map(message.data.map((data) => [data.url, data.cached]));
     } else if (message.type === 'cache-buster-out') {
         window.localStorage.setItem('AHQ_CACHE_KEY', message.key);

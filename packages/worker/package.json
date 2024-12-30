@@ -1,6 +1,6 @@
 {
-    "name": "worker",
-    "version": "1.0.0",
+    "name": "@audio-hq/worker",
+    "version": "1.0.3",
     "main": "index.js",
     "license": "MIT",
     "devDependencies": {

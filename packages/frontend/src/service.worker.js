@@ -210,6 +210,7 @@ self.addEventListener('install', () => {
 // <== Communication from frontend ==>
 
 broadcastIn.onmessage = (ev) => {
+    console.log('service worker received messages', { ...ev.data });
     switch (ev.data.type) {
         // <-- Fetches and caches all the associated URLs with CORS -->
         case 'cache': {
