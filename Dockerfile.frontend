@@ -9,7 +9,7 @@ RUN pnpm fetch
 COPY . ./
 RUN pnpm install -r --offline
 ARG NEXT_PUBLIC_WS_BASE="wss://api.audio-hq.quest"
-RUN pnpm exec lerna run build --include-dependencies --scope frontend
+RUN pnpm exec lerna run build --include-dependencies --scope @audio-hq/frontend
 EXPOSE 3000
 
 WORKDIR /audio-hq/packages/frontend
