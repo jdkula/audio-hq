@@ -14,6 +14,9 @@
         "format": "prettier -w ./src"
     },
     "dependencies": {
+        "@audio-hq/clients": "workspace:^",
+        "@audio-hq/common": "workspace:^",
+        "@audio-hq/service": "workspace:^",
         "@babel/core": "^7.22.9",
         "@emotion/cache": "^11.11.0",
         "@emotion/react": "^11.11.1",
@@ -31,8 +34,6 @@
         "@tanstack/react-query-devtools": "^4.32.0",
         "@tanstack/react-query-persist-client": "^4.32.0",
         "axios": "^1.4.0",
-        "clients": "workspace:^",
-        "common": "workspace:^",
         "date-fns": "^2.30.0",
         "events": "^3.3.0",
         "graphql": "^16.7.1",
@@ -47,7 +48,6 @@
         "react-dom": "^18.2.0",
         "react-dropzone": "^14.2.3",
         "react-is": "^18.2.0",
-        "service": "workspace:^",
         "socket.io-client": "^4.7.1",
         "socket.io-msgpack-parser": "^3.0.2",
         "uuid": "^9.0.0"
@@ -63,6 +63,7 @@
         "@graphql-codegen/typescript-react-query": "^4.1.0",
         "@next/eslint-plugin-next": "^13.4.12",
         "@types/lodash": "^4.14.195",
+        "@types/node": "22.10.2",
         "@types/react": "^18.2.16",
         "@types/react-window": "^1.8.5",
         "@types/uuid": "^9.0.2",

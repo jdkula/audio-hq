@@ -1,4 +1,4 @@
-import { mongo } from 'service/lib/db/mongodb';
+import { mongo } from '@audio-hq/service/lib/db/mongodb';
 import { data } from '../secret-export.json';
 import { pino } from 'pino';
 

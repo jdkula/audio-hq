@@ -45,9 +45,9 @@ import {
     useFavorites,
 } from '~/lib/utility/usePersistentData';
 import { isDefined } from '~/lib/utility/util';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { usePlayDeckMutation, useUpdateEntryMutation, useWorkspaceDecks, useWorkspaceEntries } from '~/lib/api/hooks';
-import { entryIsFolder, entryIsSingle } from 'clients/lib/AudioHQApi';
+import { entryIsFolder, entryIsSingle } from '@audio-hq/clients/lib/AudioHQApi';
 import EntryItem, { DraggableEntryItem, DroppableEntryItem } from './EntryItem';
 
 const ExplorerContainer = styled.div`
@@ -548,7 +548,7 @@ export const Explorer: FC = () => {
 
                 <FileListContainer>
                     <FileListScrollContainer>
-                        {(currentFiles.length) === 0 ? (
+                        {currentFiles.length === 0 ? (
                             <NoFilesContainer fontStyle="italic">
                                 {viewingFavorites ? (
                                     'Hmm, looks like you don’t have any favorites! Press the heart icon to add some.'

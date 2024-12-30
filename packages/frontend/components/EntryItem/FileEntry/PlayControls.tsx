@@ -13,7 +13,7 @@ import React, { FC, useContext, useState } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { BlurOn, OfflineBolt, QueueMusic } from '@mui/icons-material';
 import { FileManagerContext, WorkspaceIdContext } from '~/lib/utility/context';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { usePlayDeckMutation, useWorkspaceDecks } from '~/lib/api/hooks';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { differenceInSeconds, subSeconds } from 'date-fns';

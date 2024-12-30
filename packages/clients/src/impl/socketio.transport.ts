@@ -2,7 +2,7 @@
 
 import { io, Socket } from 'socket.io-client';
 import MsgParser from 'socket.io-msgpack-parser';
-import { ClientServiceSocket, IService, Status } from 'service/lib/IService';
+import { ClientServiceSocket, IService, Status } from '@audio-hq/service/lib/IService';
 import {
     WorkspaceSearchResponse,
     WorkspaceMutate,
@@ -19,7 +19,7 @@ import {
     Job,
     AdminJobMutate,
     JobComplete,
-} from 'common/lib/api/transport/models';
+} from '@audio-hq/common/lib/api/transport/models';
 
 export default class SocketTransport implements IService {
     public readonly socket: ClientServiceSocket;

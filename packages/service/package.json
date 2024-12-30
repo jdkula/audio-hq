@@ -29,7 +29,7 @@
         "@aws-sdk/lib-storage": "^3.385.0",
         "@aws-sdk/s3-request-presigner": "^3.385.0",
         "@aws-sdk/util-format-url": "^3.378.0",
-        "common": "workspace:^",
+        "@audio-hq/common": "workspace:^",
         "mongodb": "^5.7.0"
     }
 }

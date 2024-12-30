@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { broadcastOut, BroadcastMessage, useIsCached } from './sw_client';
 import ConvertOptions from './ConvertOptions';
-import * as API from 'common/src/api/models';
+import * as API from '@audio-hq/common/src/api/models';
 import {
     useCreateImportJob,
     useCreateUploadJob,
@@ -9,7 +9,7 @@ import {
     useWorkspaceJobs,
     useWorkspaceEntries,
 } from './api/hooks';
-import { entryIsSingle } from 'clients/lib/AudioHQApi';
+import { entryIsSingle } from '@audio-hq/clients/lib/AudioHQApi';
 
 export type FileManager = ReturnType<typeof useFileManager>;
 

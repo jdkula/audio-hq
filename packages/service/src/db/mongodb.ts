@@ -1,7 +1,7 @@
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
-import type { SelectNonNullable, NonNullableRecursive } from 'common/lib/helpers';
+import type { SelectNonNullable, NonNullableRecursive } from '@audio-hq/common/lib/helpers';
 const uri = process.env.DB_URI as string;
-import * as API from 'common/lib/api/transport/models';
+import * as API from '@audio-hq/common/lib/api/transport/models';
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {

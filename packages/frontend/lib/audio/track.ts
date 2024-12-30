@@ -11,7 +11,7 @@ import { globalVolumeLRV } from '../utility/usePersistentData';
 import { getDeckInfo } from './audio_util';
 import { kMaxAudioDriftAllowance } from '../constants';
 
-import * as API from 'common/src/api/models';
+import * as API from '@audio-hq/common/src/api/models';
 
 export class Track extends EventEmitter {
     private readonly _audio: HTMLAudioElement;

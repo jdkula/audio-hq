@@ -13,7 +13,7 @@ import {
     SingleMutate,
     Single,
     Folder,
-} from 'common/lib/api/models';
+} from '@audio-hq/common/lib/api/models';
 
 export default interface AudioHQApi {
     searchWorkspaces(query: string): Promise<Array<Workspace>>;

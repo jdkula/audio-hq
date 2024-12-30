@@ -7,7 +7,7 @@
 import { ClickAwayListener, TextField, Typography } from '@mui/material';
 import React, { FC, KeyboardEvent, useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { useUpdateEntryMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 

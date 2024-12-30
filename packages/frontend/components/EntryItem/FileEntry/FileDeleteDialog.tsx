@@ -8,7 +8,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle } from '@mui/material';
 import React, { FC, useContext } from 'react';
 import { useDeleteEntryMutation } from '~/lib/api/hooks';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const FileDeleteDialog: FC<DialogProps & { file: API.Entry }> = ({ file, ...props }) => {

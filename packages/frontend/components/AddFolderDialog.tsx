@@ -11,7 +11,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import { useLocalReactiveValue } from '../lib/LocalReactive';
 import { WorkspaceIdContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useCreateFolderMutation, useWorkspaceEntries } from '~/lib/api/hooks';
-import { entryIsFolder } from 'clients/lib/AudioHQApi';
+import { entryIsFolder } from '@audio-hq/clients/lib/AudioHQApi';
 import _ from 'lodash';
 
 const FolderAddDialog: FC<{ showing?: boolean; cancel: () => void }> = ({ showing, cancel }) => {

@@ -10,7 +10,7 @@ import React, { FC, useContext } from 'react';
 import styled from '@emotion/styled';
 import FileDetailsEditor from './FileDetailsEditor';
 import { durationOfLength } from '~/lib/utility/util';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { FileManagerContext } from '~/lib/utility/context';
 import { DownloadDone } from '@mui/icons-material';
 import { useIsOnline } from '~/lib/utility/hooks';

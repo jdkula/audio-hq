@@ -18,7 +18,7 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import { sub } from 'date-fns';
 import { durationOfLength } from '~/lib/utility/util';
 import { getDeckInfo, getSpeedChangeData, getUnpauseData } from '~/lib/audio/audio_util';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { useStopDeckMutation, useUpdateDeckMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 

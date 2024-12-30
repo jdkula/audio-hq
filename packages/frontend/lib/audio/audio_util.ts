@@ -4,7 +4,7 @@
  * Provides a small set of utility functions used for managing tracks and decks
  */
 import { add, differenceInMilliseconds, sub } from 'date-fns';
-import { Deck, DeckUpdate, Single } from 'common/src/api/models';
+import { Deck, DeckUpdate, Single } from '@audio-hq/common/src/api/models';
 
 export interface DeckInfo {
     secondsToCurrentPlayhead: number;

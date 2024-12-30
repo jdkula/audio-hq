@@ -12,7 +12,7 @@ import { GetApp, OfflinePin } from '@mui/icons-material';
 
 import styled from '@emotion/styled';
 import { FileManagerContext } from '~/lib/utility/context';
-import { entryIsSingle } from 'clients/lib/AudioHQApi';
+import { entryIsSingle } from '@audio-hq/clients/lib/AudioHQApi';
 
 const DownloadButtonContainer = styled.div`
     color: white;

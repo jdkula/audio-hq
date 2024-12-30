@@ -14,7 +14,7 @@ import FileDeleteDialog from './FileDeleteDialog';
 import PlayControls from './PlayControls';
 import FileDetails from './FileDetails';
 import StatusControls from './StatusControls';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 import { useIsOnline } from '~/lib/utility/hooks';
 
 export const FileContainer = styled.div`

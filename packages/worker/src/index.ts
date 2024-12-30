@@ -1,8 +1,8 @@
 import pino from 'pino';
 
-import * as Transport from 'common/lib/api/transport/models';
-import { mongo } from 'service/lib/db/mongodb';
-import SocketTransport from 'clients/lib/impl/socketio.transport';
+import * as Transport from '@audio-hq/common/lib/api/transport/models';
+import { mongo } from '@audio-hq/service/lib/db/mongodb';
+import SocketTransport from '@audio-hq/clients/lib/impl/socketio.transport';
 import { io as socketio } from 'socket.io-client';
 import MsgParser from 'socket.io-msgpack-parser';
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { IService } from 'service/lib/IService';
+import { IService } from '@audio-hq/service/lib/IService';
 import AudioHQApi, {
     GlobalWorkspaceApi,
     SpecificDeckApi,
@@ -11,8 +11,8 @@ import AudioHQApi, {
     WorkspaceEntriesApi,
     WorkspaceJobsApi,
 } from './AudioHQApi';
-import * as API from 'common/lib/api/models';
-import * as Transport from 'common/lib/api/transport/models';
+import * as API from '@audio-hq/common/lib/api/models';
+import * as Transport from '@audio-hq/common/lib/api/transport/models';
 import SocketTransport from './impl/socketio.transport';
 import axios from 'axios';
 

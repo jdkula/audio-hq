@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { useAlt, useIsOnline } from '~/lib/utility/hooks';
 import { useFavorites } from '~/lib/utility/usePersistentData';
-import * as API from 'common/lib/api/models';
+import * as API from '@audio-hq/common/lib/api/models';
 
 const StatusContainerPlacer = styled.div`
     display: flex;

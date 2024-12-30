@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 import { Paper } from '@mui/material';
 import { Draggable, DraggableStateSnapshot, Droppable, DroppableStateSnapshot } from '@hello-pangea/dnd';
-import { entryIsSingle } from 'clients/lib/AudioHQApi';
-import { Entry, Folder } from 'common/lib/api/models';
+import { entryIsSingle } from '@audio-hq/clients/lib/AudioHQApi';
+import { Entry, Folder } from '@audio-hq/common/lib/api/models';
 import FileEntry from './FileEntry';
 import FolderEntry from './FolderEntry';
 

@@ -9,8 +9,8 @@ import { spawn } from 'child_process';
 import which from 'which';
 import pino from 'pino';
 
-import SocketTransport from 'clients/lib/impl/socketio.transport';
-import * as Transport from 'common/lib/api/transport/models';
+import SocketTransport from '@audio-hq/clients/lib/impl/socketio.transport';
+import * as Transport from '@audio-hq/common/lib/api/transport/models';
 
 interface ConvertOptions {
     cut?:

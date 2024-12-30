@@ -1,7 +1,7 @@
 import type { Socket as ServerSocket } from 'socket.io';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import { JobsCollectionType } from './db/mongodb';
-import * as API from 'common/lib/api/transport/models';
+import * as API from '@audio-hq/common/lib/api/transport/models';
 
 export type ServerToClientEvents = {
     entriesUpdate: (entries: Array<API.Entry>) => void;

@@ -21,7 +21,7 @@ import { FC, useContext, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import styled from '@emotion/styled';
-import { Job } from 'common/lib/api/models';
+import { Job } from '@audio-hq/common/lib/api/models';
 import { useDeleteJobMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 

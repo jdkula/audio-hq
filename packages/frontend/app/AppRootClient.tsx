@@ -10,8 +10,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import AudioHQApiContext from '~/lib/api/context';
 import { localStoragePersister, queryClient } from '~/lib/queryclient';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { AudioHQClient } from 'clients/lib/AudioHQClient';
-import SocketTransport from 'clients/lib/impl/socketio.transport';
+import { AudioHQClient } from '@audio-hq/clients/lib/AudioHQClient';
+import SocketTransport from '@audio-hq/clients/lib/impl/socketio.transport';
 import { BroadcastMessage, broadcastOut } from '~/lib/sw_client';
 
 const AppRootClient: FC<{ children: ReactNode }> = ({ children }) => {

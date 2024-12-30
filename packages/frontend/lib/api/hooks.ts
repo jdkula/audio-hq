@@ -12,7 +12,7 @@ import {
     EntryMutate,
     SingleMutate,
     Single,
-} from 'common/src/api/models';
+} from '@audio-hq/common/src/api/models';
 import { v4 as uuid, v4 } from 'uuid';
 
 export function useWorkspaceEntries(workspaceId: string) {

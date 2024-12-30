@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { Deck } from './deck';
 import { FileManagerContext } from '../utility/context';
-import * as API from 'common/src/api/models';
+import * as API from '@audio-hq/common/src/api/models';
 import { useWorkspaceDecks } from '../api/hooks';
 
 export default function useAudioManager(workspaceId: string) {

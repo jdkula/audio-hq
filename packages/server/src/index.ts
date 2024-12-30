@@ -1,13 +1,13 @@
 import { Server } from 'socket.io';
-import { ServerServiceSocket, Status } from 'service/lib/IService';
-import { AudioHQServiceBase as AHQBase } from 'service/lib/ServiceBase';
-import { NotFound, InvalidInput, OtherError } from 'service/lib/errors';
+import { ServerServiceSocket, Status } from '@audio-hq/service/lib/IService';
+import { AudioHQServiceBase as AHQBase } from '@audio-hq/service/lib/ServiceBase';
+import { NotFound, InvalidInput, OtherError } from '@audio-hq/service/lib/errors';
 import { Last } from 'socket.io/dist/typed-events';
 import MsgParser from 'socket.io-msgpack-parser';
-import { asString } from 'service/lib/db/oid_helpers';
-import { mongo } from 'service/lib/db/mongodb';
+import { asString } from '@audio-hq/service/lib/db/oid_helpers';
+import { mongo } from '@audio-hq/service/lib/db/mongodb';
 import pino from 'pino';
-import * as Transport from 'common/lib/api/transport/models';
+import * as Transport from '@audio-hq/common/lib/api/transport/models';
 
 const log = pino({ transport: { target: 'pino-pretty' }, level: 'trace' });
 const reqlog = pino({ name: 'request', transport: { target: 'pino-pretty' }, level: 'trace' });

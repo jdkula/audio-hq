@@ -33,7 +33,7 @@ import { usePeriodicEffect } from '~/lib/utility/hooks';
 import { useLocalRecents, useColorMode, ColorMode } from '~/lib/utility/usePersistentData';
 import { humanFileSize, isDefined } from '~/lib/utility/util';
 import { useCreateWorkspaceMutation, useWorkspaceDetail, useWorkspaceDetailByName } from '~/lib/api/hooks';
-import { Workspace } from 'common/lib/api/models';
+import { Workspace } from '@audio-hq/common/lib/api/models';
 import AudioHQApiContext from '~/lib/api/context';
 import { useRouter } from 'next/navigation';
 

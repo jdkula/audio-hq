@@ -28,9 +28,9 @@ import styled from '@emotion/styled';
 import FolderDeleteDialog from './FolderDeleteDialog';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useDeleteEntryMutation, useUpdateEntryMutation, useWorkspaceEntries } from '~/lib/api/hooks';
-import { Folder } from 'common/lib/api/models';
+import { Folder } from '@audio-hq/common/lib/api/models';
 import { useIsOnline } from '~/lib/utility/hooks';
-import { entryIsFolder } from 'clients/lib/AudioHQApi';
+import { entryIsFolder } from '@audio-hq/clients/lib/AudioHQApi';
 import _ from 'lodash';
 
 const FolderContainer = styled.div`

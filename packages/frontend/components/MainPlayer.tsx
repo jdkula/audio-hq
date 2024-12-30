@@ -13,7 +13,7 @@ import styled from '@emotion/styled';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import ListHeader from './ListHeader';
 import useAudio from '../lib/audio/useAudioDetail';
-import { Deck } from 'common/lib/api/models';
+import { Deck } from '@audio-hq/common/lib/api/models';
 import { useUpdateDeckMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 import { useLocalReactiveValue } from '~/lib/LocalReactive';

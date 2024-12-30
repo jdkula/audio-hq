@@ -7,7 +7,7 @@
 import { useCallback, useState } from 'react';
 import { usePeriodicEffect } from '../utility/hooks';
 import { getDeckInfo } from './audio_util';
-import * as API from 'common/src/api/models';
+import * as API from '@audio-hq/common/src/api/models';
 
 interface AudioInfo {
     duration: number;
