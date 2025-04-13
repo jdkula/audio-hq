@@ -246,7 +246,7 @@ export class Processor {
                     this.updateProgress(
                         jobId,
                         workspaceId,
-                        (info.percent / 100) * percentBoost,
+                        ((info.percent ?? 0) / 100) * percentBoost,
                         Transport.JobStatus.CONVERTING,
                         source,
                     );

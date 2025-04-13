@@ -590,10 +590,38 @@ export class AudioHQServiceBase implements IServiceBase {
     async getNextAvailableJob(): Promise<JobsCollectionType | null> {
         const db = await mongo;
 
-        const result = await db.jobs.findOneAndUpdate(
+        let result = await db.jobs.findOneAndUpdate(
             { assignedWorker: null, status: JobStatus.GETTING_READY },
             { $set: { status: JobStatus.WAITING, assignedAt: Date.now() } },
         );
+
+        if (!result) {
+            // Find a job that got lost.
+            result = await db.jobs.findOneAndUpdate(
+                // 10+ minutes old
+                { assignedAt: { $lt: Date.now() - 1000 * 60 * 10 }, status: JobStatus.WAITING, assignedWorker: null },
+                { $set: { assignedAt: Date.now(), assignedWorker: null, status: JobStatus.WAITING } },
+            );
+        }
+
+        if (!result) {
+            // Find a jobs that were errored.
+            result = await db.jobs.findOneAndUpdate(
+                // 10+ minutes old
+                { assignedAt: { $lt: Date.now() - 1000 * 60 * 10 }, status: JobStatus.ERROR },
+                { $set: { assignedAt: Date.now(), assignedWorker: null, status: JobStatus.WAITING } },
+            );
+        }
+
+        if (!result) {
+            // Find any old jobs
+            result = await db.jobs.findOneAndUpdate(
+                // 30+ minutes old
+                { assignedAt: { $lt: Date.now() - 1000 * 60 * 30 }, status: { $ne: JobStatus.DONE } },
+                { $set: { assignedAt: Date.now(), assignedWorker: null, status: JobStatus.WAITING } },
+            );
+        }
+
         return result ?? null;
     }
 }

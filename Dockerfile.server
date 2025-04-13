@@ -1,5 +1,5 @@
 # <-- Runner setup -->
-FROM node:18-alpine AS builder
+FROM node:23-alpine AS builder
 RUN npm install -g pnpm
 WORKDIR /audio-hq
 RUN apk add --update --no-cache python3 libc6-compat alpine-sdk && ln -sf python3 /usr/bin/python
@@ -7,8 +7,8 @@ COPY ./pnpm-lock.yaml ./
 RUN pnpm fetch
 
 COPY . ./
-RUN pnpm install -r --offline
-RUN pnpm exec lerna run build --include-dependencies --scope server
+RUN pnpm install -r
+RUN pnpm exec lerna run build --include-dependencies --scope @audio-hq/server
 EXPOSE 3050
 
 WORKDIR /audio-hq/packages/server

@@ -1,5 +1,5 @@
 # <-- Runner setup -->
-FROM node:18-alpine AS builder
+FROM node:23-alpine AS builder
 RUN npm install -g pnpm
 WORKDIR /audio-hq
 COPY ./pnpm-lock.yaml ./
@@ -7,11 +7,13 @@ RUN apk add --update --no-cache python3 libc6-compat alpine-sdk && ln -sf python
 RUN pnpm fetch
 
 RUN apk add --update --no-cache py3-pip ffmpeg build-base libc6-compat py3-pycryptodomex py3-websockets py3-mutagen py3-brotli yt-dlp
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 RUN python3 -m pip install yt-dlp
 
 COPY . ./
-RUN pnpm install -r --offline
-RUN pnpm exec lerna run build --include-dependencies --scope worker
+RUN pnpm install -r
+RUN pnpm exec lerna run build --include-dependencies --scope @audio-hq/worker
 EXPOSE 3050
 
 WORKDIR /audio-hq/packages/worker
