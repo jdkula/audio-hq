@@ -92,6 +92,6 @@ export default class S3FileSystem {
             ACL: 'public-read',
         });
 
-        return `https://${this.defaultParams.Bucket}.s3.us-west-2.amazonaws.com/${id}`;
+        return `https://${process.env.STATIC_PUBLIC_BASE_URL ?? 'static.ahq.one'}/${id}`;
     }
 }
