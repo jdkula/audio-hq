@@ -4,6 +4,7 @@ RUN npm install -g pnpm
 WORKDIR /audio-hq
 RUN apk add --update --no-cache python3 libc6-compat alpine-sdk && ln -sf python3 /usr/bin/python
 COPY ./pnpm-lock.yaml ./
+COPY ./pnpm-workspace.yaml ./
 RUN pnpm fetch
 
 COPY . ./
