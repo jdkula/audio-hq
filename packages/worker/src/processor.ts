@@ -115,6 +115,8 @@ export class Processor {
 
         this.updateProgress(jobId, workspaceId, 0, Transport.JobStatus.DOWNLOADING, url);
 
+        let stderr = '';
+
         return new Promise<string>((resolve, reject) => {
             const ytdl = spawn(ytdlPath, ['--no-playlist', '-x', '-f', 'bestaudio/best', '-o', outPath, url], {
                 cwd: basedir,
@@ -135,12 +137,14 @@ export class Processor {
             });
 
             ytdl.stderr.on('data', (data) => {
-                ytdlLog.warn(data.toString());
+                const res = data.toString();
+                stderr += res;
+                ytdlLog.warn(res);
             });
 
             ytdl.on('close', (code) => {
                 if (code !== 0) {
-                    reject(code);
+                    reject(new Error(`yt-dlp error ${code}: ${stderr}`));
                 } else {
                     ytdlLog.info('Done');
                     fs.readdir(basedir)

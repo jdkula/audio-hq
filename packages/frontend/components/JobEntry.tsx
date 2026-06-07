@@ -20,9 +20,10 @@ import {
 import { FC, useContext, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
+import RetryIcon from '@mui/icons-material/Replay';
 import styled from '@emotion/styled';
 import { Job } from '@audio-hq/common/lib/api/models';
-import { useDeleteJobMutation } from '~/lib/api/hooks';
+import { useDeleteJobMutation, useRetryJobMutation } from '~/lib/api/hooks';
 import { WorkspaceIdContext } from '~/lib/utility/context';
 
 const JobContainer = styled(Paper)`
@@ -46,6 +47,7 @@ const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job }) => {
 
     const [showError, setShowError] = useState(false);
     const deleteJob = useDeleteJobMutation(wsId);
+    const retryJob = useRetryJobMutation(wsId);
     // TODO: Cancel
 
     const hasValue =
@@ -76,6 +78,12 @@ const JobEntry: FC<{ job: Job; onCanceled?: () => void }> = ({ job }) => {
                     {job.status === 'error' && (
                         <>
                             <Button onClick={() => setShowError(true)}>ERROR</Button>
+
+                            <Tooltip placement="top" title="Retry job" arrow>
+                                <IconButton size="large" onClick={() => retryJob.mutate({ jobId: job.id })}>
+                                    <RetryIcon />
+                                </IconButton>
+                            </Tooltip>
 
                             <Tooltip placement="top" title="Close job" arrow>
                                 <IconButton size="large" onClick={() => deleteJob.mutate({ jobId: job.id })}>
