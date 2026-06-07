@@ -44,7 +44,7 @@ export class LocalStorageReactiveValue<T> extends LocalReactiveValue<T> {
         super(
             typeof window === 'undefined'
                 ? defaultValue
-                : JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue,
+                : (JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue),
         );
         this.on('set', (value) => {
             localStorage.setItem(key, JSON.stringify(value));

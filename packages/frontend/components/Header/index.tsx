@@ -13,7 +13,6 @@ import { Add, OfflineBolt } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import GlobalVolumeSlider from './GlobalVolumeSlider';
 import DownloadCacheButton from './DownloadCacheButton';
-import NextLink from 'next/link';
 import { useLocalReactiveValue } from '../../lib/LocalReactive';
 import { WorkspaceNameContext, WorkspaceLRVContext } from '~/lib/utility/context';
 import { useIsOnline } from '~/lib/utility/hooks';

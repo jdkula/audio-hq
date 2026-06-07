@@ -229,8 +229,8 @@ export default function Home(): React.ReactElement {
                                 ? fetching
                                     ? 'Loading...' // Searching for workspace
                                     : foundWorkspaces?.[0]
-                                    ? 'Join' // If workspace found
-                                    : 'Create Workspace' // If workspace not found
+                                      ? 'Join' // If workspace found
+                                      : 'Create Workspace' // If workspace not found
                                 : 'Enter a workspace name' // If workspaceName is empty
                         }
                     </Button>
