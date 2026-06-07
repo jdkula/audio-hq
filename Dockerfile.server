@@ -8,11 +8,12 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN python3 -m pip install setuptools
 COPY ./pnpm-lock.yaml ./
 COPY ./pnpm-workspace.yaml ./
+COPY ./package.json ./
+RUN corepack enable
 RUN pnpm fetch
 
 COPY . ./
 RUN pip3 install setuptools
-RUN pnpm approve-builds --all
 RUN pnpm install -r
 RUN pnpm exec lerna run build --include-dependencies --scope @audio-hq/server
 EXPOSE 3050

@@ -119,13 +119,13 @@ export class AudioHQServiceBase implements IServiceBase {
             { $set: { name: mutate.name } },
             { returnDocument: 'after' },
         );
-        if (!result) {
+        if (!result.value) {
             throw new NotFound();
         }
 
         return {
             id,
-            ...pick(result, 'name', 'createdAt', 'updatedAt'),
+            ...pick(result.value, 'name', 'createdAt', 'updatedAt'),
         };
     }
     async deleteWorkspace(id: string): Promise<void> {
@@ -190,11 +190,11 @@ export class AudioHQServiceBase implements IServiceBase {
             { $set: { ...pick(input, 'name', 'ordering', 'path'), ...singleUpdate } },
             { returnDocument: 'after' },
         );
-        if (!result) {
+        if (!result.value) {
             throw new OtherError();
         }
         await rebalanceOrderings();
-        return asEntry(result);
+        return asEntry(result.value);
     }
     async deleteEntry(workspaceId: string, id: string): Promise<void> {
         const db = await mongo;
@@ -257,10 +257,10 @@ export class AudioHQServiceBase implements IServiceBase {
                 { $set: deck },
                 { upsert: true, returnDocument: 'after' },
             );
-            if (!result) {
+            if (!result.value) {
                 throw new OtherError();
             }
-            oid = result._id;
+            oid = result.value._id;
         } else {
             const result = await db.decks.insertOne(deck);
             oid = result.insertedId;
@@ -325,13 +325,13 @@ export class AudioHQServiceBase implements IServiceBase {
                 },
                 { returnDocument: 'after', upsert: true },
             );
-            if (!result) {
+            if (!result.value) {
                 throw new OtherError();
             }
             return {
-                ...result,
-                id: asString(result._id),
-                queue: result.queue.map((oid) => asString(oid)),
+                ...result.value,
+                id: asString(result.value._id),
+                queue: result.value.queue.map((oid) => asString(oid)),
             };
         } else {
             const result = await db.decks.findOneAndUpdate(
@@ -344,13 +344,13 @@ export class AudioHQServiceBase implements IServiceBase {
                 },
                 { returnDocument: 'after' },
             );
-            if (!result) {
+            if (!result.value) {
                 throw new OtherError();
             }
             return {
-                ...result,
-                id: asString(result._id),
-                queue: result.queue.map((oid) => asString(oid)),
+                ...result.value,
+                id: asString(result.value._id),
+                queue: result.value.queue.map((oid) => asString(oid)),
             };
         }
     }
@@ -524,11 +524,11 @@ export class AudioHQServiceBase implements IServiceBase {
             },
             { returnDocument: 'after' },
         );
-        if (!res) {
+        if (!res.value) {
             throw new NotFound();
         }
 
-        return asJob(res);
+        return asJob(res.value);
     }
     async adminCompleteJob(
         sharedKey: string,
@@ -631,7 +631,7 @@ export class AudioHQServiceBase implements IServiceBase {
             );
         }
 
-        if (!result) {
+        if (!result.value) {
             // Find any old jobs
             result = await db.jobs.findOneAndUpdate(
                 // 30+ minutes old
@@ -640,7 +640,7 @@ export class AudioHQServiceBase implements IServiceBase {
             );
         }
 
-        return result ?? null;
+        return result.value ?? null;
     }
 }
 

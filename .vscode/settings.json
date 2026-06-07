@@ -1,6 +1,6 @@
 {
     "VSCodeCounter.showInStatusBar": true,
-    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "js/ts.tsdk.promptToUseWorkspaceVersion": true,
     "editor.formatOnSave": true,
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#6796ab",
