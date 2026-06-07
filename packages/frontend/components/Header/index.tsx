@@ -82,18 +82,16 @@ export const Header: FunctionComponent<{ host?: boolean }> = ({ host }) => {
             <Toolbar>
                 <ToolbarContent>
                     <Title>
-                        <NextLink href={'/'} passHref legacyBehavior>
-                            <Link color="inherit" underline="hover">
-                                <Typography
-                                    variant={isSmall ? 'h5' : 'h4'}
-                                    style={{ display: 'flex', alignItems: 'center' }}
-                                >
-                                    <AHQIcon fontSize="inherit" style={{ fontSize: '3.5rem' }} />
-                                    <span style={{ margin: '0 0.5rem' }} />
-                                    {workspaceName || 'Loading...'}
-                                </Typography>
-                            </Link>
-                        </NextLink>
+                        <Link href="/" color="inherit" underline="hover">
+                            <Typography
+                                variant={isSmall ? 'h5' : 'h4'}
+                                style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                                <AHQIcon fontSize="inherit" style={{ fontSize: '3.5rem' }} />
+                                <span style={{ margin: '0 0.5rem' }} />
+                                {workspaceName || 'Loading...'}
+                            </Typography>
+                        </Link>
                         {!isSmall && !host && (
                             <>
                                 <Spacer />
