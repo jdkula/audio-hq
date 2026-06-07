@@ -444,8 +444,26 @@ export class AudioHQServiceBase implements IServiceBase {
     }
     async cancelJob(workspaceId: string, id: string): Promise<void> {
         if (!workspaceId || !id) throw new InvalidInput();
-        // TODO;
-        throw new OtherError('Not Implemented');
+        const db = await mongo;
+        const result = await db.jobs.deleteOne({ _workspace: asObjectId(workspaceId), _id: asObjectId(id) });
+        if (result.deletedCount === 0) throw new NotFound();
+    }
+    async retryJob(workspaceId: string, id: string): Promise<void> {
+        if (!workspaceId || !id) throw new InvalidInput();
+        const db = await mongo;
+        const result = await db.jobs.updateOne(
+            { _workspace: asObjectId(workspaceId), _id: asObjectId(id), status: JobStatus.ERROR },
+            {
+                $set: {
+                    progress: 0,
+                    assignedAt: 0,
+                    assignedWorker: null,
+                    error: null,
+                    status: JobStatus.WAITING,
+                },
+            },
+        );
+        if (result.modifiedCount === 0) throw new NotFound();
     }
     async join(): Promise<void> {
         throw new Error('This function should be handled at the transport layer.');

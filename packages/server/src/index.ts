@@ -2,12 +2,13 @@ import { Server } from 'socket.io';
 import { ServerServiceSocket, Status } from '@audio-hq/service/lib/IService';
 import { AudioHQServiceBase as AHQBase } from '@audio-hq/service/lib/ServiceBase';
 import { NotFound, InvalidInput, OtherError } from '@audio-hq/service/lib/errors';
-import { Last } from 'socket.io/dist/typed-events';
 import MsgParser from 'socket.io-msgpack-parser';
 import { asString } from '@audio-hq/service/lib/db/oid_helpers';
 import { mongo } from '@audio-hq/service/lib/db/mongodb';
 import pino from 'pino';
 import * as Transport from '@audio-hq/common/lib/api/transport/models';
+
+type Last<T extends unknown[]> = T extends [infer E] ? E : T extends [unknown, ...infer Rest] ? Last<Rest> : never;
 
 const log = pino({ transport: { target: 'pino-pretty' }, level: 'trace' });
 const reqlog = pino({ name: 'request', transport: { target: 'pino-pretty' }, level: 'trace' });
@@ -183,6 +184,13 @@ io.on('connection', (socket: ServerServiceSocket) => {
         const resolve = args[args.length - 1] as Last<typeof args>;
         const rest = args.slice(0, -1) as Parameters<(typeof AudioHQServiceBase)['cancelJob']>;
         const status = await wrap(AudioHQServiceBase.cancelJob, ...rest);
+        resolve(status);
+        notifyJobs(rest[0]);
+    });
+    socket.on('retryJob', async (...args) => {
+        const resolve = args[args.length - 1] as Last<typeof args>;
+        const rest = args.slice(0, -1) as Parameters<(typeof AudioHQServiceBase)['cancelJob']>;
+        const status = await wrap(AudioHQServiceBase.retryJob, ...rest);
         resolve(status);
         notifyJobs(rest[0]);
     });

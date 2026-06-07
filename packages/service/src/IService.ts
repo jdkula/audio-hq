@@ -42,6 +42,7 @@ export type ClientToServerEvents = {
     submitJob: (workspaceId: string, input: API.NewJob) => Promise<Status<API.Job>>;
     getJob: (workspaceId: string, id: string) => Promise<Status<API.Job>>;
     cancelJob: (workspaceId: string, id: string) => Promise<Status<void>>;
+    retryJob: (workspaceId: string, id: string) => Promise<Status<void>>;
 
     join: (workspaceId: string) => Promise<Status<void>>;
     leave: (workspaceId: string) => Promise<Status<void>>;
@@ -73,9 +74,8 @@ export type UtilityFunctions = {
 };
 
 type OnlyFunctions<ReturnType = any> = { [K: string]: (...args: any) => ReturnType };
-type MaybeUnwrapPromise<Wrapped extends Promise<unknown>> = Wrapped extends Promise<infer Internal>
-    ? Internal
-    : Wrapped;
+type MaybeUnwrapPromise<Wrapped extends Promise<unknown>> =
+    Wrapped extends Promise<infer Internal> ? Internal : Wrapped;
 
 export type CallbackStyle<I extends OnlyFunctions> = {
     [P in keyof I]: (...args: [...Parameters<I[P]>, (output: MaybeUnwrapPromise<ReturnType<I[P]>>) => void]) => void;

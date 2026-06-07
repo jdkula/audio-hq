@@ -125,6 +125,9 @@ export default class SocketTransport implements IService {
     async cancelJob(workspaceId: string, id: string): Promise<Status<void>> {
         return await this.socket.emitWithAck('cancelJob', workspaceId, id);
     }
+    async retryJob(workspaceId: string, id: string): Promise<Status<void>> {
+        return await this.socket.emitWithAck('retryJob', workspaceId, id);
+    }
     async join(workspaceId: string): Promise<Status<void>> {
         const status = await this.socket.emitWithAck('join', workspaceId);
         if (status.error === null) {

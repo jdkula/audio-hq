@@ -4,10 +4,13 @@ RUN npm install -g pnpm
 WORKDIR /audio-hq
 COPY ./pnpm-lock.yaml ./
 COPY ./pnpm-workspace.yaml ./
-RUN apk add --update --no-cache python3 libc6-compat alpine-sdk && ln -sf python3 /usr/bin/python
+RUN apk add --update --no-cache python3 libc6-compat alpine-sdk py3-pip && ln -sf python3 /usr/bin/python
 RUN pnpm fetch
 
 COPY . ./
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN python3 -m pip install setuptools
 RUN pnpm install -r
 ARG NEXT_PUBLIC_WS_BASE="wss://api.audio-hq.quest"
 RUN pnpm exec lerna run build --include-dependencies --scope @audio-hq/frontend

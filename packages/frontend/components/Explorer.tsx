@@ -107,6 +107,7 @@ const FileListScrollContainer = styled.div`
 
 const JobsContainer = styled.div`
     height: 250px;
+    min-height: 150px;
     overflow: auto;
 `;
 
