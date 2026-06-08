@@ -1,0 +1,6 @@
+steps:
+    - name: ':node: build'
+      command: pnpm run build
+      plugins:
+          - docker-compose#v5.4.0:
+                run: bk_base
